@@ -20,8 +20,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{D81CCCB1-8786-4170-A885-981B6741F6D7}</ProjectGuid>
-    <RootNamespace>ae</RootNamespace>
+    <ProjectGuid>{E742B2E2-EABA-4DD5-A873-16646AA6C903}</ProjectGuid>
+    <RootNamespace>aecpp</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -69,28 +69,14 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)\.vstudio\$(Configuration)\</OutDir>
-    <IntDir>.vstudio\$(Configuration)\</IntDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)\.vstudio\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>.vstudio\$(Platform)\$(Configuration)\</IntDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)\.vstudio\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>.vstudio\$(Platform)\$(Configuration)\</IntDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)\.vstudio\$(Configuration)\</OutDir>
-    <IntDir>.vstudio\$(Configuration)\</IntDir>
-  </PropertyGroup>
+  <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -138,6 +124,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\_cpp\cpp.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\_cpp\cpp_aux.h" />
+    <ClInclude Include="..\..\_cpp\cpp_data.h" />
+    <ClInclude Include="..\..\_cpp\cpp_lexica.h" />
+    <ClInclude Include="..\..\_cpp\cpp_program.h" />
+    <ClInclude Include="..\..\_cpp\cpp_syntax_brackets.h" />
+    <ClInclude Include="..\..\_cpp\cpp_syntax_names.h" />
+    <ClInclude Include="..\..\_cpp\cpp_syntax_parsing.h" />
+    <ClInclude Include="..\..\_cpp\cpp_syntax_schema.h" />
+    <ClInclude Include="..\..\_cpp\cpp_syntax_scopes.h" />
+    <ClInclude Include="..\..\_cpp\cpp_synthesis.h" />
+    <ClInclude Include="..\..\_cpp\cpp_translator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

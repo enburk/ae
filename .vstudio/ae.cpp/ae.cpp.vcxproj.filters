@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\_cpp\cpp.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\_cpp\cpp_aux.h" />
+    <ClInclude Include="..\..\_cpp\cpp_data.h" />
+    <ClInclude Include="..\..\_cpp\cpp_lexica.h" />
+    <ClInclude Include="..\..\_cpp\cpp_program.h" />
+    <ClInclude Include="..\..\_cpp\cpp_syntax_brackets.h" />
+    <ClInclude Include="..\..\_cpp\cpp_syntax_names.h" />
+    <ClInclude Include="..\..\_cpp\cpp_syntax_parsing.h" />
+    <ClInclude Include="..\..\_cpp\cpp_syntax_schema.h" />
+    <ClInclude Include="..\..\_cpp\cpp_syntax_scopes.h" />
+    <ClInclude Include="..\..\_cpp\cpp_synthesis.h" />
+    <ClInclude Include="..\..\_cpp\cpp_translator.h" />
+  </ItemGroup>
+</Project>
