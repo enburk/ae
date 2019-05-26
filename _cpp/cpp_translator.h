@@ -22,7 +22,7 @@ void print (const Entity & entity, array<string> & lines, int indent = 0, bool s
 
 string translator (string filename, std::string & result)
 {
-    array<Source> sources; auto tokens = aggregate (sources, filename); try
+    array<Source> sources; auto tokens = preprocess (sources, filename); try
     {
         array<Entity> entities = syntax::parsing (tokens);
 

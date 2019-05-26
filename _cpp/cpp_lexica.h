@@ -7,12 +7,14 @@ deque<Token> lexica (array<Source> & sources, string file)
 
     deque<Token> output; Source & source = sources.back (); source.lines += ""; Token t;
 
-    bool UTF_8_BOM = false; if (file.size () >= 3 && file [0] == '\xEF' && file [1] == '\xBB' && file [2] == '\xBF') { UTF_8_BOM = true; file.erase (0,3); }
+    bool UTF_8_BOM = false; if (file.headed("\xEF" "\xBB" "\xBF")) { UTF_8_BOM = true; file.erase (0,3); }
 
     file += "\n\n"; // happy ending
 
     for (char c : file)
     {
+        if (c != '\n' && !ascii(c) && !space(c) && !UTF_8_BOM) throw Error ("Lexica: non-ASCII character without UTF-8 BOM", t);
+
         if (c == '\n') source.lines += ""; else source.lines.back () += c;
 
         if (t.text == "/*"  && c != '*') {                 continue; }
@@ -71,8 +73,6 @@ deque<Token> lexica (array<Source> & sources, string file)
                 c == '\"' ? "literal" : 
                 c == '\'' ? "char"    : 
                             "symbol"  ;
-
-            if (!UTF_8_BOM && !ascii (c) && !space (c)) throw Error ("Lexica: non-ASCII character without UTF-8 BOM", t);
         }
     }
 

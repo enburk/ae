@@ -1,4 +1,4 @@
-array<Entity> parsing (array<Token> & input)
+array<Entity> parsing (array<Token> input)
 {
     array<Entity> output; Entity entity; input += Token (";");
     

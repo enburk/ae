@@ -130,7 +130,7 @@
     <ClInclude Include="..\..\_cpp\cpp_aux.h" />
     <ClInclude Include="..\..\_cpp\cpp_data.h" />
     <ClInclude Include="..\..\_cpp\cpp_lexica.h" />
-    <ClInclude Include="..\..\_cpp\cpp_program.h" />
+    <ClInclude Include="..\..\_cpp\cpp_preprocess.h" />
     <ClInclude Include="..\..\_cpp\cpp_syntax_brackets.h" />
     <ClInclude Include="..\..\_cpp\cpp_syntax_names.h" />
     <ClInclude Include="..\..\_cpp\cpp_syntax_parsing.h" />

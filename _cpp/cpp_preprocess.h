@@ -1,10 +1,10 @@
-deque<Token> aggregate (array<Source> & sources, string filename)
+deque<Token> preprocess (array<Source> & sources, string filename)
 {
     std::cout << filename << std::endl;
-    
-    std::string file = std::string (
-    std::istreambuf_iterator<char>(std::ifstream (filename)),
-    std::istreambuf_iterator<char>());
+
+    std::ifstream stream (filename); std::string file {(
+    std::istreambuf_iterator<char>(stream)),
+    std::istreambuf_iterator<char>()};
 
     sources += Source (filename);
     
@@ -24,7 +24,7 @@ deque<Token> aggregate (array<Source> & sources, string filename)
                     
             string dir = sources.back ().filename; size_t n = dir.rfind ("/"); if (n != string::npos) filename = dir.head (n+1) + filename;
                     
-            output += aggregate (sources, filename + ".dpp"); line.clear (); continue;
+            output += preprocess (sources, filename + ".dpp"); line.clear (); continue;
         }
 
         if (token.text == "\n") { output += line; line.clear (); continue; }

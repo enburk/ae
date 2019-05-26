@@ -6,8 +6,8 @@ array<Token> anglebracketing (array<Token> & input, bool inside = false)
 
         static std::set<string> fails = {"&&", "||", "?", ";", "{", "(", "[", u8"«"};
 
-        if (inside) if (fails.find (token.text) != fails.end ())               { input.insert (input.begin (), token); break; }
-        if (inside) if (token.text == ">>") { inside = false; token.text == ">"; input.insert (input.begin (), token); break; }
+        if (inside) if (fails.find (token.text) != fails.end ())              { input.insert (input.begin (), token); break; }
+        if (inside) if (token.text == ">>") { inside = false; token.text = ">"; input.insert (input.begin (), token); break; }
         if (inside) if (token.text == ">" ) { inside = false; break; }
 
         if (token.text == "<")
