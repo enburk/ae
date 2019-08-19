@@ -1,3 +1,5 @@
+#pragma once
+
 template<class type> struct deque : public std::deque<type>
 {
     using base = std::deque<type>;

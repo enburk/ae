@@ -1,15 +1,8 @@
 #include <iostream>
 
-#include "sys.h"
+using "dpp_ide"
 
-void sys::window::on::size()
-{
-}
 
-void sys::window::on::draw(int x, int y, int w, int h)
-{
-    for (auto& c : sys::window::image) c = 0xFFFF0000;
-}
 
 // int main ()
 // {

@@ -58,3 +58,20 @@ int main ()
 
     return 0;
 }
+
+/*
+
+C++
+template<class ForwardIt, class T>
+void iota(ForwardIt first, ForwardIt last, T value)
+{
+    while(first != last) {
+        *first++ = value;
+        ++value;
+    }
+}
+AE: only operator ++
+b = ++a ~ ++(a); b = a;
+b = a++ ~ b = a; ++(a);
+
+*/

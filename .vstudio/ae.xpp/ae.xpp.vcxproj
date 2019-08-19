@@ -20,8 +20,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{CC4D7A1A-F6E7-41D8-86C2-A4168D8FB7F0}</ProjectGuid>
-    <RootNamespace>aedpp</RootNamespace>
+    <ProjectGuid>{170E19DE-5280-4856-8E0E-2AEAA3C7ABF1}</ProjectGuid>
+    <RootNamespace>aexpp</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -127,17 +127,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\..\_dpp\dpp.dpp!" />
-    <None Include="..\..\_dpp\dpp_ide.dpp" />
+    <ClInclude Include="..\..\_xpp\aux_array.h" />
+    <ClInclude Include="..\..\_xpp\aux_string.h" />
+    <ClInclude Include="..\..\_xpp\ide_edit.h" />
+    <ClInclude Include="..\..\_xpp\ide_edit_doc.h" />
+    <ClInclude Include="..\..\_xpp\ide_flist.h" />
+    <ClInclude Include="..\..\_xpp\pix.h" />
+    <ClInclude Include="..\..\_xpp\pix_coord.h" />
+    <ClInclude Include="..\..\_xpp\pix_image.h" />
+    <ClInclude Include="..\..\_xpp\pix_typo_font.h" />
+    <ClInclude Include="..\..\_xpp\sys.h" />
+    <ClInclude Include="..\..\_xpp\sys_windows.h" />
+    <ClInclude Include="..\..\_xpp\xpp_lexica.h" />
+    <ClInclude Include="..\..\_xpp\xpp_lexica_cpp.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\_dpp\dpp.cpp" />
-    <ClCompile Include="..\..\_dpp\sys_memory.cpp" />
-    <ClCompile Include="..\..\_dpp\sys_windows.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\_dpp\sys.h" />
-    <ClInclude Include="..\..\_dpp\sys_windows.h" />
+    <ClCompile Include="..\..\_xpp\ide.cpp" />
+    <ClCompile Include="..\..\_xpp\sys_fonts.cpp" />
+    <ClCompile Include="..\..\_xpp\sys_windows.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,3 +1,6 @@
+#pragma once
+#include "cpp_lexica.h"
+
 deque<Token> preprocess (array<Source> & sources, string filename)
 {
     std::cout << filename << std::endl;

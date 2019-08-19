@@ -1,3 +1,6 @@
+#pragma once
+#include "cpp_aux.h"
+
 struct Token
 {
     int source, line, column; string type, text, tail; array<Token> tokens;

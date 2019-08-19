@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="..\..\_xpp\aux_array.h" />
+    <ClInclude Include="..\..\_xpp\aux_string.h" />
+    <ClInclude Include="..\..\_xpp\sys.h" />
+    <ClInclude Include="..\..\_xpp\sys_windows.h" />
+    <ClInclude Include="..\..\_xpp\ide_edit.h" />
+    <ClInclude Include="..\..\_xpp\ide_edit_doc.h" />
+    <ClInclude Include="..\..\_xpp\ide_flist.h" />
+    <ClInclude Include="..\..\_xpp\pix.h" />
+    <ClInclude Include="..\..\_xpp\xpp_lexica.h" />
+    <ClInclude Include="..\..\_xpp\xpp_lexica_cpp.h" />
+    <ClInclude Include="..\..\_xpp\pix_coord.h" />
+    <ClInclude Include="..\..\_xpp\pix_image.h" />
+    <ClInclude Include="..\..\_xpp\pix_typo_font.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\_xpp\sys_windows.cpp" />
+    <ClCompile Include="..\..\_xpp\ide.cpp" />
+    <ClCompile Include="..\..\_xpp\sys_fonts.cpp" />
+  </ItemGroup>
+</Project>

@@ -2,10 +2,19 @@
 
 namespace sys
 {
+    namespace memory
+    {
+        namespace heap
+        {
+            void* request (int64_t bytes);
+            bool  release (void* pointer);
+        }
+    }
+
     namespace window
     {
         inline std::vector<uint32_t> image;
-        struct size { inline static int x, y; };
+        namespace size { inline int x, y; };
         void redraw (int x, int y, int w, int h);
 
         namespace on
