@@ -40,12 +40,13 @@ struct GDI_FONT
         metrics.linegap  = tm.tmExternalLeading; // baseline-to-baseline distance should be computed as: ascent + descent + linegap
         metrics.avecharw = tm.tmAveCharWidth; // average char width (usually width of 'x')
         metrics.maxcharw = tm.tmMaxCharWidth; // maximum char width
+        metrics.overhang = tm.tmOverhang; // only necessary for non-TrueType raster fonts
 
         ::SelectObject (dc, old);
 
         ::DeleteDC (dc);
     }
-   ~GDI_FONT() { if (handle) ::DeleteObject (handle); }
+    ~GDI_FONT() {} // { if (handle) ::DeleteObject (handle); }
 };
 
 static GDI_FONT cache (FONT font) {
@@ -63,7 +64,7 @@ struct GDI_CONTEXT
 
     GDI_CONTEXT(FONT f) : font (cache(f))
     {
-        dc = ::CreateCompatibleDC (NULL);
+        dc  = ::CreateCompatibleDC (NULL);
         old = ::SelectObject (dc, font.handle);
     }
    ~GDI_CONTEXT()
@@ -86,23 +87,27 @@ GLYPH<XRGB> sys::font::glyph (FONT font, str text)
 
     GDI_CONTEXT context(font);
 
-    auto ss = winstr(text); size_t len = winstrlen (ss);
+    auto ss = winstr(text); size_t len = winstrlen(ss);
 
     SIZE size;  ::GetTextExtentPoint32W (context.dc, ss.c_str(), (int)len, &size);
 
-    int extral = 2; int extrar = 2;
+    int lmargin = 0; int rmargin = 0;
 
-    glyph.frame.size.x = size.cx + extral + extrar;
+    glyph.frame.size.x = size.cx + lmargin + rmargin;
     glyph.frame.size.y = size.cy;
-    glyph.xbearing = - extral;
-    glyph.ybearing = context.font.metrics.ascent;
-    glyph.advance = size.cx+1;
+    glyph.bearing_x = - lmargin;
+    glyph.bearing_y = context.font.metrics.ascent;
+    glyph.advance = size.cx;
+    glyph.advance -= context.font.metrics.overhang;
 
     return glyph;
 }
 
-void sys::font::render (GLYPH<XRGB> & glyph)
+void sys::font::render (GLYPH<XRGB> & glyph, bool blend)
 {
+    if (!(glyph.text.contains(str::one_not_of(" \t\r\n")))) return;
+    if (!(glyph.frame.image != nullptr)) throw std::logic_error("sys::font::render : nullptr image");
+
     GDI_CONTEXT context(glyph.font);
 
     int w = glyph.frame.size.x;
@@ -123,91 +128,26 @@ void sys::font::render (GLYPH<XRGB> & glyph)
     if    (!bmp) throw std::runtime_error ( "sys::font::render : CreateDIBSection fail" );
     HGDIOBJ old = ::SelectObject (context.dc, bmp);
 
-    auto ss = winstr(text); size_t len = winstrlen (ss);
+    auto ss = winstr(glyph.text); size_t len = winstrlen(ss);
 
-    ::SetBkColor   ( dc, RGB (cback.r,cback.g,cback.b) );
-    ::SetTextColor ( dc, RGB (color.r,color.g,color.b) );
+    if (blend)
+    ::SetBkMode    (context.dc, TRANSPARENT); else
+    ::SetBkColor   (context.dc, RGB(glyph.back.r, glyph.back.g, glyph.back.b));
+    ::SetTextColor (context.dc, RGB(glyph.fore.r, glyph.fore.g, glyph.fore.b));
 
-    ::memcpy ( bits, g.bbox.begin (), w*h*4 );
+    if (blend)
+    glyph.frame.copy_to((XRGB*)bits, w);
 
-    ::TextOutW ( dc, abc::clampround<int>(-g.bearing_x),0, *ss, (int) len );
+    ::TextOutW (context.dc, (int)std::lround(-glyph.bearing_x), 0, ss.c_str(), (int)len);
 
-    ::memcpy ( g.bbox.begin (), bits, w*h*4 );
+    glyph.frame.copy_from((XRGB*)bits, w);
 
-    ::SelectObject ( dc, olf );
-    ::SelectObject ( dc, old );
-    ::DeleteObject ( bmp );
-    ::DeleteDC     ( dc );
+    ::SelectObject (context.dc, old);
+    ::DeleteObject (bmp);
 
-    for( int y=0; y<g.bbox.size.y; y++ )
-    for( int x=0; x<g.bbox.size.x; x++ )
-    {
-        if( g.bbox (x,y).xrgb != RGB (cback.r,cback.g,cback.b) )  g.bbox (x,y).x = 255;
-    }
-}
-
-//============================================================================================================================//
-struct GlypherGDI : public GLYPHER
-//============================================================================================================================//
-{
-    virtual void render ( GLYPH<XRGB> & g, XRGB color )
-    {
-
-        LPVOID   bits = NULL;
-        HBITMAP  bmp  = ::CreateDIBSection   ( NULL, (BITMAPINFO*)&bi, DIB_RGB_COLORS, &bits, NULL, NULL );
-        if(    ! bmp )
-        {
-            ::DeleteDC ( dc ); throw std::logic_error ( "GlypherGDI::render CreateDIBSection" );
-        }
-        HGDIOBJ  old  = ::SelectObject       ( dc, bmp );
-
-        ::memcpy ( bits, g.bbox.begin (), w*h*4 );
-
-        ::SetBkMode    ( dc, TRANSPARENT );
-        ::SetTextColor ( dc, RGB (color.r,color.g,color.b) );
-
-        strw ss = sys::winstrw (g.text);  size_t len = sys::winstrlen (ss);
-
-        ::TextOutW ( dc, abc::clampround<int>(-g.bearing_x),0, *ss, (int) len );
-
-        ::memcpy ( g.bbox.begin (), bits, w*h*4 );
-
-        ::SelectObject ( dc, olf );
-        ::SelectObject ( dc, old );
-        ::DeleteObject ( bmp );
-        ::DeleteDC     ( dc );
-
-        { Cache [color][g.text] = g; }
-    }
-
-    virtual int kerning ( str8, str8 ){ return 0; }
-    virtual int kern111 ( str8, str8 ){ return 0; }
-};
-
-#endif
-
-//============================================================================================================================//
-
-FONTPOOL FontPool;
-
-FONTPOOL:: FONTPOOL (){ Default = new Dina; }
-FONTPOOL::~FONTPOOL (){ if( Default ) delete Default; for( int n=0; n<Glyphers.size (); n++ ) if( Glyphers [n] ) delete Glyphers [n]; }
-
-GLYPHER* FONTPOOL::find ( FONT font )
-{
-    if( ! ( font != FONT ( "Dina", 8 ) ) )  return Default;
-
-    FONTMAP::iterator it = FontMap.find ( font );  if( it != FontMap.end () )  return it->second;
-
-#ifdef      _WIN32
-
-    Glyphers += new GlypherGDI (font);
-
-    FontMap [font] = Glyphers.last ();
-
-    return Glyphers.last ();
-
-#endif
-
-    return Default;
+    if (!blend)
+    for (int y=0; y<glyph.frame.size.y; y++)
+    for (int x=0; x<glyph.frame.size.x; x++)
+        if (glyph.frame(x,y).xrgb != RGB(glyph.back.r, glyph.back.g, glyph.back.b))
+            glyph.frame(x,y).x = 255;
 }

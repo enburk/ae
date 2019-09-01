@@ -50,6 +50,7 @@ struct XYXY
 {
     union  {
     struct { int xl, yl, xh, yh; };
+    struct { int x1, y1, x2, y2; };
     struct { int l, t, r, b; };  };
 
     XYXY (                          ) : l (0), t (0), r (0), b (0) {}

@@ -8,31 +8,53 @@ language='*'\"")
 
 static HWND Hwnd;
 
-void sys::window::update(XYXY r)
+void sys::window::update()
 {
-    RECT rect;
-    rect.left   = r.l;
-    rect.top    = r.t;
-    rect.right  = r.r;
-    rect.bottom = r.b;
-    RedrawWindow (Hwnd, &rect, NULL, RDW_INVALIDATE);
+    for (XYXY r : sys::window::image.update) {
+        RECT rect;
+        rect.left   = r.l;
+        rect.top    = r.t;
+        rect.right  = r.r;
+        rect.bottom = r.b;
+        RedrawWindow (Hwnd, &rect, NULL, RDW_INVALIDATE);
+    }
+    sys::window::image.update.clear();
     UpdateWindow (Hwnd);
 }
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+    int LL = (short) LOWORD (lparam);
+    int HL = (short) HIWORD (lparam);
+    int LW = (short) LOWORD (wparam);
+    int HW = (short) HIWORD (wparam);
+
     switch (msg)
     {
-        case WM_DESTROY: PostQuitMessage(0); return 0;
-        case WM_SIZE:
-        {
-            if(wparam == SIZE_MINIMIZED) break;
-            sys::window::image.resize(XY(LOWORD(lparam), HIWORD(lparam)));
-            sys::window::on::resize();
-            RedrawWindow (hwnd, NULL, NULL, RDW_INVALIDATE);
-            UpdateWindow (hwnd);
-            return 0;
-        }
+
+    case WM_MOUSEMOVE       : sys::mouse::on::move  (XY(LL,HL)); break; // if( ! MouseSub ) ::SetCursor ( MouseImage ); break;
+//    case WM_MOUSELEAVE      :    MouseHover    = false; break;
+//    case WM_MOUSEWHEEL      :    MouseWheel   ( XY(LL,HL), LW, HW    ); break;
+
+    case WM_LBUTTONDOWN     : sys::mouse::on::press (XY(LL,HL), 'L', true ); break;
+    case WM_LBUTTONDBLCLK   : sys::mouse::on::press (XY(LL,HL), 'L', true ); sys::mouse::on::clickclick (XY(LL,HL), 'L'); break;
+    case WM_LBUTTONUP       : sys::mouse::on::press (XY(LL,HL), 'L', false); break;
+    case WM_MBUTTONDOWN     : sys::mouse::on::press (XY(LL,HL), 'M', true ); break;
+    case WM_MBUTTONDBLCLK   : sys::mouse::on::press (XY(LL,HL), 'M', true ); sys::mouse::on::clickclick (XY(LL,HL), 'M'); break;
+    case WM_MBUTTONUP       : sys::mouse::on::press (XY(LL,HL), 'M', false); break;
+    case WM_RBUTTONDOWN     : sys::mouse::on::press (XY(LL,HL), 'R', true ); break;
+    case WM_RBUTTONDBLCLK   : sys::mouse::on::press (XY(LL,HL), 'R', true ); sys::mouse::on::clickclick (XY(LL,HL), 'R'); break;
+    case WM_RBUTTONUP       : sys::mouse::on::press (XY(LL,HL), 'R', false); break;
+    case WM_XBUTTONDOWN     : sys::mouse::on::press (XY(LL,HL), 'X', true ); break;
+    case WM_XBUTTONUP       : sys::mouse::on::press (XY(LL,HL), 'X', false); break;
+
+//    case WM_CAPTURECHANGED  :
+//                                                    {
+//                                                        Lock                = true;
+//                                                        MouseCapture    = false;        CLsLayer* sub = MouseSub; while ( sub && sub->MouseCapture ){  sub->MouseCapture = false; sub = MouseSub; }
+//                                                        Lock                = false;
+//                                                    }
+
         case WM_PAINT:
         {
             int x = 0;
@@ -60,10 +82,25 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             auto p = sys::window::image.data.data();
             SetDIBitsToDevice(hdc, x,y,w,h, 0,0,0,h, p, (BITMAPINFO*)&bi, DIB_RGB_COLORS);
             EndPaint(hwnd, &ps);
-            return 0;
+            break;
         }
+        case WM_SIZE:
+        {
+            if(wparam == SIZE_MINIMIZED) break;
+            sys::window::image.resize(XY(LOWORD(lparam), HIWORD(lparam)));
+            sys::window::on::resize();
+            RedrawWindow (hwnd, NULL, NULL, RDW_INVALIDATE);
+            UpdateWindow (hwnd);
+            break;
+        }
+        case WM_DESTROY: PostQuitMessage(0); return 0;
+
+        default: return DefWindowProc(hwnd, msg, wparam, lparam);
     }
-    return DefWindowProc(hwnd, msg, wparam, lparam);
+
+    sys::window::update();
+
+    return 0;
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR pCmdLine, int nCmdShow)

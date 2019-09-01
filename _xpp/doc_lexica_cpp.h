@@ -3,11 +3,6 @@
 
 deque<Token> lexica (array<Source> & sources, string file)
 {
-    auto ascii = [] (char c) { return c >= ' ' && c <= '~'; };
-    auto space = [] (char c) { return c == ' ' || c =='\t'; };
-    auto digit = [] (char c) { return c >= '0' && c <= '9'; };
-    auto alpha = [] (char c) { return c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z'; };
-
     deque<Token> output; Source & source = sources.back (); source.lines += ""; Token t;
 
     bool UTF_8_BOM = false; if (file.headed("\xEF" "\xBB" "\xBF")) { UTF_8_BOM = true; file.erase (0,3); }

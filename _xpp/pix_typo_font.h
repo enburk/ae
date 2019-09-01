@@ -10,6 +10,9 @@ struct FONT
     bool strike;
     bool underline;
 
+    FONT(str face = "", int size = 0, bool b=false, bool i=false, bool s=false, bool u=false)
+        : face(face), size(size), bold(b), italic(i), strike(s), underline(u) {}
+
     friend bool operator == ( const FONT & f1, const FONT & f2 ) { return ! ( f1 != f2 ); }
     friend bool operator != ( const FONT & f1, const FONT & f2 ) {
         if (f1.face      != f2.face     ) return true;
@@ -35,6 +38,7 @@ struct FONT
         int  linegap;  // external leading; baseline-to-baseline distance should be computed as: ascent + descent + linegap
         int  avecharw; // average char width (usually width of 'x')
         int  maxcharw; // maximum char width
+        int  overhang; // only necessary for non-TrueType raster fonts
         bool monospace;
     };
 };
@@ -45,10 +49,13 @@ template<typename color> struct GLYPH
     FONT font;
     color fore, back;
     FRAME<color> frame;
-    real xbearing = 0; // the horizontal distance from the current pen position to the glyph's left image edge
-    real ybearing = 0; // the vertical distance from the baseline to the top of the glyph's image
-    real advance  = 0; // the horizontal distance the pen position must be incremented 
+    XY bearing;
+    int bearing_x = 0; // the horizontal distance from the current pen position to the glyph's left image edge
+    int bearing_y = 0; // the vertical distance from the baseline to the top of the glyph's image
+    int advance   = 0; // the horizontal distance the pen position must be incremented 
+    XY coord;
 };
 
 MAKE_HASHABLE(FONT, t.face, t.size, t.bold, t.italic, t.strike, t.underline);
 MAKE_HASHABLE(GLYPH<XRGB>, t.text, t.font, t.fore, t.back);
+

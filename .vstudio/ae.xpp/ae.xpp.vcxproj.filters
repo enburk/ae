@@ -9,11 +9,23 @@
     <ClInclude Include="..\..\_xpp\ide_edit_doc.h" />
     <ClInclude Include="..\..\_xpp\ide_flist.h" />
     <ClInclude Include="..\..\_xpp\pix.h" />
-    <ClInclude Include="..\..\_xpp\xpp_lexica.h" />
-    <ClInclude Include="..\..\_xpp\xpp_lexica_cpp.h" />
     <ClInclude Include="..\..\_xpp\pix_coord.h" />
     <ClInclude Include="..\..\_xpp\pix_image.h" />
     <ClInclude Include="..\..\_xpp\pix_typo_font.h" />
+    <ClInclude Include="..\..\_xpp\pix_color.h" />
+    <ClInclude Include="..\..\_xpp\doc.h" />
+    <ClInclude Include="..\..\_xpp\doc_lexica.h" />
+    <ClInclude Include="..\..\_xpp\doc_lexica_cpp.h" />
+    <ClInclude Include="..\..\_xpp\doc_lexica_txt.h" />
+    <ClInclude Include="..\..\_xpp\doc_lexica_xml.h" />
+    <ClInclude Include="..\..\_xpp\doc_lexica_xpp.h" />
+    <ClInclude Include="..\..\_xpp\ide_console.h" />
+    <ClInclude Include="..\..\_xpp\ide_edit_line.h" />
+    <ClInclude Include="..\..\_xpp\test.h" />
+    <ClInclude Include="..\..\_xpp\test_fonts.h" />
+    <ClInclude Include="..\..\_xpp\test_pix.h" />
+    <ClInclude Include="..\..\_xpp\gui_widget.h" />
+    <ClInclude Include="..\..\_xpp\gui_window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\_xpp\sys_windows.cpp" />
