@@ -1,5 +1,6 @@
 #include "sys.h"
 #include "sys_windows.h"
+using namespace pix;
 
 #pragma comment(linker,"\"/manifestdependency:type='win32'  \
 name='Microsoft.Windows.Common-Controls' version='6.0.0.0'  \
@@ -21,39 +22,30 @@ void sys::window::update()
     sys::window::image.update.clear();
     UpdateWindow (Hwnd);
 }
+void sys::window::timing()
+{
+    ::PostMessage(Hwnd, WM_COMMAND, 11111, 0);
+}
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-    int LL = (short) LOWORD (lparam);
-    int HL = (short) HIWORD (lparam);
-    int LW = (short) LOWORD (wparam);
-    int HW = (short) HIWORD (wparam);
+    int LW = (short) LOWORD (wparam); int LL = (short) LOWORD (lparam); int LX = GET_X_LPARAM (lparam);
+    int HW = (short) HIWORD (wparam); int HL = (short) HIWORD (lparam); int LY = GET_Y_LPARAM (lparam);
 
     switch (msg)
     {
+        case WM_COMMAND         : if (wparam == 11111) sys::window::on::timing(); break;
 
-    case WM_MOUSEMOVE       : sys::mouse::on::move  (XY(LL,HL)); break; // if( ! MouseSub ) ::SetCursor ( MouseImage ); break;
-//    case WM_MOUSELEAVE      :    MouseHover    = false; break;
-//    case WM_MOUSEWHEEL      :    MouseWheel   ( XY(LL,HL), LW, HW    ); break;
-
-    case WM_LBUTTONDOWN     : sys::mouse::on::press (XY(LL,HL), 'L', true ); break;
-    case WM_LBUTTONDBLCLK   : sys::mouse::on::press (XY(LL,HL), 'L', true ); sys::mouse::on::clickclick (XY(LL,HL), 'L'); break;
-    case WM_LBUTTONUP       : sys::mouse::on::press (XY(LL,HL), 'L', false); break;
-    case WM_MBUTTONDOWN     : sys::mouse::on::press (XY(LL,HL), 'M', true ); break;
-    case WM_MBUTTONDBLCLK   : sys::mouse::on::press (XY(LL,HL), 'M', true ); sys::mouse::on::clickclick (XY(LL,HL), 'M'); break;
-    case WM_MBUTTONUP       : sys::mouse::on::press (XY(LL,HL), 'M', false); break;
-    case WM_RBUTTONDOWN     : sys::mouse::on::press (XY(LL,HL), 'R', true ); break;
-    case WM_RBUTTONDBLCLK   : sys::mouse::on::press (XY(LL,HL), 'R', true ); sys::mouse::on::clickclick (XY(LL,HL), 'R'); break;
-    case WM_RBUTTONUP       : sys::mouse::on::press (XY(LL,HL), 'R', false); break;
-    case WM_XBUTTONDOWN     : sys::mouse::on::press (XY(LL,HL), 'X', true ); break;
-    case WM_XBUTTONUP       : sys::mouse::on::press (XY(LL,HL), 'X', false); break;
-
-//    case WM_CAPTURECHANGED  :
-//                                                    {
-//                                                        Lock                = true;
-//                                                        MouseCapture    = false;        CLsLayer* sub = MouseSub; while ( sub && sub->MouseCapture ){  sub->MouseCapture = false; sub = MouseSub; }
-//                                                        Lock                = false;
-//                                                    }
+        case WM_MOUSEMOVE       : sys::mouse::on::move  (XY(LX,LY)); break; // if( ! MouseSub ) ::SetCursor ( MouseImage ); break;
+        case WM_MOUSEWHEEL      : sys::mouse::on::wheel (XY(LX,LY), HW); break;
+        case WM_LBUTTONDOWN     : sys::mouse::on::press (XY(LX,LY), 'L', true ); SetCapture(Hwnd); break;
+        case WM_LBUTTONUP       : sys::mouse::on::press (XY(LX,LY), 'L', false); ReleaseCapture(); break;
+        case WM_MBUTTONDOWN     : sys::mouse::on::press (XY(LX,LY), 'M', true ); break;
+        case WM_MBUTTONUP       : sys::mouse::on::press (XY(LX,LY), 'M', false); break;
+        case WM_RBUTTONDOWN     : sys::mouse::on::press (XY(LX,LY), 'R', true ); break;
+        case WM_RBUTTONUP       : sys::mouse::on::press (XY(LX,LY), 'R', false); break;
+        case WM_CAPTURECHANGED  : sys::mouse::on::leave (); break;
+        case WM_MOUSELEAVE      : sys::mouse::on::leave (); break;
 
         case WM_PAINT:
         {
@@ -78,7 +70,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             y = ps.rcPaint.top;
             w = ps.rcPaint.right - x;
             h = ps.rcPaint.bottom - y;
-            sys::window::on::redraw(XYWH(x, y, w, h));
             auto p = sys::window::image.data.data();
             SetDIBitsToDevice(hdc, x,y,w,h, 0,0,0,h, p, (BITMAPINFO*)&bi, DIB_RGB_COLORS);
             EndPaint(hwnd, &ps);
@@ -86,14 +77,17 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         }
         case WM_SIZE:
         {
-            if(wparam == SIZE_MINIMIZED) break;
+            static bool minimized = false;
+            if(wparam == SIZE_MINIMIZED) { if (!minimized) sys::window::on::pause (); minimized = true; break; }
+            if(wparam != SIZE_MINIMIZED) { if (!minimized) sys::window::on::resume(); minimized = false; }
             sys::window::image.resize(XY(LOWORD(lparam), HIWORD(lparam)));
             sys::window::on::resize();
             RedrawWindow (hwnd, NULL, NULL, RDW_INVALIDATE);
             UpdateWindow (hwnd);
             break;
         }
-        case WM_DESTROY: PostQuitMessage(0); return 0;
+        case WM_CREATE : sys::window::on::start (); return 0;
+        case WM_DESTROY: sys::window::on::finish(); PostQuitMessage(0); return 0;
 
         default: return DefWindowProc(hwnd, msg, wparam, lparam);
     }

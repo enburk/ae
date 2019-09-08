@@ -135,7 +135,14 @@
     <ClInclude Include="..\..\_xpp\doc_lexica_txt.h" />
     <ClInclude Include="..\..\_xpp\doc_lexica_xml.h" />
     <ClInclude Include="..\..\_xpp\doc_lexica_xpp.h" />
+    <ClInclude Include="..\..\_xpp\gui_effect.h" />
     <ClInclude Include="..\..\_xpp\gui_widget.h" />
+    <ClInclude Include="..\..\_xpp\gui_widget_button.h" />
+    <ClInclude Include="..\..\_xpp\gui_widget_frame.h" />
+    <ClInclude Include="..\..\_xpp\gui_widget_image.h" />
+    <ClInclude Include="..\..\_xpp\gui_widget_splitter.h" />
+    <ClInclude Include="..\..\_xpp\gui_widget_text.h" />
+    <ClInclude Include="..\..\_xpp\gui_widget_text_line.h" />
     <ClInclude Include="..\..\_xpp\gui_window.h" />
     <ClInclude Include="..\..\_xpp\ide_console.h" />
     <ClInclude Include="..\..\_xpp\ide_edit.h" />

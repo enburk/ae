@@ -24,9 +24,8 @@ namespace lexica
 
                 t.begin = n;
                 t.text  = c;
-                t.kind  =
-                    c == '\n' ? "end of line" :
-                    space (c) ? "space" : "text";
+                t.kind  = c == '\n' ? "end of line" : space (c) ? "space" : "text";
+            }
         }
 
         return output;

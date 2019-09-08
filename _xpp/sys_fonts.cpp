@@ -1,6 +1,7 @@
 #include "sys.h"
 #include "sys_windows.h"
 #include <tchar.h>
+using namespace pix;
 
 struct GDI_FONT
 {
@@ -79,9 +80,9 @@ FONT::METRICS sys::font::metrics (FONT font)
     return cache(font).metrics;
 }
 
-GLYPH<XRGB> sys::font::glyph (FONT font, str text)
+GLYPH<RGBA> sys::font::glyph (FONT font, str text)
 {
-    GLYPH<XRGB> glyph;
+    GLYPH<RGBA> glyph;
     glyph.font = font;
     glyph.text = text; if (glyph.text == "") return glyph;
 
@@ -103,7 +104,7 @@ GLYPH<XRGB> sys::font::glyph (FONT font, str text)
     return glyph;
 }
 
-void sys::font::render (GLYPH<XRGB> & glyph, bool blend)
+void sys::font::render (GLYPH<RGBA> & glyph, bool blend)
 {
     if (!(glyph.text.contains(str::one_not_of(" \t\r\n")))) return;
     if (!(glyph.frame.image != nullptr)) throw std::logic_error("sys::font::render : nullptr image");
@@ -136,11 +137,11 @@ void sys::font::render (GLYPH<XRGB> & glyph, bool blend)
     ::SetTextColor (context.dc, RGB(glyph.fore.r, glyph.fore.g, glyph.fore.b));
 
     if (blend)
-    glyph.frame.copy_to((XRGB*)bits, w);
+    glyph.frame.copy_to((RGBA*)bits, w);
 
     ::TextOutW (context.dc, (int)std::lround(-glyph.bearing_x), 0, ss.c_str(), (int)len);
 
-    glyph.frame.copy_from((XRGB*)bits, w);
+    glyph.frame.copy_from((RGBA*)bits, w);
 
     ::SelectObject (context.dc, old);
     ::DeleteObject (bmp);
@@ -148,6 +149,6 @@ void sys::font::render (GLYPH<XRGB> & glyph, bool blend)
     if (!blend)
     for (int y=0; y<glyph.frame.size.y; y++)
     for (int x=0; x<glyph.frame.size.x; x++)
-        if (glyph.frame(x,y).xrgb != RGB(glyph.back.r, glyph.back.g, glyph.back.b))
-            glyph.frame(x,y).x = 255;
+        if (glyph.frame(x,y).value != RGB(glyph.back.r, glyph.back.g, glyph.back.b))
+            glyph.frame(x,y).a = 255;
 }

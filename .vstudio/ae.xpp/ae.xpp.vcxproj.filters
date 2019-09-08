@@ -26,6 +26,13 @@
     <ClInclude Include="..\..\_xpp\test_pix.h" />
     <ClInclude Include="..\..\_xpp\gui_widget.h" />
     <ClInclude Include="..\..\_xpp\gui_window.h" />
+    <ClInclude Include="..\..\_xpp\gui_effect.h" />
+    <ClInclude Include="..\..\_xpp\gui_widget_button.h" />
+    <ClInclude Include="..\..\_xpp\gui_widget_text.h" />
+    <ClInclude Include="..\..\_xpp\gui_widget_text_line.h" />
+    <ClInclude Include="..\..\_xpp\gui_widget_frame.h" />
+    <ClInclude Include="..\..\_xpp\gui_widget_image.h" />
+    <ClInclude Include="..\..\_xpp\gui_widget_splitter.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\_xpp\sys_windows.cpp" />

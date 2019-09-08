@@ -1,5 +1,6 @@
 #pragma once
 #include <windows.h>
+#include <windowsx.h>
 #include <strsafe.h>
 #include <system_error>
 #include <memory>

@@ -44,6 +44,10 @@
     </ClCompile>
     <ClCompile Include="test_aux_array.cpp" />
     <ClCompile Include="test_aux_string.cpp" />
+    <ClCompile Include="test_gui_effect.cpp" />
+    <ClCompile Include="test_pix_color.cpp" />
+    <ClCompile Include="test_pix_coord.cpp" />
+    <ClCompile Include="test_pix_image.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ae.xpp\ae.xpp.vcxproj">
