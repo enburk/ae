@@ -32,24 +32,24 @@ namespace gui
                 parent->update (r + coord.now.origin());
         }
 
-        XY render_origin;
-        //XYXY render_update;
-        FRAME<RGBA> render_frame;
-        void render (FRAME<RGBA> frame, XY origin) {
-            if (alpha.now == 0) return;
-            //XYXY rect; for (auto r : updates) rect |= r; updates.clear();
-            if (color.now.a != 0) frame.blend(color.now, alpha.now);
-            render_frame = frame;//.frame(coord.now);
-            render_origin = origin;// + coord.now.origin();
-            //render_update = rect;
-            on_render(); for (auto w : children)
-            w->render(frame.frame(w->coord.now), origin + w->coord.now.origin());
+        FRAME<RGBA> render_screen_frame; XY render_local_origin; void render ()
+        {
+            if (alpha.now   == 0) return;
+            if (color.now.a != 0) render_screen_frame.blend(color.now, alpha.now);
+            on_render();
+
+            for (auto w : children) {
+                w->render_screen_frame = render_screen_frame.frame(w->coord.now);
+                w->render_local_origin = render_local_origin - w->coord.now.origin();
+                w->render_local_origin += w->render_screen_frame.origin - render_screen_frame.origin;
+                w->render();
+            }
         }
         virtual void on_render () {}
 
-        void fill (XYXY r, RGBA c)
+        void fill (XYXY local_rect, RGBA c)
         {
-            render_frame.frame(r - render_origin).blend (c, alpha.now);
+            render_screen_frame.frame(local_rect + render_local_origin).blend (c, alpha.now);
         }
 
         void tick ()

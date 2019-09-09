@@ -13,9 +13,9 @@ struct IDE : gui::widget
     IDE() : gui::widget(nullptr)
     {
         gui::window = this;
-        color.go(pix::blue);//gray);
-        editor.color.go(pix::red);
-        editor.widget::color.go(pix::green);
+        color.go(pix::gray);
+        editor.color.go(pix::black);
+        editor.widget::color.go(pix::white);
     }
 
     void on_tick () override

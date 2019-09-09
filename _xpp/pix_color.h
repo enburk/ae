@@ -8,8 +8,7 @@ namespace pix
         union
         {
             struct {
-        //  uint8_t b, g, r, a; };
-            uint8_t a, r, g, b; };
+            uint8_t b, g, r, a; };
             uint8_t channels [4];
             uint32_t value; // byte-order-dependent
         };

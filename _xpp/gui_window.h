@@ -31,7 +31,10 @@ void sys::window::on::timing() {
     gui::time::set();
     gui::window->tick();
     XYXY rect; for (auto r : gui::window->updates) rect |= r; gui::window->updates.clear();
-    gui::window->render(sys::window::image.frame(rect), rect.origin());//XY(0,0));
+    if (rect.size().x <= 0 || rect.size().y <= 0) return;
+    gui::window->render_screen_frame = sys::window::image.frame(rect);
+    gui::window->render_local_origin = rect.origin();
+    gui::window->render();
 }
 
 namespace gui

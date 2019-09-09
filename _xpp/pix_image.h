@@ -32,7 +32,7 @@ namespace pix
         void fill (const type & c) { for (auto & v : data) v = c; update.clear(); update += XYXY(*this); }
 
         FRAME<type> frame (      ) { return FRAME<type>(this); }
-        FRAME<type> frame (XY p  ) { return FRAME<type>(this, p); }
+        FRAME<type> from  (XY p  ) { return FRAME<type>(this, p); }
         FRAME<type> frame (XYWH r) { return FRAME<type>(this, r); }
 
         void copy_to   (FRAME<type> f) { frame().copy_to  (f); }
@@ -64,15 +64,18 @@ namespace pix
         explicit operator XYWH () const { return XYWH (origin.x, origin.y, size.x, size.y); }
         explicit operator XYXY () const { return XYXY (origin.x, origin.y, size.x, size.y); }
 
-        FRAME frame (XY p) const {
-            int x = min(size.x, max(origin.x+p.x, 0)); int w = max(size.x-x, 0);
-            int y = min(size.y, max(origin.y+p.y, 0)); int h = max(size.y-y, 0);
-            FRAME f; f.image = image; f.origin = XY(x,y); f.size = XY(w,h); return f;
+        FRAME from (XY p) const {
+            return frame (p.x, p.y, 
+                std::numeric_limits<int>::max(),
+                std::numeric_limits<int>::max());
         }
         FRAME frame (XYWH r) const {
-            int x = min(size.x, max(origin.x+r.x, 0)); int w = min(size.x-x, max(r.w, 0));
-            int y = min(size.y, max(origin.y+r.y, 0)); int h = min(size.y-y, max(r.h, 0));
-            FRAME f; f.image = image; f.origin = XY(x,y); f.size = XY(w,h); return f;
+            r = XYWH(*this) & (r + origin);
+            FRAME f;
+            f.image  = image;
+            f.origin = XY(r.x, r.y);
+            f.size   = XY(r.w, r.h);
+            return f;
         }
 
         void  fill (const type & c) {
