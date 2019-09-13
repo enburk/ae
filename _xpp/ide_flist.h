@@ -1,19 +1,26 @@
 #pragma once
-#include "pix.h"
+#include "gui_widget_frame.h"
+using namespace pix;
 
-struct Flist
+struct Flist : gui::widget
 {
-    str filename;
+    gui::frame frame1 = gui::frame(this);
+    gui::frame frame2 = gui::frame(this);
 
-    FRAME<XRGB> frame;
-
-    void on_resize()
+    Flist(gui::widget* parent) : gui::widget(parent)
     {
+        frame1. color.go(pix::gray);
+        frame2. color.go(pix::black);
+        widget::color.go(pix::silver);
     }
-    void on_mouse_clickclick(XY p, char button) {
-    }
-    void on_mouse_press(XY p, char button, bool down) {
-    }
-    void on_mouse_move(XY p) {
+
+    void on_tick () override
+    {
+        if (coord.was.size() != coord.now.size())
+        {
+            auto r = coord.now - coord.now.origin();
+            frame1.move_to(r); r.deflate(frame1.thickness.now);
+            frame2.move_to(r); r.deflate(frame2.thickness.now);
+        }
     }
 }; 

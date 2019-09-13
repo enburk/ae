@@ -86,7 +86,7 @@ namespace gui
             was = now; notch += time::pause;
             if (now != to)
                 now = transition_state (from, to,
-                    std::max(time::now - notch, lapse).ms,
+                    std::min(time::now - notch, lapse).ms,
                     lapse.ms);
         }
     };

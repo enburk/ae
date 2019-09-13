@@ -32,24 +32,26 @@ namespace gui
                 parent->update (r + coord.now.origin());
         }
 
-        FRAME<RGBA> render_screen_frame; XY render_local_origin; void render ()
+        FRAME<RGBA> render_window_frame; XY render_local_origin; void render ()
         {
             if (alpha.now   == 0) return;
-            if (color.now.a != 0) render_screen_frame.blend(color.now, alpha.now);
+            if (color.now.a != 0) render_window_frame.blend(color.now, alpha.now);
             on_render();
 
-            for (auto w : children) {
-                w->render_screen_frame = render_screen_frame.frame(w->coord.now);
-                w->render_local_origin = render_local_origin - w->coord.now.origin();
-                w->render_local_origin += w->render_screen_frame.origin - render_screen_frame.origin;
-                w->render();
+            XY global_origin = render_window_frame.origin + render_local_origin;
+
+            for (auto child : children) {
+                XYWH child_global = child->coord.now + global_origin;
+                child->render_window_frame = render_window_frame.frame(child_global - render_window_frame.origin);
+                child->render_local_origin = child->render_window_frame.origin - child_global.origin();
+                child->render();
             }
         }
         virtual void on_render () {}
 
         void fill (XYXY local_rect, RGBA c)
         {
-            render_screen_frame.frame(local_rect + render_local_origin).blend (c, alpha.now);
+            render_window_frame.frame(local_rect - render_local_origin).blend (c, alpha.now);
         }
 
         void tick ()
@@ -136,5 +138,8 @@ namespace gui
         virtual void mouse_leave ()
         {
         }
+
+        void notify () { if (parent) parent->on_notify(this); }
+        virtual void on_notify (widget*) {}
     };
 }
