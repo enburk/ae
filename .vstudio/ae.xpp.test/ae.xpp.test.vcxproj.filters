@@ -10,6 +10,7 @@
     <ClCompile Include="test_pix_color.cpp" />
     <ClCompile Include="test_pix_coord.cpp" />
     <ClCompile Include="test_pix_image.cpp" />
+    <ClCompile Include="test_gui_widget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="common">

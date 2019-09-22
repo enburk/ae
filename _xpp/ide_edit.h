@@ -1,24 +1,24 @@
 #pragma once
 #include "doc.h"
 #include "doc_lexica_txt.h"
-#include "gui_widget_frame.h"
+#include "gui_widget_canvas.h"
 using namespace pix;
 
-struct Editor : gui::widget
+struct Editor : gui::widget<Editor>
 {
     str filename;
 
-    gui::frame frame1 = gui::frame(this);
-    gui::frame frame2 = gui::frame(this);
+    gui::frame frame1;
+    gui::frame frame2;
 
-    Editor(gui::widget* parent) : gui::widget(parent)
+    Editor()
     {
-        frame1. color.go(pix::gray);
-        frame2. color.go(pix::black);
-        widget::color.go(pix::white);
+        frame1. color = pix::gray;
+        frame2. color = pix::black;
+        widget::color = pix::white;
     }
 
-    void on_tick () override
+    void on_change () override
     {
         if (coord.was.size() != coord.now.size())
         {

@@ -1,13 +1,10 @@
 #pragma once
-#include <cmath>
-#include <algorithm>
 #include "aux_array.h"
+#include "pix_math.h"
 namespace pix
 {
     using real = double;
     using std::abs;
-    using std::min;
-    using std::max;
     struct XYWH;
     struct XYXY;
     struct XY
@@ -39,9 +36,6 @@ namespace pix
 
         explicit operator bool () { return r > l && b > t; }
 
-        void operator += (XYXY q) { l += q.l; t += q.t; r += q.r; b += q.b; }; friend XYXY operator + (XYXY a, XYXY q) { a += q; return a; }
-        void operator -= (XYXY q) { l -= q.l; t -= q.t; r -= q.r; b -= q.b; }; friend XYXY operator - (XYXY a, XYXY q) { a -= q; return a; }
-
         friend XYXY operator & (XYXY a, XYXY q) {
             if (!a || !q) return XYXY();
             a.l = max(a.l, q.l); a.t = max(a.t, q.t);
@@ -72,8 +66,9 @@ namespace pix
         void inflate (int n) { l -= n; t -= n; r += n; b += n; }
         void deflate (int n) { l += n; t += n; r -= n; b -= n; }
 
-        XY origin () const { return XY (l,t); }
-        XY size   () const { return XY (r-l,b-t); }
+        XY   origin () const { return XY (l,t); }
+        XY   size   () const { return XY (r-l,b-t); }
+        XYXY local  () const { return *this - origin(); }
     };
     struct XYWH
     {
@@ -84,9 +79,6 @@ namespace pix
         XYWH (XYXY);
 
         explicit operator bool () { return w > 0 && h > 0; }
-
-        void operator += (XYWH r) { x += r.x; y += r.y; w += r.w; h += r.h; }; friend XYWH operator + (XYWH a, XYWH b) { a += b; return a; }
-        void operator -= (XYWH r) { x -= r.x; y -= r.y; w -= r.w; h -= r.h; }; friend XYWH operator - (XYWH a, XYWH b) { a -= b; return a; }
 
         void operator &= (XYWH r) { *this = XYXY(*this) & XYXY(r); }; friend XYWH operator & (XYWH a, XYWH b) { a &= b; return a; }
         void operator |= (XYWH r) { *this = XYXY(*this) | XYXY(r); }; friend XYWH operator | (XYWH a, XYWH b) { a |= b; return a; }
@@ -106,8 +98,9 @@ namespace pix
         void inflate (int n) { x -= n; y -= n; w += n+n; h += n+n; }
         void deflate (int n) { x += n; y += n; w -= n+n; h -= n+n; }
 
-        XY origin () const { return XY (x,y); }
-        XY size   () const { return XY (w,h); }
+        XY   origin () const { return XY (x,y); }
+        XY   size   () const { return XY (w,h); }
+        XYWH local  () const { return *this - origin(); }
     };
 
     inline XYXY::XYXY(XYWH q) : l (q.x), t (q.y), r (q.x+q.w), b (q.y+q.h) {}

@@ -136,9 +136,10 @@
     <ClInclude Include="..\..\_xpp\doc_lexica_xml.h" />
     <ClInclude Include="..\..\_xpp\doc_lexica_xpp.h" />
     <ClInclude Include="..\..\_xpp\gui_effect.h" />
+    <ClInclude Include="..\..\_xpp\gui_layer.h" />
     <ClInclude Include="..\..\_xpp\gui_widget.h" />
     <ClInclude Include="..\..\_xpp\gui_widget_button.h" />
-    <ClInclude Include="..\..\_xpp\gui_widget_frame.h" />
+    <ClInclude Include="..\..\_xpp\gui_widget_canvas.h" />
     <ClInclude Include="..\..\_xpp\gui_widget_image.h" />
     <ClInclude Include="..\..\_xpp\gui_widget_splitter.h" />
     <ClInclude Include="..\..\_xpp\gui_widget_text.h" />
@@ -153,6 +154,7 @@
     <ClInclude Include="..\..\_xpp\pix_color.h" />
     <ClInclude Include="..\..\_xpp\pix_coord.h" />
     <ClInclude Include="..\..\_xpp\pix_image.h" />
+    <ClInclude Include="..\..\_xpp\pix_math.h" />
     <ClInclude Include="..\..\_xpp\pix_typo_font.h" />
     <ClInclude Include="..\..\_xpp\sys.h" />
     <ClInclude Include="..\..\_xpp\sys_windows.h" />

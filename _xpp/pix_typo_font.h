@@ -51,6 +51,7 @@ namespace pix
         color fore, back;
         FRAME<color> frame;
         XY bearing;
+        
         int bearing_x = 0; // the horizontal distance from the current pen position to the glyph's left image edge
         int bearing_y = 0; // the vertical distance from the baseline to the top of the glyph's image
         int advance   = 0; // the horizontal distance the pen position must be incremented 

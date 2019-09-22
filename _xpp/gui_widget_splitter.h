@@ -2,7 +2,7 @@
 #include "gui_widget.h"
 namespace gui
 {
-    struct splitter : widget
+    struct splitter : widget<splitter>
     {
     };
 }

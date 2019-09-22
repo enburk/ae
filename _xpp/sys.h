@@ -2,6 +2,12 @@
 #include "pix.h"
 namespace sys
 {
+    namespace screen
+    {
+        using namespace pix;
+        inline XY size;
+    }
+
     namespace window
     {
         using namespace pix;

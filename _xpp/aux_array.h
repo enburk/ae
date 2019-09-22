@@ -78,6 +78,11 @@ template<class type> struct array : std::vector<type>
     auto find         (const type & e) const { return std::find (begin(), end(), e); }
     bool found        (const type & e) const { return std::find (begin(), end(), e) != end(); }
     bool binary_found (const type & e) const { return std::binary_search (begin(), end(), e); }
+
+    template<class P> void erase_if (P predicate) { base::erase (std::remove_if(begin(), end(), predicate), end()); }
+    
+    void try_emplace  (const type & e) { auto it = find(e); if (it == end()) base::push_back (e); }
+    void try_erase    (const type & e) { auto it = find(e); if (it != end()) base::erase(it); }
 };
 
 
@@ -108,13 +113,13 @@ inline void hash_combine(std::size_t& seed, const T& v, Rest... rest) {
         };\
     }
 
-template<class T, class U> T clamp
-(
-    U value,
-    T min = std::numeric_limits<T>::min(),
-    T max = std::numeric_limits<T>::max())
+struct polymorphic
 {
-    return
-        value <= U(min) ? min :
-        value >= U(max) ? max : std::clamp(T(value), min, max);
-}
+    virtual
+   ~polymorphic              (                      ) = default;
+    polymorphic              (                      ) = default;
+    polymorphic              (const polymorphic  & e) = default;
+    polymorphic              (      polymorphic && e) = default;
+    polymorphic & operator = (const polymorphic  & e) = default;
+    polymorphic & operator = (      polymorphic && e) = default;
+};

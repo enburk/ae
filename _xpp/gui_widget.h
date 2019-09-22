@@ -1,22 +1,17 @@
 #pragma once
 #include "pix.h"
-#include "gui_effect.h"
-namespace gui
+#include "gui_layer.h"
+namespace gui::base
 {
-    struct widget
+    struct widget : polymorphic, layer
     {
-        property<XYWH>     coord;
-        property<RGBA>     color;
-        property<uint8_t>  alpha;
-        array<XYXY>      updates;
         array<widget*>  children;
         widget* parent = nullptr;
-        widget* owner  = nullptr;
         widget* mouse_press_child = nullptr;
         widget* mouse_hover_child = nullptr;
 
         widget (widget* parent) :
-            parent(parent), owner(parent) {
+            parent(parent) {
             if (parent) parent->children += this;
             show();
         }
@@ -26,16 +21,23 @@ namespace gui
                parent->children.find(this));
         }
 
-        void update () { update (coord.now - coord.now.origin()); }
-        void update (XYWH r) { updates += r; // will be optimized
-            if (parent) if (alpha.now != 255 || color.now.a != 255)
-                parent->update (r + coord.now.origin());
-        }
+        void update (      ) { update (coord.now.local()); }
+        void update (XYWH r) { updates += r; if (parent) parent->update (r + coord.now.origin()); }
+
+        // void update () { update (coord.now - coord.now.origin()); }
+        // void update (XYWH r) { updates += r; // will be optimized
+        //     if (parent) if (alpha.now != 255 || color.now.a != 255)
+        //         parent->update (r + coord.now.origin());
+        // }
+
 
         FRAME<RGBA> render_window_frame; XY render_local_origin; void render ()
         {
             if (alpha.now   == 0) return;
             if (color.now.a != 0) render_window_frame.blend(color.now, alpha.now);
+
+            //layer::render()
+
             on_render();
 
             XY global_origin = render_window_frame.origin + render_local_origin;
@@ -51,14 +53,14 @@ namespace gui
 
         void fill (XYXY local_rect, RGBA c)
         {
+            if (alpha.now == 0 || c.a == 0) return;
             render_window_frame.frame(local_rect - render_local_origin).blend (c, alpha.now);
         }
 
-        void tick ()
+        void change ()
         {
-            coord.tick(); alpha.tick(); color.tick();
-
-            if (coord.was != coord.now) {
+            if (coord.was != coord.now)
+            {
                 if (alpha.was != 0 && color.was.a != 0 && parent) parent->update (coord.was);
                 if (alpha.now != 0 && color.now.a != 0) update ();
             }
@@ -66,26 +68,34 @@ namespace gui
             if (color.was != color.now
             ||  alpha.was != alpha.now) update ();
 
-            on_tick(); for (auto w : children)
-            w->tick();
+            on_change(); for (auto w : children)
+            w->change();
         }
-        virtual void on_tick () {}
+        virtual void on_change () {}
 
-        virtual void hide (bool off = true) { alpha.go(off? 0 : 255); }
-        virtual void show (bool on  = true) { alpha.go(on ? 255 : 0); }
+        virtual void hide (bool off = true) { alpha = off? 0 : 255; }
+        virtual void show (bool on  = true) { alpha = on ? 255 : 0; }
 
-        virtual void move_to (XYWH  r) { coord.go(r); }
-        virtual void move_to (XY    p) { coord.go(XYWH(p.x, p.y, coord.to.w, coord.to.h)); }
-        virtual void resize  (XY size) { coord.go(XYWH(coord.to.x, coord.to.y, size.x, size.y)); }
+        virtual void move_to (XYWH  r) { coord = r; }
+        virtual void move_to (XY    p) { coord = XYWH(p.x, p.y, coord.to.w, coord.to.h); }
+        virtual void resize  (XY size) { coord = XYWH(coord.to.x, coord.to.y, size.x, size.y); }
 
+        virtual bool mouse_sensible (XY p) { return false; }
         virtual void on_mouse_press (XY, char button, bool down) {}
         virtual void on_mouse_wheel (XY, int) {}
         virtual void on_mouse_hover (XY) {}
         virtual void on_mouse_leave () {}
 
-        virtual bool mouse_sense (XY p) { return alpha.now > 0 && color.now.a > 0 && coord.now.includes(p); }
+        bool mouse_sense (XY p)
+        {
+            if (alpha.now == 0 || coord.now.local().excludes(p)) return false;
+            for (auto w : children)
+                if (w->mouse_sense (p - w->coord.now.origin()))
+                    return true;
+            return mouse_sensible(p);
+        }
 
-        virtual void mouse_press (XY p, char button, bool down)
+        void mouse_press (XY p, char button, bool down)
         {
             if (down) {
                 mouse_press_child = nullptr;
@@ -108,7 +118,7 @@ namespace gui
             on_mouse_press(p, button, down);
         }
 
-        virtual void mouse_move (XY p)
+        void mouse_move (XY p)
         {
             if (mouse_press_child) {
                 mouse_press_child->mouse_move (p - 
@@ -120,7 +130,6 @@ namespace gui
                 if (w->mouse_sense (p - w->coord.now.origin())) {
                     w->mouse_move  (p - w->coord.now.origin());
                     hover = w;
-                    return;
                 }
             }
             if (mouse_hover_child &&
@@ -132,14 +141,48 @@ namespace gui
             if (!hover) on_mouse_hover(p);
         }
 
-        virtual void mouse_wheel (XY p, int delta)
+        void mouse_wheel (XY p, int delta)
         {
         }
-        virtual void mouse_leave ()
+        void mouse_leave ()
         {
         }
 
         void notify () { if (parent) parent->on_notify(this); }
         virtual void on_notify (widget*) {}
+
+        size_t size;
+    };
+}
+namespace gui
+{
+    inline array<base::widget*> widgets;
+
+    base::widget* owner (void* ptr, array<base::widget*> & ww = widgets)
+    {
+        for (base::widget* w : ww) {
+            std::byte* that = (std::byte*) w;
+            std::byte* next = that + w->size;
+            if (that <= ptr && ptr < next) {
+                base::widget* parent = owner (ptr, w->children);
+                if (!parent) parent = w;
+                return parent;
+            }
+        }
+        return nullptr;
+    }
+
+    template<class T> struct widget : base::widget
+    {
+        widget (base::widget* p = nullptr) : base::widget(p)
+        {
+            size = sizeof(T);
+
+            if (p == nullptr) p = owner(this);
+
+            if (p) { parent = p; parent->children += this; }
+
+            else widgets += this;
+        }
     };
 }

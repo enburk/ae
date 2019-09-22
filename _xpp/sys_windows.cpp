@@ -110,6 +110,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR pCmdLine, int nCmdShow
 
     RECT r; ::SystemParametersInfo ( SPI_GETWORKAREA, 0, &r, 0 );
 
+    sys::screen::size.x = r.right - r.left;
+    sys::screen::size.y = r.bottom - r.top;
+
     HWND hwnd = Hwnd = CreateWindowEx(
         WS_EX_APPWINDOW ,   // Optional styles
         wc.lpszClassName,   // Window class
