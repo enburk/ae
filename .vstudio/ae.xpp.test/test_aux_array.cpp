@@ -1,7 +1,20 @@
 #include "pch.h"
 #include "../../_xpp/aux_array.h"
+#include "../../_xpp/aux_string.h"
 namespace test_aux
 {
+    TEST(TestAuxArray, Append)
+    {
+        array<str> a, b, c;
+        a += "1";             ASSERT_EQ(a.size(), 1) << "1";
+        b += a;               ASSERT_EQ(b.size(), 1) << "2"; ASSERT_EQ(a.size(), 1) << "2";
+        b += b;               ASSERT_EQ(b.size(), 2) << "3"; ASSERT_EQ(a.size(), 1) << "3";
+        b += std::move(a[0]); ASSERT_EQ(b.size(), 3) << "4"; ASSERT_EQ(a.size(), 1) << "4"; ASSERT_EQ(a[0], "");
+        b += str("b");        ASSERT_EQ(b.size(), 4) << "5"; ASSERT_EQ(a.size(), 1) << "5";
+        c += std::move(b);    ASSERT_EQ(c.size(), 4) << "6"; ASSERT_EQ(b.size(), 4) << "6"; ASSERT_EQ(b[0], ""); ASSERT_EQ(b[3], "");
+        c += a;               ASSERT_EQ(c.size(), 5) << "7"; ASSERT_EQ(a.size(), 1) << "7";
+    }
+
     TEST(TestAuxArray, Range)
     {
         array<int> a = {1, 2, 3};

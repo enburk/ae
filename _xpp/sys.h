@@ -11,7 +11,7 @@ namespace sys
     namespace window
     {
         using namespace pix;
-        inline IMAGE<RGBA> image;
+        inline Image<RGBA> image;
         void update ();
         void timing ();
         namespace on

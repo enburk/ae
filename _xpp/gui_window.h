@@ -6,6 +6,10 @@
 
 namespace gui { inline gui::base::widget * window = nullptr; }
 
+void sys::window::on::resize() {
+    gui::window->resize(sys::window::image.size);
+    sys::window::on::timing();
+}
 void sys::mouse::on::press(XY p, char button, bool down) {
     gui::window->mouse_press(p, button, down);
     sys::window::on::timing();
@@ -23,33 +27,13 @@ void sys::mouse::on::leave() {
     sys::window::on::timing();
 }
 
-void sys::window::on::resize() {
-    gui::window->resize(sys::window::image.size);
-    sys::window::on::timing();
-}
 void sys::window::on::timing()
 {
     gui::time::set();
-
-    auto active_properties =
-    gui::active_properties;
-    gui::active_properties.clear();
-    for (auto property : active_properties) property->tick();
-
-    array<gui::base::widget*> changed_widgets;
-    while (gui::changed_properties.size() > 0) {
-        for (auto property : gui::changed_properties)
-            if (auto widget = gui::owner(property);
-                widget) changed_widgets += widget;
-        gui::changed_properties.clear();
-        for (auto widget : changed_widgets) widget->change();
-    }
-
-    XYXY rect; for (auto r : gui::window->updates) rect |= r; gui::window->updates.clear();
-    if (rect.size().x <= 0 || rect.size().y <= 0) return;
-    gui::window->render_window_frame = sys::window::image.frame(rect);
-    gui::window->render_local_origin = rect.origin();
-    gui::window->render();
+    gui::active_properties.for_each( [](auto p){ p->tick(); } );
+    for (auto rect : gui::window->updates)
+    gui::window->render(sys::window::image.frame(rect), rect.origin);
+    gui::window->updates.clear();
 }
 
 namespace gui

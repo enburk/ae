@@ -3,11 +3,11 @@
 #include "doc_lexica.h"
 namespace lexica
 {
-//  template<class I,
-//  std::enable_if_t<std::is_same_v<typename
-//  std::iterator_traits<I>::value_type, char>>>
-//  array<Token> txt (range<I> text)
-    array<Token> txt (Range<char> text)
+/// template<class I,
+/// std::enable_if_t<std::is_same_v<typename
+/// std::iterator_traits<I>::value_type, char>>>
+/// inline array<Token> txt (range<I> text)
+    inline array<Token> txt (Range<char> text)
     {
         array<Token> output; Token t;
 

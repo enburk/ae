@@ -1,5 +1,6 @@
 #pragma once
 #include "gui_widget_canvas.h"
+#include "gui_widget_text.h"
 namespace gui
 {
     struct button : widget<button>
@@ -13,6 +14,7 @@ namespace gui
         canvas background;
         frame frame_focus;
         frame frame_mouse;
+        Text  text;
 
         button(base::widget* parent = nullptr) : widget(parent)
         {
@@ -53,12 +55,13 @@ namespace gui
             frame_focus.alpha = focused.to;
             frame_mouse.alpha = mouse_hover.to;
 
-            if (coord.was.size() != coord.now.size())
+            if (coord.was.size != coord.now.size)
             {
                 auto r = coord.now.local();
                 frame_focus.move_to(r); r.deflate(frame_focus.thickness.now);
                 frame_mouse.move_to(r); r.deflate(frame_mouse.thickness.now);
-                background .move_to(r);
+                background .move_to(r); r.deflate(frame_mouse.thickness.now);
+                text       .move_to(r);
             }
         }
     };

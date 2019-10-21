@@ -1,7 +1,9 @@
 #pragma once
+#include <set>
 #include <cmath>
 #include <chrono>
 #include <algorithm>
+#include "aux_utils.h"
 #include "pix.h"
 namespace gui
 {
@@ -72,15 +74,22 @@ namespace gui
     inline time time::pause;
     inline time default_transition_time = std::chrono::milliseconds(0);
 
-    struct property_t : polymorphic { virtual void tick () = 0; };
+    struct base_property : polymorphic { virtual void tick () = 0; };
+    inline registry<base_property*> active_properties;
 
-    inline array<property_t*> active_properties, changed_properties;
+    namespace base { struct widget; }
+    extern std::set<base::widget*> widgets;
+    extern void change (base::widget*, void*);
+    extern base::widget* inholder (void*);
 
-    template<class type> struct property : property_t
+    template<class type> struct property : base_property
     {
-        time transition_time = default_transition_time;
-        
-        time notch, lapse; type from, to, was, now;
+        type from, to, was, now;
+        time notch, lapse, transition_time = default_transition_time;
+        base::widget* widget = nullptr; std::optional<size_t> receipt;
+
+        property (type value = type()) : from(value), to(value), was(value), now(value) {}
+       ~property () { if (receipt) active_properties.erase(*receipt); }
 
         void operator = (type value) { go (value, time(0)); }
 
@@ -98,16 +107,13 @@ namespace gui
             if (now != to)
                 now = transition_state (from, to,
                     std::min(time::now - notch, lapse).ms, lapse.ms);
-            if (now == to) active_properties.try_erase(this);
-            if (now != to) active_properties.try_emplace(this);
-            if (now != was) changed_properties.try_emplace(this);
-        }
-
-        property (type value = type()) : from(value), to(value), was(value), now(value) {}
-
-       ~property() {
-           active_properties.try_erase(this);
-           changed_properties.try_erase(this);
+            if (now == to && receipt) { active_properties.erase(*receipt); receipt.reset(); }
+            if (now != to && !receipt) receipt = active_properties.append(this);
+            if (now != was) {
+                if (!widget) widget = inholder(this);
+                if (!widget) throw std::runtime_error("property: wrong inholder");
+                change(widget, this);
+            }
         }
     };
 }

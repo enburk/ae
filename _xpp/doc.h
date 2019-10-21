@@ -1,4 +1,5 @@
 #pragma once
+#include <queue>
 #include "aux_array.h"
 #include "aux_string.h"
 
@@ -23,10 +24,24 @@ struct Entity { str kind, name; array<Token> head, tail; array<Entity> body; };
 
 struct Document
 {
+    str type;
+
     Array<char>   text;
     Array<int>    lines;
     Array<Token>  lexica;
-    Array<Entity> syntax;
+    Array<Token>  syntax;
+    Array<Entity> code;
+
+    void insert  (str);
+    void insert  (str, int pos);
+    void remove  (int pos, int n);
+    void replace (int pos, int n, str);
+
+    std::queue<Range<Token>> updates;
+
+    struct Command { str kind; int pos, nn; str text; };
+    array <Command> undo;
+    array <Command> redo;
 };
 
 

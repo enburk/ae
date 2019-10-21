@@ -8,37 +8,91 @@
     <ClInclude Include="..\..\_xpp\ide_edit.h" />
     <ClInclude Include="..\..\_xpp\ide_edit_doc.h" />
     <ClInclude Include="..\..\_xpp\ide_flist.h" />
-    <ClInclude Include="..\..\_xpp\pix.h" />
-    <ClInclude Include="..\..\_xpp\pix_coord.h" />
-    <ClInclude Include="..\..\_xpp\pix_image.h" />
-    <ClInclude Include="..\..\_xpp\pix_typo_font.h" />
-    <ClInclude Include="..\..\_xpp\pix_color.h" />
-    <ClInclude Include="..\..\_xpp\doc.h" />
-    <ClInclude Include="..\..\_xpp\doc_lexica.h" />
-    <ClInclude Include="..\..\_xpp\doc_lexica_cpp.h" />
-    <ClInclude Include="..\..\_xpp\doc_lexica_txt.h" />
-    <ClInclude Include="..\..\_xpp\doc_lexica_xml.h" />
-    <ClInclude Include="..\..\_xpp\doc_lexica_xpp.h" />
     <ClInclude Include="..\..\_xpp\ide_console.h" />
     <ClInclude Include="..\..\_xpp\ide_edit_line.h" />
     <ClInclude Include="..\..\_xpp\test.h" />
     <ClInclude Include="..\..\_xpp\test_fonts.h" />
     <ClInclude Include="..\..\_xpp\test_pix.h" />
-    <ClInclude Include="..\..\_xpp\gui_widget.h" />
-    <ClInclude Include="..\..\_xpp\gui_window.h" />
-    <ClInclude Include="..\..\_xpp\gui_effect.h" />
-    <ClInclude Include="..\..\_xpp\gui_widget_button.h" />
-    <ClInclude Include="..\..\_xpp\gui_widget_text.h" />
-    <ClInclude Include="..\..\_xpp\gui_widget_text_line.h" />
-    <ClInclude Include="..\..\_xpp\gui_widget_image.h" />
-    <ClInclude Include="..\..\_xpp\gui_widget_splitter.h" />
-    <ClInclude Include="..\..\_xpp\pix_math.h" />
-    <ClInclude Include="..\..\_xpp\gui_widget_canvas.h" />
-    <ClInclude Include="..\..\_xpp\gui_layer.h" />
+    <ClInclude Include="..\..\_xpp\doc_lexica.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\doc.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\doc_lexica_cpp.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\doc_lexica_txt.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\doc_lexica_xml.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\doc_lexica_xpp.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\pix.h">
+      <Filter>pix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\pix_color.h">
+      <Filter>pix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\pix_coord.h">
+      <Filter>pix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\pix_image.h">
+      <Filter>pix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\pix_math.h">
+      <Filter>pix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\pix_typo_font.h">
+      <Filter>pix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\gui_effect.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\gui_widget.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\gui_widget_button.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\gui_widget_canvas.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\gui_widget_image.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\gui_widget_splitter.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\gui_widget_text.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\gui_widget_text_line.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\gui_window.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\aux_utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\_xpp\sys_windows.cpp" />
     <ClCompile Include="..\..\_xpp\ide.cpp" />
     <ClCompile Include="..\..\_xpp\sys_fonts.cpp" />
+    <ClCompile Include="..\..\_xpp\doc.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="doc">
+      <UniqueIdentifier>{b3562287-82e3-44f3-b221-e41808b6679a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pix">
+      <UniqueIdentifier>{1cdf0b6d-9a94-4193-baa7-2d912591c30b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gui">
+      <UniqueIdentifier>{ee5e54af-2205-4d0b-a0c2-8ca54417fb86}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

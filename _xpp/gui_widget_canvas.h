@@ -1,19 +1,33 @@
 #pragma once
-#include "pix.h"
 #include "gui_widget.h"
 namespace gui
 {
     struct canvas : widget<canvas>
     {
-        canvas (base::widget* parent = nullptr) : widget (parent) {}
+        property<RGBA> color;
+
+        Opacity opacity () override { return
+            color.now.a == 255 ? opaque :
+            color.now.a == 0 ? transparent :
+                             semitransparent; }
+
+        void on_render (Frame<RGBA> frame, XY offset, uint8_t alpha) override
+        {
+            frame.blend(color.now, alpha);
+        }
+
+        void on_change (void* what) override
+        {
+            if (what == &color)
+                if (color.was.a != 0 ||
+                    color.now.a != 0 ) update();
+        }
     };
 
     struct frame : widget<frame>
     {
-        frame (base::widget* parent = nullptr) : widget (parent) {}
-
         property<RGBA> color;
-        property<int>  thickness = 1;
+        property<int> thickness = 1;
 
         canvas l, t, r, b;
 
@@ -22,10 +36,10 @@ namespace gui
             int w = coord.now.w;
             int h = coord.now.h;
             int d = thickness.now;
-            t.move_to (XYWH(0, 0,   w, d));
-            b.move_to (XYWH(0, h-d, w, d));
-            l.move_to (XYWH(0,   d, d, h-d-d));
-            r.move_to (XYWH(w-d, d, d, h-d-d));
+            t.coord = XYWH(0, 0,   w, d);
+            b.coord = XYWH(0, h-d, w, d);
+            l.coord = XYWH(0,   d, d, h-d-d);
+            r.coord = XYWH(w-d, d, d, h-d-d);
             t.color = color.now;
             b.color = color.now;
             l.color = color.now;

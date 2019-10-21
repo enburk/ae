@@ -26,6 +26,11 @@ namespace pix
     struct XYXY
     {
         union  {
+        struct { XY  p1, p2; };
+        struct { XY  lt, rb; };
+        struct { XY  origin, end; };
+        struct { XY  left_top, right_bottom; };
+        struct { int left,top, right,bottom; };
         struct { int xl, yl, xh, yh; };
         struct { int x1, y1, x2, y2; };
         struct { int l, t, r, b; };  };
@@ -66,13 +71,14 @@ namespace pix
         void inflate (int n) { l -= n; t -= n; r += n; b += n; }
         void deflate (int n) { l += n; t += n; r -= n; b -= n; }
 
-        XY   origin () const { return XY (l,t); }
-        XY   size   () const { return XY (r-l,b-t); }
-        XYXY local  () const { return *this - origin(); }
+        XYXY local () const { return *this - origin; }
     };
     struct XYWH
     {
-        int x, y, w, h;
+        union  {
+        struct { int left, top, width, height; };
+        struct { XY  origin, size;  };
+        struct { int x, y, w, h; }; };
 
         XYWH (                          ) : x (0), y (0), w (0), h (0) {}
         XYWH (int x, int y, int w, int h) : x (x), y (y), w (w), h (h) {}
@@ -98,9 +104,7 @@ namespace pix
         void inflate (int n) { x -= n; y -= n; w += n+n; h += n+n; }
         void deflate (int n) { x += n; y += n; w -= n+n; h -= n+n; }
 
-        XY   origin () const { return XY (x,y); }
-        XY   size   () const { return XY (w,h); }
-        XYWH local  () const { return *this - origin(); }
+        XYWH local () const { return *this - origin; }
     };
 
     inline XYXY::XYXY(XYWH q) : l (q.x), t (q.y), r (q.x+q.w), b (q.y+q.h) {}
@@ -111,28 +115,38 @@ namespace pix
     inline XYXY operator & (XYWH a, XYXY b) { b &= XYXY(a); return b; }
     inline XYXY operator | (XYWH a, XYXY b) { b |= XYXY(a); return b; }
 
-    struct rectifier
+    inline XYXY operator * (double k, XYXY r) {
+        r.l = clamp<int>(k*r.l); r.r = clamp<int>(k*r.r);
+        r.t = clamp<int>(k*r.t); r.b = clamp<int>(k*r.b);
+        return r; }
+    inline XYWH operator * (double k, XYWH r) {
+        r.x = clamp<int>(k*r.x); r.w = clamp<int>(k*r.w);
+        r.y = clamp<int>(k*r.y); r.h = clamp<int>(k*r.h);
+        return r; }
+
+    struct Rectifier
     {
-        array<XYWH> rr;
-        void operator  = (XYWH r) { rr.clear(); rr += r; }
+        array<XYWH> rectangles;
+        void operator  = (XYWH r) { rectangles.clear(); rectangles += r; }
         void operator += (XYWH r) {
             if (!r) return;
-            //for (auto & R : rr) {
-            //    XYWH u = R | r;
-            //    auto Rsquare = R.size.x * R.size.y;
-            //    auto rsquare = r.size.x * r.size.y;
-            //    auto usquare = u.size.x * u.size.y;
-            //    if  (usquare > Rsquare + rsquare) continue;
-            //    std::swap(R, rr.back());
-            //    rr.pop_back();
-            //    *this += u;
-            //    return;
-            //}
-            rr += r;
+            for (auto & R : rectangles) {
+                XYWH u = R | r;
+                auto Rsquare = R.w * R.h;
+                auto rsquare = r.w * r.h;
+                auto usquare = u.w * u.h;
+                if  (usquare > Rsquare + rsquare) continue;
+                std::swap(R, rectangles.back());
+                rectangles.pop_back();
+                *this += u; // recursion
+                return;
+            }
+            rectangles += r;
         }
         typedef array<XYWH>::iterator iterator;
-        iterator begin () { return rr.begin(); }
-        iterator end   () { return rr.end(); }
-        void     clear () { rr.clear(); }
+        iterator begin () { return rectangles.begin(); }
+        iterator end   () { return rectangles.end  (); }
+        int      size  () { return rectangles.size (); }
+        void     clear () { rectangles.clear(); }
     };
 }

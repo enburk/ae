@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <vector>
+#include <optional>
 #include <iostream>
 #include <algorithm>
 
@@ -63,8 +64,13 @@ template<class type> struct array : std::vector<type>
 
     long size () const { return (long) base::size (); }
 
-    void operator += (const type  & e) { base::push_back (e); }
-    void operator += (const array & a) { base::insert (end(), a.cbegin(), a.cend()); }
+    void operator += (const type   & e) { base::emplace_back (e); }
+    void operator += (      type  && e) { base::emplace_back (std::move(e)); }
+
+    void operator += (const array &  a) { base::insert (end(), a.cbegin(), a.cend()); }
+    void operator += (      array && a) { base::insert (end(),
+        std::make_move_iterator(a.begin()),
+        std::make_move_iterator(a.end())); }
 
     friend array operator + (const array & a, const type  & b) { array tt; tt += a; tt+= b; return tt; }
     friend array operator + (const type  & a, const array & b) { array tt; tt += a; tt+= b; return tt; }
@@ -94,32 +100,3 @@ template<class type> struct array : std::vector<type>
 template<class type> using Array = array<type>;
 
 template<class type> using Range = range<typename Array<type>::iterator>;
-
-// https://stackoverflow.com/questions/2590677/how-do-i-combine-hash-values-in-c0x
-inline void hash_combine(std::size_t& seed) {}; template <typename T, typename... Rest>
-inline void hash_combine(std::size_t& seed, const T& v, Rest... rest) {
-    std::hash<T> hasher;
-    seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
-    hash_combine(seed, rest...);
-}
-#define MAKE_HASHABLE(type, ...) \
-    namespace std {\
-        template<> struct hash<type> {\
-            std::size_t operator()(const type &t) const {\
-                std::size_t ret = 0;\
-                hash_combine(ret, __VA_ARGS__);\
-                return ret;\
-            }\
-        };\
-    }
-
-struct polymorphic
-{
-    virtual
-   ~polymorphic              (                      ) = default;
-    polymorphic              (                      ) = default;
-    polymorphic              (const polymorphic  & e) = default;
-    polymorphic              (      polymorphic && e) = default;
-    polymorphic & operator = (const polymorphic  & e) = default;
-    polymorphic & operator = (      polymorphic && e) = default;
-};

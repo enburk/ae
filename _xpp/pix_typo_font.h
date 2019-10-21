@@ -1,5 +1,6 @@
 #pragma once
 #include "aux_string.h"
+#include "aux_utils.h"
 namespace pix
 {
     struct FONT
@@ -49,7 +50,7 @@ namespace pix
         str text;
         FONT font;
         color fore, back;
-        FRAME<color> frame;
+        Frame<color> frame;
         XY bearing;
         
         int bearing_x = 0; // the horizontal distance from the current pen position to the glyph's left image edge

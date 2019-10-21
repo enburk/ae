@@ -3,9 +3,10 @@
 using namespace pix;
 namespace test_pix
 {
-    TEST(TestPixImage, Copy)
+    TEST(TestPixImage, Image)
     {
-        IMAGE<int> i (XY(3,3), 9);
+        Image<int> i (XY(3,3), 9);
+
         EXPECT_NO_THROW({ i.frame(XYWH(-2,-2, 3, 3)).fill(1); });
         EXPECT_NO_THROW({ i.frame(XYWH( 2,-2, 3, 3)).fill(2); });
         EXPECT_NO_THROW({ i.frame(XYWH( 2, 2, 3, 3)).fill(3); });

@@ -11,8 +11,8 @@ namespace ide::test
         inline bool r_pressed = false;
         inline bool x_pressed = false;
         inline bool test = false;
-        inline IMAGE<XRGB> back;
-        inline IMAGE<XRGB> fore;
+        inline Image<XRGB> back;
+        inline Image<XRGB> fore;
 
         namespace on
         {

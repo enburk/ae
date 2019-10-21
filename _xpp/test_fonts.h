@@ -1,15 +1,17 @@
 #pragma once
 #include "sys.h"
-namespace ide::test::fonts
+namespace test::fonts
 {
-    static IMAGE<XRGB> test1 ()
+    using namespace pix;
+
+    static Image<RGBA> test1 ()
     {
         str digit = "0123456789";
         str Latin = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         str latin = "abcdefghijklmnopqrstuvwxyz";
         str alnum = Latin + latin + digit;
 
-        array<GLYPH<XRGB>> glyphs;
+        array<GLYPH<RGBA>> glyphs;
         int gap = 1; int x = gap; int y = gap; int width = 0; 
         array<FONT> fonts = { FONT("Consolas", 12), FONT("Segoe UI", 16), FONT("Tahoma", 24) };
 
@@ -34,24 +36,24 @@ namespace ide::test::fonts
             }
         }
 
-        IMAGE<XRGB> image (XY(width, y), XRGB::red);
+        Image<RGBA> image (XY(width, y), pix::red);
 
         for (auto glyph : glyphs)
         {
             glyph.frame = image.frame(XYWH(glyph.coord.x, glyph.coord.y, glyph.frame.size.x, glyph.frame.size.y));
-            glyph.fore = XRGB::black;
-            glyph.back = XRGB::white;
+            glyph.fore = pix::black;
+            glyph.back = pix::white;
             sys::font::render(glyph, false);
         }
 
         return image;
     }
 
-    static IMAGE<XRGB> test2 ()
+    static Image<RGBA> test2 ()
     {
         str s = "The quick brown fox jumps over the lazy dog";
 
-        array<GLYPH<XRGB>> glyphs;
+        array<GLYPH<RGBA>> glyphs;
         int gap = 1; int x = gap; int y = gap; int width = 0; 
         array<FONT> fonts = { FONT("Consolas", 12), FONT("Segoe UI", 14), FONT("Tahoma", 16) };
 
@@ -89,26 +91,26 @@ namespace ide::test::fonts
             }
         }
 
-        IMAGE<XRGB> image (XY(width, y), XRGB::red);
+        Image<RGBA> image (XY(width, y), pix::red);
 
         for (auto glyph : glyphs)
         {
             glyph.frame = image.frame(XYWH(glyph.coord.x, glyph.coord.y, glyph.frame.size.x, glyph.frame.size.y));
-            glyph.fore = XRGB::black;
-            glyph.back = XRGB::white;
+            glyph.fore = pix::black;
+            glyph.back = pix::white;
             sys::font::render(glyph, false);
         }
 
         return image;
     }
 
-    static IMAGE<XRGB> test ()
+    static Image<RGBA> test ()
     {
-        IMAGE<XRGB> image1 = test1();
-        IMAGE<XRGB> image2 = test2();
-        IMAGE<XRGB> image (XY(max(image1.size.x, image2.size.x), image1.size.y + image2.size.y), XRGB::red);
-        image1.copy_to(image);
-        image2.copy_to(image.frame(XY(0,image1.size.y)));
+        Image<RGBA> image1 = test1();
+        Image<RGBA> image2 = test2();
+        Image<RGBA> image (XY(max(image1.size.x, image2.size.x), image1.size.y + image2.size.y), pix::red);
+        image1.frame().copy_to(image);
+        image2.frame().copy_to(image.frame(XYWH(0,image1.size.y, image2.size.x, image2.size.y)));
         return image;
     }
 }

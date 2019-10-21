@@ -42,7 +42,7 @@ struct Options
 
 struct Line : Widget
 {
-    FRAME<XRGB> frame;
+    frame<XRGB> frame;
 
 
     using GLYPH = GLYPH<XRGB>;

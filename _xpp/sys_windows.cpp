@@ -11,16 +11,24 @@ static HWND Hwnd;
 
 void sys::window::update()
 {
-    for (XYXY r : sys::window::image.update) {
+    if (false)
+    if (sys::window::image.updates.size() > 0) {
+        sys::window::image.updates.clear();
+        RedrawWindow (Hwnd, NULL, NULL, RDW_INVALIDATE);
+        UpdateWindow (Hwnd);
+        return;
+    }
+    for (XYXY r : sys::window::image.updates)
+    {
         RECT rect;
         rect.left   = r.l;
         rect.top    = r.t;
         rect.right  = r.r;
         rect.bottom = r.b;
-        RedrawWindow (Hwnd, &rect, NULL, RDW_INVALIDATE);
+        InvalidateRect(Hwnd, &rect, FALSE);
+        UpdateWindow  (Hwnd);
     }
-    sys::window::image.update.clear();
-    UpdateWindow (Hwnd);
+    sys::window::image.updates.clear();
 }
 void sys::window::timing()
 {
@@ -49,31 +57,30 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
         case WM_PAINT:
         {
-            int x = 0;
-            int y = 0;
-            int w = sys::window::image.size.x;
-            int h = sys::window::image.size.y;
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hwnd, &ps);
+            int x = ps.rcPaint.left;
+            int y = ps.rcPaint.top;
+            int w = ps.rcPaint.right - x;
+            int h = ps.rcPaint.bottom - y;
+
+            int W = sys::window::image.size.x;
+            int H = sys::window::image.size.y;
 
             BITMAPINFO bi;
             ZeroMemory(&bi,              sizeof(bi));
             bi.bmiHeader.biSize        = sizeof(BITMAPINFOHEADER);
-            bi.bmiHeader.biWidth       = w;
+            bi.bmiHeader.biWidth       = W;
             bi.bmiHeader.biHeight      = -h;
             bi.bmiHeader.biPlanes      = 1;
             bi.bmiHeader.biBitCount    = 32; 
             bi.bmiHeader.biCompression = BI_RGB;
-            bi.bmiHeader.biSizeImage   = w*h*4;
+            bi.bmiHeader.biSizeImage   = W*h*4;
 
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hwnd, &ps);
-            x = ps.rcPaint.left;
-            y = ps.rcPaint.top;
-            w = ps.rcPaint.right - x;
-            h = ps.rcPaint.bottom - y;
-            auto p = sys::window::image.data.data();
-            SetDIBitsToDevice(hdc, x,y,w,h, 0,0,0,h, p, (BITMAPINFO*)&bi, DIB_RGB_COLORS);
+            auto p = &sys::window::image(0,y);
+            SetDIBitsToDevice(hdc, x,y,w,h, x,0,0,h, p, (BITMAPINFO*)&bi, DIB_RGB_COLORS);
             EndPaint(hwnd, &ps);
-            break;
+            return 0;
         }
         case WM_SIZE:
         {
@@ -82,8 +89,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             if(wparam != SIZE_MINIMIZED) { if (!minimized) sys::window::on::resume(); minimized = false; }
             sys::window::image.resize(XY(LOWORD(lparam), HIWORD(lparam)));
             sys::window::on::resize();
-            RedrawWindow (hwnd, NULL, NULL, RDW_INVALIDATE);
-            UpdateWindow (hwnd);
             break;
         }
         case WM_CREATE : sys::window::on::start (); return 0;

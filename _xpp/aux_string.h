@@ -24,6 +24,8 @@ struct str : public std::string
         if (*this != "") pop_back();
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+
     int size () const { return (int) base::size (); }
 
     str & operator  = (const str &  s) { base::operator  = (s); return *this; }
@@ -46,6 +48,21 @@ struct str : public std::string
     str till (int pos) const { return substr (0, pos); }
     str head (int num) const { return substr (0, num); }
     str tail (int num) const { return substr (size () - num, max); }
+
+    bool starts_with (str s) const {
+        int n = s.size(); if (size() < n) return false;
+        auto i = begin(); auto j = s.begin();
+        while (n--) if (*i++ != *j++) return false;
+        return true;
+    }
+    bool ends_with   (str s) const {
+        int n = s.size(); if (size() < n) return false;
+        auto i = rbegin(); auto j = s.rbegin();
+        while (n--) if (*i++ != *j++) return false;
+        return true;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
 
     struct one_of     { base chars; one_of    (str s = "") : chars(s) {}};
     struct one_not_of { base chars; one_not_of(str s = "") : chars(s) {}};
@@ -70,12 +87,13 @@ struct str : public std::string
 
         if (std::holds_alternative<str>(pattern))
         {
-            if (start.from_end) i = std::next(
+            if (start.from_end) { auto it = 
                 std::search(rbegin() + start.offset, rend(),
                 std::boyer_moore_horspool_searcher(
                 std::get<str>(pattern).rbegin(),
-                std::get<str>(pattern).rend ())
-            )).base();
+                std::get<str>(pattern).rend ()));
+                i = it == rend() ? end() : std::next(it).base();
+            }
 
             else i = 
                 std::search(begin() + start.offset, end(),
@@ -109,6 +127,8 @@ struct str : public std::string
 
     bool contains (pattern pattern, start start = start_from(0)) const { return find (pattern, start).size > 0; }
 
+    /////////////////////////////////////////////////
+
     enum class delimiter { exclude, to_the_left, to_the_right };
 
     bool split_by (pattern pattern, start start, str& str1, str& str2, delimiter delimiter = delimiter::exclude) const
@@ -135,18 +155,14 @@ struct str : public std::string
         return result;
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+
 #if 0
-    bool starts_with (str s) const { int n = s.size(); if (size() < n) return false; auto i =  begin(); auto j = s. begin(); while (n--) if (*i++ != *j++) return false; return true; }
-    bool ends_with   (str s) const { int n = s.size(); if (size() < n) return false; auto i = rbegin(); auto j = s.rbegin(); while (n--) if (*i++ != *j++) return false; return true; }
 
-    str lowercased () const { str s = *this; std::transform(s.begin(), s.end(), s.begin(), ::tolower); return s; }
-    str uppercased () const { str s = *this; std::transform(s.begin(), s.end(), s.begin(), ::toupper); return s; }
-
-    void append    (                  str s){ *this += s; }
-    void insert    (int pos,          str s){ *this = head (pos) + s + from (pos); }
     void overwrite (int pos,          str s){ erase (pos, s.size()); insert (pos, s); }
     void replace   (int pos, int num, str s){ erase (pos, num     ); insert (pos, s); }
     void erase     (int pos, int num = 1   ){ if (pos < 0) num += pos, pos = 0; num = std::min (num, size() - pos); if (num > 0) base::erase (pos, num); }
+    void erase     (range range) { erase(range.pos, range.size);}
     void truncate  (int pos                ){ erase (pos, max); }
     void truncate  (                       ){ erase (size() - 1); }
     void strip     (const str & chars = " "){ trimr (chars); triml (chars); }
@@ -161,16 +177,20 @@ struct str : public std::string
         base::erase(std::unique(begin(), end(), [](char c1, char c2){ return c1 == ' ' && c2 == ' '; }), end());
         strip();
     }
+#endif
 
-    bool isalnum_ascii () const
-    {
+    bool ascii_isalnum () const {
         for (char c : *this)
             if (c < '0' || c > '9' &&
                 c < 'A' || c > 'Z' &&
-                c < 'a' || c > 'z') return false;
-        return true;
-    }
-#endif
+                c < 'a' || c > 'z') return false; return true; }
+
+    static char ascii_tolower (char c) { return c >= 'A' || c <= 'Z' ? c - 'A' + 'a' : c; }
+    static char ascii_toupper (char c) { return c >= 'a' || c <= 'z' ? c - 'a' + 'A' : c; }
+
+    str ascii_lowercased () const { str s = *this; std::transform(s.begin(), s.end(), s.begin(), ascii_tolower); return s; }
+    str ascii_uppercased () const { str s = *this; std::transform(s.begin(), s.end(), s.begin(), ascii_toupper); return s; }
+
 };
 
 namespace std
