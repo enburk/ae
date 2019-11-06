@@ -5,11 +5,6 @@
     <ClInclude Include="..\..\_xpp\aux_string.h" />
     <ClInclude Include="..\..\_xpp\sys.h" />
     <ClInclude Include="..\..\_xpp\sys_windows.h" />
-    <ClInclude Include="..\..\_xpp\ide_edit.h" />
-    <ClInclude Include="..\..\_xpp\ide_edit_doc.h" />
-    <ClInclude Include="..\..\_xpp\ide_flist.h" />
-    <ClInclude Include="..\..\_xpp\ide_console.h" />
-    <ClInclude Include="..\..\_xpp\ide_edit_line.h" />
     <ClInclude Include="..\..\_xpp\test.h" />
     <ClInclude Include="..\..\_xpp\test_fonts.h" />
     <ClInclude Include="..\..\_xpp\test_pix.h" />
@@ -46,9 +41,6 @@
     <ClInclude Include="..\..\_xpp\pix_math.h">
       <Filter>pix</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\_xpp\pix_typo_font.h">
-      <Filter>pix</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\_xpp\gui_effect.h">
       <Filter>gui</Filter>
     </ClInclude>
@@ -70,19 +62,38 @@
     <ClInclude Include="..\..\_xpp\gui_widget_text.h">
       <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\_xpp\gui_widget_text_line.h">
-      <Filter>gui</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\_xpp\gui_window.h">
       <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="..\..\_xpp\aux_utils.h" />
+    <ClInclude Include="..\..\_xpp\ide_console.h">
+      <Filter>ide</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\ide_edit.h">
+      <Filter>ide</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\ide_edit_doc.h">
+      <Filter>ide</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\ide_edit_line.h">
+      <Filter>ide</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\ide_flist.h">
+      <Filter>ide</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\gui_widget_layout.h">
+      <Filter>gui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\_xpp\sys_windows.cpp" />
-    <ClCompile Include="..\..\_xpp\ide.cpp" />
     <ClCompile Include="..\..\_xpp\sys_fonts.cpp" />
-    <ClCompile Include="..\..\_xpp\doc.cpp" />
+    <ClCompile Include="..\..\_xpp\doc.cpp">
+      <Filter>doc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\_xpp\ide.cpp">
+      <Filter>ide</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="doc">
@@ -93,6 +104,9 @@
     </Filter>
     <Filter Include="gui">
       <UniqueIdentifier>{ee5e54af-2205-4d0b-a0c2-8ca54417fb86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ide">
+      <UniqueIdentifier>{81349e44-2520-43c8-a6d2-75e9944d43e7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

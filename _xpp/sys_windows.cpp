@@ -7,7 +7,7 @@ name='Microsoft.Windows.Common-Controls' version='6.0.0.0'  \
 processorArchitecture='*' publicKeyToken='6595b64144ccf1df' \
 language='*'\"")
 
-static HWND Hwnd;
+HWND Hwnd;
 
 void sys::window::update()
 {

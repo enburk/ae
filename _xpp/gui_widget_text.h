@@ -1,48 +1,129 @@
 #pragma once
-#include "pix.h"
+#include "sys.h"
 #include "doc.h"
 #include "doc_lexica_txt.h"
 #include "gui_widget.h"
 namespace gui
 {
-    struct Glyph : widget<Glyph>
+    struct text final : widget<text>
     {
-        //Glyph (base::widget* parent = nullptr) : widget (parent) {}
+        struct glyph final : widget<glyph>
+        {
+            unary_property<sys::glyph> g;
 
-        //property<str> text;
+            Opacity opacity () override { return semitransparent; }
 
-        canvas canvas;
+            void on_change (void* what) override
+            {
+                if (what == &g) { resize(g.now.size); update(); }
+            }
+            void on_render (Frame<RGBA> frame, XY offset, uint8_t alpha) override
+            {
+                sys::render(g.now, frame, offset, alpha, coord.now.x);
+            }
+        };
 
-        //pix::glyph<RGBA> glyph;
+        struct line final : widget<line> // layout<glyph, horizontal> //
+        {
+            widgetarium<canvas> canvases;
+            widgetarium<glyph> glyphs;
+            int minimum_height = 0;
+            int baseline = 0;
 
-        void on_render () {}
-    };
+            int advance (int f, int l) { --l; return f > l ? 0 :
+                glyphs(l).coord.now.x -
+                glyphs(f).coord.now.x +
+                glyphs(l).g.now.advance;
+            }
 
-    struct Token : widget<Token>
-    {
-        //Token (base::widget* parent = nullptr) : widget (parent) {}
+            void shift (int f, int l, XY d) {
+                for (int i=f; i<l; i++)
+                    glyphs(i).shift(d);
+            }
 
-        //property<str> text;
+            void append (sys::glyph g)
+            {
+                int x = advance(0, glyphs.size());
+                auto & glyph = glyphs.emplace_back();
+                glyph.g = g;
+                glyph.shift(XY(x, baseline - g.ascent));
+                if (baseline < g.ascent) { shift(0, glyphs.size(), XY(0,
+                   -baseline + g.ascent));
+                    baseline = g.ascent; }
+                x += g.size.x;
+                glyphs.
+                resize(XY(x, max(coord.now.size.y, g.size.y)));
+                resize(XY(x, max(coord.now.size.y, g.size.y)));
+            }
+            void append (sys::token token)
+            {
+                for (auto & g : token.glyphs)
+                    append (g);
+            }
+            void insert (int pos, sys::glyph g) {
+                append(std::move(g)); rotate(pos,
+                    glyphs.size()-1,
+                    glyphs.size());
+            }
+            void insert (int pos, sys::token token) {
+                append(std::move(token)); rotate(pos,
+                    glyphs.size()-token.glyphs.size(),
+                    glyphs.size());
+            }
+            int rotate (int f, int m, int l)
+            {
+                int a1 = advance(f,m);
+                int a2 = advance(m,l);
+                int n = glyphs.rotate(f, m, l);
+                shift(f,n, XY(-a1, 0));
+                shift(n,l, XY( a2, 0));
+            }
+            void erase (int pos, int num = 1)
+            {
+                truncate(rotate(pos, pos+num, glyphs.size()));
+                int height = baseline = 0;
+                for (auto & g : glyphs) {
+                    baseline = max (baseline, g.g.now.ascent);
+                    height =   max (height,   g.g.now.size.y);
+                }
+                height = max (height, minimum_height);
+                for (auto & g : glyphs) g.move_to(XY(g.coord.now.x, baseline - g.g.now.ascent));
+                glyphs.
+                resize(XY(glyphs.coord.now.size.x, height));
+                resize(XY(glyphs.coord.now.size.x, height));
+            }
+            void truncate (int pos)
+            {
+                while (glyphs.size() > pos)
+                    erase(glyphs.size()-1);
+            }
 
-        pix::GLYPH<RGBA> glyph;
 
-        void on_render () {}
-    };
+            struct selection { RGBA fore, back; int begin, end; };
 
-    struct TextLine : widget<Glyph>
-    {
-        //TextLine (base::widget* parent = nullptr) : widget (parent) {}
+            array<selection> selections;
 
-        //property<str> text; int top = 0;
+            //array<caret> carets;
+        };
+
+        struct page final : widget<page>
+        {
+            widgetarium<line> lines;
+            property<int> indent = 0;
+
+            //void insert (pix::Token token, int pos)
+            //{
+            //    glyphs.insert(glyphs.begin()+pos, token.glyphs.begin(), token.glyphs.end());
+            //}
+        };
 
 
-        array<Glyph> glyphs;
+        std::map<str, sys::glyph_style> styles;
 
-        void on_render () {}
-    };
 
-    struct Text : widget<Text>
-    {
+
+        typedef doc::Document Document;
+
         struct Context
         {
             Document* document; int top = 0;
@@ -54,7 +135,7 @@ namespace gui
 
         //Text (base::widget* parent = nullptr) : widget (parent) {}
 
-        array<TextLine> lines;
+        //array<line> lines;
 
         void operator = (str s)
         {
@@ -75,12 +156,9 @@ namespace gui
         {
         }
 
-
-        void on_render () {}
-
-        void on_change () override
+        void on_change (void* what) override
         {
-            if (coord.was.size != coord.now.size)
+            if (what == &coord)
             {
                 //auto r = coord.now.local();
                 //auto h = r.h / 

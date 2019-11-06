@@ -2,9 +2,11 @@
 #include <set>
 #include <cmath>
 #include <chrono>
+#include <cassert>
 #include <algorithm>
 #include "aux_utils.h"
 #include "pix.h"
+#include "sys.h"
 namespace gui
 {
     using namespace pix;
@@ -91,6 +93,8 @@ namespace gui
         property (type value = type()) : from(value), to(value), was(value), now(value) {}
        ~property () { if (receipt) active_properties.erase(*receipt); }
 
+        explicit operator type () { return now; }
+
         void operator = (type value) { go (value, time(0)); }
 
         void go (type to_) { go (to_, transition_time); }
@@ -110,6 +114,43 @@ namespace gui
             if (now == to && receipt) { active_properties.erase(*receipt); receipt.reset(); }
             if (now != to && !receipt) receipt = active_properties.append(this);
             if (now != was) {
+                if (!widget) widget = inholder(this);
+                if (!widget) throw std::runtime_error("property: wrong inholder");
+                change(widget, this);
+            }
+        }
+    };
+
+    template<class type> struct binary_property
+    {
+        type was, now; base::widget* widget = nullptr;
+
+        binary_property (type value = type()) : was(value), now(value) {}
+
+        explicit operator type () { return now; }
+
+        void operator = (type value) {
+            was = now;
+            now = value;
+            if (now != was) {
+                if (!widget) widget = inholder(this);
+                if (!widget) throw std::runtime_error("property: wrong inholder");
+                change(widget, this);
+            }
+        }
+    };
+
+    template<class type> struct unary_property
+    {
+        type now; base::widget* widget = nullptr;
+
+        unary_property (type value = type()) : now(value) {}
+
+        explicit operator type () { return now; }
+
+        void operator = (type value) {
+            if (now != value) {
+                now  = value;
                 if (!widget) widget = inholder(this);
                 if (!widget) throw std::runtime_error("property: wrong inholder");
                 change(widget, this);

@@ -1,16 +1,23 @@
 #include "sys.h"
 #include "sys_windows.h"
 #include <tchar.h>
-using namespace pix;
+
+MAKE_HASHABLE(sys::font, t.face, t.size, t.bold, t.italic);
+MAKE_HASHABLE(sys::glyph, t.text, t.font);
+
+extern HWND Hwnd;
 
 struct GDI_FONT
 {
     HFONT handle;
-    FONT::METRICS metrics;
+    sys::font::metrics metrics;
 
-    GDI_FONT(FONT font)
+    GDI_FONT(sys::font font)
     {
-        HDC dc = ::CreateCompatibleDC (NULL);
+        HDC hdc = GetDC(Hwnd); // EnumDisplayMonitors(hdc, &rc, MyPaintEnumProc, 0);
+        HDC dc = ::CreateCompatibleDC (hdc);//(NULL);
+        //HDC dc = ::CreateCompatibleDC (NULL);
+        ReleaseDC (Hwnd, hdc);
 
         LOGFONT lf;
         _tcscpy_s (
@@ -20,9 +27,9 @@ struct GDI_FONT
         lf.lfEscapement     = 0;
         lf.lfOrientation    = 0;
         lf.lfWeight         = font.bold ? FW_BOLD : FW_NORMAL;
-        lf.lfItalic         = font.italic    ? TRUE : FALSE;
-        lf.lfStrikeOut      = font.strike    ? TRUE : FALSE;
-        lf.lfUnderline      = font.underline ? TRUE : FALSE;
+        lf.lfItalic         = font.italic ? TRUE : FALSE;
+        lf.lfStrikeOut      = FALSE;
+        lf.lfUnderline      = FALSE;
         lf.lfCharSet        = DEFAULT_CHARSET;
         lf.lfOutPrecision   = 0;//OUT_TT_PRECIS;
         lf.lfClipPrecision  = 0;//CLIP_DEFAULT_PRECIS;
@@ -35,13 +42,13 @@ struct GDI_FONT
 
         TEXTMETRIC tm;  ::GetTextMetrics (dc, &tm);
 
-        metrics.height   = tm.tmHeight; // ascent + descent
-        metrics.ascent   = tm.tmAscent; // units above the base line
+        metrics.height   = tm.tmHeight;  // ascent + descent
+        metrics.ascent   = tm.tmAscent;  // units above the base line
         metrics.descent  = tm.tmDescent; // units below the base line (positive value)
-        metrics.linegap  = tm.tmExternalLeading; // baseline-to-baseline distance should be computed as: ascent + descent + linegap
-        metrics.avecharw = tm.tmAveCharWidth; // average char width (usually width of 'x')
-        metrics.maxcharw = tm.tmMaxCharWidth; // maximum char width
-        metrics.overhang = tm.tmOverhang; // only necessary for non-TrueType raster fonts
+        metrics.linegap  = tm.tmExternalLeading; // baseline-to-baseline distance = ascent + descent + linegap
+        metrics.average_char_width = tm.tmAveCharWidth;
+        metrics.maximum_char_width = tm.tmMaxCharWidth;
+        metrics.minimum_char_width = 0;
 
         ::SelectObject (dc, old);
 
@@ -50,11 +57,16 @@ struct GDI_FONT
     ~GDI_FONT() {} // { if (handle) ::DeleteObject (handle); }
 };
 
-static GDI_FONT cache (FONT font) {
-    static std::unordered_map<FONT, GDI_FONT> fonts;
+static GDI_FONT cache (sys::font font) {
+    static std::unordered_map<sys::font, GDI_FONT> fonts;
     auto it = fonts.find(font); if (it == fonts.end())
     it = fonts.emplace (font, GDI_FONT(font)).first;
     return it->second;
+}
+
+sys::font::metrics sys::metrics (sys::font font)
+{
+    return cache(font).metrics;
 }
 
 struct GDI_CONTEXT
@@ -63,10 +75,13 @@ struct GDI_CONTEXT
     HGDIOBJ old;
     GDI_FONT font;
 
-    GDI_CONTEXT(FONT f) : font (cache(f))
+    GDI_CONTEXT(sys::font f) : font (cache(f))
     {
-        dc  = ::CreateCompatibleDC (NULL);
+        HDC hdc = GetDC(Hwnd); // EnumDisplayMonitors(hdc, &rc, MyPaintEnumProc, 0);
+        dc = ::CreateCompatibleDC (hdc);//(NULL);
+        //dc = ::CreateCompatibleDC (NULL);
         old = ::SelectObject (dc, font.handle);
+        ReleaseDC (Hwnd, hdc);
     }
    ~GDI_CONTEXT()
     {
@@ -75,44 +90,95 @@ struct GDI_CONTEXT
     }
 };
 
-FONT::METRICS sys::font::metrics (FONT font)
+struct glyph_cache { int ascent, descent, width, advance; };
+static glyph_cache cache (const sys::glyph & glyph)
 {
-    return cache(font).metrics;
+    static std::unordered_map<sys::glyph, glyph_cache> glyphs;
+    auto it = glyphs.find(glyph); if (it == glyphs.end()) {
+
+        glyph_cache data;
+        using namespace sys;
+        static Image<RGBA> image;
+        GDI_CONTEXT context(glyph.font);
+
+        auto ss = winstr(glyph.text); size_t len = winstrlen(ss);
+
+        SIZE size; auto rc = ::GetTextExtentPoint32W (context.dc, ss.c_str(), (int)len, &size);
+        if (!rc) throw std::runtime_error ( "sys::font::render : GetTextExtentPoint32W fail" );
+
+        image.resize(XY(size.cx*3/2, size.cy));
+        image.fill(RGBA(0,0,0));
+
+        data.width = image.size.x;
+        data.advance = size.cx;
+        data.ascent = context.font.metrics.ascent;
+        data.descent = context.font.metrics.descent;
+
+        sys::glyph g;
+        g.text = glyph.text; 
+        g.font = glyph.font; 
+        g.ascent  = data.ascent;
+        g.descent = data.descent;
+        g.advance = data.advance;
+        g.size.x  = data.width;
+        g.size.y  = data.ascent + data.descent;
+        g.color = RGBA(255,255,255);
+        g.background = RGBA(0,0,0);
+        sys::render (g, image);
+
+        for (bool stop = false; !stop && data.width > 0; data.width--)
+            for (int y = 0; y < image.size.y; y++)
+                if (image(data.width-1, y) != RGBA(0,0,0))
+                    { stop = true; break; }
+
+        if (data.width < data.advance) // could be 0 for spaces
+            data.width = data.advance; // for continuity of strike/under-lines
+
+        it = glyphs.emplace (glyph, data).first;
+    }
+    return it->second;
 }
 
-GLYPH<RGBA> sys::font::glyph (FONT font, str text)
+sys::glyph::glyph (str text, sys::glyph_style style) : text(text), glyph_style(style)
 {
-    GLYPH<RGBA> glyph;
-    glyph.font = font;
-    glyph.text = text; if (glyph.text == "") return glyph;
-
-    GDI_CONTEXT context(font);
-
-    auto ss = winstr(text); size_t len = winstrlen(ss);
-
-    SIZE size;  ::GetTextExtentPoint32W (context.dc, ss.c_str(), (int)len, &size);
-
-    int lmargin = 0; int rmargin = 0;
-
-    glyph.frame.size.x = size.cx + lmargin + rmargin;
-    glyph.frame.size.y = size.cy;
-    glyph.bearing_x = - lmargin;
-    glyph.bearing_y = context.font.metrics.ascent;
-    glyph.advance = size.cx;
-    glyph.advance -= context.font.metrics.overhang;
-
-    return glyph;
+    if (text == "") return;
+    auto data = cache(*this);
+    ascent  = data.ascent;
+    descent = data.descent;
+    advance = data.advance;
+    size.x  = data.width;
+    size.y  = ascent + descent;
 }
 
-void sys::font::render (GLYPH<RGBA> & glyph, bool blend)
+sys::token::token (str text, sys::glyph_style style)
 {
-    if (!(glyph.text.contains(str::one_not_of(" \t\r\n")))) return;
-    if (!(glyph.frame.image != nullptr)) throw std::logic_error("sys::font::render : nullptr image");
+    str t; text += "\n";
+    for (char c : text)
+    {
+        if (t.size () == 0
+        ||  t.size () == 1 && (static_cast<uint8_t>(t[0]) & 0b11000000) == 0b11000000 // UTF-8: 110xxxxx 10xxxxxx
+        ||  t.size () == 2 && (static_cast<uint8_t>(t[0]) & 0b11100000) == 0b11100000 // UTF-8: 1110xxxx 10xxxxxx 10xxxxxx
+        ||  t.size () == 3 && (static_cast<uint8_t>(t[0]) & 0b11110000) == 0b11110000 // UTF-8: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+        )   t += c; else { glyphs += glyph(t, style); t = c; }
+    }
+}
+
+void sys::render (glyph glyph, Frame<RGBA> frame, XY offset, uint8_t alpha, int x)
+{
+    if (alpha == 0) return;
+    if (glyph.text == "") return;
+    if (glyph.text.contains_only(str::one_of(" \t\r\n"))
+    &&  glyph.underline.color.a == 0
+    &&  glyph.strikeout.color.a == 0
+    &&  glyph.background     .a == 0) return;
+
+    int w = glyph.size.x; RGBA fore = glyph.color;
+    int h = glyph.size.y; RGBA back = glyph.background;
+
+    if (frame.size.x <= 0 || offset.x >= w) return;
+    if (frame.size.y <= 0 || offset.y >= h) return;
 
     GDI_CONTEXT context(glyph.font);
-
-    int w = glyph.frame.size.x;
-    int h = glyph.frame.size.y;
 
     BITMAPINFO bi;
     ZeroMemory(&bi,               sizeof(bi));
@@ -131,24 +197,35 @@ void sys::font::render (GLYPH<RGBA> & glyph, bool blend)
 
     auto ss = winstr(glyph.text); size_t len = winstrlen(ss);
 
-    if (blend)
+    if (back.a != 255)
     ::SetBkMode    (context.dc, TRANSPARENT); else
-    ::SetBkColor   (context.dc, RGB(glyph.back.r, glyph.back.g, glyph.back.b));
-    ::SetTextColor (context.dc, RGB(glyph.fore.r, glyph.fore.g, glyph.fore.b));
+    ::SetBkColor   (context.dc, RGB(back.r, back.g, back.b));
+    ::SetTextColor (context.dc, RGB(fore.r, fore.g, fore.b));
 
-    if (blend)
-    glyph.frame.copy_to((RGBA*)bits, w);
+    pix::view<RGBA> view ((RGBA*)bits, XY(w,h), w);
 
-    ::TextOutW (context.dc, (int)std::lround(-glyph.bearing_x), 0, ss.c_str(), (int)len);
+    frame = frame.frame (XYWH(-offset.x, -offset.y, w, h));
 
-    glyph.frame.copy_from((RGBA*)bits, w);
+    if (back.a != 255) frame.copy_to(view);
+    if (back.a != 255) view.blend(back, alpha);
+
+    for (int y=0; y<h; y++)
+    for (int x=0; x<w; x++) view(x,y).a = 255;
+
+    ::TextOutW (context.dc, 0, 0, ss.c_str(), (int)len);
+    ::GdiFlush ();
+
+    for (int y=0; y<h; y++)
+    for (int x=0; x<w; x++) view(x,y).a = min (fore.a, 255 - view(x,y).a);
+
+    // https://github.com/wentin/underlineJS
+    // default underline thickness = 1/6 of width of the period mark
+    // optimal Y position is the goden ratio point between the baseline and the descender line
+
+    frame.frame(XYWH(0,0,glyph.advance,h)).blend(back, alpha);
+    frame.blend_from(view, alpha);
 
     ::SelectObject (context.dc, old);
     ::DeleteObject (bmp);
-
-    if (!blend)
-    for (int y=0; y<glyph.frame.size.y; y++)
-    for (int x=0; x<glyph.frame.size.x; x++)
-        if (glyph.frame(x,y).value != RGB(glyph.back.r, glyph.back.g, glyph.back.b))
-            glyph.frame(x,y).a = 255;
 }
+

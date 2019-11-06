@@ -35,7 +35,11 @@ struct str : public std::string
 
     static const int max = std::numeric_limits<int>::max ();
 
-    struct range { int pos, size; };
+    struct range { int pos, size; bool empty () const noexcept { return size <= 0; } };
+
+    struct start { int offset; bool from_end; };
+    static start start_from     (int offset = 0){ return start {offset, false}; }
+    static start start_from_end (int offset = 0){ return start {offset, true }; }
 
     str substr (int pos, int num) const {
         if (pos < 0) num += pos, pos = 0;
@@ -43,6 +47,7 @@ struct str : public std::string
         return num > 0 ? base::substr (pos, num) : base ();
     }
     str substr (range range) const { return substr(range.pos, range.size);}
+    str substr (start start) const { return start.from_end ? till(size()-start.offset) : from(start.offset); }
 
     str from (int pos) const { return substr (pos, max); }
     str till (int pos) const { return substr (0, pos); }
@@ -74,10 +79,6 @@ struct str : public std::string
         std::holds_alternative<one_of>(pattern) ? (std::get<1>(pattern).chars.size() == 0 ? 0 : 1) :
         std::holds_alternative<one_not_of>(pattern) ? (std::get<2>(pattern).chars.size() == 0 ? 0 : 1) : 0;
     }
-
-    struct start { int offset; bool from_end; };
-    static start start_from     (int offset = 0){ return start {offset, false}; }
-    static start start_from_end (int offset = 0){ return start {offset, true }; }
 
     auto find (pattern pattern, start start = start_from(0)) const
     {
@@ -126,6 +127,12 @@ struct str : public std::string
     }
 
     bool contains (pattern pattern, start start = start_from(0)) const { return find (pattern, start).size > 0; }
+
+    bool contains_only (pattern pattern, start start = start_from(0)) const { return
+        std::holds_alternative<str>(pattern) ?    substr(start) == std::get<0>(pattern) :
+        std::holds_alternative<one_of>(pattern) ? find (one_not_of(std::get<1>(pattern).chars), start).empty() :
+        std::holds_alternative<one_not_of>(pattern) ? find (one_of(std::get<2>(pattern).chars), start).empty() : false;
+    }
 
     /////////////////////////////////////////////////
 
@@ -190,7 +197,6 @@ struct str : public std::string
 
     str ascii_lowercased () const { str s = *this; std::transform(s.begin(), s.end(), s.begin(), ascii_tolower); return s; }
     str ascii_uppercased () const { str s = *this; std::transform(s.begin(), s.end(), s.begin(), ascii_toupper); return s; }
-
 };
 
 namespace std

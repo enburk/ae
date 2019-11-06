@@ -1,116 +1,166 @@
 #pragma once
-#include "sys.h"
-namespace test::fonts
-{
-    using namespace pix;
+#include "gui_widget_image.h"
+#include "gui_widget_canvas.h"
+using namespace pix;
 
-    static Image<RGBA> test1 ()
+struct TestFont1 : gui::widget<TestFont1>
+{
+    gui::image gui_image; Image<RGBA> image;
+    
+    void on_change (void* what) override
     {
+        if (what != & alpha || alpha.to == 0 ||
+            coord.now.size == image.size ||
+            coord.now.size == XY()) return;
+
+        image.resize(coord.now.size); image.fill(pix::red);
+        gui_image.coord = coord.now.local();
+        gui_image.source = image;
+
         str digit = "0123456789";
         str Latin = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         str latin = "abcdefghijklmnopqrstuvwxyz";
         str alnum = Latin + latin + digit;
+        array<
+        sys::font> fonts = {
+        sys::font("Consolas", 12),
+        sys::font("Segoe UI", 16),
+        sys::font("Tahoma",   24) };
 
-        array<GLYPH<RGBA>> glyphs;
-        int gap = 1; int x = gap; int y = gap; int width = 0; 
-        array<FONT> fonts = { FONT("Consolas", 12), FONT("Segoe UI", 16), FONT("Tahoma", 24) };
+        int gap = 1; int x = gap; int y = gap;
 
         for (auto font : fonts)
-        for (int r=0; r<4; r++, x = gap, y += 2 + gap +
-            sys::font::metrics(font).ascent  +
-            sys::font::metrics(font).descent +
-            sys::font::metrics(font).linegap)
+        for (int r=0; r<4; r++, x = gap, y += gap +
+            sys::metrics(font).ascent  +
+            sys::metrics(font).descent +
+            sys::metrics(font).linegap)
         {
-            font.bold   = r == 2 || r == 3;
-            font.italic = r == 1 || r == 3;
-            for (char c : alnum)
-            {
-                static bool even = false; even = !even;
-                auto glyph = sys::font::glyph(font, str(c));
-                glyph.coord.x = x;
-                glyph.coord.y = y + (even ? 0 : 1);
-                glyphs += glyph;
+            sys::glyph_style style;
+            style.color = pix::black;
+            style.color.a = 230;
+            style.background = pix::white;
+            style.background.a = 230;
+            style.font = font;
+            style.font.bold   = r == 2 || r == 3;
+            style.font.italic = r == 1 || r == 3;
 
-                width = max(width, x + glyph.frame.size.x);
-                x += (int)std::ceil(glyph.advance) + gap;
+            for (char c : alnum) {
+                auto glyph = sys::glyph(str(c), style);
+                sys::render(glyph, image.frame(XYWH(x, y, glyph.size.x, glyph.size.y)), XY(), 230, x);
+                x += glyph.advance + gap;
             }
         }
-
-        Image<RGBA> image (XY(width, y), pix::red);
-
-        for (auto glyph : glyphs)
-        {
-            glyph.frame = image.frame(XYWH(glyph.coord.x, glyph.coord.y, glyph.frame.size.x, glyph.frame.size.y));
-            glyph.fore = pix::black;
-            glyph.back = pix::white;
-            sys::font::render(glyph, false);
-        }
-
-        return image;
     }
+};
 
-    static Image<RGBA> test2 ()
+struct TestFont2 : gui::widget<TestFont2>
+{
+    gui::image gui_image; Image<RGBA> image;
+    
+    void on_change (void* what) override
     {
+        if (what != & alpha || alpha.to == 0 ||
+            coord.now.size == image.size ||
+            coord.now.size == XY()) return;
+
+        image.resize(coord.now.size); image.fill(pix::red);
+        gui_image.coord = coord.now.local();
+        gui_image.source = image;
+
         str s = "The quick brown fox jumps over the lazy dog";
+        array<
+        sys::font> fonts = {
+        sys::font("Consolas", 12),
+        sys::font("Segoe UI", 16),
+        sys::font("Tahoma",   24) };
 
-        array<GLYPH<RGBA>> glyphs;
-        int gap = 1; int x = gap; int y = gap; int width = 0; 
-        array<FONT> fonts = { FONT("Consolas", 12), FONT("Segoe UI", 14), FONT("Tahoma", 16) };
+        int gap = 1; int x = gap; int y = gap;
 
         for (auto font : fonts)
-        for (int r=0; r<4; r++, x = gap, y += 1 + gap +
-            sys::font::metrics(font).ascent  +
-            sys::font::metrics(font).descent +
-            sys::font::metrics(font).linegap)
+        for (int r=0; r<4; r++, x = gap, y += gap +
+            sys::metrics(font).ascent  +
+            sys::metrics(font).descent +
+            sys::metrics(font).linegap)
         {
-            font.bold   = r == 2 || r == 3;
-            font.italic = r == 1 || r == 3;
-            for (char c : s)
-            {
-                auto glyph = sys::font::glyph(font, str(c));
-                glyph.coord.x = x;
-                glyph.coord.y = y;
-                glyphs += glyph;
+            sys::glyph_style style;
+            style.color = pix::black;
+            style.color.a = 230;
+            style.background = pix::white;
+            style.background.a = 230;
+            style.font = font;
+            style.font.bold   = r == 2 || r == 3;
+            style.font.italic = r == 1 || r == 3;
 
-                width = max(width, x + glyph.frame.size.x);
-                x += (int)std::ceil(glyph.advance);
+            for (char c : s) {
+                auto glyph = sys::glyph(str(c), style);
+                sys::render(glyph, image.frame(XYWH(x, y, glyph.size.x, glyph.size.y)), XY(), 230, x);
+                x += glyph.advance;
             }
-
-            x = gap; y += 1 + gap +
-            sys::font::metrics(font).ascent  +
-            sys::font::metrics(font).descent +
-            sys::font::metrics(font).linegap;
+            x = gap; y += gap +
+            sys::metrics(font).ascent  +
+            sys::metrics(font).descent +
+            sys::metrics(font).linegap;
             {
-                auto glyph = sys::font::glyph(font, s);
-                glyph.coord.x = x;
-                glyph.coord.y = y;
-                glyphs += glyph;
-
-                width = max(width, x + glyph.frame.size.x);
-                x += (int)std::ceil(glyph.advance);
+                auto glyph = sys::glyph(s, style);
+                sys::render(glyph, image.frame(XYWH(x, y, glyph.size.x, glyph.size.y)), XY(), 230, x);
+                x += glyph.advance;
             }
         }
-
-        Image<RGBA> image (XY(width, y), pix::red);
-
-        for (auto glyph : glyphs)
-        {
-            glyph.frame = image.frame(XYWH(glyph.coord.x, glyph.coord.y, glyph.frame.size.x, glyph.frame.size.y));
-            glyph.fore = pix::black;
-            glyph.back = pix::white;
-            sys::font::render(glyph, false);
-        }
-
-        return image;
     }
+};
 
-    static Image<RGBA> test ()
+struct TestFont3 : gui::widget<TestFont3>
+{
+    gui::text::line linea, lineb;
+    gui::widgetarium<gui::text::line> lines;
+    
+    void on_change (void* what) override
     {
-        Image<RGBA> image1 = test1();
-        Image<RGBA> image2 = test2();
-        Image<RGBA> image (XY(max(image1.size.x, image2.size.x), image1.size.y + image2.size.y), pix::red);
-        image1.frame().copy_to(image);
-        image2.frame().copy_to(image.frame(XYWH(0,image1.size.y, image2.size.x, image2.size.y)));
-        return image;
+        if (what != & alpha || alpha.to == 0 || lines.size () > 0 ||
+            coord.now.size == XY()) return;
+
+        lines.resize(coord.now.size);
+
+        str s = "The quick brown fox jumps over the lazy dog";
+        array<
+        sys::font> fonts = {
+        sys::font("Consolas", 12),
+        sys::font("Segoe UI", 16),
+        sys::font("Tahoma",   24) };
+
+        int gap = 1; int x = gap; int y = gap;
+
+        for (auto font : fonts)
+        for (int r=0; r<4; r++)
+        {
+            sys::glyph_style style;
+            style.color = pix::black;
+            style.color.a = 230;
+            style.background = pix::white;
+            style.background.a = 192;
+            style.font = font;
+            style.font.bold   = r == 2 || r == 3;
+            style.font.italic = r == 1 || r == 3;
+
+            if (linea.glyphs.size() == 0) {
+            linea.append(sys::glyph(s, style));
+            linea.move_to(XY(x, y));
+            y += linea.coord.now.size.y; }
+
+            if (lineb.glyphs.size() == 0) {
+            lineb.append(sys::token(s, style));
+            lineb.move_to(XY(x, y));
+            y += lineb.coord.now.size.y; }
+
+            auto & line1 = lines.emplace_back();
+            line1.append(sys::glyph(s, style));
+            line1.move_to(XY(x, y));
+            y += line1.coord.now.size.y;
+
+            auto & line2 = lines.emplace_back();
+            line2.append(sys::token(s, style));
+            line2.move_to(XY(x, y));
+            y += line2.coord.now.size.y;
+        }
     }
-}
+};

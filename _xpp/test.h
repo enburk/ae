@@ -1,73 +1,54 @@
 #pragma once
-#include "ide_test_fonts.h"
-#include "ide_test_pix.h"
-namespace ide::test
+#include "gui_widget_image.h"
+#include "gui_widget_canvas.h"
+#include "gui_widget_button.h"
+#include "test_fonts.h"
+
+using pix::XY;
+using pix::XYWH;
+using pix::XYXY;
+using pix::RGBA;
+using pix::Image;
+using pix::Frame;
+
+struct Test : gui::widget<Test>
 {
-    namespace mouse
-    {
-        inline XY   pos;
-        inline bool l_pressed = false;
-        inline bool m_pressed = false;
-        inline bool r_pressed = false;
-        inline bool x_pressed = false;
-        inline bool test = false;
-        inline Image<XRGB> back;
-        inline Image<XRGB> fore;
+    gui::canvas canvas;
+    gui::button button_font1; TestFont1 test_font1;
+    gui::button button_font2; TestFont2 test_font2;
+    gui::button button_font3; TestFont3 test_font3;
 
-        namespace on
+    Test ()
+    {
+        canvas.color = pix::red;
+        test_font1.hide();
+        test_font2.hide();
+        test_font3.hide();
+    }
+
+    void on_change (void* what) override
+    {
+        if (what == &coord)
         {
-            bool press(XY p, char button, bool down)
-            {
-                if (!test) return false;
-                switch(button) {
-                case 'L': l_pressed = down; break;
-                case 'M': m_pressed = down; break;
-                case 'R': r_pressed = down; break;
-                case 'X': x_pressed = down; break;
-                }
-                return true;
-            }
-            bool move(XY p)
-            {
-                if (!test) return false;
-                fore.fill(x_pressed ? XRGB::green : l_pressed ? XRGB::navy : XRGB::blue);
-                back.copy_to  (sys::window::image.frame(pos-back.size/2)); pos = p;
-                back.copy_from(sys::window::image.frame(pos-back.size/2));
-                fore.copy_to  (sys::window::image.frame(pos-fore.size/2));
-                return true;
-            }
-            bool clickclick(XY p, char button)
-            {
-                if (!test) return false;
-                return true;
-            }
+            int W = coord.now.w; int w = W/30; int dx = w/10;
+            int H = coord.now.h; int h = H/40; int dy = h/10;
+
+            canvas.coord = coord.now.local();  int y = dy;
+
+            button_font1.coord = XYWH(W-w-dx, y, w, h); y += h + dy;
+            button_font2.coord = XYWH(W-w-dx, y, w, h); y += h + dy;
+            button_font3.coord = XYWH(W-w-dx, y, w, h); y += h + dy;
+
+            test_font1.coord = XYWH(0, 0, W-dx-w-dx, H);
+            test_font2.coord = XYWH(0, 0, W-dx-w-dx, H);
+            test_font3.coord = XYWH(0, 0, W-dx-w-dx, H);
         }
     }
 
-    namespace window
+    virtual void on_notify (gui::base::widget* w)
     {
-        namespace on
-        {
-            bool resize()
-            {
-                if (!test) return false;
-                sys::window::image.fill(XRGB::red);
-                if (0) pix  ::test().copy_to(sys::window::image.frame());
-                if (1) fonts::test().copy_to(sys::window::image.frame());
-
-                if (mouse::test) { int a = sys::window::image.size.x/200;
-                    mouse::back.resize(XY(a,a));
-                    mouse::fore.resize(XY(a,a));
-                    mouse::pos = XY(-a,-a);
-                }
-                return true;
-            }
-            bool redraw(XYXY r)
-            {
-                if (!test) return false;
-                return true;
-            }
-        }
+        test_font1.show (w == &button_font1, gui::time(500));
+        test_font2.show (w == &button_font2, gui::time(500));
+        test_font3.show (w == &button_font3, gui::time(500));
     }
-}
- 
+};

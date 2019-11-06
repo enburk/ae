@@ -24,7 +24,7 @@ struct Widget
 
 struct Settings
 {
-    FONT font;
+    Font font;
     XRGB fore;
     XRGB back;
     bool read_only;
@@ -33,7 +33,7 @@ struct Settings
 
 struct Options
 {
-    FONT font;
+    Font font;
     XRGB fore;
     XRGB back;
     bool read_only;
@@ -45,9 +45,9 @@ struct Line : Widget
     frame<XRGB> frame;
 
 
-    using GLYPH = GLYPH<XRGB>;
+    using Glyph = Glyph<XRGB>;
 
-    array<GLYPH> glyphs;
+    array<Glyph> glyphs;
 
     Settings settings;
 

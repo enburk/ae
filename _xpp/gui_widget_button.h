@@ -14,7 +14,7 @@ namespace gui
         canvas background;
         frame frame_focus;
         frame frame_mouse;
-        Text  text;
+        //Text  text;
 
         button(base::widget* parent = nullptr) : widget(parent)
         {
@@ -61,7 +61,7 @@ namespace gui
                 frame_focus.move_to(r); r.deflate(frame_focus.thickness.now);
                 frame_mouse.move_to(r); r.deflate(frame_mouse.thickness.now);
                 background .move_to(r); r.deflate(frame_mouse.thickness.now);
-                text       .move_to(r);
+                //text       .move_to(r);
             }
         }
     };

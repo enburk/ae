@@ -1,7 +1,7 @@
 #pragma once
 #include "aux_array.h"
 #include "aux_string.h"
-namespace lexica
+namespace doc::lexica
 {
     inline constexpr auto ascii (char c) { return c >= ' ' && c <= '~'; };
     inline constexpr auto space (char c) { return c == ' ' || c =='\t'; };

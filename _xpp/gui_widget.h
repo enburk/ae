@@ -17,15 +17,16 @@ namespace gui::base
 
         ////////////////////////////////////////////////////////////////////////
 
-        property<XYWH> coord; property<uint8_t> alpha = 255;
+        property<XYWH> coord; property<uint8_t> alpha = 255; XY advance, baseline;
 
-        void hide    (bool off, time t = time()) { alpha.go(off? 0 : 255, t); }
-        void show    (bool on , time t = time()) { alpha.go(on ? 255 : 0, t); }
-        void hide    (          time t = time()) { hide(true, t); }
-        void show    (          time t = time()) { show(true, t); }
-        void move_to (XYWH  r,  time t = time()) { coord.go(r, t); }
-        void move_to (XY    p,  time t = time()) { coord.go(XYWH(p.x, p.y, coord.to.w, coord.to.h), t); }
-        void resize  (XY size,  time t = time()) { coord.go(XYWH(coord.to.x, coord.to.y, size.x, size.y), t); }
+        void hide    (bool off, time t=time()) { alpha.go(off? 0 : 255, t); }
+        void show    (bool on , time t=time()) { alpha.go(on ? 255 : 0, t); }
+        void hide    (          time t=time()) { hide(true, t); }
+        void show    (          time t=time()) { show(true, t); }
+        void move_to (XYWH  r,  time t=time()) { coord.go(r, t); }
+        void move_to (XY    p,  time t=time()) { coord.go(XYWH(p.x, p.y, coord.to.w, coord.to.h), t); }
+        void shift   (XY    d,  time t=time()) { coord.go(XYWH(coord.to.x+d.x, coord.to.y+d.y, coord.to.w, coord.to.h), t); }
+        void resize  (XY size,  time t=time()) { coord.go(XYWH(coord.to.x, coord.to.y, size.x, size.y), t); }
 
         virtual void on_render (Frame<RGBA> frame, XY offset, uint8_t alpha) {}
         virtual void on_change (void* what) { on_change(); }
@@ -131,14 +132,23 @@ namespace gui::base
             if (!hover) on_mouse_hover(p);
         }
 
+        void mouse_leave ()
+        {
+            if (mouse_hover_child) {
+                mouse_hover_child->mouse_leave ();
+                mouse_hover_child = nullptr;
+            }
+            on_mouse_leave ();
+        }
+
         void mouse_wheel (XY p, int delta)
         {
         }
-        void mouse_leave ()
-        {
-        }
+
+        ////////////////////////////////////////////////////////////////////////
 
         void notify () { if (parent) parent->on_notify(this); }
+
         virtual void on_notify (widget*) {}
 
         ////////////////////////////////////////////////////////////////////////
@@ -185,5 +195,77 @@ namespace gui
             auto it = widgets.lower_bound(this);
             if (it != widgets.end() && *it == this) widgets.erase(it);
         }
+    };
+
+    template<class T> struct widgetarium : widget<widgetarium<T>>
+    {
+        using widget = widget<widgetarium<T>>;
+        using widget::children;
+
+        array<int> holes;
+        array<int> indices;
+        std::deque<std::optional<T>> deque;
+
+        int size () { return indices.size(); }
+
+        const T & operator () (int pos) const { return *deque[indices[pos]]; }
+        /***/ T & operator () (int pos) /***/ { return *deque[indices[pos]]; }
+
+        template<class... Args>
+        T & emplace_back (Args&&... args)
+        {
+            if (holes.empty()) { auto & t =
+                deque.emplace_back(std::in_place, std::forward<Args>(args)...);
+                indices.emplace_back(size());
+                children += &t.value();
+                t.value().parent = this;
+                return t.value();
+            } else {
+                int index = holes.back(); holes.pop_back(); auto & t =
+                deque[index].emplace(std::forward<Args>(args)...);
+                indices.emplace_back(index);
+                children += &t;
+                t.parent = this;
+                return t;
+            }
+        }
+
+        void erase (int pos)
+        {
+            deque[indices[pos]].reset();
+            holes.push_back(indices[pos]);
+            indices.erase(indices.begin()+pos);
+        }
+
+        int rotate (int f, int m, int l) {
+            assert(children.size() == indices.size());
+            std::rotate(
+            children.begin() + f,
+            children.begin() + m,
+            children.begin() + l);
+            return (int)(
+            std::rotate(
+            indices.begin() + f,
+            indices.begin() + m,
+            indices.begin() + l) -
+            indices.begin());
+        }
+
+        template<class U> struct iterator
+        {
+            widgetarium<U>* that; int index;
+            void operator ++ () { ++index; }
+            void operator -- () { --index; }
+            void operator += (long n) { index += n; }
+            void operator -= (long n) { index -= n; }
+            bool operator == (iterator i) { return index == i.index; }
+            bool operator != (iterator i) { return index != i.index; }
+            const U & operator * () const { return (*that)(index); }
+            /***/ U & operator * () /***/ { return (*that)(index); }
+            friend iterator operator + (iterator i, long n) { i.index += n; return i; }
+            friend iterator operator - (iterator i, long n) { i.index -= n; return i; }
+        };
+        iterator<T> begin () { return iterator<T>{this, 0}; }
+        iterator<T> end   () { return iterator<T>{this, size()}; }
     };
 }

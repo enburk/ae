@@ -2,7 +2,7 @@
 #include "gui_widget.h"
 namespace gui
 {
-    struct canvas : widget<canvas>
+    struct canvas final : widget<canvas>
     {
         property<RGBA> color;
 
@@ -24,7 +24,7 @@ namespace gui
         }
     };
 
-    struct frame : widget<frame>
+    struct frame final : widget<frame>
     {
         property<RGBA> color;
         property<int> thickness = 1;

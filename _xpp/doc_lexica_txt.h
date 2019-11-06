@@ -1,7 +1,7 @@
 #pragma once
 #include "doc.h"
 #include "doc_lexica.h"
-namespace lexica
+namespace doc::lexica
 {
 /// template<class I,
 /// std::enable_if_t<std::is_same_v<typename

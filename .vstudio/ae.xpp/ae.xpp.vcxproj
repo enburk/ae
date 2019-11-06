@@ -141,9 +141,9 @@
     <ClInclude Include="..\..\_xpp\gui_widget_button.h" />
     <ClInclude Include="..\..\_xpp\gui_widget_canvas.h" />
     <ClInclude Include="..\..\_xpp\gui_widget_image.h" />
+    <ClInclude Include="..\..\_xpp\gui_widget_layout.h" />
     <ClInclude Include="..\..\_xpp\gui_widget_splitter.h" />
     <ClInclude Include="..\..\_xpp\gui_widget_text.h" />
-    <ClInclude Include="..\..\_xpp\gui_widget_text_line.h" />
     <ClInclude Include="..\..\_xpp\gui_window.h" />
     <ClInclude Include="..\..\_xpp\ide_console.h" />
     <ClInclude Include="..\..\_xpp\ide_edit.h" />
@@ -155,7 +155,6 @@
     <ClInclude Include="..\..\_xpp\pix_coord.h" />
     <ClInclude Include="..\..\_xpp\pix_image.h" />
     <ClInclude Include="..\..\_xpp\pix_math.h" />
-    <ClInclude Include="..\..\_xpp\pix_typo_font.h" />
     <ClInclude Include="..\..\_xpp\sys.h" />
     <ClInclude Include="..\..\_xpp\sys_windows.h" />
     <ClInclude Include="..\..\_xpp\test.h" />

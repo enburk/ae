@@ -17,6 +17,14 @@ namespace test_aux
         EXPECT_EQ(str("abc").till(2), "ab");
         EXPECT_EQ(str("abc").from(2), "c");
         EXPECT_EQ(str("abc").tail(2), "bc");
+
+        EXPECT_EQ(str("abccba").substr(str::start_from(1)), "bccba");
+        EXPECT_EQ(str("abccba").substr(str::start_from(2)), "ccba");
+        EXPECT_EQ(str("abccba").substr(str::start_from(5)), "a");
+        EXPECT_EQ(str("abccba").substr(str::start_from_end()), "abccba");
+        EXPECT_EQ(str("abccba").substr(str::start_from_end(1)), "abccb");
+        EXPECT_EQ(str("abccba").substr(str::start_from_end(2)), "abcc");
+        EXPECT_EQ(str("abccba").substr(str::start_from_end(5)), "a");
     }
 
     TEST(TestAuxString, Find)
@@ -100,6 +108,22 @@ namespace test_aux
         EXPECT_FALSE(str("abc").ends_with("aab"));
         EXPECT_FALSE(str("abc").ends_with("aa"));
         EXPECT_FALSE(str("abc").ends_with("a"));
+
+        EXPECT_TRUE(str("abccba").contains("cc"));
+        EXPECT_TRUE(str("abccba").contains(str::one_of("acc")));
+        EXPECT_TRUE(str("abccba").contains(str::one_not_of("acc")));
+
+        EXPECT_FALSE(str("abccba").contains_only("cc"));
+        EXPECT_FALSE(str("abccba").contains_only(str::one_of("acc")));
+        EXPECT_FALSE(str("abccba").contains_only(str::one_not_of("acc")));
+
+        EXPECT_TRUE(str("abccba").contains_only("abccba"));
+        EXPECT_TRUE(str("abccba").contains_only(str::one_of("abc")));
+        EXPECT_TRUE(str("abccba").contains_only(str::one_not_of("def")));
+
+        EXPECT_FALSE(str("").contains_only("abccba"));
+        EXPECT_TRUE(str("").contains_only(str::one_of("abc")));
+        EXPECT_TRUE(str("").contains_only(str::one_not_of("def")));
     }
 
     TEST(TestAuxString, Edit)

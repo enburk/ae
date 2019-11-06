@@ -20,8 +20,8 @@ namespace pix
         void operator *= (int n) { x *= n; y *= n; }; friend XY operator * (XY a, int n) { a *= n; return a; }
         void operator /= (int n) { x /= n; y /= n; }; friend XY operator / (XY a, int n) { a /= n; return a; }
 
-        bool operator == (XY r) { return x == r.x && y == r.y; }
-        bool operator != (XY r) { return ! (*this == r); }
+        bool operator == (XY r) const { return x == r.x && y == r.y; }
+        bool operator != (XY r) const { return ! (*this == r); }
     };
     struct XYXY
     {
