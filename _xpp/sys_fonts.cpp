@@ -16,7 +16,6 @@ struct GDI_FONT
     {
         HDC hdc = GetDC(Hwnd); // EnumDisplayMonitors(hdc, &rc, MyPaintEnumProc, 0);
         HDC dc = ::CreateCompatibleDC (hdc);//(NULL);
-        //HDC dc = ::CreateCompatibleDC (NULL);
         ReleaseDC (Hwnd, hdc);
 
         LOGFONT lf;
@@ -79,7 +78,6 @@ struct GDI_CONTEXT
     {
         HDC hdc = GetDC(Hwnd); // EnumDisplayMonitors(hdc, &rc, MyPaintEnumProc, 0);
         dc = ::CreateCompatibleDC (hdc);//(NULL);
-        //dc = ::CreateCompatibleDC (NULL);
         old = ::SelectObject (dc, font.handle);
         ReleaseDC (Hwnd, hdc);
     }
@@ -106,7 +104,7 @@ static glyph_cache cache (const sys::glyph & glyph)
         SIZE size; auto rc = ::GetTextExtentPoint32W (context.dc, ss.c_str(), (int)len, &size);
         if (!rc) throw std::runtime_error ( "sys::font::render : GetTextExtentPoint32W fail" );
 
-        image.resize(XY(size.cx*3/2, size.cy));
+        image.resize(XY(size.cx*4/2, size.cy));
         image.fill(RGBA(0,0,0));
 
         data.width = image.size.x;
@@ -133,6 +131,8 @@ static glyph_cache cache (const sys::glyph & glyph)
 
         if (data.width < data.advance) // could be 0 for spaces
             data.width = data.advance; // for continuity of strike/under-lines
+
+        data.advance -= data.width; // the pen position increment = size.x + advance
 
         it = glyphs.emplace (glyph, data).first;
     }
@@ -222,7 +222,7 @@ void sys::render (glyph glyph, Frame<RGBA> frame, XY offset, uint8_t alpha, int 
     // default underline thickness = 1/6 of width of the period mark
     // optimal Y position is the goden ratio point between the baseline and the descender line
 
-    frame.frame(XYWH(0,0,glyph.advance,h)).blend(back, alpha);
+    frame.blend(back, alpha);
     frame.blend_from(view, alpha);
 
     ::SelectObject (context.dc, old);

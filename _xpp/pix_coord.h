@@ -130,7 +130,11 @@ namespace pix
         void operator  = (XYWH r) { rectangles.clear(); rectangles += r; }
         void operator += (XYWH r) {
             if (!r) return;
-            for (auto & R : rectangles) {
+            for (auto
+                i = rectangles.rbegin();
+                i != rectangles.rend(); ++i)
+            {
+                auto & R = *i;
                 XYWH u = R | r;
                 auto Rsquare = R.w * R.h;
                 auto rsquare = r.w * r.h;

@@ -5,123 +5,76 @@ namespace gui
     enum class orientation { horizontal, vertical };
     const orientation vertical = orientation::vertical;
     const orientation horizontal = orientation::horizontal;
-    constexpr orientation operator ~ (orientation o) {
-    return o == horizontal ? vertical : horizontal;
-    }
+    constexpr orientation operator ~ (orientation orientation)
+    { return orientation == horizontal ? vertical : horizontal; }
 
-    template<class T, orientation orientation> struct layout : widgetarium<T>
+    template<orientation orientation> struct align;
+    template<> struct align<vertical> { enum { top, center, bottom, justify }; };
+    template<> struct align<horizontal> { enum { left, center, right, justify }; };
+
+    template<class T, orientation orientation> struct layout;
+
+    template<class T> struct layout<T, horizontal> : widgetarium<T>
     {
         typedef widgetarium<T> base;
+        using base::size; using base::coord;
 
         template<class... Args> T & emplace_back (Args&&... args)
         {
-            int x = advance(0, size());
+            int x = offset(size()); // before base::emplace_back
             T & t = base::emplace_back(std::forward<Args>(args)...);
-            shift(size()-1, size(), XY(x, baseline - t.baseline));
-            if (baseline < t.baseline) { shift(0, size(), XY(0,
-               -baseline + t.baseline));
-                baseline = t.baseline; }
-            x += length(size()-1);
-            resize(XY(x, max(coord.now.size.y, g.size.y)));
-            resize(XY(x, max(coord.now.size.y, g.size.y)));
-
-
+            int y = base::baseline.y - t.baseline.y;
+            t.move_to(XY(x,y));
+            base::resize(XY(x + t.coord.now.size.x, coord.now.size.y));
+            if (y < 0) {
+                y = -y;
+                for (auto & w : *this) w.shift(XY(0,y));
+                int descent = max (t.coord.now.size.y - t.baseline.y,
+                    coord.now.size.y - base::baseline.y);
+                base::baseline.y += y;
+                base::resize(XY(coord.now.size.x, base::baseline.y + descent));
+            }
             return t;
         }
 
-        void erase (int pos)
-        {
-            deque[indices[pos]].reset();
-            holes.push_back(indices[pos]);
-            indices.erase(indices.begin()+pos);
-        }
-
-        void truncate (int pos)
-        {
-            while (indices.size() > pos)
-                erase(indices.size()-1);
-        }
-
-        XY coord (int d) { return orientation == horizontal ? (*this)(n).coord.now.x : (*this)(n).coord.now.y; }
-
-        int offset  (int n) { return orientation == horizontal ? (*this)(n).coord.now.x : (*this)(n).coord.now.y; }
-        int length  (int n) { return orientation == horizontal ? (*this)(n).coord.now.w : (*this)(n).coord.now.h; }
-        int breadth (int n) { return orientation == horizontal ? (*this)(n).coord.now.h : (*this)(n).coord.now.w; }
-        int advance (int n) { return orientation == horizontal ? (*this)(n).advance  .x : (*this)(n).advance  .y; }
-
-        int lenght  (int f, int l) { --l; return f > l ? 0 : offset(l) - offset(f) + length (l); }
-        int advance (int f, int l) { --l; return f > l ? 0 : offset(l) - offset(f) + advance(l); }
-
-        void shift (int f, int l, XY d) {
-            for (int i=f; i<l; i++)
-                (*this)(i).shift(orientation == horizontal ?
-                    d : XY(d.y, d.x));
+        int offset (int n) const {
+            assert(n >= 0);
+            assert(n <= size());
+            return n <  size() ? (*this)(n).coord.now.x :
+                   n >  0 ? (*this)(n-1).coord.now.x + (*this)(n-1).coord.now.size.x + (*this)(n-1).advance.x :
+                   0;
         }
 
         int rotate (int f, int m, int l)
         {
-            int a1 = advance(f,m);
-            int a2 = advance(m,l);
+            assert(f <= m); assert(f >= 0);
+            assert(m <= l); assert(l <= size());
+            if(f == m) return l;
+            if(m == l) return f;
+            int d1 = offset(m) - offset(f);
+            int d2 = offset(l) - offset(m);
             int n = base::rotate(f, m, l);
-            shift(f,n,-a1);
-            shift(n,l, a2);
+            for (int i=f; i<n; i++) (*this)(i).shift(XY(-d1,0));
+            for (int i=n; i<l; i++) (*this)(i).shift(XY( d2,0));
+            return n;
         }
 
-
-
-
-
-        struct line final : widget<line>
+        void erase (int pos, int num = 1)
         {
-            widgetarium<canvas> canvases;
-            widgetarium<glyph> glyphs;
-            int minimum_height = 0;
-            int baseline = 0;
-
-            void append (sys::glyph g)
-            {
-                int x = advance(0, glyphs.size());
-                auto & glyph = glyphs.emplace_back();
-                glyph.g = g;
-                glyph.shift(XY(x, baseline - g.ascent));
-                if (baseline < g.ascent) { shift(0, glyphs.size(), XY(0,
-                   -baseline + g.ascent));
-                    baseline = g.ascent; }
-                x += g.size.x;
-                glyphs.
-                resize(XY(x, max(coord.now.size.y, g.size.y)));
-                resize(XY(x, max(coord.now.size.y, g.size.y)));
+            assert(pos >= 0);
+            assert(pos+num <= size());
+            pos = rotate(pos, pos+num, size());
+            while (size() > pos) base::erase(size()-1);
+            base::resize(XY(offset(size()), coord.now.size.y));
+            int y = 0;
+            int h = 0;
+            for (auto & w : *this) {
+                y = max (y, w.baseline.y);
+                h = max (h, w.coord.now.y + w.coord.now.size.y);
             }
-            void append (sys::token token)
-            {
-                for (auto & g : token.glyphs)
-                    append (g);
-            }
-            void insert (int pos, sys::glyph g) {
-                append(std::move(g)); rotate(pos,
-                    glyphs.size()-1,
-                    glyphs.size());
-            }
-            void insert (int pos, sys::token token) {
-                append(std::move(token)); rotate(pos,
-                    glyphs.size()-token.glyphs.size(),
-                    glyphs.size());
-            }
-            void erase (int pos, int num = 1)
-            {
-                glyphs.truncate(rotate(pos, pos+num, glyphs.size()));
-                int height = baseline = 0;
-                for (auto & g : glyphs) {
-                    baseline = max (baseline, g.g.now.ascent);
-                    height =   max (height,   g.g.now.size.y);
-                }
-                height = max (height, minimum_height);
-                for (auto & g : glyphs) g.move_to(XY(g.coord.now.x, baseline - g.g.now.ascent));
-                glyphs.
-                resize(XY(glyphs.coord.now.size.x, height));
-                resize(XY(glyphs.coord.now.size.x, height));
-            }
-        };
+            base::resize(XY(coord.now.size.x, h));
+            base::baseline.y = y;
+        }
     };
 
     template<class T, orientation orientation = vertical>

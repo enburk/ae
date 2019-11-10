@@ -47,7 +47,7 @@ struct TestFont1 : gui::widget<TestFont1>
             for (char c : alnum) {
                 auto glyph = sys::glyph(str(c), style);
                 sys::render(glyph, image.frame(XYWH(x, y, glyph.size.x, glyph.size.y)), XY(), 230, x);
-                x += glyph.advance + gap;
+                x += glyph.size.x + glyph.advance + gap;
             }
         }
     }
@@ -94,7 +94,7 @@ struct TestFont2 : gui::widget<TestFont2>
             for (char c : s) {
                 auto glyph = sys::glyph(str(c), style);
                 sys::render(glyph, image.frame(XYWH(x, y, glyph.size.x, glyph.size.y)), XY(), 230, x);
-                x += glyph.advance;
+                x += glyph.size.x + glyph.advance;
             }
             x = gap; y += gap +
             sys::metrics(font).ascent  +
@@ -103,7 +103,7 @@ struct TestFont2 : gui::widget<TestFont2>
             {
                 auto glyph = sys::glyph(s, style);
                 sys::render(glyph, image.frame(XYWH(x, y, glyph.size.x, glyph.size.y)), XY(), 230, x);
-                x += glyph.advance;
+                x += glyph.size.x + glyph.advance;
             }
         }
     }
@@ -133,33 +133,44 @@ struct TestFont3 : gui::widget<TestFont3>
         for (auto font : fonts)
         for (int r=0; r<4; r++)
         {
+            RGBA 
+            background = pix::white;
+            background.a = 192;
+
             sys::glyph_style style;
             style.color = pix::black;
             style.color.a = 230;
-            style.background = pix::white;
-            style.background.a = 192;
+            // style.background = background;
             style.font = font;
             style.font.bold   = r == 2 || r == 3;
             style.font.italic = r == 1 || r == 3;
 
-            if (linea.glyphs.size() == 0) {
+            if (linea.size() == 0) {
             linea.append(sys::glyph(s, style));
+            linea.resize(linea.glyphs.coord.now.size);
             linea.move_to(XY(x, y));
             y += linea.coord.now.size.y; }
 
-            if (lineb.glyphs.size() == 0) {
+            if (lineb.size() == 0) {
             lineb.append(sys::token(s, style));
+            lineb.resize(lineb.glyphs.coord.now.size);
             lineb.move_to(XY(x, y));
             y += lineb.coord.now.size.y; }
 
             auto & line1 = lines.emplace_back();
             line1.append(sys::glyph(s, style));
+            line1.resize(line1.glyphs.coord.now.size);
             line1.move_to(XY(x, y));
+            line1.canvases.emplace_back().color = background;
+            line1.canvases.back().resize(line1.coord.now.size);
             y += line1.coord.now.size.y;
 
             auto & line2 = lines.emplace_back();
             line2.append(sys::token(s, style));
+            line2.resize(line2.glyphs.coord.now.size);
             line2.move_to(XY(x, y));
+            line2.canvases.emplace_back().color = background;
+            line2.canvases.back().resize(line2.coord.now.size);
             y += line2.coord.now.size.y;
         }
     }

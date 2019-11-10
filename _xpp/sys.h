@@ -54,19 +54,13 @@ namespace sys
         font(str face = "", int size = 0, bool b=false, bool i=false)
             : face(face), size(size), bold(b), italic(i) {}
 
-        friend bool operator == ( const font & f1, const font & f2 ) { return ! (f1 != f2); }
-        friend bool operator != ( const font & f1, const font & f2 ) {
-            if (f1.face   != f2.face  ) return true;
-            if (f1.size   != f2.size  ) return true;
-            if (f1.bold   != f2.bold  ) return true;
-            if (f1.italic != f2.italic) return true; return false;
-        }
-        friend bool operator <  ( const font & f1, const font & f2 ) {
-            if (f1.face   <  f2.face  ) return true; if (f1.face   > f2.face  ) return false;
-            if (f1.size   <  f2.size  ) return true; if (f1.size   > f2.size  ) return false;
-            if (f1.bold   <  f2.bold  ) return true; if (f1.bold   > f2.bold  ) return false;
-            if (f1.italic <  f2.italic) return true; if (f1.italic > f2.italic) return false; return false;
-        }
+        bool operator != (const font & f) const { return ! (*this == f); }
+        bool operator == (const font & f) const { return
+            face   == f.face &&
+            size   == f.size &&
+            bold   == f.bold &&
+            italic == f.italic; }
+
         struct metrics
         {
             int height;  // ascent + descent
@@ -82,12 +76,12 @@ namespace sys
     struct glyph_style
     {
         struct line { str style; int width = 0; RGBA color;
-        friend bool operator == ( const line & l, const line & r ) { return ! (l != r); }
-        friend bool operator != ( const line & l, const line & r ) {
-            if (l.style != r.style) return true;
-            if (l.width != r.width) return true;
-            if (l.color != r.color) return true; return false;
-        }};
+        bool operator != (const line & l) const { return ! (*this == l); }
+        bool operator == (const line & l) const { return
+            style == l.style &&
+            width == l.width &&
+            color == l.color; }
+        };
 
         font font;
         RGBA color;
@@ -96,42 +90,42 @@ namespace sys
         line strikeout;
         line outline;
 
-        friend bool operator == ( const glyph_style & l, const glyph_style & r ) { return ! (l != r); }
-        friend bool operator != ( const glyph_style & l, const glyph_style & r ) {
-            if (l.font       != r.font       ) return true;
-            if (l.color      != r.color      ) return true;
-            if (l.background != r.background ) return true;
-            if (l.underline  != r.underline  ) return true;
-            if (l.strikeout  != r.strikeout  ) return true;
-            if (l.outline    != r.outline    ) return true; return false;
-        }
+        bool operator != (const glyph_style & s) const { return ! (*this == s); }
+        bool operator == (const glyph_style & s) const { return
+            font      == s.font       &&
+            color     == s.color      &&
+            background== s.background &&
+            underline == s.underline  &&
+            strikeout == s.strikeout  &&
+            outline   == s.outline; }
     };
 
-    struct glyph : glyph_style
+    struct glyph_metrics
     {
-        str text;
         XY  size;        // size.y = ascent + descent
         int ascent  = 0; // units above the base line
         int descent = 0; // units below the base line (positive value)
-        int advance = 0; // the horizontal distance the pen position must be incremented 
+        int advance = 0; // the pen position increment = size.x + advance
+
+        bool operator != (const glyph_metrics & m) const { return ! (*this == m); }
+        bool operator == (const glyph_metrics & m) const { return
+            size    == m.size    &&
+            ascent  == m.ascent  &&
+            descent == m.descent &&
+            advance == m.advance; }
+    };
+
+    struct glyph : glyph_style, glyph_metrics
+    {
+        str text;
 
         explicit glyph () = default;
         explicit glyph (str, glyph_style);
 
-        friend bool operator == ( const glyph & l, const glyph & r ) { return ! (l != r); }
-        friend bool operator != ( const glyph & l, const glyph & r ) {
-            if (l.text       != r.text       ) return true;
-            if (l.size       != r.size       ) return true;
-            if (l.ascent     != r.ascent     ) return true;
-            if (l.descent    != r.descent    ) return true;
-            if (l.advance    != r.advance    ) return true;
-            if (l.font       != r.font       ) return true;
-            if (l.color      != r.color      ) return true;
-            if (l.background != r.background ) return true;
-            if (l.underline  != r.underline  ) return true;
-            if (l.strikeout  != r.strikeout  ) return true;
-            if (l.outline    != r.outline    ) return true; return false;
-        }
+        bool operator != (const glyph & g) const { return ! (*this == g); }
+        bool operator == (const glyph & g) const { return text == g.text &&
+            glyph_style  ::operator == (g) &&
+            glyph_metrics::operator == (g); }
     };
 
     struct token

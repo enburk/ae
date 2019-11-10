@@ -3,107 +3,73 @@
 #include "doc.h"
 #include "doc_lexica_txt.h"
 #include "gui_widget.h"
+#include "gui_widget_layout.h"
 namespace gui
 {
     struct text final : widget<text>
     {
         struct glyph final : widget<glyph>
         {
+            glyph () = default;
+            glyph (sys::glyph g) : g(g) {
+                advance = XY(g.advance, 0);
+                baseline = XY(0, g.ascent);
+                resize(g.size);
+            }
             unary_property<sys::glyph> g;
 
             Opacity opacity () override { return semitransparent; }
 
-            void on_change (void* what) override
-            {
-                if (what == &g) { resize(g.now.size); update(); }
+            void on_change (void* what) override {
+                if (what == &g) {
+                    advance = XY(g.now.advance, 0);
+                    baseline = XY(0, g.now.ascent);
+                    resize(g.now.size);
+                    update();
+                }
             }
-            void on_render (Frame<RGBA> frame, XY offset, uint8_t alpha) override
-            {
+            void on_render (Frame<RGBA> frame, XY offset, uint8_t alpha) override {
                 sys::render(g.now, frame, offset, alpha, coord.now.x);
             }
         };
 
-        struct line final : widget<line> // layout<glyph, horizontal> //
+        struct line final : widget<line>
         {
             widgetarium<canvas> canvases;
-            widgetarium<glyph> glyphs;
-            int minimum_height = 0;
-            int baseline = 0;
+            layout<glyph, horizontal> glyphs;
 
-            int advance (int f, int l) { --l; return f > l ? 0 :
-                glyphs(l).coord.now.x -
-                glyphs(f).coord.now.x +
-                glyphs(l).g.now.advance;
-            }
+            int size () const { return glyphs.size(); }
 
-            void shift (int f, int l, XY d) {
-                for (int i=f; i<l; i++)
-                    glyphs(i).shift(d);
+            void append (sys::glyph g) {
+                 glyphs.emplace_back(std::move(g));
+                 resize(XY(coord.now.size.x, glyphs.coord.now.size.y));
             }
-
-            void append (sys::glyph g)
-            {
-                int x = advance(0, glyphs.size());
-                auto & glyph = glyphs.emplace_back();
-                glyph.g = g;
-                glyph.shift(XY(x, baseline - g.ascent));
-                if (baseline < g.ascent) { shift(0, glyphs.size(), XY(0,
-                   -baseline + g.ascent));
-                    baseline = g.ascent; }
-                x += g.size.x;
-                glyphs.
-                resize(XY(x, max(coord.now.size.y, g.size.y)));
-                resize(XY(x, max(coord.now.size.y, g.size.y)));
+            void append (sys::token token) {
+                 for (auto && g : token.glyphs)
+                    append (std::move(g));
             }
-            void append (sys::token token)
-            {
-                for (auto & g : token.glyphs)
-                    append (g);
+            void replace(int pos, sys::glyph g) {
+                 erase (pos);
+                 insert(pos, std::move(g));
             }
             void insert (int pos, sys::glyph g) {
-                append(std::move(g)); rotate(pos,
-                    glyphs.size()-1,
-                    glyphs.size());
+                 append (std::move(g)); glyphs.rotate(pos,
+                    size()-1,
+                    size());
             }
             void insert (int pos, sys::token token) {
-                append(std::move(token)); rotate(pos,
-                    glyphs.size()-token.glyphs.size(),
-                    glyphs.size());
+                 append (std::move(token)); glyphs.rotate(pos,
+                    size()-token.glyphs.size(),
+                    size());
             }
-            int rotate (int f, int m, int l)
-            {
-                int a1 = advance(f,m);
-                int a2 = advance(m,l);
-                int n = glyphs.rotate(f, m, l);
-                shift(f,n, XY(-a1, 0));
-                shift(n,l, XY( a2, 0));
-            }
-            void erase (int pos, int num = 1)
-            {
-                truncate(rotate(pos, pos+num, glyphs.size()));
-                int height = baseline = 0;
-                for (auto & g : glyphs) {
-                    baseline = max (baseline, g.g.now.ascent);
-                    height =   max (height,   g.g.now.size.y);
-                }
-                height = max (height, minimum_height);
-                for (auto & g : glyphs) g.move_to(XY(g.coord.now.x, baseline - g.g.now.ascent));
-                glyphs.
-                resize(XY(glyphs.coord.now.size.x, height));
-                resize(XY(glyphs.coord.now.size.x, height));
-            }
-            void truncate (int pos)
-            {
-                while (glyphs.size() > pos)
-                    erase(glyphs.size()-1);
+            void erase (int pos, int num = 1) {
+                 glyphs.erase(pos, num);
+                 resize(XY(coord.now.size.x, glyphs.coord.now.size.y));
             }
 
-
-            struct selection { RGBA fore, back; int begin, end; };
-
-            array<selection> selections;
-
-            //array<caret> carets;
+            void on_change (void* what) override {
+                if (what == &coord) canvases.resize(coord.now.size);
+            }
         };
 
         struct page final : widget<page>
@@ -117,6 +83,45 @@ namespace gui
             //}
         };
 
+        struct caret final : widget<caret>
+        {
+            canvas canvas;
+            property<int> position;
+            property<bool> insert_mode;
+            void on_change (void* what) override
+            {
+            }
+        };
+
+        struct editor final : widget<editor>
+        {
+            widgetarium<caret> carets;
+
+            //void set_caret(int position) { carets.clear(); add_caret(position); }
+            //void add_caret(int position) { int n = size();
+            //     auto i = std::find_if (carets.begin(), carets.end(),
+            //         [position](auto & caret){ return caret.position.now <= position; })
+            //         - carets.begin(); // linear insertion sort by decreasing positions...
+            //     if (i < n && carets(i).position.now == position) return;
+            //     carets.emplace_back().position = position;
+            //     carets.rotate (i, n, n+1); 
+            //}
+            //
+            //void insert (sys::glyph g) {
+            //     for (auto & caret : carets) {
+            //        insert(caret.position.now, g);
+            //        caret.position = caret.position.now + 1;
+            //     }
+            //}
+            //void insert (sys::token token) {
+            //     for (auto & caret : carets) {
+            //        insert(caret.position.now, token);
+            //        caret.position = caret.position.now + token.glyphs.size();
+            //     }
+            //}
+
+            void erase () {}
+        };
 
         std::map<str, sys::glyph_style> styles;
 

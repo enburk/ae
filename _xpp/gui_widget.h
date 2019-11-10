@@ -206,10 +206,13 @@ namespace gui
         array<int> indices;
         std::deque<std::optional<T>> deque;
 
-        int size () { return indices.size(); }
+        int size () const { return indices.size(); }
 
         const T & operator () (int pos) const { return *deque[indices[pos]]; }
         /***/ T & operator () (int pos) /***/ { return *deque[indices[pos]]; }
+
+        const T & back () const { return *deque[indices.back()]; }
+        /***/ T & back () /***/ { return *deque[indices.back()]; }
 
         template<class... Args>
         T & emplace_back (Args&&... args)
@@ -230,13 +233,6 @@ namespace gui
             }
         }
 
-        void erase (int pos)
-        {
-            deque[indices[pos]].reset();
-            holes.push_back(indices[pos]);
-            indices.erase(indices.begin()+pos);
-        }
-
         int rotate (int f, int m, int l) {
             assert(children.size() == indices.size());
             std::rotate(
@@ -251,19 +247,29 @@ namespace gui
             indices.begin());
         }
 
+        void erase (int pos)
+        {
+            deque[indices[pos]].reset();
+            holes.push_back(indices[pos]);
+            indices.erase(indices.begin()+pos);
+        }
+        void truncate (int pos) { while (size() > pos) erase(size()-1); }
+        void clear () { truncate(0); }
+
         template<class U> struct iterator
         {
             widgetarium<U>* that; int index;
             void operator ++ () { ++index; }
             void operator -- () { --index; }
-            void operator += (long n) { index += n; }
-            void operator -= (long n) { index -= n; }
+            void operator += (int n) { index += n; }
+            void operator -= (int n) { index -= n; }
             bool operator == (iterator i) { return index == i.index; }
             bool operator != (iterator i) { return index != i.index; }
             const U & operator * () const { return (*that)(index); }
             /***/ U & operator * () /***/ { return (*that)(index); }
-            friend iterator operator + (iterator i, long n) { i.index += n; return i; }
-            friend iterator operator - (iterator i, long n) { i.index -= n; return i; }
+            friend iterator operator + (iterator i, int n) { i.index += n; return i; }
+            friend iterator operator - (iterator i, int n) { i.index -= n; return i; }
+            friend int operator - (iterator i, iterator j) { return i.index - j.index; }
         };
         iterator<T> begin () { return iterator<T>{this, 0}; }
         iterator<T> end   () { return iterator<T>{this, size()}; }
