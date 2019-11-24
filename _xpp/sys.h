@@ -25,12 +25,14 @@ namespace sys
         void timing ();
         namespace on
         {
-            void start  ();
-            void finish ();
-            void pause  ();
-            void resume ();
-            void timing ();
-            void resize ();
+            void start   ();
+            void finish  ();
+            void turn_on ();
+            void turn_off();
+            void pause   ();
+            void resume  ();
+            void timing  ();
+            void resize  ();
         }
     }
 
@@ -128,9 +130,9 @@ namespace sys
             glyph_metrics::operator == (g); }
     };
 
-    struct token
+    struct token : glyph
     {
-        array<glyph> glyphs;
+        array<glyph> glyphs; array<XY> offsets;
 
         explicit token (str, glyph_style);
         explicit token () = default;

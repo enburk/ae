@@ -2,6 +2,7 @@
 #include "gui_widget_image.h"
 #include "gui_widget_canvas.h"
 #include "gui_widget_button.h"
+#include "gui_widget_text.h"
 #include "ide_console.h"
 #include "ide_flist.h"
 #include "ide_edit.h"
@@ -18,10 +19,20 @@ struct IDE : gui::widget<IDE>
     Flist flist;
     Test test;
 
+    struct document
+    {
+        doc::Document document;
+        gui::text::editor::model::context context;
+    };
+
+    std::map<std::filesystem::path, document> documents;
+
     IDE()
     {
         gui::window = this;
         toolbar.color = pix::gray;
+        button_test.text.text = "Test";
+        button_test.kind = gui::button::toggle;
         test.hide();
     }
 
@@ -42,9 +53,15 @@ struct IDE : gui::widget<IDE>
         }
     }
 
-    virtual void on_notify (gui::base::widget* w)
+    void on_notify (gui::base::widget* w) override
     {
         if (w == &button_test) test.show (test.alpha.to == 0, gui::time(500));
+
+        if (w == &flist)
+        {
+            //documents[flist.path.was].context= editor.model.context;
+            //editor.load(flist.path);
+        }
     }
 };
 

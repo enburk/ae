@@ -1,5 +1,6 @@
 #pragma once
 #include "gui_widget.h"
+#include "gui_widgetarium.h"
 namespace gui
 {
     enum class orientation { horizontal, vertical };
@@ -8,11 +9,7 @@ namespace gui
     constexpr orientation operator ~ (orientation orientation)
     { return orientation == horizontal ? vertical : horizontal; }
 
-    template<orientation orientation> struct align;
-    template<> struct align<vertical> { enum { top, center, bottom, justify }; };
-    template<> struct align<horizontal> { enum { left, center, right, justify }; };
-
-    template<class T, orientation orientation> struct layout;
+    template<class T, orientation> struct layout;
 
     template<class T> struct layout<T, horizontal> : widgetarium<T>
     {
@@ -75,6 +72,73 @@ namespace gui
             base::resize(XY(coord.now.size.x, h));
             base::baseline.y = y;
         }
+        void truncate (int pos) { while (size() > pos) erase(size()-1); }
+        void clear () { truncate (0); }
+    };
+
+    template<class T> struct layout<T, vertical> : widgetarium<T>
+    {
+        typedef widgetarium<T> base;
+        using base::size; using base::coord;
+
+        template<class... Args> T & emplace_back (Args&&... args)
+        {
+            int y = offset(size()); // before base::emplace_back
+            T & t = base::emplace_back(std::forward<Args>(args)...);
+            int x = base::baseline.x - t.baseline.x;
+            t.move_to(XY(x,y));
+            base::resize(XY(coord.now.size.x, y + t.coord.now.size.y));
+            if (x < 0) {
+                x = -x;
+                for (auto & w : *this) w.shift(XY(x,0));
+                int descent = max (t.coord.now.size.x - t.baseline.x,
+                    coord.now.size.x - base::baseline.x);
+                base::baseline.x += x;
+                base::resize(XY(base::baseline.x + descent, coord.now.size.y));
+            }
+            return t;
+        }
+
+        int offset (int n) const {
+            assert(n >= 0);
+            assert(n <= size());
+            return n <  size() ? (*this)(n).coord.now.y :
+                   n >  0 ? (*this)(n-1).coord.now.y + (*this)(n-1).coord.now.size.y + (*this)(n-1).advance.y :
+                   0;
+        }
+
+        int rotate (int f, int m, int l)
+        {
+            assert(f <= m); assert(f >= 0);
+            assert(m <= l); assert(l <= size());
+            if(f == m) return l;
+            if(m == l) return f;
+            int d1 = offset(m) - offset(f);
+            int d2 = offset(l) - offset(m);
+            int n = base::rotate(f, m, l);
+            for (int i=f; i<n; i++) (*this)(i).shift(XY(0,-d1));
+            for (int i=n; i<l; i++) (*this)(i).shift(XY(0, d2));
+            return n;
+        }
+
+        void erase (int pos, int num = 1)
+        {
+            assert(pos >= 0);
+            assert(pos+num <= size());
+            pos = rotate(pos, pos+num, size());
+            while (size() > pos) base::erase(size()-1);
+            base::resize(XY(coord.now.size.x, offset(size())));
+            int x = 0;
+            int w = 0;
+            for (auto & t : *this) {
+                x = max (x, t.baseline.x);
+                w = max (w, t.coord.now.x + t.coord.now.size.x);
+            }
+            base::resize(XY(w, coord.now.size.y));
+            base::baseline.x = x;
+        }
+        void truncate (int pos) { while (size() > pos) erase(size()-1); }
+        void clear () { truncate (0); }
     };
 
     template<class T, orientation orientation = vertical>

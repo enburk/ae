@@ -13,21 +13,32 @@ namespace doc::lexica
 
         for (auto [c, n] : text + '\n')
         {
-            bool same = c != '\n';
+            bool same_kind = c != '\n';
 
-            if (t.kind == "space") same = space (c);
+            if (same_kind && t.kind == "text") same_kind = !space (c); else
+            if (same_kind && t.kind == "space") same_kind = space (c);
 
-            if (same) t.text += c; else
+            if (same_kind) t.text += c; else
             {
                 if (t.text != "")
                     output += t;
 
                 t.begin = n;
                 t.text  = c;
-                t.kind  = c == '\n' ? "end of line" : space (c) ? "space" : "text";
+                t.kind  = c == '\n' ? "eoln" : space (c) ? "space" : "text";
             }
         }
 
         return output;
     }
+
+    inline array<Token> txt (str text)
+    {
+        return txt (array<char>(text.begin(), text.end()).range());
+    }
+}
+
+namespace doc::html
+{
+    inline str encoded (str text) { return text; }
 }

@@ -36,7 +36,6 @@ namespace test_aux
         ASSERT_EQ(a.range(3, 3).size(), 0);
     }
 
-#ifndef _DEBUG // "cannot seek vector iterator after end"
     TEST(TestAuxArray, RangeWithEnding)
     {
         array<char> a = {'a', 'b', 'c'};
@@ -60,5 +59,4 @@ namespace test_aux
             EXPECT_EQ(n,  0 );
         }
     }
-#endif
 }

@@ -14,41 +14,52 @@ using pix::Frame;
 struct Test : gui::widget<Test>
 {
     gui::canvas canvas;
-    gui::button button_font1; TestFont1 test_font1;
-    gui::button button_font2; TestFont2 test_font2;
-    gui::button button_font3; TestFont3 test_font3;
+    gui::widgetarium<gui::button> buttons;
+    array<gui::base::widget*> tests;
+
+    TestFont1 test_font1;
+    TestFont2 test_font2;
+    TestFont3 test_font3;
 
     Test ()
     {
         canvas.color = pix::red;
-        test_font1.hide();
-        test_font2.hide();
-        test_font3.hide();
+
+        tests += &test_font1; buttons.emplace_back().text.text = "Fonts1";
+        tests += &test_font2; buttons.emplace_back().text.text = "Fonts2";
+        tests += &test_font3; buttons.emplace_back().text.text = "Fonts3";
+
+        for (auto & button : buttons) button.kind = gui::button::sticky;
+
+        for (auto & test : tests) test->hide();
     }
 
     void on_change (void* what) override
     {
-        if (what == &coord)
+        if (what == &coord && coord.was.size != coord.now.size)
         {
-            int W = coord.now.w; int w = W/30; int dx = w/10;
+            int W = coord.now.w; int w = W/20; int dx = w/20;
             int H = coord.now.h; int h = H/40; int dy = h/10;
 
             canvas.coord = coord.now.local();  int y = dy;
 
-            button_font1.coord = XYWH(W-w-dx, y, w, h); y += h + dy;
-            button_font2.coord = XYWH(W-w-dx, y, w, h); y += h + dy;
-            button_font3.coord = XYWH(W-w-dx, y, w, h); y += h + dy;
+            buttons.coord = XYWH(W-dx-w-dx, 0, w, H);
 
-            test_font1.coord = XYWH(0, 0, W-dx-w-dx, H);
-            test_font2.coord = XYWH(0, 0, W-dx-w-dx, H);
-            test_font3.coord = XYWH(0, 0, W-dx-w-dx, H);
+            for (auto & button : buttons) { button.coord = XYWH(0, y, w, h); y += h + dy; }
+
+            for (auto & test : tests) test->coord = XYWH(0, 0, W-dx-w-dx, H);
         }
     }
 
-    virtual void on_notify (gui::base::widget* w)
+    void on_notify (gui::base::widget* w, int n) override
     {
-        test_font1.show (w == &button_font1, gui::time(500));
-        test_font2.show (w == &button_font2, gui::time(500));
-        test_font3.show (w == &button_font3, gui::time(500));
+        if (w == &buttons) {
+            if (!buttons(n).on) return;
+            for (int i=0; i<buttons.size(); i++) {
+                buttons(i).on = i == n;
+                tests[i]->show (i == n,
+                    gui::time(500));
+            }
+        }
     }
 };

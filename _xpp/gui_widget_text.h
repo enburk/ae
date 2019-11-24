@@ -3,172 +3,352 @@
 #include "doc.h"
 #include "doc_lexica_txt.h"
 #include "gui_widget.h"
+#include "gui_widgetarium.h"
 #include "gui_widget_layout.h"
 namespace gui
 {
-    struct text final : widget<text>
+    struct text
     {
-        struct glyph final : widget<glyph>
+        struct glyph:
+        widget<glyph>
         {
-            glyph () = default;
-            glyph (sys::glyph g) : g(g) {
-                advance = XY(g.advance, 0);
-                baseline = XY(0, g.ascent);
-                resize(g.size);
-            }
-            unary_property<sys::glyph> g;
+            unary_property<sys::glyph> sys_glyph;
 
             Opacity opacity () override { return semitransparent; }
 
-            void on_change (void* what) override {
-                if (what == &g) {
-                    advance = XY(g.now.advance, 0);
-                    baseline = XY(0, g.now.ascent);
-                    resize(g.now.size);
-                    update();
-                }
+            void on_change (void* what) override { if (what != &sys_glyph) return;
+                advance = XY(sys_glyph.now.advance, 0);
+                baseline = XY(0, sys_glyph.now.ascent);
+                resize(sys_glyph.now.size);
+                update();
             }
             void on_render (Frame<RGBA> frame, XY offset, uint8_t alpha) override {
-                sys::render(g.now, frame, offset, alpha, coord.now.x);
+                sys::render(sys_glyph.now, frame, offset, alpha, coord.now.x);
             }
         };
 
-        struct line final : widget<line>
+        struct token final : widget<token>
         {
-            widgetarium<canvas> canvases;
-            layout<glyph, horizontal> glyphs;
+            unary_property<sys::token> sys_token;
 
-            int size () const { return glyphs.size(); }
+            widgetarium<glyph> glyphs;
 
-            void append (sys::glyph g) {
-                 glyphs.emplace_back(std::move(g));
-                 resize(XY(coord.now.size.x, glyphs.coord.now.size.y));
-            }
-            void append (sys::token token) {
-                 for (auto && g : token.glyphs)
-                    append (std::move(g));
-            }
-            void replace(int pos, sys::glyph g) {
-                 erase (pos);
-                 insert(pos, std::move(g));
-            }
-            void insert (int pos, sys::glyph g) {
-                 append (std::move(g)); glyphs.rotate(pos,
-                    size()-1,
-                    size());
-            }
-            void insert (int pos, sys::token token) {
-                 append (std::move(token)); glyphs.rotate(pos,
-                    size()-token.glyphs.size(),
-                    size());
-            }
-            void erase (int pos, int num = 1) {
-                 glyphs.erase(pos, num);
-                 resize(XY(coord.now.size.x, glyphs.coord.now.size.y));
-            }
-
-            void on_change (void* what) override {
-                if (what == &coord) canvases.resize(coord.now.size);
+            void on_change (void* what) override { if (what != &sys_token) return;
+                for (int i = 0; i < sys_token.now.glyphs.size(); i++) {
+                    const auto & sys_glyph = sys_token.now.glyphs[i];
+                    glyph & glyph = i < glyphs.size() ? glyphs(i) : glyphs.emplace_back();
+                    glyph.sys_glyph = sys_glyph;
+                    glyph.move_to(sys_token.now.offsets[i]);
+                }
+                glyphs.resize(sys_token.now.size);
+                resize(sys_token.now.size);
             }
         };
 
-        struct page final : widget<page>
-        {
-            widgetarium<line> lines;
-            property<int> indent = 0;
+        template<orientation> struct align;
+        template<> struct align<vertical> { enum type { top, center, bottom }; };
+        template<> struct align<horizontal> { enum type { left, center, right, justify}; };
 
-            //void insert (pix::Token token, int pos)
-            //{
-            //    glyphs.insert(glyphs.begin()+pos, token.glyphs.begin(), token.glyphs.end());
-            //}
+        struct line final : widgetarium<token>
+        {
+            void fill (str text, sys::glyph_style style) {
+                array<doc::Token> tokens = doc::lexica::txt(text);
+                std::map<str, sys::glyph_style> styles;
+                fill (max<int>(), false, tokens.range(), styles, style);
+            }
+            void fill (
+                int width,
+                bool word_wrap,
+                Range<doc::Token> tokens,
+                const std::map<str, sys::glyph_style> & styles,
+                const sys::glyph_style & default_style)
+            {
+                if (width == 0) return;
+
+                struct row
+                {
+                    int ascent  = 0;
+                    int descent = 0;
+                    int advance = 0;
+                    array<int> offsets;
+                    XYWH coord;
+                };
+                array<row> rows; rows += row();
+
+                for(auto [t, n] : tokens)
+                {
+                    token & token = n < size() ? (*this)(n) : emplace_back();
+                    sys::glyph_style style;
+                    auto it = styles.find(t.kind);
+                    style = it != styles.end() ? it->second : default_style;
+                    token.sys_token = sys::token(t.text, style); // could be optimized
+                    if (rows.back().coord.size.x + rows.back().advance + token.sys_token.now.size.x > width) rows += row();
+                    auto & r = rows.back();
+                    r.ascent  = max (r.ascent,  token.sys_token.now.ascent);
+                    r.descent = max (r.descent, token.sys_token.now.descent);
+                    r.offsets += r.coord.size.x + r.advance;
+                    r.advance = token.sys_token.now.advance;
+                    r.coord.size.y = max (r.coord.size.y, r.ascent + r.descent);
+                    r.coord.size.x = r.offsets.back() + token.sys_token.now.size.x;
+                }
+                width = 0; for (auto & r : rows) width = max (width, r.coord.size.x);
+                int n = 0; for (auto & r : rows) for (int offset : r.offsets)
+                {
+                    token & token = (*this)(n++);
+                    token.move_to(XY(r.coord.x + offset, r.coord.y + r.ascent - token.sys_token.now.ascent));
+                }
+                truncate(n);
+                resize(XY(width, rows.back().coord.y + rows.back().coord.size.y));
+            }
+        };
+            
+        struct page final : widgetarium<line>
+        {
+            void fill (
+                int width,
+                bool word_wrap,
+                const array<doc::Token> & tokens,
+                const std::map<str, sys::glyph_style> & styles,
+                const sys::glyph_style & default_style)
+            {
+                if (width == 0) return;
+                int l = 0;
+                for (auto i = tokens.begin(); i != tokens.end(); ) {
+                     auto j = std::find_if(i, tokens.end(), [](auto t){ return t.text == "\n"; });
+                     if (j != tokens.end()) j++;
+                     if (l >= size()) emplace_back();
+                     (*this)(l++).fill(width, word_wrap, array<doc::Token>(i, j).range(), styles, default_style);
+                     i = j;
+                }
+                truncate(l);
+                int w = 0, h = 0;
+                for (auto & line : *this) {
+                    line.move_to(XY(0, h));
+                    h += line.coord.now.size.y;
+                    w = max (w, line.coord.now.size.x);
+                }
+                resize(XY(w,h));
+            }
         };
 
-        struct caret final : widget<caret>
+        struct label final : widget<label>
         {
-            canvas canvas;
-            property<int> position;
-            property<bool> insert_mode;
+            canvas canvas; page page;
+
+            binary_property<str> text;
+            binary_property<str> html;
+
+            property<RGBA> color;
+            binary_property<sys::glyph_style> style;
+
+            binary_property<bool> word_wrap = true;
+            binary_property<
+                align<horizontal>::type> alignment =
+                align<horizontal>::center;
+
+            array<doc::Token> tokens;
+            std::map<str, sys::glyph_style> styles;
+
+            void refresh ()
+            {
+                page.fill (coord.now.size.x, word_wrap.now, tokens, styles, style.now);
+                page.move_to(coord.now.size/2 - page.coord.now.size/2);
+            }
+
             void on_change (void* what) override
             {
+                if (what == &text)
+                {
+                    tokens = doc::lexica::txt(text.now);
+                    styles.clear();
+
+                    html.was = html.now; html.now = "";
+                    for (auto && token : tokens)
+                    html.now += doc::html::encoded(token.text);
+
+                    refresh();
+                }
+                if (what == &html)
+                {
+                //  page.clear();
+                //  text.was = text.now;
+                //  for (auto && token : browser(
+                //      doc::translator::html(html))) {
+                //      text.now += token.text;
+                //      page.append(token);
+                //  }
+                }
+                if (what == &coord && coord.was.size != coord.now.size)
+                {
+                    canvas.coord = coord.now.local();
+                    if (style.now == sys::glyph_style())
+                        style = sys::glyph_style{ sys::font{"", metrics::text::height}, pix::black };
+                    refresh();
+                }
+                if (what == &color)
+                {
+                    style.was = style.now;
+                    style.now.color = color.now;
+                    refresh();
+                }
+                if (what == &style)
+                {
+                    color.was = color.now;
+                    color.now = style.now.color;
+                    refresh();
+                }
+                if (what == &word_wrap)
+                {
+                    refresh();
+                }
+                //if (what == &align)
+                //{
+                //}
             }
         };
 
         struct editor final : widget<editor>
         {
-            widgetarium<caret> carets;
+            property<int> indent = 0;
 
-            //void set_caret(int position) { carets.clear(); add_caret(position); }
-            //void add_caret(int position) { int n = size();
-            //     auto i = std::find_if (carets.begin(), carets.end(),
-            //         [position](auto & caret){ return caret.position.now <= position; })
-            //         - carets.begin(); // linear insertion sort by decreasing positions...
-            //     if (i < n && carets(i).position.now == position) return;
-            //     carets.emplace_back().position = position;
-            //     carets.rotate (i, n, n+1); 
-            //}
+            struct caret final : widget<caret>
+            {
+                canvas canvas;
+                property<int> position;
+                property<bool> insert_mode;
+                void on_change (void* what) override
+                {
+                }
+            };
+
+            struct line final : widget<line>
+            {
+            //    widgetarium<canvas> canvases;
+            //    layout<glyph, horizontal> glyphs;
+            //    widgetarium<caret> carets;
+            //    property<bool> insert_mode;
             //
-            //void insert (sys::glyph g) {
-            //     for (auto & caret : carets) {
-            //        insert(caret.position.now, g);
-            //        caret.position = caret.position.now + 1;
-            //     }
-            //}
-            //void insert (sys::token token) {
-            //     for (auto & caret : carets) {
-            //        insert(caret.position.now, token);
-            //        caret.position = caret.position.now + token.glyphs.size();
-            //     }
-            //}
+            //    int size () const { return glyphs.size(); }
+            //
+            //    void append (sys::glyph g) {
+            //         glyphs.emplace_back(std::move(g));
+            //         resize(XY(coord.now.size.x, glyphs.coord.now.size.y));
+            //    }
+            //    void append (sys::token token) {
+            //         for (auto && g : token.glyphs)
+            //            append (std::move(g));
+            //    }
+            //    void replace(int pos, sys::glyph g) {
+            //         erase (pos);
+            //         insert(pos, std::move(g));
+            //    }
+            //    void insert (int pos, sys::glyph g) {
+            //         append (std::move(g)); glyphs.rotate(pos,
+            //            size()-1,
+            //            size());
+            //    }
+            //    void insert (int pos, sys::token token) {
+            //         append (std::move(token)); glyphs.rotate(pos,
+            //            size()-token.glyphs.size(),
+            //            size());
+            //    }
+            //    void erase (int pos, int num = 1) {
+            //         glyphs.erase(pos, num);
+            //         resize(XY(coord.now.size.x, glyphs.coord.now.size.y));
+            //    }
+            //
+            //void truncate (int pos) { while (size() > pos) erase(size()-1); }
+            //void clear () { truncate(0); }
 
-            void erase () {}
+                //void set_caret(int position) { carets.clear(); add_caret(position); }
+                //void add_caret(int position) { int n = size();
+                //     auto i = std::find_if (carets.begin(), carets.end(),
+                //         [position](auto & caret){ return caret.position.now <= position; })
+                //         - carets.begin(); // linear insertion sort by decreasing positions...
+                //     if (i < n && carets(i).position.now == position) return;
+                //     carets.emplace_back().position = position;
+                //     carets.back().coord = glyphs(position).coord.now;
+                //     carets.back().insert_mode = insert_mode.now;
+                //     carets.rotate (i, n, n+1); 
+                //}
+                //
+                //void insert (sys::glyph g) {
+                //     for (auto & caret : carets) {
+                //        if (insert_mode.now)
+                //            insert (caret.position.now, g); else
+                //            replace(caret.position.now, g);
+                //        caret.position = caret.position.now + 1;
+                //        caret.coord = glyphs(caret.position.now).coord.now;
+                //     }
+                //}
+                //void insert (sys::token token) {
+                //     for (auto & caret : carets) {
+                //        insert(caret.position.now, token);
+                //        caret.position = caret.position.now + token.glyphs.size();
+                //     }
+                //}
+
+              //  void on_change (void* what) override {
+              //      if (what == &coord) {
+              //          canvases.resize(coord.now.size);
+              //          for (auto & caret : carets)
+              //              caret.coord = glyphs(caret.position.now).coord.now;
+              //      }
+              //      if (what == &insert_mode) {
+              //          for (auto & caret : carets)
+              //              caret.insert_mode = insert_mode.now;
+              //      }
+              //  }
+            };
+
+            struct model final : widget<model>
+            {
+                typedef doc::Document Document;
+
+                struct context
+                {
+                    Document* document; int top = 0;
+                };
+
+                //Document internal_document;
+                //context  internal_context {&internal_document};
+                //context* context = &internal_context;
+                context contextt;
+
+                void insert (str text) { insert (std::move(text), contextt.document->text.size()); }
+                void insert (str text, int pos)
+                {
+                    contextt.document->insert(text, pos);
+                    notify();
+                }
+            };
+            struct view final : widget<view>
+            {
+                page page;
+                //scroll scroll;
+                const model* model;
+
+                void refresh ()
+                {
+                    for (auto token : model->contextt.document->syntax)
+                    {
+
+                    }
+                }
+            };
+            struct controller
+            {
+                model* model;
+            };
+
+            model model; view view; controller controller;
+
+            editor () { view.model = &model; controller.model = &model; }
+
+            void on_notify (gui::base::widget* w) override { if (w == &model) view.refresh(); }
         };
 
-        std::map<str, sys::glyph_style> styles;
 
 
-
-        typedef doc::Document Document;
-
-        struct Context
-        {
-            Document* document; int top = 0;
-        };
-
-        Document internal_document;
-        Context  internal_context {&internal_document};
-        Context* context = &internal_context;
-
-        //Text (base::widget* parent = nullptr) : widget (parent) {}
-
-        //array<line> lines;
-
-        void operator = (str s)
-        {
-        }
-
-        void insert (str text) { insert (std::move(text), context->document->text.size()); }
-        void insert (str text, int pos)
-        {
-            context->document->insert(text, pos);
-
-            for (auto token : context->document->syntax)
-            {
-
-            }
-        }
-
-        void remove (int pos)
-        {
-        }
-
-        void on_change (void* what) override
-        {
-            if (what == &coord)
-            {
-                //auto r = coord.now.local();
-                //auto h = r.h / 
-                //text       .move_to(r);
-            }
-        }
     };
 } 

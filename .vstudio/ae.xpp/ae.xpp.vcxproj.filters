@@ -5,9 +5,6 @@
     <ClInclude Include="..\..\_xpp\aux_string.h" />
     <ClInclude Include="..\..\_xpp\sys.h" />
     <ClInclude Include="..\..\_xpp\sys_windows.h" />
-    <ClInclude Include="..\..\_xpp\test.h" />
-    <ClInclude Include="..\..\_xpp\test_fonts.h" />
-    <ClInclude Include="..\..\_xpp\test_pix.h" />
     <ClInclude Include="..\..\_xpp\doc_lexica.h">
       <Filter>doc</Filter>
     </ClInclude>
@@ -82,6 +79,27 @@
       <Filter>ide</Filter>
     </ClInclude>
     <ClInclude Include="..\..\_xpp\gui_widget_layout.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\test.h">
+      <Filter>ide</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\test_fonts.h">
+      <Filter>ide</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\test_pix.h">
+      <Filter>ide</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\gui_widget_scroll.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\ide_common.h">
+      <Filter>ide</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\gui_colors.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\gui_widgetarium.h">
       <Filter>gui</Filter>
     </ClInclude>
   </ItemGroup>

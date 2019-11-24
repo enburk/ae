@@ -1,4 +1,5 @@
 #pragma once
+#include "gui_colors.h"
 #include "gui_widget_image.h"
 #include "gui_widget_canvas.h"
 using namespace pix;
@@ -23,9 +24,10 @@ struct TestFont1 : gui::widget<TestFont1>
         str alnum = Latin + latin + digit;
         array<
         sys::font> fonts = {
-        sys::font("Consolas", 12),
-        sys::font("Segoe UI", 16),
-        sys::font("Tahoma",   24) };
+        sys::font("Consolas", gui::metrics::text::height*1/1),
+        sys::font("Arial",    gui::metrics::text::height*3/2),
+        sys::font("Segoe UI", gui::metrics::text::height*4/2),
+        sys::font("Tahoma",   gui::metrics::text::height*5/2)};
 
         int gap = 1; int x = gap; int y = gap;
 
@@ -70,9 +72,10 @@ struct TestFont2 : gui::widget<TestFont2>
         str s = "The quick brown fox jumps over the lazy dog";
         array<
         sys::font> fonts = {
-        sys::font("Consolas", 12),
-        sys::font("Segoe UI", 16),
-        sys::font("Tahoma",   24) };
+        sys::font("Consolas", gui::metrics::text::height*1/1),
+        sys::font("Arial",    gui::metrics::text::height*3/2),
+        sys::font("Segoe UI", gui::metrics::text::height*4/2),
+        sys::font("Tahoma",   gui::metrics::text::height*4/2)};
 
         int gap = 1; int x = gap; int y = gap;
 
@@ -111,7 +114,9 @@ struct TestFont2 : gui::widget<TestFont2>
 
 struct TestFont3 : gui::widget<TestFont3>
 {
-    gui::text::line linea, lineb;
+    gui::text::glyph linea;
+    gui::text::token lineb;
+    gui::text::line  linec;
     gui::widgetarium<gui::text::line> lines;
     
     void on_change (void* what) override
@@ -124,11 +129,29 @@ struct TestFont3 : gui::widget<TestFont3>
         str s = "The quick brown fox jumps over the lazy dog";
         array<
         sys::font> fonts = {
-        sys::font("Consolas", 12),
-        sys::font("Segoe UI", 16),
-        sys::font("Tahoma",   24) };
+        sys::font("Consolas", gui::metrics::text::height*1/1),
+        sys::font("Arial",    gui::metrics::text::height*3/2),
+        sys::font("Segoe UI", gui::metrics::text::height*4/2),
+        sys::font("Tahoma",   gui::metrics::text::height*5/2)};
 
         int gap = 1; int x = gap; int y = gap;
+
+        sys::glyph_style style;
+        style.color = pix::black;
+        style.color.a = 230; // style.background = background;
+        style.font = fonts[0];
+
+        linea.sys_glyph = sys::glyph(s, style);
+        linea.move_to(XY(x, y));
+        y += linea.coord.now.size.y;
+
+        lineb.sys_token = sys::token(s, style);
+        lineb.move_to(XY(x, y));
+        y += lineb.coord.now.size.y;
+
+        linec.fill(s, style);
+        linec.move_to(XY(x, y));
+        y += linec.coord.now.size.y;
 
         for (auto font : fonts)
         for (int r=0; r<4; r++)
@@ -137,41 +160,24 @@ struct TestFont3 : gui::widget<TestFont3>
             background = pix::white;
             background.a = 192;
 
-            sys::glyph_style style;
-            style.color = pix::black;
-            style.color.a = 230;
-            // style.background = background;
             style.font = font;
             style.font.bold   = r == 2 || r == 3;
             style.font.italic = r == 1 || r == 3;
 
-            if (linea.size() == 0) {
-            linea.append(sys::glyph(s, style));
-            linea.resize(linea.glyphs.coord.now.size);
-            linea.move_to(XY(x, y));
-            y += linea.coord.now.size.y; }
-
-            if (lineb.size() == 0) {
-            lineb.append(sys::token(s, style));
-            lineb.resize(lineb.glyphs.coord.now.size);
-            lineb.move_to(XY(x, y));
-            y += lineb.coord.now.size.y; }
-
-            auto & line1 = lines.emplace_back();
-            line1.append(sys::glyph(s, style));
-            line1.resize(line1.glyphs.coord.now.size);
-            line1.move_to(XY(x, y));
-            line1.canvases.emplace_back().color = background;
-            line1.canvases.back().resize(line1.coord.now.size);
-            y += line1.coord.now.size.y;
-
-            auto & line2 = lines.emplace_back();
-            line2.append(sys::token(s, style));
-            line2.resize(line2.glyphs.coord.now.size);
-            line2.move_to(XY(x, y));
-            line2.canvases.emplace_back().color = background;
-            line2.canvases.back().resize(line2.coord.now.size);
-            y += line2.coord.now.size.y;
+            //auto & line1 = lines.emplace_back();
+            //line1.fill(s, style);
+            //line1.move_to(XY(x, y));
+            //line1.canvases.emplace_back().color = background;
+            //line1.canvases.back().resize(line1.coord.now.size);
+            //y += line1.coord.now.size.y;
+            //
+            //auto & line2 = lines.emplace_back();
+            //line2.append(sys::token(s, style));
+            //line2.resize(line2.glyphs.coord.now.size);
+            //line2.move_to(XY(x, y));
+            //line2.canvases.emplace_back().color = background;
+            //line2.canvases.back().resize(line2.coord.now.size);
+            //y += line2.coord.now.size.y;
         }
     }
 };

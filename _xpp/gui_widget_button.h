@@ -1,68 +1,111 @@
 #pragma once
+#include "gui_colors.h"
 #include "gui_widget_canvas.h"
+#include "gui_widget_image.h"
 #include "gui_widget_text.h"
 namespace gui
 {
     struct button : widget<button>
     {
-        property<uint8_t> mouse_hover;
-        property<uint8_t> mouse_pressed;
-        property<uint8_t> focused;
-        property<uint8_t> pressed;
-        property<uint8_t> enabled;
+        binary_property<str> schema;
+        binary_property<bool> on = false;
+        binary_property<bool> enabled = true;
+        binary_property<bool> focused = false;
+        binary_property<bool> mouse_hover = false;
+        binary_property<bool> mouse_pressed = false;
+        binary_property<bool> enter_pressed = false;
+        enum {normal, toggle, sticky} kind;
+        bool repeating = false;
+        time repeat_delay = 500ms;
+        time repeat_lapse = 100ms;
+        time repeat_notch;
 
-        canvas background;
-        frame frame_focus;
-        frame frame_mouse;
-        //Text  text;
+        frame frame; image image; text::label text;
 
-        button(base::widget* parent = nullptr) : widget(parent)
+        std::function<void(void)> on_change_state = [this]()
         {
-            enabled = 255;
-            frame_focus.hide();
-            frame_mouse.hide();
-            frame_focus.thickness = 2;
-            frame_mouse.thickness = 2;
-            frame_focus.color = pix::yellow;
-            frame_mouse.color = pix::red;
-            background .color = pix::maroon;
+            auto r = coord.now.local();
+            frame.thickness = metrics::line::width * 2;
+            frame.coord = r; r.deflate(frame.thickness.now);
+            image.coord = r; r.deflate(frame.thickness.now);
+            text .coord = r;
+
+            auto style = schemas[schema.now];
+
+            frame.color = style.focus.back_color;
+            frame.alpha.go (focused ? 255 : 0);
+
+            auto colors = style.normal;
+
+            if (!enabled     .now) colors = style.disabled; else
+            if (mouse_pressed.now) colors = style.touched; else
+            if (enter_pressed.now) colors = style.touched; else
+            if (on           .now) colors = style.active; else
+            if (mouse_hover  .now) colors = style.hovered;
+
+            text.color = colors.fore_color;
+            text.canvas.color = colors.back_color;
+        };
+
+        void on_change (void* what) override
+        {
+            if (what == &enter_pressed) on_change_state(); else
+            if (what == &mouse_pressed) on_change_state(); else
+            if (what == &mouse_hover) on_change_state(); else
+            if (what == &focused) on_change_state(); else
+            if (what == &enabled) on_change_state(); else
+            if (what == &schema) on_change_state(); else
+            if (what == &coord) on_change_state(); else
+            if (what == &on) { on_change_state(); notify(); }
         }
 
-        bool mouse_sensible (XY p) override { return enabled.to == 255; }
-
-        void on_mouse_press (XY, char button, bool down) override {
-            if (enabled.to == 255 && button == 'L') {
-                mouse_pressed = down ? 255 : 0;
-                pressed = down ? 255 : 0;
-                background.color = down ? pix::red : pix::maroon;
-                if (down) notify();
+        bool mouse_sensible (XY) override { return enabled.now; }
+        void on_mouse_hover (XY) override { mouse_hover = true; }
+        void on_mouse_leave (  ) override { mouse_hover = false;}
+        void on_mouse_press (XY, char button, bool down) override
+        {
+            if (button != 'L') return; mouse_pressed = down;
+            if (enabled.now) {
+                switch(kind) {
+                case normal: on = down; break;
+                case toggle: on = down || on.was != on.now; break;
+                case sticky: on = true; break;
+                }
             }
         }
-        void on_mouse_hover (XY p) override {
-            if (enabled.to == 255) {
-                mouse_hover = coord.now.local().includes(p) ? 255 : 0;
-                pressed = coord.now.local().includes(p) && mouse_pressed.to == 255 ? 255 : 0;
-            }
-        }
-        void on_mouse_leave () override {
-            mouse_pressed = 0;
-            mouse_hover = 0;
-            pressed = 0;
-        }
+    };
 
-        void on_change () override
+    struct checkbox : button
+    {
+        checkbox ()
         {
-            frame_focus.alpha = focused.to;
-            frame_mouse.alpha = mouse_hover.to;
 
-            if (coord.was.size != coord.now.size)
+            on_change_state = [this]()
             {
-                auto r = coord.now.local();
-                frame_focus.move_to(r); r.deflate(frame_focus.thickness.now);
-                frame_mouse.move_to(r); r.deflate(frame_mouse.thickness.now);
-                background .move_to(r); r.deflate(frame_mouse.thickness.now);
-                //text       .move_to(r);
-            }
+            };
         }
+    };
+
+    struct radio
+    {
+        struct button : gui::widget<button>
+        {
+            gui::button sensor;
+
+            button ()
+            {
+                sensor.kind = gui::button::sticky;
+            }
+        };
+
+        struct group : gui::widget<group>
+        {
+            gui::widgetarium<button> buttons;
+
+            void on_notify (gui::base::widget* w) override
+            {
+                for (auto & b : buttons) b.sensor.on = &b == w; notify();
+            }
+        };
     };
 }

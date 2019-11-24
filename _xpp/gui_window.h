@@ -1,5 +1,6 @@
 #pragma once
 #include "sys.h"
+#include "gui_colors.h"
 #include "gui_widget.h"
 #include <thread>
 #include <atomic>
@@ -7,33 +8,33 @@
 namespace gui { inline gui::base::widget * window = nullptr; }
 
 void sys::window::on::resize() {
-    gui::window->resize(sys::window::image.size);
-    sys::window::on::timing();
+     gui::window->resize(sys::window::image.size);
+     sys::window::on::timing();
 }
 void sys::mouse::on::press(XY p, char button, bool down) {
-    gui::window->mouse_press(p, button, down);
-    sys::window::on::timing();
+     gui::window->mouse_press(p, button, down);
+     sys::window::on::timing();
 }
 void sys::mouse::on::wheel(XY p, int delta) {
-    gui::window->mouse_wheel(p, delta);
-    sys::window::on::timing();
+     gui::window->mouse_wheel(p, delta);
+     sys::window::on::timing();
 }
 void sys::mouse::on::move(XY p) {
-    gui::window->mouse_move(p);
-    sys::window::on::timing();
+     gui::window->mouse_move(p);
+     sys::window::on::timing();
 }
 void sys::mouse::on::leave() {
-    gui::window->mouse_leave();
-    sys::window::on::timing();
+     gui::window->mouse_leave();
+     sys::window::on::timing();
 }
 
 void sys::window::on::timing()
 {
-    gui::time::set();
-    gui::active_properties.for_each( [](auto p){ p->tick(); } );
-    for (auto rect : gui::window->updates)
-    gui::window->render(sys::window::image.frame(rect), rect.origin);
-    gui::window->updates.clear();
+     gui::time::set();
+     gui::active_properties.for_each( [](auto p){ p->tick(); } );
+     for (auto rect : gui::window->updates)
+     gui::window->render(sys::window::image.frame(rect), rect.origin);
+     gui::window->updates.clear();
 }
 
 namespace gui
@@ -49,11 +50,13 @@ namespace gui
     };
 }
 
-void sys::window::on::start () { gui::timer_stop = false; gui::timer = std::thread (gui::timer_proc); }
-void sys::window::on::finish() { gui::timer_stop = true; if (gui::timer.joinable()) gui::timer.join(); }
-void sys::window::on::pause () { gui::timer_stop = true; }
-void sys::window::on::resume() {
-     sys::window::on::finish(); gui::time::set_after_pause();
-     sys::window::on::timing(); gui::time::reset_after_pause();
-     sys::window::on::start ();
+void sys::window::on::finish  () { sys::window::on::turn_off(); }
+void sys::window::on::start   () { gui::init(); sys::window::on::turn_on(); }
+void sys::window::on::turn_on () { gui::timer_stop = false; gui::timer = std::thread (gui::timer_proc); }
+void sys::window::on::turn_off() { gui::timer_stop = true; if (gui::timer.joinable()) gui::timer.join(); }
+void sys::window::on::pause   () { gui::timer_stop = true; }
+void sys::window::on::resume  () {
+     sys::window::on::turn_off(); gui::time::set_after_pause();
+     sys::window::on::timing  (); gui::time::reset_after_pause();
+     sys::window::on::turn_on ();
 }

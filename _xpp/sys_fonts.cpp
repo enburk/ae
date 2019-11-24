@@ -21,7 +21,7 @@ struct GDI_FONT
         LOGFONT lf;
         _tcscpy_s (
         lf.lfFaceName       , 32, font.face.till (31).c_str());
-        lf.lfHeight         = -MulDiv (font.size, ::GetDeviceCaps (dc,LOGPIXELSY), 72);
+        lf.lfHeight         = -font.size;//-MulDiv (font.size, ::GetDeviceCaps (dc,LOGPIXELSY), 72);
         lf.lfWidth          = 0;
         lf.lfEscapement     = 0;
         lf.lfOrientation    = 0;
@@ -152,6 +152,9 @@ sys::glyph::glyph (str text, sys::glyph_style style) : text(text), glyph_style(s
 
 sys::token::token (str text, sys::glyph_style style)
 {
+    this->text = text;
+    glyph_style::operator = (style);
+
     str t; text += "\n";
     for (char c : text)
     {
@@ -161,6 +164,21 @@ sys::token::token (str text, sys::glyph_style style)
         ||  t.size () == 3 && (static_cast<uint8_t>(t[0]) & 0b11110000) == 0b11110000 // UTF-8: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
         )   t += c; else { glyphs += glyph(t, style); t = c; }
     }
+    ascent  = 0;
+    descent = 0;
+    advance = 0;
+    offsets.reserve(glyphs.size());
+
+    for (auto & glyph : glyphs) {
+        ascent  = max(ascent,  glyph.ascent);
+        descent = max(descent, glyph.descent);
+    }
+    for (auto & glyph : glyphs) {
+        offsets += XY(size.x + advance, ascent - glyph.ascent);
+        size.x = offsets.back().x + glyph.size.x;
+        advance = glyph.advance;
+    }
+    size.y = ascent + descent;
 }
 
 void sys::render (glyph glyph, Frame<RGBA> frame, XY offset, uint8_t alpha, int x)

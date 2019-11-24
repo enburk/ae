@@ -10,6 +10,7 @@
 namespace gui
 {
     using namespace pix;
+    using namespace std::literals::chrono_literals;
 
     template
         <class type> inline type transition_state (type from, type to, int64_t mul, int64_t div) {

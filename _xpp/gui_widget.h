@@ -1,4 +1,5 @@
 #pragma once
+#include <any>
 #include <set>
 #include "pix.h"
 #include "aux_utils.h"
@@ -79,7 +80,8 @@ namespace gui::base
 
         bool mouse_sense (XY p)
         {
-            if (alpha.now == 0 || (coord.now - coord.now.origin).excludes(p)) return false;
+            if (alpha.now == 0) return false;
+            if (coord.now.local().excludes(p)) return false;
             for (auto w : children)
                 if (w->mouse_sense (p - w->coord.now.origin))
                     return true;
@@ -148,8 +150,10 @@ namespace gui::base
         ////////////////////////////////////////////////////////////////////////
 
         void notify () { if (parent) parent->on_notify(this); }
+        void notify (int i) { if (parent) parent->on_notify(this, i); }
 
         virtual void on_notify (widget*) {}
+        virtual void on_notify (widget*, int) {}
 
         ////////////////////////////////////////////////////////////////////////
 
@@ -195,83 +199,5 @@ namespace gui
             auto it = widgets.lower_bound(this);
             if (it != widgets.end() && *it == this) widgets.erase(it);
         }
-    };
-
-    template<class T> struct widgetarium : widget<widgetarium<T>>
-    {
-        using widget = widget<widgetarium<T>>;
-        using widget::children;
-
-        array<int> holes;
-        array<int> indices;
-        std::deque<std::optional<T>> deque;
-
-        int size () const { return indices.size(); }
-
-        const T & operator () (int pos) const { return *deque[indices[pos]]; }
-        /***/ T & operator () (int pos) /***/ { return *deque[indices[pos]]; }
-
-        const T & back () const { return *deque[indices.back()]; }
-        /***/ T & back () /***/ { return *deque[indices.back()]; }
-
-        template<class... Args>
-        T & emplace_back (Args&&... args)
-        {
-            if (holes.empty()) { auto & t =
-                deque.emplace_back(std::in_place, std::forward<Args>(args)...);
-                indices.emplace_back(size());
-                children += &t.value();
-                t.value().parent = this;
-                return t.value();
-            } else {
-                int index = holes.back(); holes.pop_back(); auto & t =
-                deque[index].emplace(std::forward<Args>(args)...);
-                indices.emplace_back(index);
-                children += &t;
-                t.parent = this;
-                return t;
-            }
-        }
-
-        int rotate (int f, int m, int l) {
-            assert(children.size() == indices.size());
-            std::rotate(
-            children.begin() + f,
-            children.begin() + m,
-            children.begin() + l);
-            return (int)(
-            std::rotate(
-            indices.begin() + f,
-            indices.begin() + m,
-            indices.begin() + l) -
-            indices.begin());
-        }
-
-        void erase (int pos)
-        {
-            deque[indices[pos]].reset();
-            holes.push_back(indices[pos]);
-            indices.erase(indices.begin()+pos);
-        }
-        void truncate (int pos) { while (size() > pos) erase(size()-1); }
-        void clear () { truncate(0); }
-
-        template<class U> struct iterator
-        {
-            widgetarium<U>* that; int index;
-            void operator ++ () { ++index; }
-            void operator -- () { --index; }
-            void operator += (int n) { index += n; }
-            void operator -= (int n) { index -= n; }
-            bool operator == (iterator i) { return index == i.index; }
-            bool operator != (iterator i) { return index != i.index; }
-            const U & operator * () const { return (*that)(index); }
-            /***/ U & operator * () /***/ { return (*that)(index); }
-            friend iterator operator + (iterator i, int n) { i.index += n; return i; }
-            friend iterator operator - (iterator i, int n) { i.index -= n; return i; }
-            friend int operator - (iterator i, iterator j) { return i.index - j.index; }
-        };
-        iterator<T> begin () { return iterator<T>{this, 0}; }
-        iterator<T> end   () { return iterator<T>{this, size()}; }
     };
 }

@@ -21,6 +21,7 @@ template<class Iterator> struct range
         void operator -= (long n) { current -= n; }
         bool operator == (iterator i) { return current == i.current; }
         bool operator != (iterator i) { return current != i.current; }
+        std::pair<type, long> operator -> () { return **this; }
         std::pair<type, long> operator * () { return std::pair{*current, (long)(current-begin)}; }
         friend iterator operator + (iterator i, long n) { i.current += n; return i; }
         friend iterator operator - (iterator i, long n) { i.current -= n; return i; }
@@ -39,17 +40,17 @@ template<class Iterator> struct range_with_ending
 
     struct iterator
     {
-        Iterator current;
-        Iterator begin, end; char ending;
+        long current, total;
+        Iterator begin; type ending;
         void operator ++ () { ++current; }
         bool operator != (iterator i) { return current != i.current; }
-        std::pair<type, long> operator * () { return current < end ?
-            std::pair{*current, (long)(current-begin)} :
-            std::pair{ ending,  (long)(end-begin)}; }
+        std::pair<type, long> operator * () { return current < total-1 ?
+            std::pair{*(begin+current), current}:
+            std::pair{  ending,         current}; }
     };
 
-    iterator begin () { return iterator{range.first,  range.first, range.last, ending}; }
-    iterator end   () { return iterator{range.last+1, range.first, range.last, ending}; }
+    iterator begin () { return iterator{0,              range.size()+1, range.first, ending}; }
+    iterator end   () { return iterator{range.size()+1, range.size()+1, range.first, ending}; }
     long     size  () { return range.size() + 1; }
 };
 
@@ -58,11 +59,23 @@ template<class I> range_with_ending<I> operator + (range<I> r, typename range<I>
 template<class type> struct array : std::vector<type>
 {
     using base = std::vector<type>;
+    using typename base::const_iterator;
+    using typename base::iterator;
     using base::vector;
     using base::begin;
     using base::end;
 
+    array (                ) : base ( ) {}
+    array (const base  &  a) : base (a) {}
+    array (      base  && a) : base (std::move(a)) {}
+    array (const array &  a) = default;
+    array (      array && a) = default;
+    array (const_iterator f, const_iterator l) : base (f, l) {}
+
     long size () const { return (long) base::size (); }
+
+    array & operator = (const array &  s) { base::operator = (s); return *this; }
+    array & operator = (      array && s) { base::operator = (std::move(s)); return *this; }
 
     void operator += (const type   & e) { base::emplace_back (e); }
     void operator += (      type  && e) { base::emplace_back (std::move(e)); }
@@ -75,9 +88,9 @@ template<class type> struct array : std::vector<type>
     friend array operator + (const array & a, const type  & b) { array tt; tt += a; tt+= b; return tt; }
     friend array operator + (const type  & a, const array & b) { array tt; tt += a; tt+= b; return tt; }
 
-    auto range ()               { return ::range<base::iterator>{begin(), begin(),   end(),     end()}; }
-    auto range (long f)         { return ::range<base::iterator>{begin(), begin()+f, end(),     end()}; }
-    auto range (long f, long n) { return ::range<base::iterator>{begin(), begin()+f, begin()+n, end()}; }
+    auto range ()               { return ::range<iterator>{begin(), begin(),   end(),     end()}; }
+    auto range (long f)         { return ::range<iterator>{begin(), begin()+f, end(),     end()}; }
+    auto range (long f, long n) { return ::range<iterator>{begin(), begin()+f, begin()+n, end()}; }
 
     friend std::ostream & operator << (std::ostream & out, const array & a) { for (const auto & e : a) out << e << std::endl; return out; }
 

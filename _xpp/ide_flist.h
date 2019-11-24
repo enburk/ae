@@ -1,4 +1,5 @@
 #pragma once
+#include <filesystem>
 #include "gui_widget_canvas.h"
 using namespace pix;
 
@@ -7,6 +8,8 @@ struct Flist : gui::widget<Flist>
     gui::canvas canvas;
     gui::frame  frame1;
     gui::frame  frame2;
+
+    gui::binary_property<std::filesystem::path> path;
 
     Flist()
     {

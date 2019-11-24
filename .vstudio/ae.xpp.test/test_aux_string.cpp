@@ -91,6 +91,16 @@ namespace test_aux
 
     TEST(TestAuxString, Is)
     {
+        //expect all
+        //{
+        //    text("abc")::starts.with("") = true;
+        //    text("abc")::starts.with("a") = true;
+        //    text("abc")::starts.with("ab") = true;
+        //    text("abc")::starts.with("abcd") = false;
+        //    text("abc")::starts.with("abd") = false;
+        //    text("abc")::starts.with("ad") = false;
+        //    text("abc")::starts.with("d") = false;
+        //}
         EXPECT_TRUE(str("abc").starts_with(""));
         EXPECT_TRUE(str("abc").starts_with("a"));
         EXPECT_TRUE(str("abc").starts_with("ab"));
