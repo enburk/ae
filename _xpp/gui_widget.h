@@ -127,7 +127,7 @@ namespace gui::base
             }
             if (mouse_hover_child &&
                 mouse_hover_child != hover)
-                mouse_hover_child->on_mouse_leave();
+                mouse_hover_child->mouse_leave();
 
             mouse_hover_child = hover;
 
@@ -140,12 +140,17 @@ namespace gui::base
                 mouse_hover_child->mouse_leave ();
                 mouse_hover_child = nullptr;
             }
-            on_mouse_leave ();
+            else on_mouse_leave ();
         }
 
         void mouse_wheel (XY p, int delta)
         {
         }
+
+        ////////////////////////////////////////////////////////////////////////
+
+        virtual void on_focus (bool) {}
+        virtual void on_key_pressed (str, bool) {}
 
         ////////////////////////////////////////////////////////////////////////
 

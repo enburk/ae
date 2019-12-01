@@ -11,6 +11,14 @@ void sys::window::on::resize() {
      gui::window->resize(sys::window::image.size);
      sys::window::on::timing();
 }
+void sys::keyboard::on::focus(bool on) {
+     gui::window->on_focus(on);
+     sys::window::on::timing();
+}
+void sys::keyboard::on::press(str key, bool down) {
+     gui::window->on_key_pressed(key, down);
+     sys::window::on::timing();
+}
 void sys::mouse::on::press(XY p, char button, bool down) {
      gui::window->mouse_press(p, button, down);
      sys::window::on::timing();

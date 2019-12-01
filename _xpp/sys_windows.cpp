@@ -35,6 +35,23 @@ void sys::window::timing()
     ::PostMessage(Hwnd, WM_COMMAND, 11111, 0);
 }
 
+static str key (WPARAM wparam, LPARAM lparam)
+{
+    int a = lparam & 0x40000000 ? 1 : 0;
+    str c;
+    switch(wparam){
+    case 0x41: c = "A"; break;
+    case 0x42: c = "B"; break;
+    case VK_SPACE: c = " "; break;
+    case VK_RETURN: c = "\n"; break;
+    }
+    return c;
+}
+static str syskey (WPARAM wparam, LPARAM lparam)
+{
+    return "";
+}
+
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     int LW = (short) LOWORD (wparam); int LL = (short) LOWORD (lparam); int LX = GET_X_LPARAM (lparam);
@@ -54,6 +71,15 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         case WM_RBUTTONUP       : sys::mouse::on::press (XY(LX,LY), 'R', false); break;
         case WM_CAPTURECHANGED  : sys::mouse::on::leave (); break;
         case WM_MOUSELEAVE      : sys::mouse::on::leave (); break;
+
+        case WM_SETFOCUS        : sys::keyboard::on::focus (true); break;
+        case WM_KILLFOCUS       : sys::keyboard::on::focus (false); break;
+        case WM_KEYDOWN         : sys::keyboard::on::press (key(wparam, lparam), true ); return 1; break;
+        case WM_KEYUP           : sys::keyboard::on::press (key(wparam, lparam), false); return 1; break;
+        case WM_SYSKEYDOWN      : sys::keyboard::on::press (syskey(wparam, lparam), true ); break;
+        case WM_SYSKEYUP        : sys::keyboard::on::press (syskey(wparam, lparam), false); break;
+        case WM_CHAR            : sys::keyboard::on::press (str((char)wparam), true ); break;
+        case WM_UNICHAR         : sys::keyboard::on::press (str((char)wparam), true ); break;
 
         case WM_PAINT:
         {

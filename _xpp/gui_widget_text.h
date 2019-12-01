@@ -45,6 +45,8 @@ namespace gui
             }
         };
 
+        ///////////////////////////////////////////////////////////////////////
+
         template<orientation> struct align;
         template<> struct align<vertical> { enum type { top, center, bottom }; };
         template<> struct align<horizontal> { enum type { left, center, right, justify}; };
@@ -101,6 +103,8 @@ namespace gui
                 resize(XY(width, rows.back().coord.y + rows.back().coord.size.y));
             }
         };
+
+        ///////////////////////////////////////////////////////////////////////
             
         struct page final : widgetarium<line>
         {
@@ -131,6 +135,8 @@ namespace gui
             }
         };
 
+        ///////////////////////////////////////////////////////////////////////
+
         struct label final : widget<label>
         {
             canvas canvas; page page;
@@ -152,7 +158,9 @@ namespace gui
             void refresh ()
             {
                 page.fill (coord.now.size.x, word_wrap.now, tokens, styles, style.now);
-                page.move_to(coord.now.size/2 - page.coord.now.size/2);
+
+                if (alignment.now == align<horizontal>::center)
+                    page.move_to(coord.now.size/2 - page.coord.now.size/2);
             }
 
             void on_change (void* what) override
@@ -207,58 +215,76 @@ namespace gui
             }
         };
 
+        ///////////////////////////////////////////////////////////////////////
+
         struct editor final : widget<editor>
         {
             property<int> indent = 0;
 
+            binary_property<bool> insert_mode = true;
+
             struct caret final : widget<caret>
             {
                 canvas canvas;
-                property<int> position;
-                property<bool> insert_mode;
+                property<time> timer;
+                binary_property<bool> insert_mode;
                 void on_change (void* what) override
                 {
+                    if (what == &coord && coord.now.size != coord.was.size
+                    ||  what == &insert_mode) {
+                        XYWH r = coord.now.local();
+                        if (insert_mode.now) r.w = max (1, r.h/16);
+                        canvas.coord = r;
+                        if (timer.now == time())
+                            timer.go (time::infinity, time::infinity);
+                    }
+                    if (what == &timer) {
+                        int ms = time::now.ms % 1024; if (ms <= 512)
+                        canvas.alpha = 255*ms/512; else
+                        canvas.alpha = 255*(1024-ms-1)/512;
+                    }
                 }
             };
 
+            widgetarium<canvas> highlight;
+            widgetarium<canvas> selection;
+            label view; // after selection, before carets
+            widgetarium<caret> carets;
+
+            void on_change (void* what) override
+            {
+                if (what == &coord && coord.now.size != coord.was.size)
+                {
+                    auto r = coord.now.local();
+                    view.coord = r;
+                    highlight.coord = r;
+                    selection.coord = r;
+                    carets.coord = r;
+
+                    if (carets.size() == 0)
+                        carets.emplace_back();
+
+                    auto co = schemas[""].touched.back_color; co.a = 192;
+                    carets(0).canvas.color = co;
+                    carets(0).coord = XYWH(0,0,15,30);
+                    carets(0).insert_mode = false;
+                }
+            }
+
+            str s;
+
+            void on_focus (bool on) override {}
+            void on_key_pressed (str key, bool down) override
+            {
+                s += key; view.text = s;
+            }
+
+
+            // zero glyph width => zero caret width
+
+
             struct line final : widget<line>
             {
-            //    widgetarium<canvas> canvases;
-            //    layout<glyph, horizontal> glyphs;
-            //    widgetarium<caret> carets;
-            //    property<bool> insert_mode;
-            //
-            //    int size () const { return glyphs.size(); }
-            //
-            //    void append (sys::glyph g) {
-            //         glyphs.emplace_back(std::move(g));
-            //         resize(XY(coord.now.size.x, glyphs.coord.now.size.y));
-            //    }
-            //    void append (sys::token token) {
-            //         for (auto && g : token.glyphs)
-            //            append (std::move(g));
-            //    }
-            //    void replace(int pos, sys::glyph g) {
-            //         erase (pos);
-            //         insert(pos, std::move(g));
-            //    }
-            //    void insert (int pos, sys::glyph g) {
-            //         append (std::move(g)); glyphs.rotate(pos,
-            //            size()-1,
-            //            size());
-            //    }
-            //    void insert (int pos, sys::token token) {
-            //         append (std::move(token)); glyphs.rotate(pos,
-            //            size()-token.glyphs.size(),
-            //            size());
-            //    }
-            //    void erase (int pos, int num = 1) {
-            //         glyphs.erase(pos, num);
-            //         resize(XY(coord.now.size.x, glyphs.coord.now.size.y));
-            //    }
-            //
-            //void truncate (int pos) { while (size() > pos) erase(size()-1); }
-            //void clear () { truncate(0); }
 
                 //void set_caret(int position) { carets.clear(); add_caret(position); }
                 //void add_caret(int position) { int n = size();
@@ -322,30 +348,30 @@ namespace gui
                     notify();
                 }
             };
-            struct view final : widget<view>
-            {
-                page page;
-                //scroll scroll;
-                const model* model;
+            //struct view final : widget<view>
+            //{
+            //    page page;
+            //    //scroll scroll;
+            //    const model* model;
+            //
+            //    void refresh ()
+            //    {
+            //        for (auto token : model->contextt.document->syntax)
+            //        {
+            //
+            //        }
+            //    }
+            //};
+            //struct controller
+            //{
+            //    model* model;
+            //};
+            //
+            //model model; view view; controller controller;
+            //
+            //editor () { view.model = &model; controller.model = &model; }
 
-                void refresh ()
-                {
-                    for (auto token : model->contextt.document->syntax)
-                    {
-
-                    }
-                }
-            };
-            struct controller
-            {
-                model* model;
-            };
-
-            model model; view view; controller controller;
-
-            editor () { view.model = &model; controller.model = &model; }
-
-            void on_notify (gui::base::widget* w) override { if (w == &model) view.refresh(); }
+            //void on_notify (gui::base::widget* w) override { if (w == &model) view.refresh(); }
         };
 
 

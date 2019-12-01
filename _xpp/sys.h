@@ -49,6 +49,15 @@ namespace sys
         }
     }
 
+    namespace keyboard
+    {
+        namespace on
+        {
+            void focus (bool);
+            void press (str, bool);
+        }
+    }
+
     struct font
     {
         str face; int size; bool bold; bool italic;

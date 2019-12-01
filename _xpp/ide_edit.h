@@ -12,6 +12,8 @@ struct Editor : gui::widget<Editor>
     gui::frame  frame1;
     gui::frame  frame2;
 
+    gui::text::editor editor;
+
     Editor()
     {
         frame1.color = pix::gray;
@@ -19,14 +21,18 @@ struct Editor : gui::widget<Editor>
         canvas.color = pix::white;
     }
 
-    void on_change () override
+    void on_change (void* what) override
     {
-        if (coord.was.size != coord.now.size)
+        if (what == &coord && coord.was.size != coord.now.size)
         {
             auto r = coord.now.local();
-            frame1.move_to(r); r.deflate(frame1.thickness.now);
-            frame2.move_to(r); r.deflate(frame2.thickness.now);
-            canvas.move_to(r);
+            frame1.coord = r; r.deflate(frame1.thickness.now);
+            frame2.coord = r; r.deflate(frame2.thickness.now);
+            canvas.coord = r;
+            editor.coord = r;
         }
     }
+
+    void on_focus (bool on) override { editor.on_focus(on); }
+    void on_key_pressed (str key, bool down) override { editor.on_key_pressed(key,down); }
 };

@@ -12,33 +12,6 @@ namespace gui
     using namespace pix;
     using namespace std::literals::chrono_literals;
 
-    template
-        <class type> inline type transition_state (type from, type to, int64_t mul, int64_t div) {
-        if (div == 0) return to; return clamp<type>(to*mul/div + from*(div-mul)/div);
-    }
-    template<> bool inline transition_state<bool> (bool from, bool to, int64_t mul, int64_t div) {
-        return div == 0 || mul >= div ? to : from;
-    }
-    template<> RGBA inline transition_state<RGBA> (RGBA from, RGBA to, int64_t mul, int64_t div) {
-        return RGBA (
-            transition_state<uint8_t>(from.r, to.r, mul, div),
-            transition_state<uint8_t>(from.g, to.g, mul, div),
-            transition_state<uint8_t>(from.b, to.b, mul, div),
-            transition_state<uint8_t>(from.a, to.a, mul, div));
-    }
-    template<> XYWH inline transition_state<XYWH> (XYWH from, XYWH to, int64_t mul, int64_t div) {
-        return XYWH (
-            transition_state<int>(from.x, to.x, mul, div),
-            transition_state<int>(from.y, to.y, mul, div),
-            transition_state<int>(from.w, to.w, mul, div),
-            transition_state<int>(from.h, to.h, mul, div));
-    }
-    template<> XY   inline transition_state<XY>   (XY   from, XY   to, int64_t mul, int64_t div) {
-        return XY   (
-            transition_state<int>(from.x, to.x, mul, div),
-            transition_state<int>(from.y, to.y, mul, div));
-    }
-
     struct time
     {
         int64_t  ms = 0;
@@ -64,6 +37,7 @@ namespace gui
         static time was;
         static time now;
         static time pause;
+        static time infinity;
         static void reset_after_pause() { pause = time(); }
         static void set_after_pause() { set(); pause = now - was; }
         static void set() { static
@@ -75,7 +49,44 @@ namespace gui
     inline time time::was;
     inline time time::now;
     inline time time::pause;
+    inline time time::infinity { max<int64_t>() };
     inline time default_transition_time = std::chrono::milliseconds(0);
+
+    template
+        <class type> inline type transition_state (type from, type to, int64_t mul, int64_t div) {
+        if (div == 0) return to; auto add = to - from;
+        if (mul == div) return clamp<type>(from + add);
+        if (add == div) return clamp<type>(from + mul);
+        if (add > max<int32_t>() && mul > max<int32_t>()
+        ||  add < min<int32_t>() && mul > max<int32_t>())
+        throw std::out_of_range("transition_state: overflow");
+        return clamp<type>(from + add*mul/div);
+    }
+    template<> time inline transition_state<time> (time from, time to, int64_t mul, int64_t div) {
+        return time(transition_state(from.ms, to.ms, mul, div));
+    }
+    template<> bool inline transition_state<bool> (bool from, bool to, int64_t mul, int64_t div) {
+        return div == 0 || mul >= div ? to : from;
+    }
+    template<> RGBA inline transition_state<RGBA> (RGBA from, RGBA to, int64_t mul, int64_t div) {
+        return RGBA (
+            transition_state<uint8_t>(from.r, to.r, mul, div),
+            transition_state<uint8_t>(from.g, to.g, mul, div),
+            transition_state<uint8_t>(from.b, to.b, mul, div),
+            transition_state<uint8_t>(from.a, to.a, mul, div));
+    }
+    template<> XYWH inline transition_state<XYWH> (XYWH from, XYWH to, int64_t mul, int64_t div) {
+        return XYWH (
+            transition_state<int>(from.x, to.x, mul, div),
+            transition_state<int>(from.y, to.y, mul, div),
+            transition_state<int>(from.w, to.w, mul, div),
+            transition_state<int>(from.h, to.h, mul, div));
+    }
+    template<> XY   inline transition_state<XY>   (XY   from, XY   to, int64_t mul, int64_t div) {
+        return XY   (
+            transition_state<int>(from.x, to.x, mul, div),
+            transition_state<int>(from.y, to.y, mul, div));
+    }
 
     struct base_property : polymorphic { virtual void tick () = 0; };
     inline registry<base_property*> active_properties;

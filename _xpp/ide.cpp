@@ -63,6 +63,9 @@ struct IDE : gui::widget<IDE>
             //editor.load(flist.path);
         }
     }
+
+    void on_focus (bool on) override { editor.on_focus(on); }
+    void on_key_pressed (str key, bool down) override { editor.on_key_pressed(key,down); }
 };
 
 IDE ide;

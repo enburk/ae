@@ -1,0 +1,53 @@
+widget
+{
+	auto children = x from ::meta::elements | x is.a widget;
+}
+
+
+;; Equals means equals
+bool it.is.not.c = true;
+
+;; Assignment operators:
+
+it.isn't.c++;
+
+auto set = {1, 2, 3}
+auto list = (1, 1.1, "1.1");
+auto array = [1, 2, 3];
+
+auto set = {}
+auto list = ();
+auto array = [];
+
+Операция "Конкатенация".
+
+auto set ~= {1}
+auto list ~= (1);
+auto array ~= [1];
+
+for int i = 1...array##
+{
+}
+
+while true for pi = 3.13...3.15
+{
+}
+
+
+entity
+{
+}
+
+;; 
+
+;; There are no such keywords as public, private and protected.
+;; If Nature doesn't seems to support perfect encapsulation, why we would?
+;; If something is not a part of everyday interface just tell that:
+
+human
+{
+     abdomen
+	 {
+	      appendix { ... }
+	 }
+}
