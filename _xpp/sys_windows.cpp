@@ -35,54 +35,57 @@ void sys::window::timing()
     ::PostMessage(Hwnd, WM_COMMAND, 11111, 0);
 }
 
+// https://blog.keyman.com/2008/06/robust-key-mess/
+
+static bool alt = false;
+static bool ctrl = false;
+static bool shift = false;
+
 static str wm_key (WPARAM wparam, LPARAM lparam, bool down)
 {
-    int a = lparam & 0x40000000 ? 1 : 0;
-    bool alt = false;
-    bool ctrl = false;
-    bool shift = false;
-    str c;
-
-    if (0x30 <= wparam && wparam <= 0x39) c = '9' + (char)wparam; else
-    if (0x41 <= wparam && wparam <= 0x5A) c = 'A' + (char)wparam; else
-    if (0x70 <= wparam && wparam <= 0x7B) c = "F" + std::to_string(wparam-0x70+1); else
+    str s;
+    if (0x30 <= wparam && wparam <= 0x39) s = '0' + (char)wparam-0x30; else
+    if (0x41 <= wparam && wparam <= 0x5A) s = 'A' + (char)wparam-0x41; else
+    if (0x70 <= wparam && wparam <= 0x7B) s = "F" + std::to_string(wparam-0x70+1); else
     switch(wparam){
-    case VK_BACK: c = "backspace"; break;
-    case VK_TAB: c = "tab"; break;
-    case VK_RETURN: c = "enter"; break;
-    case VK_ESCAPE: c = "escape"; break;
-    case VK_INSERT: c = "insert"; break;
-    case VK_DELETE: c = "delete"; break;
-    case VK_SPACE: c = "space"; break;
-    case VK_SNAPSHOT: c = "print screen"; break;
+    case VK_BACK    : s = "backspace"; break;
+    case VK_TAB     : s = "tab"; break;
+    case VK_RETURN  : s = "enter"; break;
+    case VK_ESCAPE  : s = "escape"; break;
+    case VK_INSERT  : s = "insert"; break;
+    case VK_DELETE  : s = "delete"; break;
+    case VK_SPACE   : s = "space"; break;
+    case VK_SNAPSHOT: s = "print screen"; break;
 
-    case VK_PRIOR: c = "page up"; break;
-    case VK_NEXT: c = "page down"; break;
-    case VK_END: c = "end"; break;
-    case VK_HOME: c = "home"; break;
-    case VK_LEFT: c = "left"; break;
-    case VK_RIGHT: c = "right"; break;
-    case VK_UP: c = "up"; break;
-    case VK_DOWN: c = "down"; break;
+    case VK_PRIOR   : s = "page up"; break;
+    case VK_NEXT    : s = "page down"; break;
+    case VK_END     : s = "end"; break;
+    case VK_HOME    : s = "home"; break;
+    case VK_LEFT    : s = "left"; break;
+    case VK_RIGHT   : s = "right"; break;
+    case VK_UP      : s = "up"; break;
+    case VK_DOWN    : s = "down"; break;
 
-    case VK_MENU: alt = down; break;
-    case VK_SHIFT: shift = down; break;
-    case VK_CONTROL: ctrl = down; break;
+    case VK_OEM_PLUS    : s = "+"; break;
+    case VK_OEM_MINUS   : s = "-"; break;
+    case VK_OEM_COMMA   : s = ","; break;
+    case VK_OEM_PERIOD  : s = "."; break;
+
+    case VK_MENU    : alt   = down; break;
+    case VK_SHIFT   : shift = down; break;
+    case VK_CONTROL : ctrl  = down; break;
     }
-    if (c == "") return "";
-    if (shift) c = "shift+" + c;
-    if (alt  ) c =   "alt+" + c;
-    if (ctrl ) c =  "ctrl+" + c;
-    return c;
+    if (s=="") return "";
+    if (shift) s = "shift+" + s;
+    if (alt  ) s =   "alt+" + s;
+    if (ctrl ) s =  "ctrl+" + s;
+    return s;
 }
-static str wm_syskey (WPARAM wparam, LPARAM lparam)
+static str wm_char (WPARAM wparam, LPARAM lparam)
 {
-    return "";
-}
-static str wm_char (WPARAM wparam)
-{
+    if (alt) return "";
+    if (ctrl) return "";
     if (wparam < 32) return "";
-    if (wparam == 128) return ""; // ctrl+backspace
     std::wstring s; s += (wchar_t)wparam; return utf8(s);
 }
 
@@ -110,7 +113,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         case WM_KILLFOCUS       : sys::keyboard::on::focus (false); break;
         case WM_KEYDOWN         : sys::keyboard::on::press (wm_key(wparam, lparam, true ), true ); break;
         case WM_KEYUP           : sys::keyboard::on::press (wm_key(wparam, lparam, false), false); break;
-        case WM_CHAR            : sys::keyboard::on::input (wm_char(wparam)); break;
+        case WM_CHAR            : sys::keyboard::on::input (wm_char(wparam, lparam)); break;
 
         case WM_PAINT:
         {

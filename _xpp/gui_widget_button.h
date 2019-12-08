@@ -24,12 +24,6 @@ namespace gui
 
         std::function<void(void)> on_change_state = [this]()
         {
-            auto r = coord.now.local();
-            frame.thickness = metrics::line::width * 2;
-            frame.coord = r; r.deflate(frame.thickness.now);
-            image.coord = r; r.deflate(frame.thickness.now);
-            text .coord = r;
-
             auto style = schemas[schema.now];
 
             frame.color = style.focus.back_color;
@@ -45,6 +39,12 @@ namespace gui
 
             text.color = colors.fore_color;
             text.canvas.color = colors.back_color;
+
+            auto r = coord.now.local();
+            frame.thickness = metrics::line::width * 2;
+            frame.coord = r; r.deflate(frame.thickness.now);
+            image.coord = r; r.deflate(frame.thickness.now);
+            text .coord = r;
         };
 
         void on_change (void* what) override
