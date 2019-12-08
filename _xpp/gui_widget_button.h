@@ -2,7 +2,7 @@
 #include "gui_colors.h"
 #include "gui_widget_canvas.h"
 #include "gui_widget_image.h"
-#include "gui_widget_text.h"
+#include "gui_widget_text_view.h"
 namespace gui
 {
     struct button : widget<button>
@@ -20,7 +20,7 @@ namespace gui
         time repeat_lapse = 100ms;
         time repeat_notch;
 
-        frame frame; image image; text::label text;
+        frame frame; image image; text::view text;
 
         std::function<void(void)> on_change_state = [this]()
         {

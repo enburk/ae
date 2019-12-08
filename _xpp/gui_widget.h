@@ -151,6 +151,7 @@ namespace gui::base
 
         virtual void on_focus (bool) {}
         virtual void on_key_pressed (str, bool) {}
+        virtual void on_keyboard_input (str) {}
 
         ////////////////////////////////////////////////////////////////////////
 

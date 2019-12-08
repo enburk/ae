@@ -35,21 +35,55 @@ void sys::window::timing()
     ::PostMessage(Hwnd, WM_COMMAND, 11111, 0);
 }
 
-static str key (WPARAM wparam, LPARAM lparam)
+static str wm_key (WPARAM wparam, LPARAM lparam, bool down)
 {
     int a = lparam & 0x40000000 ? 1 : 0;
+    bool alt = false;
+    bool ctrl = false;
+    bool shift = false;
     str c;
+
+    if (0x30 <= wparam && wparam <= 0x39) c = '9' + (char)wparam; else
+    if (0x41 <= wparam && wparam <= 0x5A) c = 'A' + (char)wparam; else
+    if (0x70 <= wparam && wparam <= 0x7B) c = "F" + std::to_string(wparam-0x70+1); else
     switch(wparam){
-    case 0x41: c = "A"; break;
-    case 0x42: c = "B"; break;
-    case VK_SPACE: c = " "; break;
-    case VK_RETURN: c = "\n"; break;
+    case VK_BACK: c = "backspace"; break;
+    case VK_TAB: c = "tab"; break;
+    case VK_RETURN: c = "enter"; break;
+    case VK_ESCAPE: c = "escape"; break;
+    case VK_INSERT: c = "insert"; break;
+    case VK_DELETE: c = "delete"; break;
+    case VK_SPACE: c = "space"; break;
+    case VK_SNAPSHOT: c = "print screen"; break;
+
+    case VK_PRIOR: c = "page up"; break;
+    case VK_NEXT: c = "page down"; break;
+    case VK_END: c = "end"; break;
+    case VK_HOME: c = "home"; break;
+    case VK_LEFT: c = "left"; break;
+    case VK_RIGHT: c = "right"; break;
+    case VK_UP: c = "up"; break;
+    case VK_DOWN: c = "down"; break;
+
+    case VK_MENU: alt = down; break;
+    case VK_SHIFT: shift = down; break;
+    case VK_CONTROL: ctrl = down; break;
     }
+    if (c == "") return "";
+    if (shift) c = "shift+" + c;
+    if (alt  ) c =   "alt+" + c;
+    if (ctrl ) c =  "ctrl+" + c;
     return c;
 }
-static str syskey (WPARAM wparam, LPARAM lparam)
+static str wm_syskey (WPARAM wparam, LPARAM lparam)
 {
     return "";
+}
+static str wm_char (WPARAM wparam)
+{
+    if (wparam < 32) return "";
+    if (wparam == 128) return ""; // ctrl+backspace
+    std::wstring s; s += (wchar_t)wparam; return utf8(s);
 }
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -74,12 +108,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
         case WM_SETFOCUS        : sys::keyboard::on::focus (true); break;
         case WM_KILLFOCUS       : sys::keyboard::on::focus (false); break;
-        case WM_KEYDOWN         : sys::keyboard::on::press (key(wparam, lparam), true ); return 1; break;
-        case WM_KEYUP           : sys::keyboard::on::press (key(wparam, lparam), false); return 1; break;
-        case WM_SYSKEYDOWN      : sys::keyboard::on::press (syskey(wparam, lparam), true ); break;
-        case WM_SYSKEYUP        : sys::keyboard::on::press (syskey(wparam, lparam), false); break;
-        case WM_CHAR            : sys::keyboard::on::press (str((char)wparam), true ); break;
-        case WM_UNICHAR         : sys::keyboard::on::press (str((char)wparam), true ); break;
+        case WM_KEYDOWN         : sys::keyboard::on::press (wm_key(wparam, lparam, true ), true ); break;
+        case WM_KEYUP           : sys::keyboard::on::press (wm_key(wparam, lparam, false), false); break;
+        case WM_CHAR            : sys::keyboard::on::input (wm_char(wparam)); break;
 
         case WM_PAINT:
         {
@@ -123,7 +154,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         default: return DefWindowProc(hwnd, msg, wparam, lparam);
     }
 
-    sys::window::update();
+    if (sys::window::image.size.x > 0 // not yet on first WM_SETFOCUS
+    &&  sys::window::image.size.y > 0)
+        sys::window::update();
 
     return 0;
 }
@@ -147,7 +180,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR pCmdLine, int nCmdShow
     HWND hwnd = Hwnd = CreateWindowEx(
         WS_EX_APPWINDOW ,   // Optional styles
         wc.lpszClassName,   // Window class
-        TEXT("AE IDE"),    // Window text
+        TEXT("AE IDE"),     // Window text
         WS_OVERLAPPEDWINDOW,
         r.left, r.top, r.right, r.bottom,
         NULL,               // Parent window    
@@ -159,9 +192,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR pCmdLine, int nCmdShow
 
     ShowWindow(hwnd, SW_MAXIMIZE);//nCmdShow);
 
-    // Run the message loop.
-
-    MSG msg = { }; while (GetMessage(&msg, NULL, 0, 0))
+    // the message loop   ..........W crucial for Unicode
+    MSG msg = { }; while (GetMessageW(&msg, NULL, 0, 0))
     {
         TranslateMessage(&msg);
         DispatchMessage(&msg);

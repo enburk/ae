@@ -1,0 +1,96 @@
+vector<2> = vector<2, int>;
+
+2D { vector = vector(2); }
+
+;; types and functions are first class citizens
+
+::type property (::type type, type value)
+{
+	from, to, was, now : type(value);
+	time notch, lapse, transition_time = default_transition_time;
+
+	void operator = (type value) { go (value, time(0)); }
+
+	void go (type to_) { go (to_, transition_time); }
+
+	void go (type to_, time lapse_) {
+		from = now; to = to_;
+		notch = time::now;
+		lapse = lapse_;
+		tick();
+	}
+
+	void tick () override { 
+		was = now; notch += time::pause;
+		if (now != to)
+			now = transition_state (from, to,
+				std::min(time::now - notch, lapse).ms, lapse.ms);
+		if (now == to && receipt) { active_properties.erase(*receipt); receipt.reset(); }
+		if (now != to && !receipt) receipt = active_properties.append(this);
+		if (now != was) ::meta::parent::on.change(::meta::name);
+	}
+};
+
+
+
+widget = 
+{
+     alpha : property(real [0.0...1.0], 1.0);
+     show (time = 0 ms) { alpha.go (1.0, time) }
+     hide (time = 0 ms) { alpha.go (0.0, time) }
+	 showed = (alpha.now = 1.0);
+	 hidden = (alpha.now = 0.0);
+	 
+     real [0.0...1.0] alpha <- 1.0;
+	 bool showed = alpha = 1.0;
+	 bool hidden = alpha = 0.0;
+     show (time = 0 ms) { alpha.go(1.0, time) }
+     hide (time = 0 ms) { alpha.go(0.0, time) }
+	 
+	 
+	 
+	 vector<2> origin, size;
+
+	 children = all x in meta::elements | x is.a widget;
+	 parent = first x in meta::containers | x is.a widget;
+
+}
+
+
+        virtual void on_render (Frame<RGBA> frame, XY offset, uint8_t alpha) {}
+        virtual void on_change (void* what) { on_change(); }
+        virtual void on_change () {}
+
+        enum Opacity { transparent, semitransparent, opaque };
+        virtual Opacity opacity () { return transparent; }
+
+        Rectifier updates;
+        void update () { update (coord.now.local()); }
+        void update (XYWH r) {
+            if (alpha.now == 0) return; r &= coord.now.local();
+            if (parent) parent->update (r +  coord.now.origin);
+            else updates += r;
+        }
+
+        void change (void* what) {
+            if (what == &coord && parent) parent->update(coord.was);
+            if (what == &coord && parent) parent->update(coord.now);
+            if (what == &alpha && parent) parent->update(coord.now);
+            on_change(what);
+        }
+
+        void render (Frame<RGBA> frame, XY offset, uint8_t combined_alpha = 255)
+        {
+            combined_alpha = ((combined_alpha+1) * alpha.now) >> 8; if (combined_alpha == 0) return;
+            on_render (frame, offset, combined_alpha);
+            for (auto child : children) {
+                XYWH  child_global = child->coord.now + frame.offset - offset;
+                auto  child_frame = frame.frame(child_global - frame.offset);
+                if   (child_frame.size.x <= 0) continue;
+                if   (child_frame.size.y <= 0) continue;
+                child->render(
+                    child_frame,
+                    child_frame.offset - child_global.origin,
+                    combined_alpha);
+            }
+        }

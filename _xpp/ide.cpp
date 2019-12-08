@@ -2,7 +2,6 @@
 #include "gui_widget_image.h"
 #include "gui_widget_canvas.h"
 #include "gui_widget_button.h"
-#include "gui_widget_text.h"
 #include "ide_console.h"
 #include "ide_flist.h"
 #include "ide_edit.h"
@@ -66,6 +65,7 @@ struct IDE : gui::widget<IDE>
 
     void on_focus (bool on) override { editor.on_focus(on); }
     void on_key_pressed (str key, bool down) override { editor.on_key_pressed(key,down); }
+    void on_keyboard_input (str symbol) override { editor.on_keyboard_input(symbol); }
 };
 
 IDE ide;

@@ -3,7 +3,6 @@
 #include <tchar.h>
 
 MAKE_HASHABLE(sys::font, t.face, t.size, t.bold, t.italic);
-MAKE_HASHABLE(sys::glyph, t.text, t.font);
 
 extern HWND Hwnd;
 
@@ -88,16 +87,30 @@ struct GDI_CONTEXT
     }
 };
 
-struct glyph_cache { int ascent, descent, width, advance; };
-static glyph_cache cache (const sys::glyph & glyph)
+struct cache_metrics_key
 {
-    static std::unordered_map<sys::glyph, glyph_cache> glyphs;
-    auto it = glyphs.find(glyph); if (it == glyphs.end()) {
+    str text; sys::font font; 
 
-        glyph_cache data;
+    bool operator == (const cache_metrics_key & k) const { return
+        text == k.text &&
+        font == k.font;
+    }
+};
+
+MAKE_HASHABLE(cache_metrics_key, t.text, t.font);
+
+struct cache_metrics_data { int ascent, descent, width, advance; };
+static cache_metrics_data cache_metrics (const sys::glyph & glyph)
+{
+    static std::unordered_map<cache_metrics_key, cache_metrics_data> cache;
+    cache_metrics_key key {glyph.text, glyph.style().font};
+    auto it = cache.find(key);
+    if (it == cache.end())
+    {
         using namespace sys;
+        cache_metrics_data data;
         static Image<RGBA> image;
-        GDI_CONTEXT context(glyph.font);
+        GDI_CONTEXT context(glyph.style().font);
 
         auto ss = winstr(glyph.text); size_t len = winstrlen(ss);
 
@@ -112,37 +125,39 @@ static glyph_cache cache (const sys::glyph & glyph)
         data.ascent = context.font.metrics.ascent;
         data.descent = context.font.metrics.descent;
 
+        sys::glyph_style style;
+        style.font = key.font;
+        style.color = pix::black;
+        style.background = pix::white;
+
         sys::glyph g;
         g.text = glyph.text; 
-        g.font = glyph.font; 
         g.ascent  = data.ascent;
         g.descent = data.descent;
         g.advance = data.advance;
         g.size.x  = data.width;
         g.size.y  = data.ascent + data.descent;
-        g.color = RGBA(255,255,255);
-        g.background = RGBA(0,0,0);
+        g.style_index = sys::style_index(style);
         sys::render (g, image);
 
         for (bool stop = false; !stop && data.width > 0; data.width--)
             for (int y = 0; y < image.size.y; y++)
-                if (image(data.width-1, y) != RGBA(0,0,0))
+                if (image(data.width-1, y) != style.background)
                     { stop = true; break; }
 
         if (data.width < data.advance) // could be 0 for spaces
             data.width = data.advance; // for continuity of strike/under-lines
-
         data.advance -= data.width; // the pen position increment = size.x + advance
 
-        it = glyphs.emplace (glyph, data).first;
+        it = cache.emplace (key, data).first;
     }
     return it->second;
 }
 
-sys::glyph::glyph (str text, sys::glyph_style style) : text(text), glyph_style(style)
+sys::glyph::glyph (str text, sys::glyph_style style) : text(text), style_index(sys::style_index(style))
 {
     if (text == "") return;
-    auto data = cache(*this);
+    auto data = cache_metrics(*this);
     ascent  = data.ascent;
     descent = data.descent;
     advance = data.advance;
@@ -153,7 +168,7 @@ sys::glyph::glyph (str text, sys::glyph_style style) : text(text), glyph_style(s
 sys::token::token (str text, sys::glyph_style style)
 {
     this->text = text;
-    glyph_style::operator = (style);
+    this->style_index = sys::style_index(style);
 
     str t; text += "\n";
     for (char c : text)
@@ -181,22 +196,78 @@ sys::token::token (str text, sys::glyph_style style)
     size.y = ascent + descent;
 }
 
+struct cache_glyph_key
+{
+    str text; sys::font font; sys::RGBA fore, back;
+
+    bool operator == (const cache_glyph_key & k) const { return
+        text == k.text &&
+        font == k.font &&
+        fore == k.fore &&
+        back == k.back;
+    }
+};
+
+MAKE_HASHABLE(cache_glyph_key, t.text, t.font, t.fore, t.back);
+
 void sys::render (glyph glyph, Frame<RGBA> frame, XY offset, uint8_t alpha, int x)
 {
+    auto & style = glyph.style();
+
     if (alpha == 0) return;
     if (glyph.text == "") return;
     if (glyph.text.contains_only(str::one_of(" \t\r\n"))
-    &&  glyph.underline.color.a == 0
-    &&  glyph.strikeout.color.a == 0
-    &&  glyph.background     .a == 0) return;
+    &&  style.underline.color.a == 0
+    &&  style.strikeout.color.a == 0
+    &&  style.background     .a == 0) return;
 
-    int w = glyph.size.x; RGBA fore = glyph.color;
-    int h = glyph.size.y; RGBA back = glyph.background;
+    int w = glyph.size.x; RGBA fore = style.color;
+    int h = glyph.size.y; RGBA back = style.background;
 
     if (frame.size.x <= 0 || offset.x >= w) return;
     if (frame.size.y <= 0 || offset.y >= h) return;
 
-    GDI_CONTEXT context(glyph.font);
+    frame = frame.frame (XYWH(-offset.x,-offset.y, w, h));
+
+    if (false) { // test for rendering speed
+        frame.blend(RGBA::random(), alpha);
+        return;
+    }
+
+    bool solid_color_background = back.a == 255;
+    if (!solid_color_background)
+    {
+        bool ok = true;
+        RGBA c = frame(0,0);
+        for (int y=0; y<frame.size.y; y++)
+        for (int x=0; x<frame.size.x; x++) if (frame(x,y) != c) ok = false;
+    
+        if (ok) { solid_color_background = true; c.blend(back, alpha); back = c; }
+    }
+
+    static std::unordered_map<cache_glyph_key, Image<RGBA>> cache;
+
+    sys::glyph_style cacheable_style;
+    cacheable_style.font = style.font;
+    cacheable_style.color = style.color;
+    cacheable_style.background = style.background;
+
+    bool cacheable =
+        solid_color_background &&
+        glyph.text.size() <= 4 &&
+        style == cacheable_style;
+
+    if (cacheable)
+    {
+        auto it = cache.find(cache_glyph_key{glyph.text, style.font, fore, back});
+        if (it != cache.end())
+        {
+            frame.blend_from(it->second, alpha);
+            return;
+        }
+    }
+
+    GDI_CONTEXT context(style.font);
 
     BITMAPINFO bi;
     ZeroMemory(&bi,               sizeof(bi));
@@ -215,17 +286,15 @@ void sys::render (glyph glyph, Frame<RGBA> frame, XY offset, uint8_t alpha, int 
 
     auto ss = winstr(glyph.text); size_t len = winstrlen(ss);
 
-    if (back.a != 255)
+    if (!solid_color_background)
     ::SetBkMode    (context.dc, TRANSPARENT); else
     ::SetBkColor   (context.dc, RGB(back.r, back.g, back.b));
     ::SetTextColor (context.dc, RGB(fore.r, fore.g, fore.b));
 
     pix::view<RGBA> view ((RGBA*)bits, XY(w,h), w);
 
-    frame = frame.frame (XYWH(-offset.x, -offset.y, w, h));
-
-    if (back.a != 255) frame.copy_to(view);
-    if (back.a != 255) view.blend(back, alpha);
+    if (!solid_color_background) frame.copy_to(view);
+    if (!solid_color_background) view.blend(back, alpha);
 
     for (int y=0; y<h; y++)
     for (int x=0; x<w; x++) view(x,y).a = 255;
@@ -242,6 +311,13 @@ void sys::render (glyph glyph, Frame<RGBA> frame, XY offset, uint8_t alpha, int 
 
     frame.blend(back, alpha);
     frame.blend_from(view, alpha);
+    
+    if (cacheable)
+    {
+        Image<RGBA> image (XY(w,h));
+        image.frame().copy_from(view);
+        cache.emplace(cache_glyph_key{glyph.text, style.font, fore, back}, image);
+    }
 
     ::SelectObject (context.dc, old);
     ::DeleteObject (bmp);

@@ -102,6 +102,11 @@ template<class type> struct array : std::vector<type>
     
     void try_emplace  (const type & e) { auto it = find(e); if (it == end()) base::push_back (e); }
     void try_erase    (const type & e) { auto it = find(e); if (it != end()) base::erase(it); }
+
+    long find_or_emplace (const type & e) {
+        auto it = find(e); if (it != end()) return (long)(it - begin());
+        *this += e; return size()-1;
+    }
 };
 
 

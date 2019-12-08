@@ -9,14 +9,16 @@ namespace doc::lexica
 /// inline array<Token> txt (range<I> text)
     inline array<Token> txt (Range<char> text)
     {
-        array<Token> output; Token t;
+        array<Token> output; Token t; t.kind = "space";
 
         for (auto [c, n] : text + '\n')
         {
-            bool same_kind = c != '\n';
+            bool same_kind = true;
 
-            if (same_kind && t.kind == "text") same_kind = !space (c); else
-            if (same_kind && t.kind == "space") same_kind = space (c);
+            if (c      == '\n'   ) same_kind = false; else
+            if (t.text == "\n"   ) same_kind = false; else
+            if (t.kind == "text" ) same_kind =!space (c); else
+            if (t.kind == "space") same_kind = space (c);
 
             if (same_kind) t.text += c; else
             {

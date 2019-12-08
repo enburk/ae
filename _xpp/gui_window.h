@@ -19,6 +19,10 @@ void sys::keyboard::on::press(str key, bool down) {
      gui::window->on_key_pressed(key, down);
      sys::window::on::timing();
 }
+void sys::keyboard::on::input(str symbol) {
+     gui::window->on_keyboard_input(symbol);
+     sys::window::on::timing();
+}
 void sys::mouse::on::press(XY p, char button, bool down) {
      gui::window->mouse_press(p, button, down);
      sys::window::on::timing();

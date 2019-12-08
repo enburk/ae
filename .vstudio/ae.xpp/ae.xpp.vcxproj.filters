@@ -23,9 +23,6 @@
     <ClInclude Include="..\..\_xpp\doc_lexica_xpp.h">
       <Filter>doc</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\_xpp\pix.h">
-      <Filter>pix</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\_xpp\pix_color.h">
       <Filter>pix</Filter>
     </ClInclude>
@@ -54,9 +51,6 @@
       <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="..\..\_xpp\gui_widget_splitter.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\_xpp\gui_widget_text.h">
       <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="..\..\_xpp\gui_window.h">
@@ -101,6 +95,21 @@
     </ClInclude>
     <ClInclude Include="..\..\_xpp\gui_widgetarium.h">
       <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\gui_widget_text_editor.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\gui_widget_text_page.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\gui_widget_text_view.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\pix_text.h">
+      <Filter>pix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\pix.h">
+      <Filter>pix</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

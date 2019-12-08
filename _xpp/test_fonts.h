@@ -141,11 +141,11 @@ struct TestFont3 : gui::widget<TestFont3>
         style.color.a = 230; // style.background = background;
         style.font = fonts[0];
 
-        linea.sys_glyph = sys::glyph(s, style);
+        linea.Glyph = sys::glyph(s, style);
         linea.move_to(XY(x, y));
         y += linea.coord.now.size.y;
 
-        lineb.sys_token = sys::token(s, style);
+        lineb.Token = sys::token(s, style);
         lineb.move_to(XY(x, y));
         y += lineb.coord.now.size.y;
 

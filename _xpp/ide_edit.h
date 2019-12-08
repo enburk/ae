@@ -1,7 +1,7 @@
 #pragma once
 #include "doc.h"
 #include "doc_lexica_txt.h"
-#include "gui_widget_canvas.h"
+#include "gui_widget_text_editor.h"
 using namespace pix;
 
 struct Editor : gui::widget<Editor>
@@ -35,4 +35,5 @@ struct Editor : gui::widget<Editor>
 
     void on_focus (bool on) override { editor.on_focus(on); }
     void on_key_pressed (str key, bool down) override { editor.on_key_pressed(key,down); }
+    void on_keyboard_input (str symbol) override { editor.on_keyboard_input(symbol); }
 };

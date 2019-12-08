@@ -21,13 +21,12 @@ namespace pix
         bool operator != ( const RGBA & c ) const { return value != c.value; }
         bool operator <  ( const RGBA & c ) const { return value <  c.value; }
 
-        RGBA blend (RGBA c, uint8_t alpha = 255) {
+        void blend (RGBA c, uint8_t alpha = 255) {
             uint8_t
                 A = alpha == 255 ? c.a : c.a * alpha >> 8;
             r = A == 255 ? c.r : r + ( A * (c.r - r) >> 8 );
             g = A == 255 ? c.g : g + ( A * (c.g - g) >> 8 );
             b = A == 255 ? c.b : b + ( A * (c.b - b) >> 8 );
-            return *this;
         }
 
         static RGBA random(uint8_t l = 64, uint8_t u = 255) { return RGBA(
