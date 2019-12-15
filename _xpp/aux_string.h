@@ -16,7 +16,9 @@ struct str : public std::string
     str (const str &  s ) = default;
     str (      str && s ) = default;
     str (const_iterator f, const_iterator l) : base (f, l) {}
+    str (const char *   f, const char *   l) : base (f, l) {}
 
+    explicit str (array<char> text) : str(&text[0], &text.back()) {}
     explicit str (array<str> lines) {
         for (auto line : lines) {
             *this += line;

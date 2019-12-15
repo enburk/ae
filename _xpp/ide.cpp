@@ -4,7 +4,7 @@
 #include "gui_widget_button.h"
 #include "ide_console.h"
 #include "ide_flist.h"
-#include "ide_edit.h"
+#include "ide_editor.h"
 #include "test.h"
 using namespace pix;
 
@@ -21,7 +21,7 @@ struct IDE : gui::widget<IDE>
     struct document
     {
         doc::Document document;
-        gui::text::editor::model::context context;
+        //gui::text::editor::model::context context;
     };
 
     std::map<std::filesystem::path, document> documents;
@@ -29,7 +29,6 @@ struct IDE : gui::widget<IDE>
     IDE()
     {
         gui::window = this;
-        toolbar.color = pix::gray;
         button_test.text.text = "Test";
         button_test.kind = gui::button::toggle;
         test.hide();
@@ -39,16 +38,20 @@ struct IDE : gui::widget<IDE>
     {
         if (what == &coord)
         {
-            int W = coord.now.w; int w = W/4;
-            int H = coord.now.h; int h = sys::screen::size.y/40;
+            gui::schemas[""].font = sys::font{"Segoe UI", gui::metrics::text::height};
+
+            toolbar.color = gui::schemas[""].light.back_color;
+
+            int W = coord.now.w; int w = gui::metrics::text::height*10;
+            int H = coord.now.h; int h = gui::metrics::text::height*2;
 
             toolbar.coord = XYWH(0, 0, W, h);
-            button_test.coord = XYWH(W-5*h, 2, 4*h, h-4);
+            button_test.coord = XYWH(W-w, 0, w, h);
 
-            test.coord = XYWH(w*0, h, W, H-h);
-            flist.coord = XYWH(w*0, h, w, H-h);
-            editor.coord = XYWH(w*1, h, 2*w, H-h);
-            console.coord = XYWH(w*3, h, W-3*w, H-h);
+            test.coord = XYWH(W*0/4, h, W*4/4, H-h);
+            flist.coord = XYWH(W*0/4, h, W*1/4, H-h);
+            editor.coord = XYWH(W*1/4, h, W*2/4, H-h);
+            console.coord = XYWH(W*3/4, h, W*1/4, H-h);
         }
     }
 

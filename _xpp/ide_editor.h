@@ -2,6 +2,7 @@
 #include "doc.h"
 #include "doc_lexica_txt.h"
 #include "gui_widget_text_editor.h"
+#include "gui_widget_button.h"
 using namespace pix;
 
 struct Editor : gui::widget<Editor>
@@ -14,21 +15,23 @@ struct Editor : gui::widget<Editor>
 
     gui::text::editor editor;
 
-    Editor()
-    {
-        frame1.color = pix::gray;
-        frame2.color = pix::black;
-        canvas.color = pix::white;
-    }
-
     void on_change (void* what) override
     {
         if (what == &coord && coord.was.size != coord.now.size)
         {
+            frame1.color = gui::schemas[""].light.back_color;
+            frame2.color = gui::schemas[""].heavy.back_color;
+            canvas.color = gui::schemas[""].light.back_color;
+
+            editor.background.color = pix::white;
+            editor.view.style = sys::glyph_style{
+                sys::font{"Consolas", gui::metrics::text::height*110/100},
+                pix::black };
+
             auto r = coord.now.local();
             frame1.coord = r; r.deflate(frame1.thickness.now);
             frame2.coord = r; r.deflate(frame2.thickness.now);
-            canvas.coord = r;
+            canvas.coord = r; r.deflate(frame2.thickness.now);
             editor.coord = r;
         }
     }

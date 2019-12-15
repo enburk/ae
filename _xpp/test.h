@@ -38,16 +38,16 @@ struct Test : gui::widget<Test>
     {
         if (what == &coord && coord.was.size != coord.now.size)
         {
-            int W = coord.now.w; int w = W/20; int dx = w/20;
-            int H = coord.now.h; int h = H/40; int dy = h/10;
+            int W = coord.now.w; int w = gui::metrics::text::height*10;
+            int H = coord.now.h; int h = gui::metrics::text::height*2;
 
-            canvas.coord = coord.now.local();  int y = dy;
+            canvas.coord = coord.now.local(); int y = 0;
 
-            buttons.coord = XYWH(W-dx-w-dx, 0, w, H);
+            buttons.coord = XYWH(W-w, 0, w, H);
 
-            for (auto & button : buttons) { button.coord = XYWH(0, y, w, h); y += h + dy; }
+            for (auto & button : buttons) { button.coord = XYWH(0, y, w, h); y += h; }
 
-            for (auto & test : tests) test->coord = XYWH(0, 0, W-dx-w-dx, H);
+            for (auto & test : tests) test->coord = XYWH(0, 0, W-w, H);
         }
     }
 

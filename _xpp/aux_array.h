@@ -17,19 +17,19 @@ template<class Iterator> struct range
         Iterator current;
         void operator ++ () { ++current; }
         void operator -- () { --current; }
-        void operator += (long n) { current += n; }
-        void operator -= (long n) { current -= n; }
+        void operator += (int n) { current += n; }
+        void operator -= (int n) { current -= n; }
         bool operator == (iterator i) { return current == i.current; }
         bool operator != (iterator i) { return current != i.current; }
-        std::pair<type, long> operator -> () { return **this; }
-        std::pair<type, long> operator * () { return std::pair{*current, (long)(current-begin)}; }
-        friend iterator operator + (iterator i, long n) { i.current += n; return i; }
-        friend iterator operator - (iterator i, long n) { i.current -= n; return i; }
+        std::pair<type, int> operator -> () { return **this; }
+        std::pair<type, int> operator * () { return std::pair{*current, (int)(current-begin)}; }
+        friend iterator operator + (iterator i, int n) { i.current += n; return i; }
+        friend iterator operator - (iterator i, int n) { i.current -= n; return i; }
     };
 
     iterator begin () { return iterator{begin_, first}; }
     iterator end   () { return iterator{begin_, last }; }
-    long     size  () { return (long)  (last -  first); }
+    int      size  () { return (int)   (last -  first); }
 };
 
 template<class Iterator> struct range_with_ending
@@ -40,18 +40,18 @@ template<class Iterator> struct range_with_ending
 
     struct iterator
     {
-        long current, total;
+        int current, total;
         Iterator begin; type ending;
         void operator ++ () { ++current; }
         bool operator != (iterator i) { return current != i.current; }
-        std::pair<type, long> operator * () { return current < total-1 ?
+        std::pair<type, int> operator * () { return current < total-1 ?
             std::pair{*(begin+current), current}:
             std::pair{  ending,         current}; }
     };
 
     iterator begin () { return iterator{0,              range.size()+1, range.first, ending}; }
     iterator end   () { return iterator{range.size()+1, range.size()+1, range.first, ending}; }
-    long     size  () { return range.size() + 1; }
+    int      size  () { return range.size() + 1; }
 };
 
 template<class I> range_with_ending<I> operator + (range<I> r, typename range<I>::type e) { return range_with_ending<I>{r, e}; }
@@ -72,7 +72,7 @@ template<class type> struct array : std::vector<type>
     array (      array && a) = default;
     array (const_iterator f, const_iterator l) : base (f, l) {}
 
-    long size () const { return (long) base::size (); }
+    int size () const { return (int) base::size (); }
 
     array & operator = (const array &  s) { base::operator = (s); return *this; }
     array & operator = (      array && s) { base::operator = (std::move(s)); return *this; }
@@ -88,9 +88,9 @@ template<class type> struct array : std::vector<type>
     friend array operator + (const array & a, const type  & b) { array tt; tt += a; tt+= b; return tt; }
     friend array operator + (const type  & a, const array & b) { array tt; tt += a; tt+= b; return tt; }
 
-    auto range ()               { return ::range<iterator>{begin(), begin(),   end(),     end()}; }
-    auto range (long f)         { return ::range<iterator>{begin(), begin()+f, end(),     end()}; }
-    auto range (long f, long n) { return ::range<iterator>{begin(), begin()+f, begin()+n, end()}; }
+    auto range ()             { return ::range<iterator>{begin(), begin(),   end(),     end()}; }
+    auto range (int f)        { return ::range<iterator>{begin(), begin()+f, end(),     end()}; }
+    auto range (int f, int n) { return ::range<iterator>{begin(), begin()+f, begin()+n, end()}; }
 
     friend std::ostream & operator << (std::ostream & out, const array & a) { for (const auto & e : a) out << e << std::endl; return out; }
 
@@ -98,15 +98,35 @@ template<class type> struct array : std::vector<type>
     bool found        (const type & e) const { return std::find (begin(), end(), e) != end(); }
     bool binary_found (const type & e) const { return std::binary_search (begin(), end(), e); }
 
-    template<class P> void erase_if (P predicate) { base::erase (std::remove_if(begin(), end(), predicate), end()); }
-    
     void try_emplace  (const type & e) { auto it = find(e); if (it == end()) base::push_back (e); }
     void try_erase    (const type & e) { auto it = find(e); if (it != end()) base::erase(it); }
 
-    long find_or_emplace (const type & e) {
-        auto it = find(e); if (it != end()) return (long)(it - begin());
-        *this += e; return size()-1;
+    auto find_or_emplace (const type & e) {
+        auto it = find(e); if (it != end()) return it;
+        *this += e; it = end()-1; return it;
     }
+
+    auto erase (int pos       ) { return base::erase(begin()+pos, begin()+pos+1); }
+    auto erase (int pos, int n) { return base::erase(begin()+pos, begin()+pos+n); }
+    auto erase (const_iterator f, const_iterator l) { return base::erase(f, l); }
+    auto erase (const_iterator i                  ) { return base::erase(i); }
+
+    template<class P> void erase_if (P predicate) { base::erase (std::remove_if(begin(), end(), predicate), end()); }
+    
+    template<class C> void sort (C compare = std::less<>{}) { std::sort(begin(), end(), compare); }
+
+    template<class C> auto lower_bound (const type & e, C compare = std::less<>{}) { return std::lower_bound(begin(), end(), e, compare); }
+    template<class C> auto upper_bound (const type & e, C compare = std::less<>{}) { return std::upper_bound(begin(), end(), e, compare); }
+
+    template<class I> auto insert(int pos, I f, I l) { return base::insert(begin()+pos, f, l); }
+    template<class I> auto insert(I   pos, I f, I l) { return base::insert(        pos, f, l); }
+    template<class I> auto insert(I   pos, array  a) { return base::insert(        pos, a.begin(), a.end()); }
+
+    template<class I> auto replace(int pos, int nn, I f, I l) { erase(pos, nn); return insert(pos, f, l); }
+    template<class I> auto replace(I   pos, I   nn, I f, I l) { erase(pos, nn); return insert(pos, f, l); }
+    template<class I> auto replace(I   pos, I   nn, array  a) { erase(pos, nn); return insert(pos, a); }
+
+    auto interval (int pos, int n) { return array(begin()+pos, begin()+pos+n); }
 };
 
 

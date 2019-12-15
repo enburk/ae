@@ -17,6 +17,8 @@ namespace gui
 
     struct schema
     {
+        font font;
+        RGBA black, white;
         pair_of_colors light, normal, heavy,
         active, hovered, touched, disabled,
         focus, error;
@@ -33,7 +35,7 @@ namespace gui
 
     void init ()
     {
-        metrics::text::height = sys::screen::size.y/80;
+        metrics::text::height = sys::screen::size.y/90;
         metrics::line::width = max (1, metrics::text::height/16);
 
         int i = 0; str name;
@@ -48,6 +50,9 @@ namespace gui
 
         for (auto & [name, palette] : palettes) {
             auto & schema = schemas[name];
+
+            schema.black   = palette[0].fore_color;
+            schema.white   = palette[9].fore_color;
 
             schema.light   = palette[1];
             schema.normal  = palette[3];

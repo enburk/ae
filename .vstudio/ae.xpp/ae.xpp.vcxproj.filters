@@ -60,15 +60,6 @@
     <ClInclude Include="..\..\_xpp\ide_console.h">
       <Filter>ide</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\_xpp\ide_edit.h">
-      <Filter>ide</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\_xpp\ide_edit_doc.h">
-      <Filter>ide</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\_xpp\ide_edit_line.h">
-      <Filter>ide</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\_xpp\ide_flist.h">
       <Filter>ide</Filter>
     </ClInclude>
@@ -110,6 +101,9 @@
     </ClInclude>
     <ClInclude Include="..\..\_xpp\pix.h">
       <Filter>pix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\ide_editor.h">
+      <Filter>ide</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

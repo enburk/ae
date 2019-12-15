@@ -8,43 +8,44 @@ namespace gui::text
     {
         canvas canvas; page page;
 
-        binary_property<str> text;
-        binary_property<str> html;
+        unary_property<str> text;
+        unary_property<str> html;
+        unary_property<array<doc::Token>> tokens;
 
         property<RGBA> color;
         binary_property<sys::glyph_style> style;
-
         binary_property<bool> word_wrap = true;
         binary_property<XY> alignment = XY{center, center};
+        binary_property<XY> shift;
 
-        array<doc::Token> tokens;
         std::map<str, sys::glyph_style> styles;
 
         void refresh ()
         {
-            //update(); // ???
             page.fill (
                 coord.now.size.x,
                 alignment.now.x,
                 word_wrap.now,
-                tokens, styles, style.now);
+                tokens.now, styles, style.now);
 
-            //if (alignment.now == align<horizontal>::center)
-                page.move_to(coord.now.size/2 - page.coord.now.size/2);
+            page.move_to(XY(
+                shift.now.x,
+                shift.now.y + (
+                alignment.now.y == center ? coord.now.size.y/2 - page.coord.now.size.y/2 :
+                alignment.now.y == bottom ? coord.now.size.y   - page.coord.now.size.y   :
+                0)));
         }
 
         void on_change (void* what) override
         {
+            if (what == &tokens) { refresh(); }
             if (what == &text)
             {
-                tokens = doc::lexica::txt(text.now);
                 styles.clear();
-
-                html.was = html.now; html.now = "";
-                for (auto && token : tokens)
+                tokens = doc::lexica::txt(text.now);
+                html.now = ""; for (const auto & token : tokens.now)
                 html.now += doc::html::encoded(token.text);
 
-                refresh();
             }
             if (what == &html)
             {
@@ -60,11 +61,13 @@ namespace gui::text
             {
                 canvas.coord = coord.now.local();
                 if (style.now == sys::glyph_style())
-                    style = sys::glyph_style{ sys::font{"", metrics::text::height}, pix::black };
+                    style = sys::glyph_style{ schemas[""].font, schemas[""].black };
                 refresh();
             }
             if (what == &color)
             {
+                if (style.now == sys::glyph_style())
+                    style = sys::glyph_style{ schemas[""].font, schemas[""].black };
                 style.was = style.now;
                 style.now.color = color.now;
                 refresh();
@@ -75,13 +78,12 @@ namespace gui::text
                 color.now = style.now.color;
                 refresh();
             }
-            if (what == &word_wrap)
+            if (what == &word_wrap
+            ||  what == &alignment
+            ||  what == &shift)
             {
                 refresh();
             }
-            //if (what == &align)
-            //{
-            //}
         }
     };
 } 

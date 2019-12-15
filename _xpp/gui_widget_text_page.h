@@ -44,10 +44,10 @@ namespace gui::text
     };
 
     ///////////////////////////////////////////////////////////////////////
-
     const int                   top    =-1,
     justify_left =-2, left =-1, center = 0, right = 1, justify_right = 2,
                                 bottom = 1;
+    ///////////////////////////////////////////////////////////////////////
 
     struct line final : widgetarium<token>
     {

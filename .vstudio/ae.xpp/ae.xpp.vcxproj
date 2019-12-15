@@ -152,9 +152,7 @@
     <ClInclude Include="..\..\_xpp\gui_window.h" />
     <ClInclude Include="..\..\_xpp\ide_common.h" />
     <ClInclude Include="..\..\_xpp\ide_console.h" />
-    <ClInclude Include="..\..\_xpp\ide_edit.h" />
-    <ClInclude Include="..\..\_xpp\ide_edit_doc.h" />
-    <ClInclude Include="..\..\_xpp\ide_edit_line.h" />
+    <ClInclude Include="..\..\_xpp\ide_editor.h" />
     <ClInclude Include="..\..\_xpp\ide_flist.h" />
     <ClInclude Include="..\..\_xpp\pix.h" />
     <ClInclude Include="..\..\_xpp\pix_color.h" />

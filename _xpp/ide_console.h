@@ -8,17 +8,14 @@ struct Console : gui::widget<Console>
     gui::frame  frame1;
     gui::frame  frame2;
 
-    Console()
+    void on_change (void* what) override
     {
-        frame1.color = pix::gray;
-        frame2.color = pix::black;
-        canvas.color = pix::silver;
-    }
-
-    void on_change () override
-    {
-        if (coord.was.size != coord.now.size)
+        if (what == &coord && coord.was.size != coord.now.size)
         {
+            frame1.color = gui::schemas[""].light.back_color;
+            frame2.color = gui::schemas[""].heavy.back_color;
+            canvas.color = gui::schemas[""].light.back_color;
+
             auto r = coord.now.local();
             frame1.move_to(r); r.deflate(frame1.thickness.now);
             frame2.move_to(r); r.deflate(frame2.thickness.now);

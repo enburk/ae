@@ -64,7 +64,8 @@ namespace sys
 
     inline array<sys::glyph_style> glyph_styles;
     inline int style_index (const glyph_style & style) {
-        return glyph_styles.find_or_emplace(style);
+        return (int)(glyph_styles.find_or_emplace(style) -
+                     glyph_styles.begin());
     }
 
     struct glyph : glyph_metrics

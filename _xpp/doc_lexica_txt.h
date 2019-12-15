@@ -25,9 +25,9 @@ namespace doc::lexica
                 if (t.text != "")
                     output += t;
 
-                t.begin = n;
-                t.text  = c;
-                t.kind  = c == '\n' ? "eoln" : space (c) ? "space" : "text";
+                t.offset = n;
+                t.text = c;
+                t.kind = c == '\n' ? "eoln" : space (c) ? "space" : "text";
             }
         }
 

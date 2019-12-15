@@ -41,7 +41,7 @@ namespace gui
             text.canvas.color = colors.back_color;
 
             auto r = coord.now.local();
-            frame.thickness = metrics::line::width * 2;
+            frame.thickness = metrics::line::width;
             frame.coord = r; r.deflate(frame.thickness.now);
             image.coord = r; r.deflate(frame.thickness.now);
             text .coord = r;
