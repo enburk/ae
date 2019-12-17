@@ -27,8 +27,10 @@ namespace gui::text
 
     struct token final : widget<token>
     {
-        unary_property<sys::token> Token;
+        doc::Token doc_token;
 
+        unary_property<sys::token> Token;
+        
         widgetarium<glyph> glyphs;
 
         void on_change (void* what) override { if (what != &Token) return;
@@ -86,8 +88,11 @@ namespace gui::text
                 style = it != styles.end() ? it->second : default_style;
 
                 auto& Token = token.Token.now;
-                if (Token.text != t.text || Token.style() != style)
+              //if (Token.text != t.text || Token.style() != style)
+                if (token.doc_token != t) {
+                    token.doc_token  = t;
                     token.Token = sys::token(t.text, style);
+                }
 
                 if (rows.back().coord.size.x +
                     rows.back().advance + Token.size.x > width)

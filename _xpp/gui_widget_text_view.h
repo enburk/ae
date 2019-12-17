@@ -85,5 +85,51 @@ namespace gui::text
                 refresh();
             }
         }
+
+        //struct Place { int line = 0, row = 0, col = 0; };
+        //
+        //Place place (int charnumber)
+        //{
+        //    for (auto & line : page) {
+        //        if (line.size() == 0) continue;
+        //        if (line.back().doc_token.offset +
+        //            line.back().doc_token.text.size() <= charnumber) continue;
+        //
+        //        for (auto & token : line) {
+        //            if (token.doc_token.offset +
+        //                token.doc_token.text.size() <= charnumber) continue;
+        //
+        //
+        //        int token_number = 0;
+        //        for (auto & row : line.rows) {
+        //            if (row.offsets.size() == 0) continue;
+        //            token_number += row.offsets.size();
+        //            if (line(token_number-1).doc_token.offset +
+        //                line(token_number-1).doc_token.text.size() <= charnumber) continue;
+        //        }
+        //
+        //    }
+        //    return Place{page.size(), 0, 0};
+        //}
+
+        XYWH position (int n)
+        {
+            for (auto & line : page) {
+                if (line.size() == 0) continue;
+                if (line.back().doc_token.offset +
+                    line.back().doc_token.text.size() <= n) continue;
+
+                for (auto & token : line) {
+                    if (token.doc_token.offset +
+                        token.doc_token.text.size() <= n) continue;
+                    return
+                        token.glyphs(n - token.doc_token.offset).coord.now + 
+                        token.coord.now.origin +
+                        line .coord.now.origin +
+                        page .coord.now.origin;
+                }
+            }
+            return XYWH();
+        }
     };
 } 

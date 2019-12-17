@@ -21,8 +21,10 @@ namespace doc
         friend array<Token> operator + (Token a, Token b) { array<Token> tt; tt += a; tt+= b; return tt; }
 
         friend bool operator == (const Token & a, const Token & b) { return !(a != b); }
-        friend bool operator != (const Token & a, const Token & b) {
-            return a.text != b.text || a.kind != b.kind;
+        friend bool operator != (const Token & a, const Token & b) { return
+            a.text   != b.text ||
+            a.kind   != b.kind ||
+            a.offset != b.offset;
         }
     };
 

@@ -60,53 +60,68 @@ namespace gui::text
                 carets.coord = r;
                 view.coord = r;
 
-                if (carets.size() == 0)
-                    carets.emplace_back();
-
-                auto co = schemas[""].touched.back_color; co.a = 192;
-                carets(0).canvas.color = co;
-                carets(0).coord = XYWH(0,0,15,30);
-                carets(0).insert_mode = false;
+                refresh();
             }
             if (what == &insert_mode)
             {
-                for (auto & caret : carets) caret.insert_mode = insert_mode.now;
+                for (auto & caret : carets)
+                    caret.insert_mode =
+                    insert_mode.now;
             }
         }
 
         void refresh ()
         {
+            if (document->lexica.size() == 0 ||
+                document->lexica.back().text != "\n")
+                document->append("\n");
+
             view.tokens = document->lexica;
+
+            for (int i=0; i<model.carets.size(); i++)
+            {
+                auto & caret = model.carets[i];
+                auto & Caret = i < carets.size() ? carets(i) : carets.emplace_back();
+
+                auto color = i == 0 ?
+                    schemas[""].touched.back_color:
+                    schemas[""].focus.back_color;
+                color.a = 192;
+                Caret.canvas.color = color;
+                Caret.coord = view.position(caret.position);
+                Caret.insert_mode = insert_mode.now;
+            }
+            carets.truncate(model.carets.size());
         }
 
-        void insert (str s) {
-            for (auto & caret : model.carets) {
-                document->insert(caret.position, s);
-                caret.position += s.size();
-            }
-            refresh();
+        void go (int dx, int dy)
+        {
+            model.carets.resize(1);
         }
+
+        void insert  (str s) { replace (0, s); }
         void replace (int n, str s) {
             for (auto & caret : model.carets) {
                 document->replace(caret.position, n, s);
-                caret.position += s.size();
+                caret.position += s.size() - n;
             }
             refresh();
-        }
-        void on_focus (bool on) override
-        {
-            for (auto & caret : carets) caret.show(on);
         }
         void on_key_pressed (str key, bool down) override
         {
             if (!down) return;
+            if (key == "space" ) return;
             if (key.size() <= 1) return; // "", "0", "A", ...
             if (key.size() <= 7 && key.starts_with("shift+")) return; // shift+0, shift+A, ...
-            if (key == "space" ) return;
 
             if (key == "ctrl+C") key = "ctrl+insert"; else
             if (key == "ctrl+V") key = "shift+insert"; else
             {}
+
+            if (key == "left ") go(-1, 0); else
+            if (key == "right") go( 1, 0); else
+            if (key == "up   ") go( 0,-1); else
+            if (key == "down ") go( 0, 1); else
 
             if (key == "enter" ) insert("\n"); else
             if (key == "insert") insert_mode = !insert_mode.now; else
@@ -119,6 +134,11 @@ namespace gui::text
             if (insert_mode.now)
                 insert(symbol); else
                 replace(1, symbol);
+        }
+        void on_focus (bool on) override
+        {
+            for (auto & caret : carets)
+                caret.show(on);
         }
     };
 } 
@@ -134,7 +154,6 @@ namespace gui::text
 //    case VK_INSERT  : s = "insert"; break;
 //    case VK_DELETE  : s = "delete"; break;
 //    case VK_SPACE   : s = "space"; break;
-//    case VK_SNAPSHOT: s = "print screen"; break;
 //
 //    case VK_PRIOR   : s = "page up"; break;
 //    case VK_NEXT    : s = "page down"; break;
