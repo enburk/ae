@@ -10,7 +10,7 @@ namespace gui::text
 
         unary_property<str> text;
         unary_property<str> html;
-        unary_property<array<doc::Token>> tokens;
+        unary_property<array<doc::token>> tokens;
 
         property<RGBA> color;
         binary_property<sys::glyph_style> style;
@@ -114,21 +114,21 @@ namespace gui::text
 
         XYWH position (int n)
         {
-            for (auto & line : page) {
-                if (line.size() == 0) continue;
-                if (line.back().doc_token.offset +
-                    line.back().doc_token.text.size() <= n) continue;
-
-                for (auto & token : line) {
-                    if (token.doc_token.offset +
-                        token.doc_token.text.size() <= n) continue;
-                    return
-                        token.glyphs(n - token.doc_token.offset).coord.now + 
-                        token.coord.now.origin +
-                        line .coord.now.origin +
-                        page .coord.now.origin;
-                }
-            }
+            //for (auto & line : page) {
+            //    if (line.size() == 0) continue;
+            //    if (line.back().doc_token.offset +
+            //        line.back().doc_token.text.size() <= n) continue;
+            //
+            //    for (auto & token : line) {
+            //        if (token.doc_token.offset +
+            //            token.doc_token.text.size() <= n) continue;
+            //        return
+            //            token.glyphs(n - token.doc_token.offset).coord.now + 
+            //            token.coord.now.origin +
+            //            line .coord.now.origin +
+            //            page .coord.now.origin;
+            //    }
+            //}
             return XYWH();
         }
     };

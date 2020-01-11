@@ -1,0 +1,23 @@
+ordered = totally.ordered.lexicographically;
+
+type totally.ordered.lexicographically
+{
+	operator <=> (totally.ordered.lexicographically r) -> {less, equals, greater}
+	{
+		for member : meta::members
+		{
+			if (member < r.member) return less;
+			if (member > r.member) return greater;
+		}
+		return equals;
+	}
+}
+
+type place : ordered { int line, char }
+
+
+;; move no throw:
+;; auto undo = undos.back(); undos.pop_back();
+
+;; property field:
+;; window.size.x -= d;

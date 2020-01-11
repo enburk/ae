@@ -2,6 +2,7 @@
 #include "gui_widget_image.h"
 #include "gui_widget_canvas.h"
 #include "gui_widget_button.h"
+#include "gui_widget_splitter.h"
 #include "ide_console.h"
 #include "ide_flist.h"
 #include "ide_editor.h"
@@ -17,6 +18,9 @@ struct IDE : gui::widget<IDE>
     Editor editor;
     Flist flist;
     Test test;
+
+    gui::splitter splitter_editor_l;
+    gui::splitter splitter_editor_r;
 
     struct document
     {
@@ -48,10 +52,21 @@ struct IDE : gui::widget<IDE>
             toolbar.coord = XYWH(0, 0, W, h);
             button_test.coord = XYWH(W-w, 0, w, h);
 
-            test.coord = XYWH(W*0/4, h, W*4/4, H-h);
-            flist.coord = XYWH(W*0/4, h, W*1/4, H-h);
-            editor.coord = XYWH(W*1/4, h, W*2/4, H-h);
-            console.coord = XYWH(W*3/4, h, W*1/4, H-h);
+            int d = gui::metrics::line::width * 4;
+            int l = sys::settings::load("splitter.editor.l.permyriad", 2'500) * W / 10'000;
+            int r = sys::settings::load("splitter.editor.r.permyriad", 7'500) * W / 10'000;
+
+            splitter_editor_l.coord = XYWH(l-d, h, 2*d, H-h);
+            splitter_editor_r.coord = XYWH(r-d, h, 2*d, H-h);
+            splitter_editor_l.lower = 1'000 * W / 10'000;
+            splitter_editor_l.upper = 3'500 * W / 10'000;
+            splitter_editor_r.lower = 6'500 * W / 10'000;
+            splitter_editor_r.upper = 9'000 * W / 10'000;
+
+            test.coord = XYWH(0, h, W-0, H-h);
+            flist.coord = XYWH(0, h, l-0, H-h);
+            editor.coord = XYWH(l, h, r-l, H-h);
+            console.coord = XYWH(r, h, W-r, H-h);
         }
     }
 
@@ -63,6 +78,20 @@ struct IDE : gui::widget<IDE>
         {
             //documents[flist.path.was].context= editor.model.context;
             //editor.load(flist.path);
+        }
+    }
+
+    void on_notify (gui::base::widget* w, int n) override
+    {
+        if (w == &splitter_editor_l) {
+            sys::settings::save("splitter.editor.l.permyriad",
+            n * 10'000 / coord.now.w);
+            on_change(&coord);
+        }
+        if (w == &splitter_editor_r) {
+            sys::settings::save("splitter.editor.r.permyriad",
+            n * 10'000 / coord.now.w);
+            on_change(&coord);
         }
     }
 

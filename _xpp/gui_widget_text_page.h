@@ -20,14 +20,14 @@ namespace gui::text
             resize(Glyph.now.size);
             update();
         }
-        void on_render (Frame<RGBA> frame, XY offset, uint8_t alpha) override {
+        void on_render (pix::frame<RGBA> frame, XY offset, uint8_t alpha) override {
             sys::render(Glyph.now, frame, offset, alpha, coord.now.x);
         }
     };
 
     struct token final : widget<token>
     {
-        doc::Token doc_token;
+        doc::token doc_token;
 
         unary_property<sys::token> Token;
         
@@ -65,14 +65,14 @@ namespace gui::text
 
         void fill (str text, sys::glyph_style style) {
              std::map<str, sys::glyph_style> styles;
-             array<doc::Token> tokens = doc::lexica::txt(text);
+             array<doc::token> tokens = doc::lexica::txt(text);
              fill (max<int>(), left, false, tokens.range(), styles, style);
         }
         void fill (
             int width,
             int align,
             bool word_wrap,
-            Range<doc::Token> tokens,
+            Range<doc::token> tokens,
             const std::map<str, sys::glyph_style> & styles,
             const sys::glyph_style & default_style)
         {
@@ -89,10 +89,12 @@ namespace gui::text
 
                 auto& Token = token.Token.now;
               //if (Token.text != t.text || Token.style() != style)
-                if (token.doc_token != t) {
+                if (token.doc_token.text != t.text ||
+                    token.doc_token.kind != t.kind) {
                     token.doc_token  = t;
                     token.Token = sys::token(t.text, style);
                 }
+                token.doc_token.place = t.place;
 
                 if (rows.back().coord.size.x +
                     rows.back().advance + Token.size.x > width)
@@ -144,7 +146,7 @@ namespace gui::text
             int width,
             int align,
             bool word_wrap,
-            const array<doc::Token> & tokens,
+            const array<doc::token> & tokens,
             const std::map<str, sys::glyph_style> & styles,
             const sys::glyph_style & default_style)
         {
@@ -156,7 +158,7 @@ namespace gui::text
                  if (l >= size()) emplace_back();
                  (*this)(l++).fill(
                      width, align, word_wrap,
-                     array<doc::Token>(i, j).range(),
+                     array<doc::token>(i, j).range(),
                      styles, default_style);
                  i = j;
             }

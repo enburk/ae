@@ -23,7 +23,7 @@ namespace test_gui
         a.b.canvas.coord = XYWH(0,0,3,3);   ASSERT_EQ(a.updates.size(), 0) << "b11"; 
         a.b.c.canvas.coord = XYWH(0,0,3,3); ASSERT_EQ(a.updates.size(), 0) << "b22"; 
 
-        Image<RGBA> i (XY(3,3), black); a.render(i, XY(0,0));
+        image<RGBA> i (XY(3,3), black); a.render(i, XY(0,0));
         EXPECT_EQ(i(0,0), black); EXPECT_EQ(i(1,0), black); EXPECT_EQ(i(2,0), black);
         EXPECT_EQ(i(0,1), black); EXPECT_EQ(i(1,1), black); EXPECT_EQ(i(2,1), black);
         EXPECT_EQ(i(0,2), black); EXPECT_EQ(i(1,2), black); EXPECT_EQ(i(2,2), black);
@@ -48,7 +48,7 @@ namespace test_gui
         ASSERT_EQ(a.updates.rectangles[0], XYWH(2,2,1,1)) << "e1"; // was
         ASSERT_EQ(a.updates.rectangles[1], XYWH(1,1,1,1)) << "e2"; // now
 
-        for (auto r : a.updates) a.render(i.frame(r), r.origin);
+        for (auto r : a.updates) a.render(i.crop(r), r.origin);
         EXPECT_EQ(i(0,0), red  ); EXPECT_EQ(i(1,0), red  ); EXPECT_EQ(i(2,0), red  );
         EXPECT_EQ(i(0,1), red  ); EXPECT_EQ(i(1,1), blue ); EXPECT_EQ(i(2,1), green);
         EXPECT_EQ(i(0,2), red  ); EXPECT_EQ(i(1,2), green); EXPECT_EQ(i(2,2), green);
@@ -60,7 +60,7 @@ namespace test_gui
         ASSERT_EQ(a.updates.size(), 1) << "f0"; 
         ASSERT_EQ(a.updates.rectangles[0], XYWH(1,1,2,2)) << "f2";
 
-        for (auto r : a.updates) a.render(i.frame(r), r.origin);
+        for (auto r : a.updates) a.render(i.crop(r), r.origin);
         EXPECT_EQ(i(0,0), red  ); EXPECT_EQ(i(1,0), red  ); EXPECT_EQ(i(2,0), red  );
         EXPECT_EQ(i(0,1), red  ); EXPECT_EQ(i(1,1), red  ); EXPECT_EQ(i(2,1), red  );
         EXPECT_EQ(i(0,2), red  ); EXPECT_EQ(i(1,2), red  ); EXPECT_EQ(i(2,2), red  );
@@ -73,7 +73,7 @@ namespace test_gui
         ASSERT_EQ(a.updates.size(), 1) << "f0"; 
         ASSERT_EQ(a.updates.rectangles[0], XYWH(1,1,2,2)) << "f2";
 
-        for (auto r : a.updates) a.render(i.frame(r), r.origin);
+        for (auto r : a.updates) a.render(i.crop(r), r.origin);
         EXPECT_EQ(i(0,0), red  ); EXPECT_EQ(i(1,0), red  ); EXPECT_EQ(i(2,0), red  );
         EXPECT_EQ(i(0,1), red  ); EXPECT_EQ(i(1,1), green); EXPECT_EQ(i(2,1), green);
         EXPECT_EQ(i(0,2), red  ); EXPECT_EQ(i(1,2), green); EXPECT_EQ(i(2,2), green);

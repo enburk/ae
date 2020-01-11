@@ -124,7 +124,7 @@ namespace pix
         r.y = clamp<int>(k*r.y); r.h = clamp<int>(k*r.h);
         return r; }
 
-    struct Rectifier
+    struct rectifier
     {
         array<XYWH> rectangles;
         void operator  = (XYWH r) { rectangles.clear(); rectangles += r; }

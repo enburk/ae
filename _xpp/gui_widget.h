@@ -29,14 +29,14 @@ namespace gui::base
         void shift   (XY    d,  time t=time()) { coord.go(XYWH(coord.to.x+d.x, coord.to.y+d.y, coord.to.w, coord.to.h), t); }
         void resize  (XY size,  time t=time()) { coord.go(XYWH(coord.to.x, coord.to.y, size.x, size.y), t); }
 
-        virtual void on_render (Frame<RGBA> frame, XY offset, uint8_t alpha) {}
+        virtual void on_render (pix::frame<RGBA> frame, XY offset, uint8_t alpha) {}
         virtual void on_change (void* what) { on_change(); }
         virtual void on_change () {}
 
         enum Opacity { transparent, semitransparent, opaque };
         virtual Opacity opacity () { return transparent; }
 
-        Rectifier updates;
+        rectifier updates;
         void update () { update (coord.now.local()); }
         void update (XYWH r) {
             if (alpha.now == 0) return; r &= coord.now.local();
@@ -51,13 +51,13 @@ namespace gui::base
             on_change(what);
         }
 
-        void render (Frame<RGBA> frame, XY offset, uint8_t combined_alpha = 255)
+        void render (pix::frame<RGBA> frame, XY offset, uint8_t combined_alpha = 255)
         {
             combined_alpha = ((combined_alpha+1) * alpha.now) >> 8; if (combined_alpha == 0) return;
             on_render (frame, offset, combined_alpha);
             for (auto child : children) {
                 XYWH  child_global = child->coord.now + frame.offset - offset;
-                auto  child_frame = frame.frame(child_global - frame.offset);
+                auto  child_frame = frame.crop(child_global - frame.offset);
                 if   (child_frame.size.x <= 0) continue;
                 if   (child_frame.size.y <= 0) continue;
                 child->render(
@@ -72,6 +72,7 @@ namespace gui::base
         widget* mouse_press_child = nullptr;
         widget* mouse_hover_child = nullptr;
 
+        unary_property<str> mouse_image;
         virtual bool mouse_sensible (XY p) { return false; }
         virtual void on_mouse_press (XY, char button, bool down) {}
         virtual void on_mouse_wheel (XY, int) {}
@@ -90,6 +91,7 @@ namespace gui::base
 
         void mouse_press (XY p, char button, bool down)
         {
+            // button ?
             if (down) {
                 mouse_press_child = nullptr;
                 for (auto w : children) {
@@ -109,6 +111,7 @@ namespace gui::base
                 }
             }
             on_mouse_press(p, button, down);
+            sys::mouse::cursor(mouse_image.now);
         }
 
         void mouse_move (XY p)
@@ -123,15 +126,18 @@ namespace gui::base
                 if (w->mouse_sense (p - w->coord.now.origin)) {
                     w->mouse_move  (p - w->coord.now.origin);
                     hover = w;
+                    break;
                 }
             }
             if (mouse_hover_child &&
                 mouse_hover_child != hover)
                 mouse_hover_child->mouse_leave();
 
-            mouse_hover_child = hover;
-
-            if (!hover) on_mouse_hover(p);
+                mouse_hover_child = hover;
+            if (mouse_hover_child) return;
+            
+            sys::mouse::cursor(mouse_image.now);
+            on_mouse_hover(p); // every mouse_move
         }
 
         void mouse_leave ()

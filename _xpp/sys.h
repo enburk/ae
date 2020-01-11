@@ -9,8 +9,6 @@ namespace sys
     using pix::XYWH;
     using pix::XYXY;
     using pix::RGBA;
-    using pix::Image;
-    using pix::Frame;
     using pix::font;
     using pix::glyph_style;
     using pix::glyph_metrics;
@@ -22,8 +20,7 @@ namespace sys
 
     namespace window
     {
-        using namespace pix;
-        inline Image<RGBA> image;
+        inline pix::image<RGBA> image;
         void update ();
         void timing ();
         namespace on
@@ -41,7 +38,6 @@ namespace sys
 
     namespace mouse
     {
-        using namespace pix;
         void cursor(str);
         namespace on
         {
@@ -62,6 +58,24 @@ namespace sys
         }
     }
 
+    namespace clipboard
+    {
+        void set (str);
+        void set (pix::frame<RGBA>);
+        namespace get {
+            pix::image<RGBA> image ();
+            str string ();
+        }
+    }
+
+    namespace settings
+    {
+        str  load (str name, str default_value);
+        int  load (str name, int default_value);
+        void save (str name, str value);
+        void save (str name, int value);
+    }
+
     inline array<sys::glyph_style> glyph_styles;
     inline int style_index (const glyph_style & style) {
         return (int)(glyph_styles.find_or_emplace(style) -
@@ -75,7 +89,7 @@ namespace sys
         explicit glyph (str, glyph_style);
         explicit glyph () = default;
 
-        const glyph_style & style () const { return glyph_styles[style_index]; }
+        glyph_style style () const { return glyph_styles[style_index]; }
 
         bool operator != (const glyph & g) const { return ! (*this == g); }
         bool operator == (const glyph & g) const { return text == g.text &&
@@ -91,6 +105,6 @@ namespace sys
     };
 
     font::metrics metrics (font);
-    void render (glyph, Frame<RGBA>, XY offset=XY(), uint8_t alpha=255, int x=0);
-    void render (token, Frame<RGBA>, XY offset=XY(), uint8_t alpha=255, int x=0);
+    void render (glyph, pix::frame<RGBA>, XY offset=XY(), uint8_t alpha=255, int x=0);
+    void render (token, pix::frame<RGBA>, XY offset=XY(), uint8_t alpha=255, int x=0);
 }

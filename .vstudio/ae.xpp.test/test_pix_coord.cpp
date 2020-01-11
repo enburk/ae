@@ -78,7 +78,7 @@ namespace test_pix
     {
         XYWH good (0, 0, 1, 1); XYWH bad (0, 0, -1, -1);
 
-        Rectifier r; EXPECT_EQ(r.size(), 0) << "line 0";
+        rectifier r; EXPECT_EQ(r.size(), 0) << "line 0";
         r += XYWH(); EXPECT_EQ(r.size(), 0) << "line 1";
         r += bad;    EXPECT_EQ(r.size(), 0) << "line 2";
         r += good;   EXPECT_EQ(r.size(), 1) << "line 3";
@@ -89,7 +89,7 @@ namespace test_pix
 
     TEST(TestPixCoord, Rectifier1)
     {
-        Rectifier r;
+        rectifier r;
         r += XYWH(0,0, 1,2);
         r += XYWH(1,0, 1,2); ASSERT_EQ(r.size(), 1); EXPECT_EQ(r.rectangles[0], XYWH(0,0, 2,2));
         r += XYWH(9,0, 1,2); ASSERT_EQ(r.size(), 2);

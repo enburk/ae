@@ -35,6 +35,104 @@ void sys::window::timing()
     ::PostMessage(Hwnd, WM_COMMAND, 11111, 0);
 }
 
+void sys::mouse::cursor(str image)
+{
+    ::SetCursor(::LoadCursor(NULL,
+        image == "hand" ? IDC_HAND :
+        image == "noway" ? IDC_NO :
+        image == "no way" ? IDC_NO :
+        image == "editor" ? IDC_IBEAM :
+        image == "vertical splitter" ? IDC_SIZEWE :
+        image == "horizontal splitter" ? IDC_SIZENS : 
+        IDC_ARROW
+    ));
+}
+
+struct Clipboard
+{
+    Clipboard (const Clipboard&) = delete;
+    Clipboard& operator = (const Clipboard&) = delete;
+    Clipboard () { if (!::OpenClipboard(nullptr)) throw std::runtime_error("Can't open clipboard."); }
+   ~Clipboard () { ::CloseClipboard(); }
+};
+struct ClipboardText
+{
+    ClipboardText (const ClipboardText&) = delete;
+    ClipboardText& operator = (const ClipboardText&) = delete;
+    explicit ClipboardText(HANDLE handle) : handle(handle) {
+    text = static_cast<const WCHAR*>(::GlobalLock(handle));
+    if (!text) throw std::runtime_error("Can't acquire lock on clipboard text."); }
+   ~ClipboardText () { ::GlobalUnlock(handle); }
+    HANDLE handle; const WCHAR * text;
+};
+
+str sys::clipboard::get::string ()
+{
+    try
+    {
+        Clipboard clipboard;
+        HANDLE h = GetClipboardData(CF_UNICODETEXT);
+        if (!h) throw std::runtime_error("Can't get clipboard text.");
+        return utf8(std::wstring(ClipboardText(h).text));
+    }
+    catch(...){}
+    return "";
+}
+void sys::clipboard::set (str s)
+{
+    if (s == "") return;
+    try
+    {
+        Clipboard clipboard;
+        std::wstring text = winstr(s);
+        HGLOBAL handle = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE, (text.size()+1) * sizeof(WCHAR)); if (!handle) return;
+	    LPWSTR buffer = (LPWSTR)::GlobalLock(handle); if (!buffer) return;
+        memcpy(buffer, text.data(), text.size() * sizeof(WCHAR));
+        buffer[text.size()] = 0;
+        ::GlobalUnlock(handle);
+        ::EmptyClipboard();
+        ::SetClipboardData(CF_UNICODETEXT, buffer);
+    }
+    catch(...){}
+}
+pix::image<RGBA> sys::clipboard::get::image ()
+{
+    return pix::image<RGBA>();
+}
+void sys::clipboard::set (pix::frame<RGBA> image)
+{
+}
+
+
+static std::map<str, int> int_settings;
+static std::map<str, str> str_settings;
+
+static void load_settings ()
+{
+}
+static void save_settings ()
+{
+}
+
+str sys::settings::load (str name, str default_value) {
+    load_settings();
+    auto [it, ins] = str_settings.try_emplace(name, default_value);
+    return it->second;
+}
+int sys::settings::load (str name, int default_value) {
+    load_settings();
+    auto [it, ins] = int_settings.try_emplace(name, default_value);
+    return it->second;
+}
+void sys::settings::save (str name, str value) {
+    str_settings[name] = value;
+    save_settings();
+}
+void sys::settings::save (str name, int value) {
+    int_settings[name] = value;
+    save_settings();
+}
+
 // https://blog.keyman.com/2008/06/robust-key-mess/
 
 static bool alt = false;
@@ -75,7 +173,7 @@ static str wm_key (WPARAM wparam, LPARAM lparam, bool down)
     case VK_SHIFT   : shift = down; break;
     case VK_CONTROL : ctrl  = down; break;
     }
-    if (s=="") return "";
+    if (s == "") return "";
     if (shift) s = "shift+" + s;
     if (alt  ) s =   "alt+" + s;
     if (ctrl ) s =  "ctrl+" + s;

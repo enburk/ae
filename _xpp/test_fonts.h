@@ -6,7 +6,7 @@ using namespace pix;
 
 struct TestFont1 : gui::widget<TestFont1>
 {
-    gui::image gui_image; Image<RGBA> image;
+    gui::image gui_image; pix::image<RGBA> image;
     
     void on_change (void* what) override
     {
@@ -48,7 +48,7 @@ struct TestFont1 : gui::widget<TestFont1>
 
             for (char c : alnum) {
                 auto glyph = sys::glyph(str(c), style);
-                sys::render(glyph, image.frame(XYWH(x, y, glyph.size.x, glyph.size.y)), XY(), 230, x);
+                sys::render(glyph, image.crop(XYWH(x, y, glyph.size.x, glyph.size.y)), XY(), 230, x);
                 x += glyph.size.x + glyph.advance + gap;
             }
         }
@@ -57,7 +57,7 @@ struct TestFont1 : gui::widget<TestFont1>
 
 struct TestFont2 : gui::widget<TestFont2>
 {
-    gui::image gui_image; Image<RGBA> image;
+    gui::image gui_image; pix::image<RGBA> image;
     
     void on_change (void* what) override
     {
@@ -96,7 +96,7 @@ struct TestFont2 : gui::widget<TestFont2>
 
             for (char c : s) {
                 auto glyph = sys::glyph(str(c), style);
-                sys::render(glyph, image.frame(XYWH(x, y, glyph.size.x, glyph.size.y)), XY(), 230, x);
+                sys::render(glyph, image.crop(XYWH(x, y, glyph.size.x, glyph.size.y)), XY(), 230, x);
                 x += glyph.size.x + glyph.advance;
             }
             x = gap; y += gap +
@@ -105,7 +105,7 @@ struct TestFont2 : gui::widget<TestFont2>
             sys::metrics(font).linegap;
             {
                 auto glyph = sys::glyph(s, style);
-                sys::render(glyph, image.frame(XYWH(x, y, glyph.size.x, glyph.size.y)), XY(), 230, x);
+                sys::render(glyph, image.crop(XYWH(x, y, glyph.size.x, glyph.size.y)), XY(), 230, x);
                 x += glyph.size.x + glyph.advance;
             }
         }

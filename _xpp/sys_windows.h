@@ -37,14 +37,13 @@ inline std::string utf8 (std::wstring s)
 inline std::wstring winstr (std::string s)
 {
     std::wstring ss; if (s == "") return ss; int n =
-    ::MultiByteToWideChar (CP_UTF8, 0, s.c_str(), -1, NULL, 0); if (n <= 0) return ss; ss.resize(n); wchar_t * text = ss.data();
-    ::MultiByteToWideChar (CP_UTF8, 0, s.c_str(), -1, text, n);
+    ::MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, NULL, 0); if (n <= 0) return ss; ss.resize(n); wchar_t * text = ss.data();
+    ::MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, text, n);
     return ss;
 }
 inline size_t winstrlen (std::wstring ss)
 {
-    size_t n = 0;
-    ::StringCchLengthW (ss.c_str(), ss.size () + 1, &n);
+    size_t n = 0; if(S_OK != ::StringCchLengthW (ss.c_str(), ss.size () + 1, &n)) return 0;
     return n;
 }
 

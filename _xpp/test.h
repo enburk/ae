@@ -8,8 +8,8 @@ using pix::XY;
 using pix::XYWH;
 using pix::XYXY;
 using pix::RGBA;
-using pix::Image;
-using pix::Frame;
+using pix::image;
+using pix::frame;
 
 struct Test : gui::widget<Test>
 {

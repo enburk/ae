@@ -127,10 +127,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\libraries\cpp\aux_abc.hpp" />
+    <ClInclude Include="..\..\libraries\cpp\aux_array.hpp" />
+    <ClInclude Include="..\..\libraries\cpp\aux_string.hpp" />
     <ClInclude Include="..\..\_xpp\aux_array.h" />
     <ClInclude Include="..\..\_xpp\aux_string.h" />
     <ClInclude Include="..\..\_xpp\aux_utils.h" />
     <ClInclude Include="..\..\_xpp\doc.h" />
+    <ClInclude Include="..\..\_xpp\doc_abc.h" />
     <ClInclude Include="..\..\_xpp\doc_lexica.h" />
     <ClInclude Include="..\..\_xpp\doc_lexica_cpp.h" />
     <ClInclude Include="..\..\_xpp\doc_lexica_txt.h" />
@@ -144,9 +148,10 @@
     <ClInclude Include="..\..\_xpp\gui_widget_canvas.h" />
     <ClInclude Include="..\..\_xpp\gui_widget_image.h" />
     <ClInclude Include="..\..\_xpp\gui_widget_layout.h" />
-    <ClInclude Include="..\..\_xpp\gui_widget_scroll.h" />
+    <ClInclude Include="..\..\_xpp\gui_widget_scroller.h" />
     <ClInclude Include="..\..\_xpp\gui_widget_splitter.h" />
     <ClInclude Include="..\..\_xpp\gui_widget_text_editor.h" />
+    <ClInclude Include="..\..\_xpp\gui_widget_text_model.h" />
     <ClInclude Include="..\..\_xpp\gui_widget_text_page.h" />
     <ClInclude Include="..\..\_xpp\gui_widget_text_view.h" />
     <ClInclude Include="..\..\_xpp\gui_window.h" />

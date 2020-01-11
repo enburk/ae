@@ -166,27 +166,36 @@ struct str : public std::string
 
     ////////////////////////////////////////////////////////////////////////////
 
-#if 0
-
     void overwrite (int pos,          str s){ erase (pos, s.size()); insert (pos, s); }
     void replace   (int pos, int num, str s){ erase (pos, num     ); insert (pos, s); }
     void erase     (int pos, int num = 1   ){ if (pos < 0) num += pos, pos = 0; num = std::min (num, size() - pos); if (num > 0) base::erase (pos, num); }
     void erase     (range range) { erase(range.pos, range.size);}
     void truncate  (int pos                ){ erase (pos, max); }
     void truncate  (                       ){ erase (size() - 1); }
-    void strip     (const str & chars = " "){ trimr (chars); triml (chars); }
-    void triml     (const str & chars = " "){ int n = find (one_not_of {chars});                    if (n == nope) clear(); else erase (0, n); }
-    void trimr     (const str & chars = " "){ int n = find (one_not_of {chars}, start_from_end ()); if (n == nope) clear(); else truncate (n+1); }
+//    void strip     (const str & chars = " "){ trimr (chars); triml (chars); }
+//    void triml     (const str & chars = " "){ int n = find (one_not_of {chars});                    if (n == nope) clear(); else erase (0, n); }
+//    void trimr     (const str & chars = " "){ int n = find (one_not_of {chars}, start_from_end ()); if (n == nope) clear(); else truncate (n+1); }
+//
 
-    int replace_all (str from, str to){ int pos = 0, nn = 0; while ((pos = find (from, start_from(pos))) != nope){ replace (pos, from.size (), to); pos += to.size (); nn++; }; return nn; }
-
-    void canonicalize ()
-    {
-        for (char & c : *this) if( c == '\t' || c  == '\r' || c == '\n' )  c = ' ';
-        base::erase(std::unique(begin(), end(), [](char c1, char c2){ return c1 == ' ' && c2 == ' '; }), end());
-        strip();
+    int replace_all (str from, str to) {
+        int pos = 0, nn = 0;
+        while (true) {
+            auto range = find(from); if (range.empty()) break;
+            pos = range.pos;
+            replace (pos, from.size (), to);
+            pos += to.size ();
+            nn++;
+        };
+        return nn;
     }
-#endif
+
+//
+//    void canonicalize ()
+//    {
+//        for (char & c : *this) if( c == '\t' || c  == '\r' || c == '\n' )  c = ' ';
+//        base::erase(std::unique(begin(), end(), [](char c1, char c2){ return c1 == ' ' && c2 == ' '; }), end());
+//        strip();
+//    }
 
     bool ascii_isalnum () const {
         for (char c : *this)

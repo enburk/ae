@@ -127,6 +127,11 @@ template<class type> struct array : std::vector<type>
     template<class I> auto replace(I   pos, I   nn, array  a) { erase(pos, nn); return insert(pos, a); }
 
     auto interval (int pos, int n) { return array(begin()+pos, begin()+pos+n); }
+
+    void truncate (int pos){ erase(pos, size()-pos); }
+    void truncate (       ){ erase(size()-1); }
+
+    array from (int pos) { return array(begin()+pos, end()); }
 };
 
 

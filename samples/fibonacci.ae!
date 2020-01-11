@@ -1,0 +1,33 @@
+;; Raymond Hettinger
+;; Transforming Code into Beautiful, Idiomatic Python
+;; https://www.youtube.com/watch?v=OSGv2VnC0go
+;;
+;; def fibonacci(n): # Python
+;;     x = 0
+;;     y = 1
+;;     for i in range(n):
+;;         print x
+;;         t = y
+;;         y = x + y
+;;         x = t
+;; 
+;; def fibonacci(n): # Pyt
+;;     x, y = 0, 1
+;;     for i in range(n):
+;;         print x
+;;         x, y = y, x+y
+
+app test1
+{
+    fibonacci(n) = {
+        {x, y} == {0, 1};
+        for i in integer[1, n] do {
+            sys::console << x;
+            {x, y} == {y, x+y};
+        }
+    }
+}
+
+
+		
+;; Sean Parent		

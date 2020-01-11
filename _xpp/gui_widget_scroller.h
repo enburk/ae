@@ -4,9 +4,8 @@
 #include "gui_widget_button.h"
 namespace gui
 {
-    template
-    <orientation>
-    struct scroller;
+    template<orientation>
+    struct scroller;template<>
     struct scroller<vertical>:
     widget<scroller<vertical>>
     {
@@ -14,15 +13,16 @@ namespace gui
         canvas ground;
         button up, down, page_up, page_down;
         property<double> ratio = 1.6180339887498948482;
-        property<int> span, top, step = 1;
-        bool touch = false; XY touch_point;
+        property<int> span = 0, top = 0, step = 1;
+        bool touch = false;
+        XY touch_point;
 
         scroller ()
         {
             //up.text = u"";
             //donw.text = u"";
-            //up.repeating = true;
-            //down.repeating = true;
+            up.repeating = true;
+            down.repeating = true;
         }
 
         void on_change (void* what) override
@@ -70,10 +70,15 @@ namespace gui
         }
 
         bool mouse_sensible (XY p) override { return true; }
-        void on_mouse_press (XY p, char button, bool down) override {
+
+        void on_mouse_press (XY p, char button, bool down) override
+        {
             if (button != 'L') return;
             if (down && !touch) touch_point = p;
             touch = down; if (!touch) return;
+        }
+        void on_mouse_hover (XY p) override
+        {
             int real_page = coord.now.size.y; if (real_page <= 0) return;
             int fake_span = ground.coord.now.size.y;
             int fake_page = fake_span * real_page / max(1, span.now);
@@ -82,13 +87,17 @@ namespace gui
         }
     };
 
+    template<>
     struct scroller<horizontal>:
     widget<scroller<horizontal>>
     {
         frame runner;
         canvas ground;
-        button left, right;
+        button up, down, page_up, page_down;
         property<double> ratio = 1.6180339887498948482;
+        property<int> span = 0, top = 0, step = 1;
+        bool touch = false;
+        XY touch_point;
 
         void refresh ()
         {
@@ -96,17 +105,6 @@ namespace gui
 
         void on_change (void* what) override
         {
-            if (what == &coord && coord.was.size != coord.now.size 
-            ||  what == &ratio)
-            {
-                int w = coord.now.size.x;
-                int h = coord.now.size.y;
-                int d = clamp<int>(std::round(h/ratio.now));
-                left.coord = XYWH(0,0,d,h);
-                right.coord = XYWH(w-d,0,d,h);
-                runner.coord = XYWH(d,0,w-d-d,w);
-                refresh();
-            }
         }
     };
 }

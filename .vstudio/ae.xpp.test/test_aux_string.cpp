@@ -1,22 +1,20 @@
 #include "pch.h"
-#include "../../_xpp/aux_string.h"
-namespace test_aux
+#include "../../libraries/cpp/aux_string.hpp"
+namespace aux
 {
     TEST(TestAuxString, Substr)
     {
-        ASSERT_EQ(str("").substr(0,0), "");
-        ASSERT_EQ(str("").substr(0,1), "");
-        ASSERT_EQ(str("").substr(1,1), "");
+        ASSERT_EQ(str("").from(0).size(0), "");
+        ASSERT_EQ(str("").from(0).size(1), "");
+        ASSERT_EQ(str("").from(1).size(1), "");
 
-        EXPECT_EQ(str("abc").substr(1,0), "");
-        EXPECT_EQ(str("abc").substr(1,1), "b");
-        EXPECT_EQ(str("abc").substr(1,2), "bc");
-        EXPECT_EQ(str("abc").substr(1,3), "bc");
+        EXPECT_EQ(str("abc").from(1).size(0), "");
+        EXPECT_EQ(str("abc").from(1).size(1), "b");
+        EXPECT_EQ(str("abc").from(1).size(2), "bc");
+        EXPECT_EQ(str("abc").from(1).size(3), "bc");
 
-        EXPECT_EQ(str("abc").head(2), "ab");
-        EXPECT_EQ(str("abc").till(2), "ab");
         EXPECT_EQ(str("abc").from(2), "c");
-        EXPECT_EQ(str("abc").tail(2), "bc");
+        EXPECT_EQ(str("abc").upto(2), "ab");
 
         EXPECT_EQ(str("abccba").substr(str::start_from(1)), "bccba");
         EXPECT_EQ(str("abccba").substr(str::start_from(2)), "ccba");
@@ -37,27 +35,27 @@ namespace test_aux
         ASSERT_ANY_THROW(str("abc").find(str::one_of("")));
         ASSERT_ANY_THROW(str("abc").find(str::one_not_of{ "" }));
 
-        EXPECT_EQ(str("").find("b").size, 0);
-        EXPECT_EQ(str("").find(str::one_of("b")).size, 0);
-        EXPECT_EQ(str("").find(str::one_not_of("b")).size, 0);
+        EXPECT_EQ(str("").find("b").length, 0);
+        EXPECT_EQ(str("").find(str::one_of("b")).length, 0);
+        EXPECT_EQ(str("").find(str::one_not_of("b")).length, 0);
 
-        EXPECT_EQ(str("b").find("b").size, 1);
-        EXPECT_EQ(str("b").find(str::one_of{ "b" }).size, 1);
-        EXPECT_EQ(str("b").find(str::one_not_of{ "b" }).size, 0);
+        EXPECT_EQ(str("b").find("b").length, 1);
+        EXPECT_EQ(str("b").find(str::one_of{ "b" }).length, 1);
+        EXPECT_EQ(str("b").find(str::one_not_of{ "b" }).length, 0);
 
-        EXPECT_EQ(str("abccba").find("b").pos, 1);
-        EXPECT_EQ(str("abccba").find("b").size, 1);
-        EXPECT_EQ(str("abccba").find("d").size, 0);
-        EXPECT_EQ(str("abccba").find("cc").pos, 2);
-        EXPECT_EQ(str("abccba").find("cc").size, 2);
+        EXPECT_EQ(str("abccba").find("b").offset, 1);
+        EXPECT_EQ(str("abccba").find("b").length, 1);
+        EXPECT_EQ(str("abccba").find("d").length, 0);
+        EXPECT_EQ(str("abccba").find("cc").offset, 2);
+        EXPECT_EQ(str("abccba").find("cc").length, 2);
 
-        EXPECT_EQ(str("abccba").find("b", str::start_from(1)).pos, 1);
-        EXPECT_EQ(str("abccba").find("b", str::start_from(2)).pos, 4);
-        EXPECT_EQ(str("abccba").find("b", str::start_from(5)).size, 0);
-        EXPECT_EQ(str("abccba").find("b", str::start_from_end()).pos, 4);
-        EXPECT_EQ(str("abccba").find("b", str::start_from_end(1)).pos, 4);
-        EXPECT_EQ(str("abccba").find("b", str::start_from_end(2)).pos, 1);
-        EXPECT_EQ(str("abccba").find("b", str::start_from_end(5)).size, 0);
+        EXPECT_EQ(str("abccba").find("b", str::start_from(1)).offset, 1);
+        EXPECT_EQ(str("abccba").find("b", str::start_from(2)).offset, 4);
+        EXPECT_EQ(str("abccba").find("b", str::start_from(5)).length, 0);
+        EXPECT_EQ(str("abccba").find("b", str::start_from_end()).offset, 4);
+        EXPECT_EQ(str("abccba").find("b", str::start_from_end(1)).offset, 4);
+        EXPECT_EQ(str("abccba").find("b", str::start_from_end(2)).offset, 1);
+        EXPECT_EQ(str("abccba").find("b", str::start_from_end(5)).length, 0);
     }
 
     TEST(TestAuxString, Split)
@@ -91,16 +89,6 @@ namespace test_aux
 
     TEST(TestAuxString, Is)
     {
-        //expect all
-        //{
-        //    text("abc")::starts.with("") = true;
-        //    text("abc")::starts.with("a") = true;
-        //    text("abc")::starts.with("ab") = true;
-        //    text("abc")::starts.with("abcd") = false;
-        //    text("abc")::starts.with("abd") = false;
-        //    text("abc")::starts.with("ad") = false;
-        //    text("abc")::starts.with("d") = false;
-        //}
         EXPECT_TRUE(str("abc").starts_with(""));
         EXPECT_TRUE(str("abc").starts_with("a"));
         EXPECT_TRUE(str("abc").starts_with("ab"));
@@ -138,10 +126,19 @@ namespace test_aux
 
     TEST(TestAuxString, Edit)
     {
-        EXPECT_EQ(str("abc").insert(0, "_"), "_abc");
-        EXPECT_EQ(str("abc").insert(1, "_"), "a_bc");
-        EXPECT_EQ(str("abc").insert(2, "_"), "ab_c");
-        EXPECT_EQ(str("abc").insert(3, "_"), "abc_");
-
+        str a1  = "abc"; EXPECT_NO_THROW(a1.insert(0, "_")); EXPECT_EQ(a1, "_abc");
+        str a2  = "abc"; EXPECT_NO_THROW(a2.insert(1, "_")); EXPECT_EQ(a2, "a_bc");
+        str a3  = "abc"; EXPECT_NO_THROW(a3.insert(2, "_")); EXPECT_EQ(a3, "ab_c");
+        str a4  = "abc"; EXPECT_NO_THROW(a4.insert(3, "_")); EXPECT_EQ(a4, "abc_");
     }
 }
+//expect all
+//{
+//    text("abc")::starts.with("") = true;
+//    text("abc")::starts.with("a") = true;
+//    text("abc")::starts.with("ab") = true;
+//    text("abc")::starts.with("abcd") = false;
+//    text("abc")::starts.with("abd") = false;
+//    text("abc")::starts.with("ad") = false;
+//    text("abc")::starts.with("d") = false;
+//}

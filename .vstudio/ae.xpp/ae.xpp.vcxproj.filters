@@ -75,9 +75,6 @@
     <ClInclude Include="..\..\_xpp\test_pix.h">
       <Filter>ide</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\_xpp\gui_widget_scroll.h">
-      <Filter>gui</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\_xpp\ide_common.h">
       <Filter>ide</Filter>
     </ClInclude>
@@ -105,6 +102,24 @@
     <ClInclude Include="..\..\_xpp\ide_editor.h">
       <Filter>ide</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\_xpp\gui_widget_text_model.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libraries\cpp\aux_abc.hpp">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libraries\cpp\aux_array.hpp">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\libraries\cpp\aux_string.hpp">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\gui_widget_scroller.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_xpp\doc_abc.h">
+      <Filter>doc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\_xpp\sys_windows.cpp" />
@@ -128,6 +143,9 @@
     </Filter>
     <Filter Include="ide">
       <UniqueIdentifier>{81349e44-2520-43c8-a6d2-75e9944d43e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="aux">
+      <UniqueIdentifier>{b9841d1b-4b7d-4020-a520-c146738f4ecf}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

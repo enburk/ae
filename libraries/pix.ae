@@ -35,11 +35,11 @@ vector<2> = vector<2, int>;
 
 widget = 
 {
-     alpha : property(real [0.0...1.0], 1.0);
-     show (time = 0 ms) { alpha.go (1.0, time) }
-     hide (time = 0 ms) { alpha.go (0.0, time) }
-	 showed = (alpha.now = 1.0);
-	 hidden = (alpha.now = 0.0);
+     visibility : property(real in [0.0, 1.0]) == 1.0;
+     show (time = 0 ms) = visibility.go (1.0, time)
+     hide (time = 0 ms) = visibility.go (0.0, time)
+	 showed = (visibility.now = 1.0);
+	 hidden = (visibility.now = 0.0);
 	 
      real [0.0...1.0] alpha <- 1.0;
 	 bool showed = alpha = 1.0;

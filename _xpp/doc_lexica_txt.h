@@ -7,9 +7,9 @@ namespace doc::lexica
 /// std::enable_if_t<std::is_same_v<typename
 /// std::iterator_traits<I>::value_type, char>>>
 /// inline array<Token> txt (range<I> text)
-    inline array<Token> txt (Range<char> text)
+    inline array<token> txt (Range<char> text)
     {
-        array<Token> output; Token t; t.kind = "space";
+        array<token> output; token t; t.kind = "space";
 
         for (auto [c, n] : text + '\n')
         {
@@ -25,16 +25,17 @@ namespace doc::lexica
                 if (t.text != "")
                     output += t;
 
-                t.offset = n;
                 t.text = c;
                 t.kind = c == '\n' ? "eoln" : space (c) ? "space" : "text";
+                //t.place.line = n;
+                //t.place.offset = n;
             }
         }
 
         return output;
     }
 
-    inline array<Token> txt (str text)
+    inline array<token> txt (str text)
     {
         return txt (array<char>(text.begin(), text.end()).range());
     }

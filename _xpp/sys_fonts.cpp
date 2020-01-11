@@ -109,7 +109,7 @@ static cache_metrics_data cache_metrics (const sys::glyph & glyph)
     {
         using namespace sys;
         cache_metrics_data data;
-        static Image<RGBA> image;
+        static pix::image<RGBA> image;
         GDI_CONTEXT context(glyph.style().font);
 
         auto ss = winstr(glyph.text); size_t len = winstrlen(ss);
@@ -210,9 +210,9 @@ struct cache_glyph_key
 
 MAKE_HASHABLE(cache_glyph_key, t.text, t.font, t.fore, t.back);
 
-void sys::render (glyph glyph, Frame<RGBA> frame, XY offset, uint8_t alpha, int x)
+void sys::render (glyph glyph, pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x)
 {
-    auto & style = glyph.style();
+    auto style = glyph.style();
 
     if (alpha == 0) return;
     if (glyph.text == "") return;
@@ -227,7 +227,7 @@ void sys::render (glyph glyph, Frame<RGBA> frame, XY offset, uint8_t alpha, int 
     if (frame.size.x <= 0 || offset.x >= w) return;
     if (frame.size.y <= 0 || offset.y >= h) return;
 
-    frame = frame.frame (XYWH(-offset.x,-offset.y, w, h));
+    frame = frame.crop(XYWH(-offset.x,-offset.y, w, h));
 
     if (false) { // test for rendering speed
         frame.blend(RGBA::random(), alpha);
@@ -245,7 +245,7 @@ void sys::render (glyph glyph, Frame<RGBA> frame, XY offset, uint8_t alpha, int 
         if (ok) { solid_color_background = true; c.blend(back, alpha); back = c; }
     }
 
-    static std::unordered_map<cache_glyph_key, Image<RGBA>> cache;
+    static std::unordered_map<cache_glyph_key, pix::image<RGBA>> cache;
 
     sys::glyph_style cacheable_style;
     cacheable_style.font = style.font;
@@ -314,8 +314,8 @@ void sys::render (glyph glyph, Frame<RGBA> frame, XY offset, uint8_t alpha, int 
     
     if (cacheable)
     {
-        Image<RGBA> image (XY(w,h));
-        image.frame().copy_from(view);
+        pix::image<RGBA> image (XY(w,h));
+        image.crop().copy_from(view);
         cache.emplace(cache_glyph_key{glyph.text, style.font, fore, back}, image);
     }
 

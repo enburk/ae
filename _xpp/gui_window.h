@@ -45,7 +45,7 @@ void sys::window::on::timing()
      gui::time::set();
      gui::active_properties.for_each( [](auto p){ p->tick(); } );
      for (auto rect : gui::window->updates)
-     gui::window->render(sys::window::image.frame(rect), rect.origin);
+     gui::window->render(sys::window::image.crop(rect), rect.origin);
      gui::window->updates.clear();
 }
 
