@@ -3,4 +3,143 @@
   <ItemGroup>
     <ClCompile Include="proto-studio.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Filter Include="platforms">
+      <UniqueIdentifier>{d5bb69b5-336f-4f06-abac-a77bd894f396}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="aux">
+      <UniqueIdentifier>{0a920311-d0b0-4bf9-864e-de8da0a390ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="proto-studio">
+      <UniqueIdentifier>{2651600c-05a3-44bb-afe3-bbed7b805100}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="library\cpp\platforms\microsoft_windows.h">
+      <Filter>platforms</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\platforms\microsoft_windows_fonts.h">
+      <Filter>platforms</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\platforms\microsoft_windows_windows.h">
+      <Filter>platforms</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\aux_abc.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\aux_array.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\aux_string.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\aux_utils.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\pix_color.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\pix_coord.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\pix_image.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\sys.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\aux_array.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc_lexica.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc_lexica_cpp.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc_lexica_txt.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc_lexica_xml.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc_lexica_xpp.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc_text.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_colors.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_effect.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_button.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_canvas.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_image.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_layout.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_scroller.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_splitter.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_text_editor.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_text_model.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_text_page.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_text_view.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widgetarium.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_window.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\ide.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\ide_common.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\ide_console.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\ide_editor.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\ide_flist.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\test.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\test_fonts.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\test_pix.h">
+      <Filter>proto-studio</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
