@@ -127,19 +127,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\libraries\cpp\aux_abc.hpp" />
-    <ClInclude Include="..\..\libraries\cpp\aux_array.hpp" />
-    <ClInclude Include="..\..\libraries\cpp\aux_string.hpp" />
+    <ClInclude Include="..\..\library\cpp\aux_abc.h" />
+    <ClInclude Include="..\..\library\cpp\aux_array.h" />
+    <ClInclude Include="..\..\library\cpp\aux_string.h" />
+    <ClInclude Include="..\..\library\cpp\aux_utils.h" />
+    <ClInclude Include="..\..\library\cpp\pix_color.h" />
+    <ClInclude Include="..\..\library\cpp\pix_coord.h" />
+    <ClInclude Include="..\..\library\cpp\pix_image.h" />
     <ClInclude Include="..\..\_xpp\aux_array.h" />
-    <ClInclude Include="..\..\_xpp\aux_string.h" />
-    <ClInclude Include="..\..\_xpp\aux_utils.h" />
     <ClInclude Include="..\..\_xpp\doc.h" />
-    <ClInclude Include="..\..\_xpp\doc_abc.h" />
     <ClInclude Include="..\..\_xpp\doc_lexica.h" />
     <ClInclude Include="..\..\_xpp\doc_lexica_cpp.h" />
     <ClInclude Include="..\..\_xpp\doc_lexica_txt.h" />
     <ClInclude Include="..\..\_xpp\doc_lexica_xml.h" />
     <ClInclude Include="..\..\_xpp\doc_lexica_xpp.h" />
+    <ClInclude Include="..\..\_xpp\doc_text.h" />
     <ClInclude Include="..\..\_xpp\gui_colors.h" />
     <ClInclude Include="..\..\_xpp\gui_effect.h" />
     <ClInclude Include="..\..\_xpp\gui_widget.h" />
@@ -159,12 +161,6 @@
     <ClInclude Include="..\..\_xpp\ide_console.h" />
     <ClInclude Include="..\..\_xpp\ide_editor.h" />
     <ClInclude Include="..\..\_xpp\ide_flist.h" />
-    <ClInclude Include="..\..\_xpp\pix.h" />
-    <ClInclude Include="..\..\_xpp\pix_color.h" />
-    <ClInclude Include="..\..\_xpp\pix_coord.h" />
-    <ClInclude Include="..\..\_xpp\pix_image.h" />
-    <ClInclude Include="..\..\_xpp\pix_math.h" />
-    <ClInclude Include="..\..\_xpp\pix_text.h" />
     <ClInclude Include="..\..\_xpp\sys.h" />
     <ClInclude Include="..\..\_xpp\sys_windows.h" />
     <ClInclude Include="..\..\_xpp\test.h" />

@@ -1,3 +1,4 @@
+#include <map>
 #include "sys.h"
 #include "sys_windows.h"
 using namespace pix;

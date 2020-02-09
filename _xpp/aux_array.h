@@ -56,6 +56,7 @@ template<class Iterator> struct range_with_ending
 
 template<class I> range_with_ending<I> operator + (range<I> r, typename range<I>::type e) { return range_with_ending<I>{r, e}; }
 
+/*
 template<class type> struct array : std::vector<type>
 {
     using base = std::vector<type>;
@@ -133,13 +134,13 @@ template<class type> struct array : std::vector<type>
 
     array from (int pos) { return array(begin()+pos, end()); }
 };
-
+*/
 
 // template<class type> struct Array // rope-like B-tree of arrays
 // {
 //     std::map<int, array<type>> chunks; // actually: simplified red-black implementation
 // };
 
-template<class type> using Array = array<type>;
+//template<class type> using Array = array<type>;
 
-template<class type> using Range = range<typename Array<type>::iterator>;
+//template<class type> using Range = range<typename Array<type>::iterator>;

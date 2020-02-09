@@ -2,7 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="..\..\_xpp\aux_array.h" />
-    <ClInclude Include="..\..\_xpp\aux_string.h" />
     <ClInclude Include="..\..\_xpp\sys.h" />
     <ClInclude Include="..\..\_xpp\sys_windows.h" />
     <ClInclude Include="..\..\_xpp\doc_lexica.h">
@@ -22,18 +21,6 @@
     </ClInclude>
     <ClInclude Include="..\..\_xpp\doc_lexica_xpp.h">
       <Filter>doc</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\_xpp\pix_color.h">
-      <Filter>pix</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\_xpp\pix_coord.h">
-      <Filter>pix</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\_xpp\pix_image.h">
-      <Filter>pix</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\_xpp\pix_math.h">
-      <Filter>pix</Filter>
     </ClInclude>
     <ClInclude Include="..\..\_xpp\gui_effect.h">
       <Filter>gui</Filter>
@@ -56,7 +43,6 @@
     <ClInclude Include="..\..\_xpp\gui_window.h">
       <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\_xpp\aux_utils.h" />
     <ClInclude Include="..\..\_xpp\ide_console.h">
       <Filter>ide</Filter>
     </ClInclude>
@@ -93,32 +79,38 @@
     <ClInclude Include="..\..\_xpp\gui_widget_text_view.h">
       <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\_xpp\pix_text.h">
-      <Filter>pix</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\_xpp\pix.h">
-      <Filter>pix</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\_xpp\ide_editor.h">
       <Filter>ide</Filter>
     </ClInclude>
     <ClInclude Include="..\..\_xpp\gui_widget_text_model.h">
       <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\libraries\cpp\aux_abc.hpp">
-      <Filter>aux</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libraries\cpp\aux_array.hpp">
-      <Filter>aux</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\libraries\cpp\aux_string.hpp">
-      <Filter>aux</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\_xpp\gui_widget_scroller.h">
       <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\_xpp\doc_abc.h">
+    <ClInclude Include="..\..\_xpp\doc_text.h">
       <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\library\cpp\pix_color.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\library\cpp\pix_coord.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\library\cpp\pix_image.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\library\cpp\aux_abc.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\library\cpp\aux_array.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\library\cpp\aux_string.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\library\cpp\aux_utils.h">
+      <Filter>aux</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -134,9 +126,6 @@
   <ItemGroup>
     <Filter Include="doc">
       <UniqueIdentifier>{b3562287-82e3-44f3-b221-e41808b6679a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="pix">
-      <UniqueIdentifier>{1cdf0b6d-9a94-4193-baa7-2d912591c30b}</UniqueIdentifier>
     </Filter>
     <Filter Include="gui">
       <UniqueIdentifier>{ee5e54af-2205-4d0b-a0c2-8ca54417fb86}</UniqueIdentifier>

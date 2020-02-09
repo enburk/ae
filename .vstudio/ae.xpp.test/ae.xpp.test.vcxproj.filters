@@ -12,6 +12,7 @@
     <ClCompile Include="test_pix_image.cpp" />
     <ClCompile Include="test_gui_widget.cpp" />
     <ClCompile Include="test_gui_widget_canvas.cpp" />
+    <ClCompile Include="test_doc_text.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="common">

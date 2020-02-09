@@ -3,16 +3,21 @@
 #include <variant> 
 #include <stdexcept> 
 #include <functional>
-#include "aux_array.hpp"
+#include "aux_array.h"
 namespace aux
 {
-    struct str : array<char, std::string>
+    using array_of_chars = array<char, std::string>;
+
+    struct str : array_of_chars
     {
-        using base = array<char, std::string>;
+        using base = array_of_chars;
         using base:: array;
 
         str (const char * s ) : base (s) {}
         str (char c, int n=1) { if (n > 0) *this = std::string (n,c); }
+
+        str (const_iterator f, const_iterator l) { *this = std::string (f, l); }
+        str (const char *   f, const char *   l) { *this = std::string (f, l); }
 
         explicit str (array<char> text) { *this = std::string(text.data(), text.data()+text.size()); }
         explicit str (array<str> lines) {
@@ -21,6 +26,11 @@ namespace aux
                 *this += '\n'; }
             if (*this != "") pop_back();
         }
+
+        void operator += (      char   c) { std::string::operator+=(c); }
+        void operator += (const char * s) { std::string::operator+=(s); }
+        void operator += (const str  & s) { base::operator+=(s); }
+        void operator += (      str && s) { base::operator+=(s); }
 
         friend bool operator == (const range & l, const char  * r) { return std::string_view(l.arr->data() + l.offset, l.length) == r; }
         friend bool operator != (const range & l, const char  * r) { return std::string_view(l.arr->data() + l.offset, l.length) != r; }
@@ -131,6 +141,19 @@ namespace aux
             }
             return result;
         }
+        array<str> split () const
+        {
+            array<str> result;
+            std::size_t start = 0, end = 0;
+            while ((end = std::string::find('\n', start)) != std::string::npos) {
+                auto n = end - start; if (n > 0 && (*this)[n] == '\r') n--;
+                result.push_back(std::string::substr(start, n));
+                start = end + 1;
+            }
+            if (start < std::string::size())
+                result.push_back(std::string::substr(start));
+            return result;
+        }
 
         ////////////////////////////////////////////////////////////////////////////
 
@@ -189,12 +212,12 @@ namespace aux
 
         bool ascii_isalnum () const {
             for (char c : *this)
-                if (c < '0' || c > '9' &&
-                    c < 'A' || c > 'Z' &&
-                    c < 'a' || c > 'z') return false; return true; }
+                if (c < '0' || '9' < c &&
+                    c < 'A' || 'Z' < c &&
+                    c < 'a' || 'z' < c) return false; return true; }
 
-        static char ascii_tolower (char c) { return c >= 'A' || c <= 'Z' ? c - 'A' + 'a' : c; }
-        static char ascii_toupper (char c) { return c >= 'a' || c <= 'z' ? c - 'a' + 'A' : c; }
+        static char ascii_tolower (char c) { return 'A' <= c && c <= 'Z' ? c - 'A' + 'a' : c; }
+        static char ascii_toupper (char c) { return 'a' <= c && c <= 'z' ? c - 'a' + 'A' : c; }
 
         str ascii_lowercased () const { str s = *this; std::transform(s.begin(), s.end(), s.begin(), ascii_tolower); return s; }
         str ascii_uppercased () const { str s = *this; std::transform(s.begin(), s.end(), s.begin(), ascii_toupper); return s; }

@@ -3,11 +3,12 @@
 #include "doc_lexica.h"
 namespace doc::lexica
 {
+    /*
 /// template<class I,
 /// std::enable_if_t<std::is_same_v<typename
 /// std::iterator_traits<I>::value_type, char>>>
 /// inline array<Token> txt (range<I> text)
-    inline array<token> txt (Range<char> text)
+    inline array<token> txt (range<char> text)
     {
         array<token> output; token t; t.kind = "space";
 
@@ -38,6 +39,14 @@ namespace doc::lexica
     inline array<token> txt (str text)
     {
         return txt (array<char>(text.begin(), text.end()).range());
+    }
+    */
+    inline array<token> txt (str text)
+    {
+        auto ss = text.split_by("\n");
+        array<token> tt;
+        for (auto s : ss) tt += token{s};
+        return tt;
     }
 }
 

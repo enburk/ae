@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "aux_abc.hpp"
+#include "aux_abc.h"
 namespace aux
 {
     template<class T, class C = std::vector<T>> struct array : C
@@ -83,13 +83,16 @@ namespace aux
                 return range{arr, offset, i-offset};
             }
 
-            void erase ()
-            {
-                arr->erase(
-                arr->begin()+offset,
-                arr->begin()+offset+length);
-                length = 0;
-            }
+            auto first () { return arr->begin() + offset; }
+            auto last  () { return arr->begin() + offset + length; }
+
+            auto first () const { return arr->begin() + offset; }
+            auto last  () const { return arr->begin() + offset + length; }
+
+            void erase () { arr->erase(first(), last()); length = 0; }
+
+            auto find     (const type & e) const { return std::find (first(), last(), e); }
+            bool contains (const type & e) const { return std::find (first(), last(), e) != last(); }
 
             void replace_by (array a) { replace_by(a.whole()); }
             void replace_by (range r)
@@ -118,6 +121,9 @@ namespace aux
         array (range r) : base(
             r.arr->begin() + r.offset,
             r.arr->begin() + r.offset + r.length) {}
+
+        friend array operator + (const array & a, const range & b) { array r = a; r += b; return r; }
+        friend array operator + (const range & a, const array & b) { array r = a; r += b; return r; }
 
         range whole     () { return range{this, 0, size()}; }
         range from (int i) { i = min(i, size()); return range{this, i, size()-i}; }
@@ -155,6 +161,7 @@ namespace aux
 
         template<class I>
         auto insert(const_iterator i, I f, I l) { return base::insert(i, f, l); }
+        auto insert(int i, const type  & e    ) { return base::insert(begin()+i, e); }
         auto insert(int i, const array & a    ) { return insert(i, a.whole()); }
         auto insert(int i, const range & r    ) { return insert(
             this ->begin() + i,

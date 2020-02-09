@@ -1,10 +1,10 @@
 #pragma once
 #include <cassert>
-#include "aux_array.h"
-#include "aux_string.h"
-#include "../libraries/cpp/aux_array.hpp"
+#include "../library/cpp/aux_string.h"
 namespace doc
 {
+    using namespace aux;
+
     struct place
     {
         int line = 0, offset = 0; // bool operator <=> (place p) const = default;

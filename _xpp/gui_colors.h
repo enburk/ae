@@ -1,5 +1,5 @@
 #pragma once
-#include "pix.h"
+#include <map>
 #include "sys.h"
 namespace gui
 {
@@ -17,7 +17,7 @@ namespace gui
 
     struct schema
     {
-        font font;
+        sys::font font;
         RGBA black, white;
         pair_of_colors light, normal, heavy,
         active, hovered, touched, disabled,
@@ -25,7 +25,7 @@ namespace gui
     };
     inline std::map<str, schema> schemas;
 
-    const inline auto palettes_datae = // https://material.io/design/color/#tools-for-picking-colors
+    const inline array<const char*> palettes_datae = // https://material.io/design/color/#tools-for-picking-colors
     {                   // 0     // 1     // 2      // 3    // 4     // 5     // 6     // 7     // 8     // 9
         "gray",        "FAFAFA","F5F5F5","EEEEEE","E0E0E0","BDBDBD","9E9E9E","757575","616161","424242","212121", 
                        "000000","000000","000000","000000","000000","000000","FFFFFF","FFFFFF","FFFFFF","FFFFFF", 
@@ -48,7 +48,7 @@ namespace gui
             i++;
         }
 
-        for (auto & [name, palette] : palettes) {
+        for (auto [name, palette] : palettes) {
             auto & schema = schemas[name];
 
             schema.black   = palette[0].fore_color;

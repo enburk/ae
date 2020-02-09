@@ -4,8 +4,6 @@
 #include <chrono>
 #include <cassert>
 #include <algorithm>
-#include "aux_utils.h"
-#include "pix.h"
 #include "sys.h"
 namespace gui
 {

@@ -19,7 +19,7 @@ struct GDI_FONT
 
         LOGFONT lf;
         _tcscpy_s (
-        lf.lfFaceName       , 32, font.face.till (31).c_str());
+        lf.lfFaceName       , 32, aux::str(font.face.upto(31)).c_str());
         lf.lfHeight         = -font.size;//-MulDiv (font.size, ::GetDeviceCaps (dc,LOGPIXELSY), 72);
         lf.lfWidth          = 0;
         lf.lfEscapement     = 0;
@@ -89,7 +89,7 @@ struct GDI_CONTEXT
 
 struct cache_metrics_key
 {
-    str text; sys::font font; 
+    aux::str text; sys::font font; 
 
     bool operator == (const cache_metrics_key & k) const { return
         text == k.text &&
@@ -198,7 +198,7 @@ sys::token::token (str text, sys::glyph_style style)
 
 struct cache_glyph_key
 {
-    str text; sys::font font; sys::RGBA fore, back;
+    aux::str text; sys::font font; sys::RGBA fore, back;
 
     bool operator == (const cache_glyph_key & k) const { return
         text == k.text &&

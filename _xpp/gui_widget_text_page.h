@@ -66,13 +66,13 @@ namespace gui::text
         void fill (str text, sys::glyph_style style) {
              std::map<str, sys::glyph_style> styles;
              array<doc::token> tokens = doc::lexica::txt(text);
-             fill (max<int>(), left, false, tokens.range(), styles, style);
+             fill (max<int>(), left, false, tokens.whole(), styles, style);
         }
         void fill (
             int width,
             int align,
             bool word_wrap,
-            Range<doc::token> tokens,
+            array<doc::token>::range tokens,
             const std::map<str, sys::glyph_style> & styles,
             const sys::glyph_style & default_style)
         {
@@ -152,13 +152,25 @@ namespace gui::text
         {
             if (width == 0) return;
             int l = 0;
+            /*
             for (auto i = tokens.begin(); i != tokens.end(); ) {
                  auto j = std::find_if(i, tokens.end(), [](auto t){ return t.text == "\n"; });
                  if (j != tokens.end()) j++;
                  if (l >= size()) emplace_back();
                  (*this)(l++).fill(
                      width, align, word_wrap,
-                     array<doc::token>(i, j).range(),
+                     array<doc::token>(i, j).whole(),
+                     styles, default_style);
+                 i = j;
+            }
+            */
+            for (auto i = tokens.begin(); i != tokens.end(); ) {
+                 auto j = std::find_if(i, tokens.end(), [](auto t){ return t.text == "\n"; });
+                 if (j != tokens.end()) j++;
+                 if (l >= size()) emplace_back();
+                 (*this)(l++).fill(
+                     width, align, word_wrap,
+                     array<doc::token>(std::vector<doc::token>(i, j)).whole(),
                      styles, default_style);
                  i = j;
             }

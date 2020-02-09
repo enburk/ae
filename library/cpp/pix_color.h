@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <functional>
-#include "pix_math.h"
+#include "aux_abc.h"
 namespace pix
 {
     struct RGBA
@@ -30,9 +30,9 @@ namespace pix
         }
 
         static RGBA random(uint8_t l = 64, uint8_t u = 255) { return RGBA(
-               pix::random<int>(l, u),
-               pix::random<int>(l, u),
-               pix::random<int>(l, u)); }
+               aux::random<int>(l, u),
+               aux::random<int>(l, u),
+               aux::random<int>(l, u)); }
     };
 
     inline RGBA ARGB (uint32_t value)

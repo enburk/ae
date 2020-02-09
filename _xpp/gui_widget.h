@@ -1,8 +1,8 @@
 #pragma once
 #include <any>
 #include <set>
-#include "pix.h"
-#include "aux_utils.h"
+#include "../library/cpp/aux_utils.h"
+#include "../library/cpp/pix_image.h"
 #include "gui_effect.h"
 namespace gui::base
 {
