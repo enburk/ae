@@ -100,8 +100,7 @@ struct IDE : gui::widget<IDE>
     void on_key_pressed (str key, bool down) override { editor.on_key_pressed(key,down); }
     void on_keyboard_input (str symbol) override { editor.on_keyboard_input(symbol); }
 };
-
-//IDE ide;
+sys::app<IDE> app("AE proto-studio");
 
 
 

@@ -154,6 +154,7 @@
     <ClInclude Include="library\cpp\pix_image.h" />
     <ClInclude Include="library\cpp\platforms\microsoft_windows.h" />
     <ClInclude Include="library\cpp\platforms\microsoft_windows_fonts.h" />
+    <ClInclude Include="library\cpp\platforms\microsoft_windows_images.h" />
     <ClInclude Include="library\cpp\platforms\microsoft_windows_windows.h" />
     <ClInclude Include="library\cpp\proto-studio\aux_array.h" />
     <ClInclude Include="library\cpp\proto-studio\doc.h" />

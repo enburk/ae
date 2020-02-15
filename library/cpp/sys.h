@@ -1,4 +1,5 @@
 #pragma once
+#include <filesystem>
 #include "aux_string.h"
 #include "aux_utils.h"
 #include "pix_color.h"
@@ -9,6 +10,7 @@ namespace sys
     using pix::XYWH;
     using pix::XYXY;
     using pix::RGBA;
+    using pix::MONO;
     using namespace aux;
 
     namespace screen
@@ -73,6 +75,29 @@ namespace sys
         void save (str name, str value);
         void save (str name, int value);
     }
+
+    struct app_base : polymorphic
+    {
+        str title;
+        virtual void constructor() = 0;
+        virtual void destructor () = 0;
+    };
+    struct app_instance
+    {
+        static void init();
+        static void done();
+        static app_base * app;
+        app_instance () { init(); if (app) app->constructor(); }
+       ~app_instance () { if (app) app->destructor (); done(); }
+    };
+    template<class APP> struct app : app_base
+    {
+        APP * apptr = nullptr;;
+        app (str s) { app_instance::app = this; title = s; }
+        void constructor() override { apptr = new APP; }
+        void destructor () override { delete apptr; }
+    };
+    inline app_base * app_instance::app = nullptr;
 
     struct font
     {
@@ -173,4 +198,12 @@ namespace sys
     font::metrics metrics (font);
     void render (glyph, pix::frame<RGBA>, XY offset=XY(), uint8_t alpha=255, int x=0);
     void render (token, pix::frame<RGBA>, XY offset=XY(), uint8_t alpha=255, int x=0);
+}
+namespace pix
+{
+    expected<pix::image<RGBA>> read (std::filesystem::path);
+    expected<nothing> write (pix::frame<RGBA>, std::filesystem::path, int quality = -1);
+    expected<array<std::byte>> pack (pix::frame<RGBA>, str format, int quality = -1);
+    expected<pix::image<RGBA>> unpack (array<std::byte>::range);
+    expected<pix::image<RGBA>> unpack (void* buffer, int size);
 }

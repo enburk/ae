@@ -1,5 +1,3 @@
-#include "../proto-studio/ide.h"
-
 #include <map>
 #include "../sys.h"
 #include "microsoft_windows.h"
@@ -267,9 +265,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR pCmdLine, int nCmdShow)
 {
-    IDE ide;
-
     SetProcessDpiAwarenessContext (DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
+
+    RECT r; ::SystemParametersInfo ( SPI_GETWORKAREA, 0, &r, 0 );
+
+    sys::screen::size.x = r.right - r.left;
+    sys::screen::size.y = r.bottom - r.top;
+
+    sys::app_instance app;
 
     WNDCLASS wc = { };
     wc.lpfnWndProc   = WindowProc;
@@ -278,15 +281,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR pCmdLine, int nCmdShow
     wc.lpszClassName = TEXT("DPP IDE class name");
     RegisterClass(&wc);
 
-    RECT r; ::SystemParametersInfo ( SPI_GETWORKAREA, 0, &r, 0 );
-
-    sys::screen::size.x = r.right - r.left;
-    sys::screen::size.y = r.bottom - r.top;
-
     HWND hwnd = Hwnd = CreateWindowEx(
         WS_EX_APPWINDOW ,   // Optional styles
         wc.lpszClassName,   // Window class
-        TEXT("AE IDE"),     // Window text
+        app.app->title.c_str(), // Window text
         WS_OVERLAPPEDWINDOW,
         r.left, r.top, r.right, r.bottom,
         NULL,               // Parent window    

@@ -50,6 +50,19 @@ namespace pix
     maroon = ARGB(0xFF800000), red    = ARGB(0xFFFF0000), purple  = ARGB(0xFF800080), fuchsia = ARGB(0xFFFF00FF),
     green  = ARGB(0xFF008000), lime   = ARGB(0xFF00FF00), olive   = ARGB(0xFF808000), yellow  = ARGB(0xFFFFFF00),
     navy   = ARGB(0xFF000080), blue   = ARGB(0xFF0000FF), teal    = ARGB(0xFF008080), aqua    = ARGB(0xFF00FFFF);
+
+    struct  MONO
+    {
+        union { uint8_t value; uint8_t channels [1]; };
+
+        MONO () : value (0) {}
+        MONO (int value) : value(value) {}
+        MONO (RGBA c) { value = aux::clamp<uint8_t>(255 * (0.212671*c.r + 0.715160*c.g + 0.072169*c.b)); }
+
+        bool operator == (const MONO & c) const { return value == c.value; }
+        bool operator != (const MONO & c) const { return value != c.value; }
+        bool operator <  (const MONO & c) const { return value <  c.value; }
+    };
 }
 
 namespace std

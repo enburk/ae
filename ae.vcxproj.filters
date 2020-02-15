@@ -141,5 +141,8 @@
     <ClInclude Include="library\cpp\proto-studio\test_pix.h">
       <Filter>proto-studio</Filter>
     </ClInclude>
+    <ClInclude Include="library\cpp\platforms\microsoft_windows_images.h">
+      <Filter>platforms</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
