@@ -1,4 +1,6 @@
-.archive
+.archive/
+.vstudio/
+packages/
 ae.sln
 ae.vcxproj
 ae.vcxproj.filters
