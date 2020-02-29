@@ -15,10 +15,10 @@ struct IDE : gui::widget<IDE>
     gui::canvas toolbar;
     gui::button button_test;
 
-    Console console;
-    Editor editor;
-    Flist flist;
-    Test test;
+    gui::area<Console> console;
+    gui::area<Editor> editor;
+    gui::area<Flist> flist;
+    gui::area<Test> test;
 
     gui::splitter splitter_editor_l;
     gui::splitter splitter_editor_r;
@@ -43,9 +43,9 @@ struct IDE : gui::widget<IDE>
     {
         if (what == &coord)
         {
-            gui::schemas[""].font = sys::font{"Segoe UI", gui::metrics::text::height};
+            gui::skins[""].font = sys::font{"Segoe UI", gui::metrics::text::height};
 
-            toolbar.color = gui::schemas[""].light.back_color;
+            toolbar.color = gui::skins[""].light.back_color;
 
             int W = coord.now.w; int w = gui::metrics::text::height*10;
             int H = coord.now.h; int h = gui::metrics::text::height*2;

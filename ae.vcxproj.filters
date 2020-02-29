@@ -13,6 +13,9 @@
     <Filter Include="proto-studio">
       <UniqueIdentifier>{2651600c-05a3-44bb-afe3-bbed7b805100}</UniqueIdentifier>
     </Filter>
+    <Filter Include="gui">
+      <UniqueIdentifier>{ffe1ee67-dd58-41d5-8e70-254587c0dd47}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="library\cpp\platforms\microsoft_windows.h">
@@ -72,51 +75,6 @@
     <ClInclude Include="library\cpp\proto-studio\doc_text.h">
       <Filter>proto-studio</Filter>
     </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\gui_colors.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\gui_effect.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\gui_widget.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\gui_widget_button.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\gui_widget_canvas.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\gui_widget_image.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\gui_widget_layout.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\gui_widget_scroller.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\gui_widget_splitter.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\gui_widget_text_editor.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\gui_widget_text_model.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\gui_widget_text_page.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\gui_widget_text_view.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\gui_widgetarium.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\gui_window.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
     <ClInclude Include="library\cpp\proto-studio\ide.h">
       <Filter>proto-studio</Filter>
     </ClInclude>
@@ -143,6 +101,57 @@
     </ClInclude>
     <ClInclude Include="library\cpp\platforms\microsoft_windows_images.h">
       <Filter>platforms</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_colors.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_effect.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_button.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_canvas.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_image.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_layout.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_scroller.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_splitter.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_text_model.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_text_editor.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_text_page.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_text_view.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widgetarium.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_window.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_list1D.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_list2D.h">
+      <Filter>gui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

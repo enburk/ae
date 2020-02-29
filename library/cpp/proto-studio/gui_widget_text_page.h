@@ -25,7 +25,8 @@ namespace gui::text
         }
     };
 
-    struct token final : widget<token>
+    struct token:
+    widget<token>
     {
         doc::token doc_token;
 

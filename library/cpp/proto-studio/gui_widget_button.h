@@ -5,9 +5,9 @@
 #include "gui_widget_text_view.h"
 namespace gui
 {
-    struct button : widget<button>
+    struct button:
+    widget<button>
     {
-        binary_property<str> schema;
         binary_property<bool> on = false;
         binary_property<bool> enabled = true;
         binary_property<bool> focused = false;
@@ -19,12 +19,13 @@ namespace gui
         time repeat_delay = 500ms;
         time repeat_lapse = 100ms;
         time repeat_notch;
+        property<time> timer;
 
         frame frame; image image; text::view text;
 
         std::function<void(void)> on_change_state = [this]()
         {
-            auto style = schemas[schema.now];
+            auto style = skins[skin.now];
 
             frame.color = style.focus.back_color;
             frame.alpha.go (focused ? 255 : 0);
@@ -37,8 +38,8 @@ namespace gui
             if (on           .now) colors = style.active; else
             if (mouse_hover  .now) colors = style.hovered;
 
-            text.color = colors.fore_color;
-            text.canvas.color = colors.back_color;
+            text.canvas.color.go(colors.back_color);
+            text.color.go(colors.fore_color);
 
             auto r = coord.now.local();
             frame.thickness = metrics::line::width;
@@ -54,9 +55,16 @@ namespace gui
             if (what == &mouse_hover) on_change_state(); else
             if (what == &focused) on_change_state(); else
             if (what == &enabled) on_change_state(); else
-            if (what == &schema) on_change_state(); else
             if (what == &coord) on_change_state(); else
+            if (what == &skin) on_change_state(); else
             if (what == &on) { on_change_state(); notify(); }
+
+            if (what == &timer) {
+                if (repeat_notch < time::now) {
+                    repeat_notch = time::now + repeat_lapse;
+                    if (mouse_pressed.now) notify();
+                }
+            }
         }
 
         bool mouse_sensible (XY) override { return enabled.now; }
@@ -64,13 +72,21 @@ namespace gui
         void on_mouse_leave (  ) override { mouse_hover = false;}
         void on_mouse_press (XY, char button, bool down) override
         {
-            if (button != 'L') return; mouse_pressed = down;
+            if (button != 'L') return;
+            
+            mouse_pressed = down;
+            
             if (enabled.now) {
                 switch(kind) {
                 case normal: on = down; break;
                 case toggle: on = down || on.was != on.now; break;
-                case sticky: on = true; break;
+                case sticky: if (down) on = true; break;
                 }
+            }
+            if (repeating) {
+                repeat_notch = time::now + repeat_delay;
+                timer.go (down ? time::infinity : time(),
+                          down ? time::infinity : time());
             }
         }
     };

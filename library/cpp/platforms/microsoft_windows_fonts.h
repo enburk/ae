@@ -20,7 +20,7 @@ struct GDI_FONT
         LOGFONT lf;
         _tcscpy_s (
         lf.lfFaceName       , 32, aux::str(font.face.upto(31)).c_str());
-        lf.lfHeight         = -font.size;//-MulDiv (font.size, ::GetDeviceCaps (dc,LOGPIXELSY), 72);
+        lf.lfHeight         = font.size >= 0 ? -font.size : MulDiv (font.size, ::GetDeviceCaps (dc,LOGPIXELSY), 72);
         lf.lfWidth          = 0;
         lf.lfEscapement     = 0;
         lf.lfOrientation    = 0;

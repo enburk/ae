@@ -23,7 +23,7 @@ namespace gui
         active, hovered, touched, disabled,
         focus, error;
     };
-    inline std::map<str, schema> schemas;
+    inline std::map<str, schema> skins;
 
     const inline array<const char*> palettes_datae = // https://material.io/design/color/#tools-for-picking-colors
     {                   // 0     // 1     // 2      // 3    // 4     // 5     // 6     // 7     // 8     // 9
@@ -35,7 +35,7 @@ namespace gui
 
     void init ()
     {
-        metrics::text::height = sys::screen::size.y/90;
+        metrics::text::height = sys::metrics(sys::font{"Arial",-8}).height;
         metrics::line::width = max (1, metrics::text::height/16);
 
         int i = 0; str name;
@@ -44,35 +44,35 @@ namespace gui
             if (i%21 == 0) name = s; else
             if (i%21 < 11) color = &palettes[name][i%21- 1].back_color; else
             if (i%21 < 21) color = &palettes[name][i%21-11].fore_color;
-            if (color) { *color = ARGB(std::strtoul(s, nullptr, 16)); color->a = 255; }
+            if (color) { *color = pix::ARGB(std::strtoul(s, nullptr, 16)); color->a = 255; }
             i++;
         }
 
         for (auto [name, palette] : palettes) {
-            auto & schema = schemas[name];
+            auto & skin = skins[name];
 
-            schema.black   = palette[0].fore_color;
-            schema.white   = palette[9].fore_color;
+            skin.black   = palette[0].fore_color;
+            skin.white   = palette[9].fore_color;
 
-            schema.light   = palette[1];
-            schema.normal  = palette[3];
-            schema.heavy   = palette[5];
+            skin.light   = palette[1];
+            skin.normal  = palette[3];
+            skin.heavy   = palette[5];
 
-            schema.hovered = palette[6];
-            schema.active  = palette[7];
-            schema.touched = palette[8];
+            skin.hovered = palette[6];
+            skin.active  = palette[7];
+            skin.touched = palette[8];
 
-            schema.disabled.back_color = palette[3].back_color;
-            schema.disabled.fore_color = palette[5].back_color;
+            skin.disabled.back_color = palette[3].back_color;
+            skin.disabled.fore_color = palette[5].back_color;
         }
 
-        for (auto & [name, schema] : schemas) {
-            schema.error.back_color = ARGB(0xFFB00020);
-            schema.error.fore_color = ARGB(0xFFFFFFFF);
-            schema.focus.back_color = ARGB(0xFFFFA000);
-            schema.focus.fore_color = ARGB(0xFF000000);
+        for (auto & [name, skin] : skins) {
+            skin.error.back_color = pix::ARGB(0xFFB00020);
+            skin.error.fore_color = pix::ARGB(0xFFFFFFFF);
+            skin.focus.back_color = pix::ARGB(0xFFFFA000);
+            skin.focus.fore_color = pix::ARGB(0xFF000000);
         }
 
-        schemas[""] = schemas["gray"];
+        skins[""] = skins["gray"];
     }
 }

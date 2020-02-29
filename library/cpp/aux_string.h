@@ -15,6 +15,7 @@ namespace aux
 
         str (const char * s ) : base (s) {}
         str (char c, int n=1) { if (n > 0) *this = std::string (n,c); }
+        str (std::string_view s) { *this = std::string (s); }
 
         str (const_iterator f, const_iterator l) { *this = std::string (f, l); }
         str (const char *   f, const char *   l) { *this = std::string (f, l); }

@@ -201,9 +201,14 @@ namespace sys
 }
 namespace pix
 {
-    expected<pix::image<RGBA>> read (std::filesystem::path);
-    expected<nothing> write (pix::frame<RGBA>, std::filesystem::path, int quality = -1);
-    expected<array<std::byte>> pack (pix::frame<RGBA>, str format, int quality = -1);
-    expected<pix::image<RGBA>> unpack (array<std::byte>::range);
-    expected<pix::image<RGBA>> unpack (void* buffer, int size);
+    expected<image<RGBA>>      read   (std::filesystem::path);
+    expected<nothing>          write  (frame<RGBA>, std::filesystem::path, int quality = -1);
+    expected<array<std::byte>> pack   (frame<RGBA>, str format, int quality = -1);
+    expected<image<RGBA>>      unpack (array<std::byte>::range);
+    expected<image<RGBA>>      unpack (std::byte* buffer, int size);
+}
+namespace aux
+{
+    expected<array<std::byte>> zip    (array<std::byte>::range bytes);
+    expected<array<std::byte>> unzip  (array<std::byte>::range bytes, int uncompressed_size);
 }

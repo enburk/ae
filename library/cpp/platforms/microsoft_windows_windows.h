@@ -1,7 +1,6 @@
 #include <map>
 #include "../sys.h"
 #include "microsoft_windows.h"
-using namespace pix;
 
 #pragma comment(linker,"\"/manifestdependency:type='win32'  \
 name='Microsoft.Windows.Common-Controls' version='6.0.0.0'  \

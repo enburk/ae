@@ -10,10 +10,6 @@ struct Editor : gui::widget<Editor>
 {
     str filename;
 
-    gui::canvas canvas;
-    gui::frame  frame1;
-    gui::frame  frame2;
-
     gui::text::editor editor;
     gui::scroller<gui::vertical> vscroller;
     gui::scroller<gui::horizontal> hscroller;
@@ -22,10 +18,6 @@ struct Editor : gui::widget<Editor>
     {
         if (what == &coord && coord.was.size != coord.now.size)
         {
-            frame1.color = gui::schemas[""].light.back_color;
-            frame2.color = gui::schemas[""].heavy.back_color;
-            canvas.color = gui::schemas[""].light.back_color;
-
             int h = gui::metrics::text::height;
 
             editor.background.color = pix::white;
@@ -33,21 +25,16 @@ struct Editor : gui::widget<Editor>
                 sys::font{"Consolas", h*110/100},
                 pix::black };
 
-            auto r = coord.now.local();
-            frame1.coord = r; r.deflate(frame1.thickness.now);
-            frame2.coord = r; r.deflate(frame2.thickness.now);
-            canvas.coord = r; r.deflate(frame2.thickness.now);
-
             refresh();
         }
     }
 
     void refresh ()
     {
+        auto r = coord.now.local();
+        
         int d = gui::metrics::text::height;
 
-        auto r = canvas.coord.now; r.deflate(frame2.thickness.now);
-        
         if (editor.model.size.x > r.w)
         {
             hscroller.coord = XYWH(r.x,       r.y+r.h-d, r.w-d,     d);

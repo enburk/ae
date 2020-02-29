@@ -13,12 +13,15 @@ namespace gui::text
         unary_property<array<doc::token>> tokens;
 
         property<RGBA> color;
+        binary_property<sys::font> font;
         binary_property<sys::glyph_style> style;
         binary_property<bool> word_wrap = true;
         binary_property<XY> alignment = XY{center, center};
         binary_property<XY> shift;
 
         std::map<str, sys::glyph_style> styles;
+
+        view () { on_change(&skin); }
 
         void refresh ()
         {
@@ -57,23 +60,35 @@ namespace gui::text
             //      page.append(token);
             //  }
             }
+            if (what == &skin)
+            {
+                style = sys::glyph_style
+                {
+                    skins[skin.now].font,
+                    skins[skin.now].normal.fore_color
+                };
+            }
             if (what == &coord && coord.was.size != coord.now.size)
             {
                 canvas.coord = coord.now.local();
-                if (style.now == sys::glyph_style())
-                    style = sys::glyph_style{ schemas[""].font, schemas[""].black };
+                refresh();
+            }
+            if (what == &font)
+            {
+                style.was = style.now;
+                style.now.font = font.now;
                 refresh();
             }
             if (what == &color)
             {
-                if (style.now == sys::glyph_style())
-                    style = sys::glyph_style{ schemas[""].font, schemas[""].black };
                 style.was = style.now;
                 style.now.color = color.now;
                 refresh();
             }
             if (what == &style)
             {
+                font.was = font.now;
+                font.now = style.now.font;
                 color.was = color.now;
                 color.now = style.now.color;
                 refresh();

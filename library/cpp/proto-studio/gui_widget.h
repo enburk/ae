@@ -18,7 +18,10 @@ namespace gui::base
 
         ////////////////////////////////////////////////////////////////////////
 
-        property<XYWH> coord; property<uint8_t> alpha = 255; XY advance, baseline;
+        property<XYWH> coord;
+        property<uint8_t> alpha = 255;
+        binary_property<str> skin;
+        XY advance, baseline;
 
         void hide    (bool off, time t=time()) { alpha.go(off? 0 : 255, t); }
         void show    (bool on , time t=time()) { alpha.go(on ? 255 : 0, t); }
@@ -48,6 +51,7 @@ namespace gui::base
             if (what == &coord && parent) parent->update(coord.was);
             if (what == &coord && parent) parent->update(coord.now);
             if (what == &alpha && parent) parent->update(coord.now);
+            if (what == &skin) for (auto child : children) child->skin = skin.now;
             on_change(what);
         }
 
@@ -151,6 +155,11 @@ namespace gui::base
 
         void mouse_wheel (XY p, int delta)
         {
+            if (alpha.now == 0) return;
+            if (coord.now.local().excludes(p)) return;
+            for (auto w : children)
+                w->mouse_wheel(p - w->coord.now.origin, delta);
+            on_mouse_wheel(p, delta);
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -204,7 +213,7 @@ namespace gui
         {
             p = inholder(this); size_in_bytes = sizeof(T);
             if (p && parent && p != parent) throw std::runtime_error("widget: wrong parent");
-            if (p && !parent) { parent = p; parent->children += this; }
+            if (p && !parent) { parent = p; parent->children += this; skin = parent->skin; }
             if (!p) widgets.emplace(this);
         }
         ~widget () {

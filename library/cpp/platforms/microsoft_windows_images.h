@@ -8,8 +8,6 @@ using namespace Gdiplus;
 #define GDI_PLUS_DONE GdiplusShutdown(gdiplusToken);
 #define GDI_PLUS_INIT GdiplusStartupInput gdiplusStartupInput; ULONG_PTR gdiplusToken; \
                       GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-using namespace aux;
-using namespace pix;
 
 static int GetEncoderClsid (const WCHAR* format, CLSID* pClsid);
 static expected<image<RGBA>> FromImage (Image*);
@@ -20,13 +18,13 @@ expected<image<RGBA>> pix::unpack (array<std::byte>::range r)
 {
     return unpack (r.arr->data() + r.offset, r.length);
 }
-expected<image<RGBA>> pix::unpack (void* buffer, int size) try
+expected<image<RGBA>> pix::unpack (std::byte* buffer, int size) try
 {
     if (size <= 0) return image<RGBA>();
 
     GDI_PLUS_INIT;
-    HGLOBAL hmem = ::GlobalAlloc(GMEM_MOVEABLE, size);
-    LPVOID  data = ::GlobalLock (hmem);
+    HGLOBAL hmem = ::GlobalAlloc(GMEM_MOVEABLE, size); if (!hmem) return error("pix::unpack failed");
+    LPVOID  data = ::GlobalLock (hmem);                if (!data) return error("pix::unpack failed");
 
     ::memcpy(data, buffer, size);
     ::GlobalUnlock (hmem);
@@ -268,4 +266,49 @@ Image* MakeImage (frame<RGBA> frame)
     Image* gdimage = new Image (pstm);
     if (pstm) pstm->Release (); 
     return gdimage;
+}
+
+#include <zlib.h>
+
+namespace aux
+{
+    expected<array<std::byte>> zip (array<std::byte>::range bytes)
+    {
+        array<std::byte> result;
+        result.resize(bytes.length*2);
+        uLongf dst_size = result.size();
+        uLongf src_size = bytes.length;
+        auto rc = compress(
+            (Bytef*)(result.data()), &dst_size,
+            (Bytef*)(bytes.data()), src_size);
+        switch (rc) {
+        case 0: break;
+        case Z_BUF_ERROR:  return error("aux::zip: The buffer dest was not large enough.");
+        case Z_MEM_ERROR:  return error("aux::zip: Insufficient memory.");
+        default:           return error("aux::zip: Unknown error.");
+        }
+        result.resize(dst_size);
+        result.shrink_to_fit();
+        return result;
+    }
+
+    expected<array<std::byte>> unzip (array<std::byte>::range bytes, int uncompressed_size)
+    {
+        array<std::byte> result;
+        result.resize(uncompressed_size);
+        uLongf dst_size = uncompressed_size;
+        uLongf src_size = bytes.length;
+        auto rc = uncompress(
+            (Bytef*)(result.data()), &dst_size,
+            (Bytef*)(bytes.data()), src_size);
+        switch (rc) {
+        case 0: break;
+        case Z_BUF_ERROR:  return error("aux::unzip: The buffer dest was not large enough.");
+        case Z_MEM_ERROR:  return error("aux::unzip: Insufficient memory.");
+        case Z_DATA_ERROR: return error("aux::unzip: The compressed data was corrupted.");
+        default:           return error("aux::unzip: Unknown error.");
+        }
+        if (dst_size != uncompressed_size) return error("aux::unzip: wrong result size");
+        return result;
+    }
 }

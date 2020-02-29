@@ -64,6 +64,7 @@ namespace aux
             iterator end   () { auto p = arr->data(); return iterator{p+offset, p+offset+length}; }
             const iterator begin () const { auto p = arr->data(); return iterator{p+offset, p+offset}; }
             const iterator end   () const { auto p = arr->data(); return iterator{p+offset, p+offset+length}; }
+            auto data () { return arr->data() + offset; }
 
             explicit
             operator bool () const { return length > 0; }

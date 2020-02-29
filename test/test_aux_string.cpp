@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "../../library/cpp/aux_string.h"
+#include "../library/cpp/aux_string.h"
 namespace aux
 {
     TEST(TestAuxString, Substr)

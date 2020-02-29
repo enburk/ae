@@ -172,6 +172,8 @@
     <ClInclude Include="library\cpp\proto-studio\gui_widget_canvas.h" />
     <ClInclude Include="library\cpp\proto-studio\gui_widget_image.h" />
     <ClInclude Include="library\cpp\proto-studio\gui_widget_layout.h" />
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_list1D.h" />
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_list2D.h" />
     <ClInclude Include="library\cpp\proto-studio\gui_widget_scroller.h" />
     <ClInclude Include="library\cpp\proto-studio\gui_widget_splitter.h" />
     <ClInclude Include="library\cpp\proto-studio\gui_widget_text_editor.h" />

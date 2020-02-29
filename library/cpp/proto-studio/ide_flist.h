@@ -6,10 +6,6 @@ using namespace pix;
 
 struct Flist : gui::widget<Flist>
 {
-    gui::canvas canvas;
-    gui::frame  frame1;
-    gui::frame  frame2;
-
     gui::text::view dir;
     gui::widgetarium<gui::button> subs;
     typedef std::filesystem::path path;
@@ -37,15 +33,9 @@ struct Flist : gui::widget<Flist>
             if (root.now == path())
                 root = current_path();
 
-            frame1.color = gui::schemas[""].light.back_color;
-            frame2.color = gui::schemas[""].heavy.back_color;
-            canvas.color = gui::schemas[""].light.back_color;
-
             auto r = coord.now.local();
-            frame1.coord = r; r.deflate(frame1.thickness.now);
-            frame2.coord = r; r.deflate(frame2.thickness.now);
-            canvas.coord = r; r.deflate(frame2.thickness.now);
-            subs  .coord = r;
+
+            subs.coord = r;
 
             int h = 2 * gui::metrics::text::height; int y = 0;
 

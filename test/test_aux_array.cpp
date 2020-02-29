@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "../../library/cpp/aux_array.h"
+#include "../library/cpp/aux_array.h"
 namespace aux
 {
     TEST(TestAuxArray, Append)
