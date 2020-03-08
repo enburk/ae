@@ -21,7 +21,6 @@ namespace gui::base
         property<XYWH> coord;
         property<uint8_t> alpha = 255;
         binary_property<str> skin;
-        XY advance, baseline;
 
         void hide    (bool off, time t=time()) { alpha.go(off? 0 : 255, t); }
         void show    (bool on , time t=time()) { alpha.go(on ? 255 : 0, t); }
@@ -140,8 +139,8 @@ namespace gui::base
                 mouse_hover_child = hover;
             if (mouse_hover_child) return;
             
-            sys::mouse::cursor(mouse_image.now);
             on_mouse_hover(p); // every mouse_move
+            sys::mouse::cursor(mouse_image.now);
         }
 
         void mouse_leave ()

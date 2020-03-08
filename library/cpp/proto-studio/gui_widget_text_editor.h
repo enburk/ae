@@ -1,35 +1,11 @@
 #pragma once
+#include "gui_widget_text_aux.h"
 #include "gui_widget_text_model.h"
 #include "gui_widget_text_view.h"
 namespace gui::text
 {
     struct editor final : widget<editor>
     {
-        struct caret final : widget<caret>
-        {
-            canvas canvas;
-            property<time> timer;
-            binary_property<bool> insert_mode = true;
-            void on_change (void* what) override
-            {
-                if (timer.now == time())
-                    timer.go (time::infinity,
-                              time::infinity);
-
-                if (what == &coord && coord.now.size != coord.was.size
-                ||  what == &insert_mode) {
-                    XYWH r = coord.now.local();
-                    if (insert_mode.now) r.w = max (1, r.h/16);
-                    canvas.coord = r;
-                }
-                if (what == &timer) {
-                    int ms = time::now.ms % 1024;
-                    if (ms > 512) ms = 1024-ms-1;
-                    canvas.alpha = 255*ms/512;
-                }
-            }
-        };
-
         //doc::Document _document;
         //doc::Document* document = &_document;
         //

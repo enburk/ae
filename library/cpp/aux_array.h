@@ -141,10 +141,22 @@ namespace aux
         bool binary_found (const type & e) const { return std::binary_search (begin(), end(), e); }
 
         template<class Compare>
+        auto lower_bound (const type & e, Compare compare = std::less<>{}) const
+        {
+            return std::lower_bound(begin(), end(), e, compare);
+        }
+        template<class Compare>
+        auto upper_bound (const type & e, Compare compare = std::less<>{}) const
+        {
+            return std::upper_bound(begin(), end(), e, compare);
+        }
+        template<class Compare>
         range equal_range (const type & e, Compare compare = std::less<>{}) const
         {
             auto r = std::equal_range (begin(), end(), e, compare);
-            return range{this, (int)(r.first-begin()), (int)(r.second()-r.first())};
+            return range{this,
+                (int)(r.first-begin()),
+                (int)(r.second()-r.first())};
         }
 
         ////////////////////////////////////////////////////////////////////////

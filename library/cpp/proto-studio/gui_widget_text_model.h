@@ -136,7 +136,7 @@ namespace gui::text
 
         struct line
         {
-            array<sys::token> tokens;
+            //array<sys::token> tokens;
             XY metrics;
         };
         array<line> lines;

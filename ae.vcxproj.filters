@@ -120,9 +120,6 @@
     <ClInclude Include="library\cpp\proto-studio\gui_widget_image.h">
       <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\gui_widget_layout.h">
-      <Filter>gui</Filter>
-    </ClInclude>
     <ClInclude Include="library\cpp\proto-studio\gui_widget_scroller.h">
       <Filter>gui</Filter>
     </ClInclude>
@@ -151,6 +148,12 @@
       <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="library\cpp\proto-studio\gui_widget_list2D.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_text_lineditor.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_text_aux.h">
       <Filter>gui</Filter>
     </ClInclude>
   </ItemGroup>

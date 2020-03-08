@@ -87,6 +87,8 @@ struct GDI_CONTEXT
     }
 };
 
+///////////////////////////////////////////////////////////////////////////////
+
 struct cache_metrics_key
 {
     aux::str text; sys::font font; 
@@ -99,108 +101,69 @@ struct cache_metrics_key
 
 MAKE_HASHABLE(cache_metrics_key, t.text, t.font);
 
-struct cache_metrics_data { int ascent, descent, width, advance; };
-static cache_metrics_data cache_metrics (const sys::glyph & glyph)
-{
-    static std::unordered_map<cache_metrics_key, cache_metrics_data> cache;
-    cache_metrics_key key {glyph.text, glyph.style().font};
-    auto it = cache.find(key);
-    if (it == cache.end())
-    {
-        using namespace sys;
-        cache_metrics_data data;
-        static pix::image<RGBA> image;
-        GDI_CONTEXT context(glyph.style().font);
+static std::unordered_map<cache_metrics_key, sys::glyph_metrics> cache_metrics;
 
-        auto ss = winstr(glyph.text); size_t len = winstrlen(ss);
-
-        SIZE size; auto rc = ::GetTextExtentPoint32W (context.dc, ss.c_str(), (int)len, &size);
-        if (!rc) throw std::runtime_error ( "sys::font::render : GetTextExtentPoint32W fail" );
-
-        image.resize(XY(size.cx*4/2, size.cy));
-        image.fill(RGBA(0,0,0));
-
-        data.width = image.size.x;
-        data.advance = size.cx;
-        data.ascent = context.font.metrics.ascent;
-        data.descent = context.font.metrics.descent;
-
-        sys::glyph_style style;
-        style.font = key.font;
-        style.color = pix::black;
-        style.background = pix::white;
-
-        sys::glyph g;
-        g.text = glyph.text; 
-        g.ascent  = data.ascent;
-        g.descent = data.descent;
-        g.advance = data.advance;
-        g.size.x  = data.width;
-        g.size.y  = data.ascent + data.descent;
-        g.style_index = sys::style_index(style);
-        sys::render (g, image);
-
-        for (bool stop = false; !stop && data.width > 0; data.width--)
-            for (int y = 0; y < image.size.y; y++)
-                if (image(data.width-1, y) != style.background)
-                    { stop = true; break; }
-
-        if (data.width < data.advance) // could be 0 for spaces
-            data.width = data.advance; // for continuity of strike/under-lines
-        data.advance -= data.width; // the pen position increment = size.x + advance
-
-        it = cache.emplace (key, data).first;
-    }
-    return it->second;
-}
-
-sys::glyph::glyph (str text, sys::glyph_style style) : text(text), style_index(sys::style_index(style))
+sys::glyph::glyph (str text, sys::glyph_style_index style_index) : text(text), style_index(style_index)
 {
     if (text == "") return;
-    auto data = cache_metrics(*this);
-    ascent  = data.ascent;
-    descent = data.descent;
-    advance = data.advance;
-    size.x  = data.width;
-    size.y  = ascent + descent;
-}
+    auto style = this->style();
 
-sys::token::token (str text, sys::glyph_style style)
-{
-    this->text = text;
-    this->style_index = sys::style_index(style);
-
-    str t; text += "\n";
-    for (char c : text)
+    cache_metrics_key key {text, style.font};
+    auto it = cache_metrics.find(key);
+    if (it != cache_metrics.end()) glyph_metrics::operator = (it->second); else
     {
-        if (t.size () == 0
-        ||  t.size () == 1 && (static_cast<uint8_t>(t[0]) & 0b11000000) == 0b11000000 // UTF-8: 110xxxxx 10xxxxxx
-        ||  t.size () == 2 && (static_cast<uint8_t>(t[0]) & 0b11100000) == 0b11100000 // UTF-8: 1110xxxx 10xxxxxx 10xxxxxx
-        ||  t.size () == 3 && (static_cast<uint8_t>(t[0]) & 0b11110000) == 0b11110000 // UTF-8: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-        )   t += c; else { glyphs += glyph(t, style); t = c; }
-    }
-    ascent  = 0;
-    descent = 0;
-    advance = 0;
-    offsets.reserve(glyphs.size());
+        GDI_CONTEXT context(style.font);
 
-    for (auto & glyph : glyphs) {
-        ascent  = max(ascent,  glyph.ascent);
-        descent = max(descent, glyph.descent);
+        SIZE Size;
+        auto ss = winstr(text); size_t len = winstrlen(ss);
+        auto rc = ::GetTextExtentPoint32W (context.dc, ss.c_str(), (int)len, &Size);
+        if (!rc) throw std::runtime_error("sys::font::render : GetTextExtentPoint32W fail");
+
+        advance = Size.cx;
+        ascent  = context.font.metrics.ascent;
+        descent = context.font.metrics.descent;
+        width   = advance*2; // italics are wider
+
+        static pix::image<RGBA> image;
+        image.resize(XY(width, ascent+descent));
+        image.fill(pix::white);
+
+        sys::glyph_style simple_style;
+        simple_style.font = style.font;
+        simple_style.color = pix::black;
+        simple_style.background = pix::white;
+
+        sys::glyph simple_glyph = *this;
+        simple_glyph.style_index = sys::glyph_style_index(simple_style);
+        simple_glyph.render(image);
+
+        for (bool stop = false; !stop && width > 0; width--)
+            for (int y = 0; y < image.size.y; y++)
+                if (image(width-1, y) != simple_style.background)
+                    { stop = true; break; }
+
+        if (width < advance) // could be 0 for spaces
+            width = advance; // for continuity of strike/under-lines
+
+        advance -= width; // the pen position increment = width + advance
+
+        if (text == "\n") width = max(1, (ascent+descent)/16); // for text editor
+
+        cache_metrics.emplace (key, *this);
     }
-    for (auto & glyph : glyphs) {
-        offsets += XY(size.x + advance, ascent - glyph.ascent);
-        size.x = offsets.back().x + glyph.size.x;
-        advance = glyph.advance;
-    }
-    size.y = ascent + descent;
+
+    // adapt metrics for style.outline/undeline/shadow here
 }
 
-struct cache_glyph_key
-{
-    aux::str text; sys::font font; sys::RGBA fore, back;
+///////////////////////////////////////////////////////////////////////////////
 
-    bool operator == (const cache_glyph_key & k) const { return
+struct cache_glyphs_key
+{
+    aux::str  text;
+    sys::font font;
+    pix::RGBA fore, back;
+
+    bool operator == (const cache_glyphs_key & k) const { return
         text == k.text &&
         font == k.font &&
         fore == k.fore &&
@@ -208,21 +171,23 @@ struct cache_glyph_key
     }
 };
 
-MAKE_HASHABLE(cache_glyph_key, t.text, t.font, t.fore, t.back);
+MAKE_HASHABLE(cache_glyphs_key, t.text, t.font, t.fore, t.back);
 
-void sys::render (glyph glyph, pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x)
+void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x)
 {
-    auto style = glyph.style();
-
+    auto style = this->style();
     if (alpha == 0) return;
-    if (glyph.text == "") return;
-    if (glyph.text.contains_only(str::one_of(" \t\r\n"))
+    if (text == "") return;
+    if (text.contains_only(str::one_of(" \t\r\n"))
     &&  style.underline.color.a == 0
     &&  style.strikeout.color.a == 0
     &&  style.background     .a == 0) return;
 
-    int w = glyph.size.x; RGBA fore = style.color;
-    int h = glyph.size.y; RGBA back = style.background;
+    RGBA fore = style.color;
+    RGBA back = style.background;
+
+    int w = width;
+    int h = ascent + descent;
 
     if (frame.size.x <= 0 || offset.x >= w) return;
     if (frame.size.y <= 0 || offset.y >= h) return;
@@ -245,7 +210,7 @@ void sys::render (glyph glyph, pix::frame<RGBA> frame, XY offset, uint8_t alpha,
         if (ok) { solid_color_background = true; c.blend(back, alpha); back = c; }
     }
 
-    static std::unordered_map<cache_glyph_key, pix::image<RGBA>> cache;
+    static std::unordered_map<cache_glyphs_key, pix::image<RGBA>> cache;
 
     sys::glyph_style cacheable_style;
     cacheable_style.font = style.font;
@@ -253,13 +218,13 @@ void sys::render (glyph glyph, pix::frame<RGBA> frame, XY offset, uint8_t alpha,
     cacheable_style.background = style.background;
 
     bool cacheable =
+        text.size() <= 4 &&
         solid_color_background &&
-        glyph.text.size() <= 4 &&
         style == cacheable_style;
 
     if (cacheable)
     {
-        auto it = cache.find(cache_glyph_key{glyph.text, style.font, fore, back});
+        auto it = cache.find(cache_glyphs_key{text, style.font, fore, back});
         if (it != cache.end())
         {
             frame.blend_from(it->second, alpha);
@@ -284,7 +249,7 @@ void sys::render (glyph glyph, pix::frame<RGBA> frame, XY offset, uint8_t alpha,
     if    (!bmp) throw std::runtime_error ( "sys::font::render : CreateDIBSection fail" );
     HGDIOBJ old = ::SelectObject (context.dc, bmp);
 
-    auto ss = winstr(glyph.text); size_t len = winstrlen(ss);
+    auto ss = winstr(text); size_t len = winstrlen(ss);
 
     if (!solid_color_background)
     ::SetBkMode    (context.dc, TRANSPARENT); else
@@ -316,7 +281,7 @@ void sys::render (glyph glyph, pix::frame<RGBA> frame, XY offset, uint8_t alpha,
     {
         pix::image<RGBA> image (XY(w,h));
         image.crop().copy_from(view);
-        cache.emplace(cache_glyph_key{glyph.text, style.font, fore, back}, image);
+        cache.emplace(cache_glyphs_key{text, style.font, fore, back}, image);
     }
 
     ::SelectObject (context.dc, old);

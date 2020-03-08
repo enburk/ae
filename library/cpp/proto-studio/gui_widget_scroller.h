@@ -4,6 +4,12 @@
 #include "gui_widget_button.h"
 namespace gui
 {
+    enum class orientation { horizontal, vertical };
+    const orientation vertical = orientation::vertical;
+    const orientation horizontal = orientation::horizontal;
+    constexpr orientation operator ~ (orientation orientation)
+    { return orientation == horizontal ? vertical : horizontal; }
+
     template<orientation>
     struct scroller;template<>
     struct scroller<vertical>:

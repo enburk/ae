@@ -50,6 +50,9 @@ namespace sys
 
     namespace keyboard
     {
+        inline bool alt = false;
+        inline bool ctrl = false;
+        inline bool shift = false;
         namespace on
         {
             void focus (bool);
@@ -108,31 +111,33 @@ namespace sys
 
         bool operator != (const font & f) const { return ! (*this == f); }
         bool operator == (const font & f) const { return
-            face   == f.face &&
-            size   == f.size &&
-            bold   == f.bold &&
-            italic == f.italic; }
+             face   == f.face &&
+             size   == f.size &&
+             bold   == f.bold &&
+             italic == f.italic; }
 
         struct metrics
         {
-            int height;  // ascent + descent
-            int ascent;  // units above the base line
-            int descent; // units below the base line (positive value)
-            int linegap; // baseline-to-baseline distance = ascent + descent + linegap
-            int average_char_width; // usually the width of 'x'
-            int maximum_char_width;
-            int minimum_char_width;
+             int height;  // ascent + descent
+             int ascent;  // units above the base line
+             int descent; // units below the base line (positive value)
+             int linegap; // baseline-to-baseline distance = ascent + descent + linegap
+             int average_char_width; // usually the width of 'x'
+             int maximum_char_width;
+             int minimum_char_width;
         };
     };
+
+    font::metrics metrics (font);
 
     struct glyph_style
     {
         struct line { str style; int width = 0; RGBA color;
         bool operator != (const line & l) const { return ! (*this == l); }
         bool operator == (const line & l) const { return
-            style == l.style &&
-            width == l.width &&
-            color == l.color; }
+             style == l.style &&
+             width == l.width &&
+             color == l.color; }
         };
 
         font font;
@@ -144,60 +149,65 @@ namespace sys
 
         bool operator != (const glyph_style & s) const { return ! (*this == s); }
         bool operator == (const glyph_style & s) const { return
-            font      == s.font       &&
-            color     == s.color      &&
-            background== s.background &&
-            underline == s.underline  &&
-            strikeout == s.strikeout  &&
-            outline   == s.outline; }
+             font       == s.font       &&
+             color      == s.color      &&
+             background == s.background &&
+             underline  == s.underline  &&
+             strikeout  == s.strikeout  &&
+             outline    == s.outline; }
+    };
+
+    struct glyph_style_index
+    {
+        int value = 0;
+
+        bool operator != (glyph_style_index i) const { return value != i.value; }
+        bool operator == (glyph_style_index i) const { return value == i.value; }
+        bool operator <  (glyph_style_index i) const { return value <  i.value; }
+
+        static inline array<sys::glyph_style> glyph_styles = {};
+
+        glyph_style style () const { return glyph_styles[value]; }
+
+        explicit glyph_style_index () = default;
+        explicit glyph_style_index (const glyph_style & style) :
+            value ((int)(glyph_styles.find_or_emplace(style) -
+                         glyph_styles.begin())) {}
     };
 
     struct glyph_metrics
     {
-        XY  size;        // size.y = ascent + descent
-        int ascent  = 0; // units above the base line
-        int descent = 0; // units below the base line (positive value)
-        int advance = 0; // the pen position increment = size.x + advance
+        int  width   = 0; // units
+        int  ascent  = 0; // units above the base line
+        int  descent = 0; // units below the base line (positive value)
+        int  advance = 0; // the pen position increment = width + advance
+        XYWH outlines;    // boundaries of the actual image
 
         bool operator != (const glyph_metrics & m) const { return ! (*this == m); }
         bool operator == (const glyph_metrics & m) const { return
-            size    == m.size    &&
-            ascent  == m.ascent  &&
-            descent == m.descent &&
-            advance == m.advance; }
+             width   == m.width   &&
+             ascent  == m.ascent  &&
+             descent == m.descent &&
+             advance == m.advance; }
     };
-
-    inline array<sys::glyph_style> glyph_styles;
-    inline int style_index (const glyph_style & style) {
-        return (int)(glyph_styles.find_or_emplace(style) -
-                     glyph_styles.begin());
-    }
 
     struct glyph : glyph_metrics
     {
-        str text; int style_index;
+        str text; glyph_style_index style_index;
 
-        explicit glyph (str, glyph_style);
         explicit glyph () = default;
-
-        glyph_style style () const { return glyph_styles[style_index]; }
+        explicit glyph (str text, glyph_style_index);
+        explicit glyph (str text, glyph_style style):
+            glyph (text, glyph_style_index(style)) {}
 
         bool operator != (const glyph & g) const { return ! (*this == g); }
         bool operator == (const glyph & g) const { return text == g.text &&
             style_index == g.style_index; }
+
+        glyph_style style () const { return style_index.style(); }
+
+        void render (pix::frame<RGBA>, XY offset=XY(), uint8_t alpha=255, int x=0);
     };
-
-    struct token : glyph
-    {
-        array<glyph> glyphs; array<XY> offsets;
-
-        explicit token (str, glyph_style);
-        explicit token () = default;
-    };
-
-    font::metrics metrics (font);
-    void render (glyph, pix::frame<RGBA>, XY offset=XY(), uint8_t alpha=255, int x=0);
-    void render (token, pix::frame<RGBA>, XY offset=XY(), uint8_t alpha=255, int x=0);
 }
 namespace pix
 {

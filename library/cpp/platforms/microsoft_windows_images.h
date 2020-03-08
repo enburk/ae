@@ -268,6 +268,8 @@ Image* MakeImage (frame<RGBA> frame)
     return gdimage;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 #include <zlib.h>
 
 namespace aux

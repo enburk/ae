@@ -135,10 +135,6 @@ void sys::settings::save (str name, int value) {
 
 // https://blog.keyman.com/2008/06/robust-key-mess/
 
-static bool alt = false;
-static bool ctrl = false;
-static bool shift = false;
-
 static str wm_key (WPARAM wparam, LPARAM lparam, bool down)
 {
     str s;
@@ -169,21 +165,21 @@ static str wm_key (WPARAM wparam, LPARAM lparam, bool down)
     case VK_OEM_COMMA   : s = ","; break;
     case VK_OEM_PERIOD  : s = "."; break;
 
-    case VK_MENU    : alt   = down; break;
-    case VK_SHIFT   : shift = down; break;
-    case VK_CONTROL : ctrl  = down; break;
+    case VK_MENU    : sys::keyboard::alt   = down; break;
+    case VK_SHIFT   : sys::keyboard::shift = down; break;
+    case VK_CONTROL : sys::keyboard::ctrl  = down; break;
     }
     if (s == "") return "";
-    if (shift) s = "shift+" + s;
-    if (alt  ) s =   "alt+" + s;
-    if (ctrl ) s =  "ctrl+" + s;
+    if (sys::keyboard::shift) s = "shift+" + s;
+    if (sys::keyboard::alt  ) s =   "alt+" + s;
+    if (sys::keyboard::ctrl ) s =  "ctrl+" + s;
     return s;
 }
 static str wm_char (WPARAM wparam, LPARAM lparam)
 {
-    if (alt) return "";
-    if (ctrl) return "";
     if (wparam < 32) return "";
+    if (sys::keyboard::alt) return "";
+    if (sys::keyboard::ctrl) return "";
     std::wstring s; s += (wchar_t)wparam; return utf8(s);
 }
 

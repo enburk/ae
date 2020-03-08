@@ -4,54 +4,9 @@
 #include "doc_lexica_txt.h"
 #include "gui_widget.h"
 #include "gui_widgetarium.h"
-#include "gui_widget_layout.h"
+#include "gui_widget_text_aux.h"
 namespace gui::text
 {
-    struct glyph:
-    widget<glyph>
-    {
-        unary_property<sys::glyph> Glyph;
-
-        Opacity opacity () override { return semitransparent; }
-
-        void on_change (void* what) override { if (what != &Glyph) return;
-            advance = XY(Glyph.now.advance, 0);
-            baseline = XY(0, Glyph.now.ascent);
-            resize(Glyph.now.size);
-            update();
-        }
-        void on_render (pix::frame<RGBA> frame, XY offset, uint8_t alpha) override {
-            sys::render(Glyph.now, frame, offset, alpha, coord.now.x);
-        }
-    };
-
-    struct token:
-    widget<token>
-    {
-        doc::token doc_token;
-
-        unary_property<sys::token> Token;
-        
-        widgetarium<glyph> glyphs;
-
-        void on_change (void* what) override { if (what != &Token) return;
-            for (int i = 0; i < Token.now.glyphs.size(); i++) {
-                const auto & Glyph = Token.now.glyphs[i];
-                glyph & glyph = i < glyphs.size() ? glyphs(i) : glyphs.emplace_back();
-                glyph.Glyph = Glyph;
-                glyph.move_to(Token.now.offsets[i]);
-            }
-            glyphs.resize(Token.now.size);
-            resize(Token.now.size);
-        }
-    };
-
-    ///////////////////////////////////////////////////////////////////////
-    const int                   top    =-1,
-    justify_left =-2, left =-1, center = 0, right = 1, justify_right = 2,
-                                bottom = 1;
-    ///////////////////////////////////////////////////////////////////////
-
     struct line final : widgetarium<token>
     {
         struct row
@@ -87,27 +42,21 @@ namespace gui::text
                 sys::glyph_style style;
                 auto it = styles.find(t.kind);
                 style = it != styles.end() ? it->second : default_style;
+                auto style_index = sys::glyph_style_index(style);
 
-                auto& Token = token.Token.now;
-              //if (Token.text != t.text || Token.style() != style)
-                if (token.doc_token.text != t.text ||
-                    token.doc_token.kind != t.kind) {
-                    token.doc_token  = t;
-                    token.Token = sys::token(t.text, style);
-                }
-                token.doc_token.place = t.place;
+                token.fill(t.text, style_index);
 
                 if (rows.back().coord.size.x +
-                    rows.back().advance + Token.size.x > width)
+                    rows.back().advance + token.width > width)
                     rows += row();
 
                 auto & r = rows.back();
-                r.ascent  = max (r.ascent,  Token.ascent);
-                r.descent = max (r.descent, Token.descent);
+                r.ascent  = max (r.ascent,  token.ascent);
+                r.descent = max (r.descent, token.descent);
                 r.offsets += r.coord.size.x + r.advance;
-                r.advance = Token.advance;
+                r.advance = token.advance;
                 r.coord.size.y = max (r.coord.size.y, r.ascent + r.descent);
-                r.coord.size.x = r.offsets.back() + Token.size.x;
+                r.coord.size.x = r.offsets.back() + token.width;
             }
             int h = 0; for (auto & r : rows) { r.coord.y = h; h += r.coord.size.y; }
             int n = 0; for (auto & r : rows) {
@@ -132,7 +81,7 @@ namespace gui::text
                 token.move_to(XY(
                     r.coord.x + offset + shift,
                     r.coord.y + r.ascent -
-                    token.Token.now.ascent));
+                    token.ascent));
             }}
             truncate(n);
             resize(XY(width, h));

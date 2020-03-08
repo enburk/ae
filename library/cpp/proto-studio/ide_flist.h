@@ -2,6 +2,7 @@
 #include <filesystem>
 #include "gui_widget_canvas.h"
 #include "gui_widget_button.h"
+#include "gui_widget_text_lineditor.h"
 using namespace pix;
 
 struct Flist : gui::widget<Flist>

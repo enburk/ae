@@ -48,8 +48,8 @@ struct TestFont1 : gui::widget<TestFont1>
 
             for (char c : alnum) {
                 auto glyph = sys::glyph(str(c), style);
-                sys::render(glyph, image.crop(XYWH(x, y, glyph.size.x, glyph.size.y)), XY(), 230, x);
-                x += glyph.size.x + glyph.advance + gap;
+                glyph.render(image.crop(XYWH(x, y, glyph.width, glyph.ascent+glyph.descent)), XY(), 230, x);
+                x += glyph.width + glyph.advance + gap;
             }
         }
     }
@@ -96,8 +96,8 @@ struct TestFont2 : gui::widget<TestFont2>
 
             for (char c : s) {
                 auto glyph = sys::glyph(str(c), style);
-                sys::render(glyph, image.crop(XYWH(x, y, glyph.size.x, glyph.size.y)), XY(), 230, x);
-                x += glyph.size.x + glyph.advance;
+                glyph.render(image.crop(XYWH(x, y, glyph.width, glyph.ascent+glyph.descent)), XY(), 230, x);
+                x += glyph.width + glyph.advance;
             }
             x = gap; y += gap +
             sys::metrics(font).ascent  +
@@ -105,8 +105,8 @@ struct TestFont2 : gui::widget<TestFont2>
             sys::metrics(font).linegap;
             {
                 auto glyph = sys::glyph(s, style);
-                sys::render(glyph, image.crop(XYWH(x, y, glyph.size.x, glyph.size.y)), XY(), 230, x);
-                x += glyph.size.x + glyph.advance;
+                glyph.render(image.crop(XYWH(x, y, glyph.width, glyph.ascent+glyph.descent)), XY(), 230, x);
+                x += glyph.width + glyph.advance;
             }
         }
     }
@@ -115,7 +115,7 @@ struct TestFont2 : gui::widget<TestFont2>
 struct TestFont3 : gui::widget<TestFont3>
 {
     gui::text::glyph linea;
-    gui::text::token lineb;
+    gui::text::glyph lineb;
     gui::text::line  linec;
     gui::widgetarium<gui::text::line> lines;
     
@@ -141,11 +141,11 @@ struct TestFont3 : gui::widget<TestFont3>
         style.color.a = 230; // style.background = background;
         style.font = fonts[0];
 
-        linea.Glyph = sys::glyph(s, style);
+        linea.value = sys::glyph(s, style);
         linea.move_to(XY(x, y));
         y += linea.coord.now.size.y;
 
-        lineb.Token = sys::token(s, style);
+        lineb.value = sys::glyph(s, style);
         lineb.move_to(XY(x, y));
         y += lineb.coord.now.size.y;
 

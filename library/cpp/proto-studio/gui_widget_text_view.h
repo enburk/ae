@@ -7,9 +7,11 @@ namespace gui::text
     struct view final : widget<view>
     {
         canvas canvas; page page;
-
         unary_property<str> text;
         unary_property<str> html;
+        unary_property<doc::document> document;
+
+
         unary_property<array<doc::token>> tokens;
 
         property<RGBA> color;

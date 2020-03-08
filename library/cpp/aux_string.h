@@ -21,11 +21,11 @@ namespace aux
         str (const char *   f, const char *   l) { *this = std::string (f, l); }
 
         explicit str (array<char> text) { *this = std::string(text.data(), text.data()+text.size()); }
-        explicit str (array<str> lines) {
+        explicit str (array<str> lines, str delimiter = "\n") {
             for (auto line : lines) {
                 *this += line;
-                *this += '\n'; }
-            if (*this != "") pop_back();
+                *this += delimiter; }
+            truncate(size() - delimiter.size());
         }
 
         void operator += (      char   c) { std::string::operator+=(c); }
