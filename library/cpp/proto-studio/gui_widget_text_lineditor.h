@@ -78,31 +78,31 @@ namespace gui::text
 
         enum WHERE { THERE, GLYPH, TOKEN, BEGIN, END };
 
-        int symbol_kind (int i) {
+        char symbol_kind (int i) {
             auto & s = line.glyphs[i];
             return s.size() > 1 || 
                 ('0' <= s[0] && s[0] <= '9') ||
                 ('A' <= s[0] && s[0] <= 'Z') ||
-                ('a' <= s[0] && s[0] <= 'z') ? 0 :
-                s [0] == ' ' ? 1 : 2;
+                ('a' <= s[0] && s[0] <= 'z') ? 'A' :
+                s [0] == ' ' ? ' ' : '~';
         }
         void go_to_the_next_token ()
         {
-            int kind = symbol_kind(caret_upto);
+            auto kind = symbol_kind(caret_upto);
             while (caret_upto < line.glyphs.size()-1 &&
                 symbol_kind(caret_upto) == kind)
                 caret_upto++;
             while (caret_upto < line.glyphs.size()-1 &&
-                symbol_kind(caret_upto) == 1) // skip spaces
+                symbol_kind(caret_upto) == ' ')
                 caret_upto++;
         }
         void go_to_the_prev_token ()
         {
             int & i = caret_upto;
             int was = caret_upto;
-            int kind = symbol_kind(i);
-            while (i > 0 && symbol_kind(i-1) == kind) i--; if (i != was) return; if (i > 0) i--; kind = symbol_kind(i);
-            while (i > 0 && symbol_kind(i-1) == kind) i--; if (kind != 1) return; if (i > 0) i--; kind = symbol_kind(i);
+            auto kind = symbol_kind(i);
+            while (i > 0 && symbol_kind(i-1) == kind) i--; if (i    != was) return; if (i > 0) i--; kind = symbol_kind(i);
+            while (i > 0 && symbol_kind(i-1) == kind) i--; if (kind != ' ') return; if (i > 0) i--; kind = symbol_kind(i);
             while (i > 0 && symbol_kind(i-1) == kind) i--;
         }
 
@@ -190,7 +190,7 @@ namespace gui::text
                     {
                         go(-TOKEN); go(+TOKEN, true); // select token
                         while (caret_upto > 0 &&
-                            symbol_kind(caret_upto-1) == 1) // space
+                            symbol_kind(caret_upto-1) == ' ')
                             caret_upto--;
                         refresh();
                     }

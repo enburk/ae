@@ -32,6 +32,7 @@ namespace gui
 
             auto colors = style.normal;
 
+            // order important
             if (!enabled     .now) colors = style.disabled; else
             if (mouse_pressed.now) colors = style.touched; else
             if (enter_pressed.now) colors = style.touched; else
@@ -80,7 +81,7 @@ namespace gui
                 switch(kind) {
                 case normal: on = down; break;
                 case toggle: on = down || on.was != on.now; break;
-                case sticky: if (down) on = true; break;
+                case sticky: if (down) { on.now = false; on = true; }; break;
                 }
             }
             if (repeating) {

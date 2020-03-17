@@ -25,7 +25,7 @@ namespace aux
             for (auto line : lines) {
                 *this += line;
                 *this += delimiter; }
-            truncate(size() - delimiter.size());
+            if (size() > 0) truncate(size() - delimiter.size());
         }
 
         void operator += (      char   c) { std::string::operator+=(c); }
