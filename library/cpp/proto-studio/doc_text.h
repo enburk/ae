@@ -1,62 +1,7 @@
 #pragma once
-#include "../aux_array.h"
-#include "../aux_string.h"
+#include "doc.h"
 namespace doc
 {
-    using namespace aux;
-
-    using glyph = str;
-
-    struct text
-    {
-        array<array<glyph>> lines;
-
-        explicit text (str s = "")
-        {
-            lines.reserve(s.size()/80);
-            for (str & line : s.split_by("\n"))
-            {
-                lines += array<glyph>();
-                auto check = [&line](auto i){ if (i == line.end())
-                throw std::runtime_error("doc::text: broken UTF-8"); };
-                for (auto i = line.begin(); i != line.end(); )
-                {
-                    char c = *i++; glyph g = c;
-                    uint8_t u = static_cast<uint8_t>(c);
-                    if ((u & 0b11000000) == 0b11000000) { check(i); g += *i++; // 110xxxxx 10xxxxxx
-                    if ((u & 0b11100000) == 0b11100000) { check(i); g += *i++; // 1110xxxx 10xxxxxx 10xxxxxx
-                    if ((u & 0b11110000) == 0b11110000) { check(i); g += *i++; // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-                    }}}
-                    lines.back() += g;
-                }
-            }
-        }
-        str string ()
-        {
-            str s;
-            for (const auto & line : lines)
-            {
-                for (const glyph & g : line) s += g; s += '\n';
-            }
-            if (s != "") s.pop_back();
-            return s;
-        }
-    };
-
-    struct place
-    {
-        int line = 0, offset = 0; // bool operator <=> (place p) const = default;
-        bool operator == (place p) const { return line == p.line && offset == p.offset; }
-        bool operator != (place p) const { return line != p.line || offset != p.offset; }
-        bool operator <= (place p) const { return line <  p.line || offset <= p.offset && line == p.line; }
-        bool operator <  (place p) const { return line <  p.line || offset <  p.offset && line == p.line; }
-        bool operator >= (place p) const { return line >  p.line || offset >= p.offset && line == p.line; }
-        bool operator >  (place p) const { return line >  p.line || offset >  p.offset && line == p.line; }
-    };
-
-    struct range { place from, upto; bool empty () const { return from == upto; } };
-
-
 
     struct text_ // with the 'virtual space' support
     {

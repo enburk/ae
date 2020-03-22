@@ -1,12 +1,27 @@
 #pragma once
 #include "../sys.h"
 #include "doc.h"
-#include "doc_lexica_txt.h"
 #include "gui_widget.h"
 #include "gui_widgetarium.h"
 #include "gui_widget_text_aux.h"
 namespace gui::text
 {
+    struct format
+    {
+        int width  = max<int>();
+        int height = max<int>();
+
+        XY alignment = XY{center, center};
+
+        bool word_wrap = true;
+        bool ellipsis = true;
+
+        struct limits { int margin = 0; XY obstacle; };
+        limits left, right;
+    };
+
+    struct lexeme { str text; sys::glyph_style_index style; };
+
     struct line final : widgetarium<token>
     {
         struct row
@@ -19,11 +34,10 @@ namespace gui::text
         };
         array<row> rows;
 
-        void fill (str text, sys::glyph_style style) {
-             std::map<str, sys::glyph_style> styles;
-             array<doc::token> tokens = doc::lexica::txt(text);
-             fill (max<int>(), left, false, tokens.whole(), styles, style);
+        void fill (array<lexeme>::range lexemes, format format)
+        {
         }
+
         void fill (
             int width,
             int align,

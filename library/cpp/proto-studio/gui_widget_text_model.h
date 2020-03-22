@@ -16,55 +16,55 @@ namespace gui::text
         array<array<caret>> redoes;
 
         void undo () { 
-            if (undoes.size() == 0) return;
-            auto undo = undoes.back(); undoes.pop_back();
-            for (int i=0; i<undoes.size(); i++) document->text.undo();
-            redoes += undo;
+//            if (undoes.size() == 0) return;
+//            auto undo = undoes.back(); undoes.pop_back();
+//            for (int i=0; i<undoes.size(); i++) document->text.undo();
+//            redoes += undo;
         }
         void redo () {
-            if (redoes.size() == 0) return;
-            auto redo = redoes.back(); redoes.pop_back();
-            for (int i=0; i<redoes.size(); i++) document->text.redo();
-            undoes += redo;
+//            if (redoes.size() == 0) return;
+//            auto redo = redoes.back(); redoes.pop_back();
+//            for (int i=0; i<redoes.size(); i++) document->text.redo();
+//            undoes += redo;
         }
 
         void insert (str text, bool insert_mode)
         {
-            redoes.clear();
-            undoes += carets;
-
-            for (int i=0; i<carets.size(); i++)
-            {
-                doc::text::replace replace;
-                replace.range = carets[i];
-                ///text.parse("\n", replace.text, text);
-                if (text == "") text = replace.text;
-
-                if (!insert_mode &&
-                    replace.range.empty())
-                    replace.range.upto.offset++;
-
-                auto range = document->text.perform(replace);
-
-                for (int j=i+1; j<carets.size(); j++)
-                {
-                    carets[j].from.line += range.upto.line - range.from.line;
-                    carets[j].upto.line += range.upto.line - range.from.line;
-                }
-                carets[i].from = range.upto;
-                carets[i].upto = range.upto;
-            }
+//            redoes.clear();
+//            undoes += carets;
+//
+//            for (int i=0; i<carets.size(); i++)
+//            {
+//                doc::text::replace replace;
+//                replace.range = carets[i];
+//                ///text.parse("\n", replace.text, text);
+//                if (text == "") text = replace.text;
+//
+//                if (!insert_mode &&
+//                    replace.range.empty())
+//                    replace.range.upto.offset++;
+//
+//                auto range = document->text.perform(replace);
+//
+//                for (int j=i+1; j<carets.size(); j++)
+//                {
+//                    carets[j].from.line += range.upto.line - range.from.line;
+//                    carets[j].upto.line += range.upto.line - range.from.line;
+//                }
+//                carets[i].from = range.upto;
+//                carets[i].upto = range.upto;
+//            }
         }
 
         str selection ()
         {
             str s;
-            for (auto & caret : carets) {
-                s += document->text.fragment(caret);
-                s += "\n";
-            }
-            s.truncate();
-            if (s.contains_only("\n")) s = "";
+//            for (auto & caret : carets) {
+//                s += document->text.fragment(caret);
+//                s += "\n";
+//            }
+//            s.truncate();
+//            if (s.contains_only("\n")) s = "";
             return s;
         }
 

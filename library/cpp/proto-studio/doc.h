@@ -1,9 +1,29 @@
 #pragma once
 #include <cassert>
 #include "../aux_string.h"
+#include "../aux_utils.h"
 namespace doc
 {
     using namespace aux;
+
+    using glyph = str;
+
+    struct text
+    {
+        array<array<glyph>> lines;
+
+        explicit text (str s = "") {
+            lines.reserve(s.size()/80);
+            for (str line : s.split_by("\n"))
+                lines += unicode::glyphs(line);
+        }
+        str string () const {
+            str s; for (const auto & line : lines)
+                s += str(line, "") + "\n";
+            if (s != "") s.pop_back();
+            return s;
+        }
+    };
 
     struct place
     {
@@ -16,11 +36,38 @@ namespace doc
         bool operator >  (place p) const { return line >  p.line || offset >  p.offset && line == p.line; }
     };
 
-    struct range { place from, upto; bool empty () const { return from == upto; } };
+    struct range
+    {
+        place from, upto;
+        bool empty () const { return from == upto; }
+        bool operator == (range r) const { return from == r.from && upto == r.upto; }
+        bool operator != (range r) const { return from != r.from || upto != r.upto; }
+    };
 
-    struct glyph { str text; };
+    struct token
+    {
+        str text, kind; range range;
+        void operator += (const glyph & g) { text += g; range.upto.offset++; }
+        bool operator != (const token & t) const { return !(*this == t); }
+        bool operator == (const token & t) const { return
+            text  == t.text &&
+            kind  == t.kind &&
+            range == t.range;
+        }
+    };
 
-    struct text
+    struct entity
+    {
+        str name, kind, info;
+        std::map<str,str> attr;
+        array<token> head;
+        array<entity> body;
+        array<token> tail;
+    };
+
+
+
+    struct editorial
     {
         array<array<glyph>> lines = {array<glyph>{glyph{"\n"}}};
 
@@ -42,24 +89,13 @@ namespace doc
             assert(range.upto.offset <= lines[range.upto.line].size());
             for (place place = range.from; place < range.upto; )
             {
-                s += lines[place.line][place.offset++].text;
+                s += lines[place.line][place.offset++];
                 if (place.offset == lines[place.line].size()) {
                     place.offset = 0;
                     place.line++;
                 }
             }
             return s;
-        }
-    };
-
-    struct token
-    {
-        str text, kind; place place; // bool operator == (token t) const = default;
-        bool operator != (const token & t) const { return !(*this == t); }
-        bool operator == (const token & t) const { return
-            text  == t.text &&
-            kind  == t.kind &&
-            place == t.place;
         }
     };
 
@@ -76,8 +112,6 @@ namespace doc
     };
 
     struct caret { place position, selection; };
-
-    struct entity { str kind, name; array<token> head, tail; array<entity> body; };
 
     struct Document
     {

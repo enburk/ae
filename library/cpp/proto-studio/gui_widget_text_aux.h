@@ -47,7 +47,6 @@ namespace gui::text
             }
             resize(XY(width, ascent + descent));
         }
-
         array<str> glyphs;
     };
 

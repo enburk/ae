@@ -149,9 +149,9 @@ struct TestFont3 : gui::widget<TestFont3>
         lineb.move_to(XY(x, y));
         y += lineb.coord.now.size.y;
 
-        linec.fill(s, style);
-        linec.move_to(XY(x, y));
-        y += linec.coord.now.size.y;
+//        linec.fill(s, style);
+//        linec.move_to(XY(x, y));
+//        y += linec.coord.now.size.y;
 
         for (auto font : fonts)
         for (int r=0; r<4; r++)

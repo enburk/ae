@@ -40,8 +40,8 @@ namespace gui::text
 
         void refresh ()
         {
-            str s;
-            text.now.split_by("\n", text.now, s);
+            str junk;
+            text.now.split_by("\n", text.now, junk);
             line.fill(text.now + "\n", style_index);
 
             caret_from = aux::clamp(caret_from, 0, line.size()-1);
@@ -264,18 +264,18 @@ namespace gui::text
             if (key == "shift+home") go(BEGIN, true); else
             if (key == "shift+end" ) go(END,   true); else
 
-            if (key == "insert"           ) { caret.insert_mode = !caret.insert_mode.now; } else
-            if (key == "shift+insert"     ) { insert(sys::clipboard::get::string()); } else
-            if (key == "ctrl+insert"      ) { sys::clipboard::set(selected()); } else
+            if (key == "insert"      ) { caret.insert_mode = !caret.insert_mode.now; } else
+            if (key == "shift+insert") { insert(sys::clipboard::get::string()); } else
+            if (key == "ctrl+insert" ) { sys::clipboard::set(selected()); } else
 
-            if (key == "delete"           ) { erase(); } else
-            if (key == "shift+delete"     ) { sys::clipboard::set(selected()); erase(); } else
+            if (key == "delete"      ) { erase(); } else
+            if (key == "shift+delete") { sys::clipboard::set(selected()); erase(); } else
 
-            if (key == "backspace"        ) { backspace(); } else
-            if (key == "alt+backspace"    ) { undo(); refresh(); } else
-            if (key == "ctrl+backspace"   ) { redo(); refresh(); } else // != VS
+            if (key == "backspace"     ) { backspace(); } else
+            if (key == "alt+backspace" ) { undo(); refresh(); } else
+            if (key == "ctrl+backspace") { redo(); refresh(); } else // != VS
 
-            if (key == "escape"           ) { go(THERE); } else
+            if (key == "escape") { go(THERE); } else
             {}
         }
         void on_keyboard_input (str symbol) override

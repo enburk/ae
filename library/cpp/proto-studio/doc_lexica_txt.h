@@ -1,56 +1,51 @@
 #pragma once
 #include "doc.h"
-#include "doc_lexica.h"
-namespace doc::lexica
+namespace doc::lexica::txt
 {
-    /*
-/// template<class I,
-/// std::enable_if_t<std::is_same_v<typename
-/// std::iterator_traits<I>::value_type, char>>>
-/// inline array<Token> txt (range<I> text)
-    inline array<token> txt (range<char> text)
+    inline array<token> parse (const text & text)
     {
-        array<token> output; token t; t.kind = "space";
+        array<token> tokens; token t;
 
-        for (auto [c, n] : text + '\n')
+        for (auto [line, n] : text.lines.whole())
         {
-            bool same_kind = true;
-
-            if (c      == '\n'   ) same_kind = false; else
-            if (t.text == "\n"   ) same_kind = false; else
-            if (t.kind == "text" ) same_kind =!space (c); else
-            if (t.kind == "space") same_kind = space (c);
-
-            if (same_kind) t.text += c; else
+            for (auto [glyph, offset] : line.whole())
             {
-                if (t.text != "")
-                    output += t;
+                if (glyph == " ")
+                {
+                    if (t.text != "") tokens += t;
 
-                t.text = c;
-                t.kind = c == '\n' ? "eoln" : space (c) ? "space" : "text";
-                //t.place.line = n;
-                //t.place.offset = n;
+                    tokens += token {" ", "", range{
+                        {n, offset},
+                        {n, offset+1}}
+                    };
+
+                    t = token {"", "", range{
+                        {n, offset+1},
+                        {n, offset+1}}
+                    };
+                }
+                else
+                {
+                    t += glyph;
+                }
+            }
+
+            if (t.text != "") tokens += t;
+
+            if (n != text.lines.size()-1)
+            {
+                tokens += token {"\n", "", range{
+                    {n, line.size()},
+                    {n, line.size()}}
+                };
+
+                t = token {"", "", range{
+                    {n+1, 0},
+                    {n+1, 0}}
+                };
             }
         }
 
-        return output;
+        return tokens;
     }
-
-    inline array<token> txt (str text)
-    {
-        return txt (array<char>(text.begin(), text.end()).range());
-    }
-    */
-    inline array<token> txt (str text)
-    {
-        auto ss = text.split_by("\n");
-        array<token> tt;
-        for (auto s : ss) tt += token{s};
-        return tt;
-    }
-}
-
-namespace doc::html
-{
-    inline str encoded (str text) { return text; }
 }

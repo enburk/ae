@@ -1,5 +1,6 @@
 #pragma once
 #include "doc_lexica_txt.h"
+#include "doc_syntax_html.h"
 #include "gui_widget_text_page.h"
 #include "gui_widget_canvas.h"
 namespace gui::text
@@ -47,13 +48,21 @@ namespace gui::text
             if (what == &text)
             {
                 styles.clear();
-                tokens = doc::lexica::txt(text.now);
+                tokens = doc::lexica::txt::parse(doc::text(text.now));
                 html.now = ""; for (const auto & token : tokens.now)
-                html.now += doc::html::encoded(token.text);
+                html.now += doc::lexica::html::encoded(token.text);
 
             }
             if (what == &html)
             {
+                alignment = XY(left, top);
+                tokens = 
+                    doc::syntax::html::print(
+                    doc::syntax::html::combine(
+                    doc::syntax::html::parse(
+                    doc::lexica::html::parse(doc::text(html.now)))));
+                text.now = ""; for (const auto & token : tokens.now)
+                text.now += token.text;
             //  page.clear();
             //  text.was = text.now;
             //  for (auto && token : browser(

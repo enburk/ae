@@ -51,13 +51,7 @@
     <ClInclude Include="library\cpp\sys.h">
       <Filter>aux</Filter>
     </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\aux_array.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
     <ClInclude Include="library\cpp\proto-studio\doc.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_lexica.h">
       <Filter>proto-studio</Filter>
     </ClInclude>
     <ClInclude Include="library\cpp\proto-studio\doc_lexica_cpp.h">
@@ -155,6 +149,9 @@
     </ClInclude>
     <ClInclude Include="library\cpp\proto-studio\gui_widget_text_aux.h">
       <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc_syntax_html.h">
+      <Filter>proto-studio</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

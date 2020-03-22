@@ -73,6 +73,16 @@ namespace aux
         }
     };
 
+    template<class type> struct deque : public std::deque<type>
+    {
+        using base = std::deque<type>;
+
+        int size () const { return (int) base::size(); }
+
+        void operator += (const type  & e) { base::push_back(e); }
+        void operator += (const deque & a) { base::insert(base::end(), a.begin(), a.end()); }
+    };
+
     // C++ Core Guidelines C.21:
     // If you define or delete any default operation,
     // define or delete them all
