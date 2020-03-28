@@ -60,6 +60,7 @@
     </ClCompile>
     <ClCompile Include="test_aux_array.cpp" />
     <ClCompile Include="test_aux_string.cpp" />
+    <ClCompile Include="test_aux_vector.cpp" />
     <ClCompile Include="test_doc_text.cpp" />
     <ClCompile Include="test_gui_effect.cpp" />
     <ClCompile Include="test_gui_widget.cpp" />

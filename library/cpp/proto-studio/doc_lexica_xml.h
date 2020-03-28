@@ -123,14 +123,14 @@ namespace doc::lexica::html
         return text;
     }
 
-    inline array<token> untagged (const text & text)
+    inline str untagged (str & text)
     {
-        array<token> output;
+        str output;
 
-        for (token t : parse(text))
+        for (token t : parse(doc::text(text)))
         {
-            if (t.text == "<br>") output += token{"\n"}; else
-            if (t.kind != "tag" ) output += t;
+            if (t.text == "<br>") output += "\n"; else
+            if (t.kind != "tag" ) output += t.text;
         }
 
         return output;

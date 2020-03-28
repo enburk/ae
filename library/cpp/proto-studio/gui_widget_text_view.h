@@ -1,7 +1,6 @@
 #pragma once
-#include "doc_lexica_txt.h"
-#include "doc_syntax_html.h"
 #include "gui_widget_text_page.h"
+#include "gui_widget_text_model.h"
 #include "gui_widget_canvas.h"
 namespace gui::text
 {
@@ -10,30 +9,27 @@ namespace gui::text
         canvas canvas; page page;
         unary_property<str> text;
         unary_property<str> html;
-        unary_property<doc::document> document;
-
-
-        unary_property<array<doc::token>> tokens;
 
         property<RGBA> color;
         binary_property<sys::font> font;
-        binary_property<sys::glyph_style> style;
+        binary_property<glyph_style> style;
         binary_property<bool> word_wrap = true;
         binary_property<XY> alignment = XY{center, center};
         binary_property<XY> shift;
 
-        std::map<str, sys::glyph_style> styles;
+        htmlmodel model; array<doc::entity> entities;
 
         view () { on_change(&skin); }
 
         void refresh ()
         {
-            page.fill (
-                coord.now.size.x,
-                alignment.now.x,
-                word_wrap.now,
-                tokens.now, styles, style.now);
+            format format;
+            format.width = coord.now.size.x;
+            format.alignment = alignment.now;
+            format.word_wrap = word_wrap.now;
 
+            model = htmlmodel(entities, glyph_style_index(style.now), format);
+            page.fill (model.sections);
             page.move_to(XY(
                 shift.now.x,
                 shift.now.y + (
@@ -44,32 +40,26 @@ namespace gui::text
 
         void on_change (void* what) override
         {
-            if (what == &tokens) { refresh(); }
+            if (what == &coord && coord.was.size != coord.now.size)
+            {
+                canvas.coord = coord.now.local();
+                refresh();
+            }
             if (what == &text)
             {
-                styles.clear();
-                tokens = doc::lexica::txt::parse(doc::text(text.now));
-                html.now = ""; for (const auto & token : tokens.now)
-                html.now += doc::lexica::html::encoded(token.text);
-
+                entities.clear();
+                entities += doc::entity{"", "text", ""};
+                entities.back().head = doc::lexica::txt::parse(doc::text(text.now));
+                html.now = doc::lexica::html::encoded(text.now);
+                refresh();
             }
             if (what == &html)
             {
-                alignment = XY(left, top);
-                tokens = 
-                    doc::syntax::html::print(
-                    doc::syntax::html::combine(
-                    doc::syntax::html::parse(
-                    doc::lexica::html::parse(doc::text(html.now)))));
-                text.now = ""; for (const auto & token : tokens.now)
-                text.now += token.text;
-            //  page.clear();
-            //  text.was = text.now;
-            //  for (auto && token : browser(
-            //      doc::translator::html(html))) {
-            //      text.now += token.text;
-            //      page.append(token);
-            //  }
+                text.now = doc::lexica::html::untagged(html.now);
+                entities = doc::syntax::html::combine(
+                           doc::syntax::html::parse(
+                           doc::lexica::html::parse(doc::text(html.now))));
+                refresh();
             }
             if (what == &skin)
             {
@@ -78,11 +68,6 @@ namespace gui::text
                     skins[skin.now].font,
                     skins[skin.now].normal.fore_color
                 };
-            }
-            if (what == &coord && coord.was.size != coord.now.size)
-            {
-                canvas.coord = coord.now.local();
-                refresh();
             }
             if (what == &font)
             {
@@ -105,10 +90,18 @@ namespace gui::text
                 refresh();
             }
             if (what == &word_wrap
-            ||  what == &alignment
-            ||  what == &shift)
+            ||  what == &alignment)
             {
                 refresh();
+            }
+            if (what == &shift)
+            {
+                page.move_to(XY(
+                    shift.now.x,
+                    shift.now.y + (
+                    alignment.now.y == center ? coord.now.size.y/2 - page.coord.now.size.y/2 :
+                    alignment.now.y == bottom ? coord.now.size.y   - page.coord.now.size.y   :
+                    0)));
             }
         }
 

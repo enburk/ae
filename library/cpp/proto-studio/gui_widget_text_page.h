@@ -6,145 +6,253 @@
 #include "gui_widget_text_aux.h"
 namespace gui::text
 {
-    struct format
+    struct token final : widgetarium<glyph>, glyph_metrics
     {
-        int width  = max<int>();
-        int height = max<int>();
+        struct data { str text; glyph_style_index style; };
 
-        XY alignment = XY{center, center};
+        str text; glyph_style_index style; void fill (
+        str text, glyph_style_index style)
+        {
+            if (this->text == text && this->style == style) return;
+                this->text =  text;   this->style =  style;
 
-        bool word_wrap = true;
-        bool ellipsis = true;
+            width = ascent = descent = advance = 0;
 
-        struct limits { int margin = 0; XY obstacle; };
-        limits left, right;
+            glyphs = unicode::glyphs(text);
+            for (int i=0; i<glyphs.size(); i++)
+            {
+                glyph & glyph = i < size() ? (*this)(i) : emplace_back();
+                glyph.value = sys::glyph(glyphs[i], style);
+                ascent  = max(ascent,  glyph.value.now.ascent);
+                descent = max(descent, glyph.value.now.descent);
+            }
+            truncate(glyphs.size());
+            for (auto & glyph : *this)
+            {
+                glyph.move_to(XY(width + advance, ascent - glyph.value.now.ascent));
+                width  += advance + glyph.value.now.width;
+                advance = glyph.value.now.advance;
+            }
+            resize(XY(width, ascent + descent));
+        }
+        array<str> glyphs;
     };
 
-    struct lexeme { str text; sys::glyph_style_index style; };
-
-    struct line final : widgetarium<token>
+    ///////////////////////////////////////////////////////////////////////
+            
+    struct row : glyph_metrics
     {
-        struct row
-        {
-            XYWH coord;
-            int ascent  = 0;
-            int descent = 0;
-            int advance = 0;
-            array<int> offsets;
-        };
-        array<row> rows;
+        format format;
+        array<int> offsets;
+        bool the_last_row = true;
 
-        void fill (array<lexeme>::range lexemes, format format)
+        bool add (token & token)
         {
+            int Width =
+                format.width -
+                format.margin_left.x -
+                format.margin_right.x; 
+
+            if (format.word_wrap
+            &&  Width < width + advance + token.width
+            &&  offsets.size() > 0) // at least one should be accepted
+            {
+                the_last_row = false;
+                return false;
+            }
+
+            ascent  = max (ascent,  token.ascent);
+            descent = max (descent, token.descent);
+            offsets += width + advance;
+            width = offsets.back() + token.width;
+            advance = token.advance;
+            outlines.size.y = ascent + descent;
+            outlines.size.x = token.text == " " || token.text == "\n" ?
+            outlines.size.x : width;
+            return true;
         }
 
-        void fill (
-            int width,
-            int align,
-            bool word_wrap,
-            array<doc::token>::range tokens,
-            const std::map<str, sys::glyph_style> & styles,
-            const sys::glyph_style & default_style)
+        void align ()
         {
-            rows.clear(); if (width == 0) { resize(XY()); return; }
-            rows += row();
+            int align = format.alignment.x;
+            int width = outlines.size.x;
+            int Width =
+                format.width -
+                format.margin_left.x -
+                format.margin_right.x;
 
-            for(auto [t, n] : tokens)
-            {
-                token & token = n < size() ? (*this)(n) : emplace_back();
+            outlines.x = format.margin_left.x;
 
-                sys::glyph_style style;
-                auto it = styles.find(t.kind);
-                style = it != styles.end() ? it->second : default_style;
-                auto style_index = sys::glyph_style_index(style);
-
-                token.fill(t.text, style_index);
-
-                if (rows.back().coord.size.x +
-                    rows.back().advance + token.width > width)
-                    rows += row();
-
-                auto & r = rows.back();
-                r.ascent  = max (r.ascent,  token.ascent);
-                r.descent = max (r.descent, token.descent);
-                r.offsets += r.coord.size.x + r.advance;
-                r.advance = token.advance;
-                r.coord.size.y = max (r.coord.size.y, r.ascent + r.descent);
-                r.coord.size.x = r.offsets.back() + token.width;
+            if (align == left || align == justify_left && the_last_row) {
+                return;
             }
-            int h = 0; for (auto & r : rows) { r.coord.y = h; h += r.coord.size.y; }
-            int n = 0; for (auto & r : rows) {
-            int c = 0; for (int offset : r.offsets)
-            {
-                int shift = 0;
-                switch (align) {
-                case left  : break;
-                case center: shift = width/2 - r.coord.size.x/2; break;
-                case right : shift = width -   r.coord.size.x; break;
-                case justify_left: case justify_right:
-                    shift = width / r.offsets.size() +
-                            width % r.offsets.size() * c; break;
-                }
-                c++;
-                if (c == rows.size()) {
-                    if (align == justify_left) shift = 0; else
-                    if (align == justify_right) shift = width - r.coord.size.x;
-                }
 
-                token & token = (*this)(n++);
-                token.move_to(XY(
-                    r.coord.x + offset + shift,
-                    r.coord.y + r.ascent -
-                    token.ascent));
-            }}
-            truncate(n);
-            resize(XY(width, h));
+            if (align == center && Width > width) {
+                outlines.x += Width/2 - width/2;
+                return;
+            }
+
+            if (align == right || align == justify_right && the_last_row) {
+                outlines.x += Width - width;
+                return;
+            }
+
+            outlines.size.x = Width;
+
+            int n = offsets.size();
+            if (n < 1) return;
+            if (n < 2) return; //  t o k e n
+
+            int d = (Width - width) / (n-1);
+            int e = (Width - width) % (n-1);
+
+            for (int i=0; i<n; i++) offsets[i] += d*i + (i >= n-e ? 1 : 0);
         }
     };
 
     ///////////////////////////////////////////////////////////////////////
             
-    struct page final : widgetarium<line>
+    struct line final : widgetarium<token>
     {
-        void fill (
-            int width,
-            int align,
-            bool word_wrap,
-            const array<doc::token> & tokens,
-            const std::map<str, sys::glyph_style> & styles,
-            const sys::glyph_style & default_style)
+        array<row> rows;
+
+        void fill (array<token::data>::range lexemes, format format)
         {
-            if (width == 0) return;
-            int l = 0;
-            /*
-            for (auto i = tokens.begin(); i != tokens.end(); ) {
-                 auto j = std::find_if(i, tokens.end(), [](auto t){ return t.text == "\n"; });
-                 if (j != tokens.end()) j++;
-                 if (l >= size()) emplace_back();
-                 (*this)(l++).fill(
-                     width, align, word_wrap,
-                     array<doc::token>(i, j).whole(),
-                     styles, default_style);
-                 i = j;
+            rows.clear();
+
+            if (format.width  <= 0) { resize(XY()); return; }
+            if (format.height <= 0) { resize(XY()); return; }
+
+            if (format.width == max<int>() && format.alignment.x != left)
+                throw std::out_of_range("text::line: format impossible");
+
+            int total = 0; int height = 0;
+
+            for(auto [lexeme, n] : lexemes)
+            {
+                token & token = n < size() ? (*this)(n) : emplace_back();
+                token.fill(lexeme.text, lexeme.style);
+
+                if (rows.size() == 0 || !rows.back().add(token))
+                {
+                    if (rows.size() != 0)
+                    {
+                        int h =                         
+                        rows.back().ascent +
+                        rows.back().descent;
+                        if (height + h >= format.height) break;
+                        height += h;
+
+                        format.height         = max (0, format.height         - h);
+                        format.margin_left.y  = max (0, format.margin_left.y  - h);
+                        format.margin_right.y = max (0, format.margin_right.y - h);
+                    }
+
+                    rows += row{};
+                    rows.back().format = format;
+                    rows.back().outlines.y = height;
+                    rows.back().add(token); // at least one should be accepted
+                }
+
+                total++;
             }
-            */
-            for (auto i = tokens.begin(); i != tokens.end(); ) {
-                 auto j = std::find_if(i, tokens.end(), [](auto t){ return t.text == "\n"; });
-                 if (j != tokens.end()) j++;
-                 if (l >= size()) emplace_back();
-                 (*this)(l++).fill(
-                     width, align, word_wrap,
-                     array<doc::token>(std::vector<doc::token>(i, j)).whole(),
-                     styles, default_style);
-                 i = j;
+
+            if (rows.size() != 0) height +=
+                rows.back().ascent +
+                rows.back().descent;
+
+            truncate(total);
+
+            int t = 0;
+
+            int width = 0;
+
+            for (auto & row : rows)
+            {
+                row.align();
+
+                for (auto offset : row.offsets)
+                {
+                    token & token = (*this)(t++);
+                    token.move_to(XY(
+                        row.outlines.x + offset,
+                        row.outlines.y + row.ascent - token.ascent));
+
+                    width = max (width, row.outlines.x + row.outlines.w);
+                }
             }
-            truncate(l);
-            int h = 0;
-            for (auto & line : *this) {
-                line.move_to(XY(0, h));
-                h += line.coord.now.size.y;
-            }
-            resize(XY(width,h));
+
+            resize(XY(width, height));
         }
+    };
+
+    ///////////////////////////////////////////////////////////////////////
+            
+    struct section final : widgetarium<line>
+    {
+        struct data { format format; array<token::data> tokens; };
+
+        void fill (data data)
+        {
+            auto & format = data.format;
+            auto & tokens = data.tokens;
+
+            int lines = 0; int width = 0; int height = 0;
+
+            for (auto i = tokens.begin(); i != tokens.end(); )
+            {
+                auto j = std::find_if(i, tokens.end(),
+                [](auto token){ return token.text == "\n"; });
+                if (j != tokens.end()) j++;
+
+                line & line = lines < size() ? (*this)(lines) : emplace_back();
+                line.fill(tokens
+                    .from((int)(i - tokens.begin()))
+                    .upto((int)(j - tokens.begin()))
+                    , format);
+                line.move_to(XY(0, height));
+                lines++;
+
+                int w = line.coord.now.size.x;  width = max(width, w);
+                int h = line.coord.now.size.y;  height += h; 
+
+                format.height         = max (0, format.height         - h);
+                format.margin_left.y  = max (0, format.margin_left.y  - h);
+                format.margin_right.y = max (0, format.margin_right.y - h);
+
+                if (format.height == 0) break;
+
+                i = j;
+            }
+
+            truncate(lines);
+
+            resize(XY(width, height));
+        }        
+    };
+
+    ///////////////////////////////////////////////////////////////////////
+            
+    struct page final : widgetarium<section>
+    {
+        void fill (const array<section::data> & datae)
+        {
+            int n = 0; int width = 0; int height = 0;
+
+            for (const auto & data : datae)
+            {
+                section & section = n < size() ? (*this)(n) : emplace_back();
+                section.fill(data);
+                section.move_to(XY(0, height));
+                n++;
+
+                width = max(width, section.coord.now.size.x);
+                height += section.coord.now.size.y;
+            }
+
+            truncate(n);
+
+            resize(XY(width, height));
+        }        
     };
 } 

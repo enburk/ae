@@ -53,7 +53,8 @@ struct Flist : gui::widget<Flist>
                 if (is_directory (p)) {
                     str name = p.filename().string();
                     if (name.starts_with(".")
-                    ||  name.starts_with("_")) { next.disable_recursion_pending(); continue; }
+                    ||  name.starts_with("_")
+                    ||  name == "packages") { next.disable_recursion_pending(); continue; }
                     paths += p;
                 }
                 if (is_regular_file (p)) {

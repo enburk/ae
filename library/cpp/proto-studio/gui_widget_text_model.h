@@ -1,8 +1,138 @@
 #pragma once
 #include "doc.h"
+#include "doc_syntax_html.h"
 #include "gui_widget.h"
+#include "gui_widget_text_aux.h"
 namespace gui::text
 {
+    struct htmlmodel
+    {
+        array<section::data> sections;
+
+        htmlmodel (){}
+        htmlmodel (const array<doc::entity> & entities, glyph_style_index s, format f)
+        {
+            array<format> formats {f}; // stack
+            array<glyph_style_index> styles {s}; // stack
+
+            for (auto entity : entities)
+                proceed(entity, styles, formats);
+        }
+
+        void proceed
+        (
+            const doc::entity & entity,
+            array<glyph_style_index> styles,
+            array<format> formats
+        )
+        {
+            if (entity.kind == "text")
+            {
+                if (sections.size() == 0 ||
+                    sections.back().format != formats.back())
+                    sections += section::data{formats.back()};
+
+                for (auto token : entity.head)
+                    sections.back().tokens +=
+                        token::data{token.text,
+                            styles.back()};
+            }
+            else
+            if (entity.name == "br")
+            {
+                sections.back().tokens += token::data{"\n", styles.back()};
+            }
+            else
+            if (entity.name == "h4") {
+                auto style = styles.back().style(); style.font.bold = true;
+                styles += glyph_style_index(style);
+            }
+            else
+            if (entity.name == "b") {
+                auto style = styles.back().style(); style.font.bold = true;
+                styles += glyph_style_index(style);
+            }
+            else
+            if (entity.name == "i") {
+                auto style = styles.back().style(); style.font.italic = true;
+                styles += glyph_style_index(style);
+            }
+            else
+            if (entity.name == "font")
+            {
+                for (auto [attr, value] : entity.attr)
+                {
+                    if (attr == "color" && // <font color=#008000>
+                        value.starts_with("#") &&
+                        value.size() == 1+6)
+                    {
+                        auto style = styles.back().style();
+                        str r = value.from(1).upto(3);
+                        str g = value.from(3).upto(5);
+                        str b = value.from(5).upto(7);
+                        style.color.r = (uint8_t) std::strtoul(r.c_str(), nullptr, 16);
+                        style.color.g = (uint8_t) std::strtoul(g.c_str(), nullptr, 16);
+                        style.color.b = (uint8_t) std::strtoul(b.c_str(), nullptr, 16);
+                        style.color.a = 255;
+                        styles += glyph_style_index(style);
+                    }
+                }
+            }
+            else
+            if (entity.name == "div")
+            {
+                auto style = styles.back().style();
+
+                for (auto [attr, value] : entity.attr)
+                {
+                    if (attr == "style") // <div style="margin-left: 9em">
+                    {
+                        str arg, val;
+                        value.strip("\"");
+                        value.split_by(":", arg, val);
+                        arg.strip();
+                        val.strip();
+
+                        if (arg == "margin-left")
+                        {
+                            if (val.ends_with("em")) {
+                                val.truncate();
+                                val.truncate();
+                                int x = std::atoi(val.c_str());
+                                x = x * sys::metrics(style.font).height;
+                                formats += formats.back();
+                                formats.back().margin_left = XY(x, max<int>());
+                            }
+                        }
+
+                        if (arg == "line-height")
+                        {
+                            if (val.ends_with("%")) {
+                                val.truncate();
+                                int x = std::atoi(val.c_str());
+                                style.font.size = style.font.size * x/100;
+                                styles += glyph_style_index(style);
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (auto e : entity.body)
+                proceed(e, styles, formats);
+
+            if (entity.name == "h4") {
+                sections.back().tokens += token::data{"\n", styles.back()};
+            }
+
+        }
+
+    };
+
+
+
+
+
     struct model
     {
         doc::document idocument; // internal

@@ -14,6 +14,7 @@ namespace aux
         using base:: array;
 
         str (const char * s ) : base (s) {}
+        str (const char8_t * s ) : base ((char*)s) {}
         str (char c, int n=1) { if (n > 0) *this = std::string (n,c); }
         str (std::string_view s) { *this = std::string (s); }
 

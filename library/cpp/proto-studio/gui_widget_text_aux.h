@@ -4,6 +4,10 @@
 #include "gui_widget_canvas.h"
 namespace gui::text
 {
+    using sys::glyph_style;
+    using sys::glyph_style_index;
+    using sys::glyph_metrics;
+
     struct glyph:
     widget<glyph>
     {
@@ -20,42 +24,6 @@ namespace gui::text
         }
     };
 
-    struct token final : widgetarium<glyph>, sys::glyph_metrics
-    {
-        str text; sys::glyph_style_index style; void fill (
-        str text, sys::glyph_style_index style)
-        {
-            if (this->text == text && this->style == style) return;
-                this->text =  text;   this->style =  style;
-
-            width = ascent = descent = advance = 0;
-
-            glyphs = unicode::glyphs(text);
-            for (int i=0; i<glyphs.size(); i++)
-            {
-                glyph & glyph = i < size() ? (*this)(i) : emplace_back();
-                glyph.value = sys::glyph(glyphs[i], style);
-                ascent  = max(ascent,  glyph.value.now.ascent);
-                descent = max(descent, glyph.value.now.descent);
-            }
-            truncate(glyphs.size());
-            for (auto & glyph : *this)
-            {
-                glyph.move_to(XY(width + advance, ascent - glyph.value.now.ascent));
-                width  += advance + glyph.value.now.width;
-                advance = glyph.value.now.advance;
-            }
-            resize(XY(width, ascent + descent));
-        }
-        array<str> glyphs;
-    };
-
-    ///////////////////////////////////////////////////////////////////////
-                                const  int
-    ///////////////////////////////////////////////////////////////////////
-                                top    =-1,
-    justify_left =-2, left =-1, center = 0, right = 1, justify_right = 2,
-                                bottom = 1;
     ///////////////////////////////////////////////////////////////////////
 
     struct caret final : widget<caret>
@@ -67,7 +35,7 @@ namespace gui::text
         {
             if (timer.now == time())
                 timer.go (time::infinity,
-                            time::infinity);
+                          time::infinity);
 
             if (what == &coord && coord.now.size != coord.was.size
             ||  what == &insert_mode) {
@@ -80,6 +48,39 @@ namespace gui::text
                 if (ms > 512) ms = 1024-ms-1;
                 canvas.alpha = 192 * ms/512 + 64 - 1;
             }
+        }
+    };
+
+    ///////////////////////////////////////////////////////////////////////
+                                const  int
+    ///////////////////////////////////////////////////////////////////////
+                                top    =-1,
+    justify_left =-2, left =-1, center = 0, right = 1, justify_right = 2,
+                                bottom = 1;
+    ///////////////////////////////////////////////////////////////////////
+
+    struct format
+    {
+        int width  = max<int>();
+        int height = max<int>();
+
+        XY alignment = XY{center, center};
+
+        bool word_wrap = true;
+        bool ellipsis = false;
+
+        XY margin_left;
+        XY margin_right;
+
+        bool operator != (const format & f) const { return !(*this == f); }
+        bool operator == (const format & f) const { return true
+            && width        == f.width       
+            && height       == f.height      
+            && alignment    == f.alignment   
+            && word_wrap    == f.word_wrap   
+            && ellipsis     == f.ellipsis    
+            && margin_left  == f.margin_left 
+            && margin_right == f.margin_right;
         }
     };
 } 

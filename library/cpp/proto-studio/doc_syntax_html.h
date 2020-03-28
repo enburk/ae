@@ -67,6 +67,16 @@ namespace doc::syntax::html
                 e.attr[attr] = value;
             }
         }
+        else if (e.kind == "text")
+        {
+            for (token & t : e.head)
+            {
+                t.text.replace_all("&nbsp;", u8"\u00A0");
+                t.text.replace_all("&amp;" , "&");
+                t.text.replace_all("&lt;"  , "<");
+                t.text.replace_all("&gt;"  , ">");
+            }
+        }
 
         return output;
     }

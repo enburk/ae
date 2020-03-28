@@ -1,6 +1,6 @@
 #pragma once
 #include "gui_widget_canvas.h"
-#include "gui_widget_text_aux.h"
+#include "gui_widget_text_page.h"
 namespace gui::text
 {
     struct single_line_editor:
