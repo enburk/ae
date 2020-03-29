@@ -39,36 +39,47 @@ namespace gui::text
     };
 
     ///////////////////////////////////////////////////////////////////////
-            
+
     struct row : glyph_metrics
     {
         format format;
         array<int> offsets;
         bool the_last_row = true;
 
-        bool add (token & token)
+        bool add (array<token*> tokens)
         {
             int Width =
                 format.width -
                 format.margin_left.x -
-                format.margin_right.x; 
+                format.margin_right.x;
+
+            int tokens_width = 0;
+            int tokens_advance = 0;
+            for (auto token : tokens) {
+                tokens_width += token->width + token->advance;
+                tokens_advance = token->advance;
+            }
+            tokens_width -= tokens_advance;
 
             if (format.word_wrap
-            &&  Width < width + advance + token.width
+            &&  Width < width + advance + tokens_width
             &&  offsets.size() > 0) // at least one should be accepted
             {
                 the_last_row = false;
                 return false;
             }
 
-            ascent  = max (ascent,  token.ascent);
-            descent = max (descent, token.descent);
-            offsets += width + advance;
-            width = offsets.back() + token.width;
-            advance = token.advance;
-            outlines.size.y = ascent + descent;
-            outlines.size.x = token.text == " " || token.text == "\n" ?
-            outlines.size.x : width;
+            for (auto token : tokens)
+            {
+                ascent  = max (ascent,  token->ascent);
+                descent = max (descent, token->descent);
+                offsets += width + advance;
+                width = offsets.back() + token->width;
+                advance = token->advance;
+                outlines.size.y = ascent + descent;
+                outlines.size.x = token->text == " " || token->text == "\n" ?
+                outlines.size.x : width;
+            }
             return true;
         }
 
@@ -128,12 +139,20 @@ namespace gui::text
 
             int total = 0; int height = 0;
 
+            array<token*> unbreakable;
+
             for(auto [lexeme, n] : lexemes)
             {
                 token & token = n < size() ? (*this)(n) : emplace_back();
                 token.fill(lexeme.text, lexeme.style);
 
-                if (rows.size() == 0 || !rows.back().add(token))
+                unbreakable += &token;
+                if (token.text != " " &&
+                    token.text != "\n" &&
+                    n != lexemes.length-1)
+                    continue;
+
+                if (rows.size() == 0 || !rows.back().add(unbreakable))
                 {
                     if (rows.size() != 0)
                     {
@@ -151,10 +170,12 @@ namespace gui::text
                     rows += row{};
                     rows.back().format = format;
                     rows.back().outlines.y = height;
-                    rows.back().add(token); // at least one should be accepted
+                    rows.back().add(unbreakable); // at least one should be accepted
                 }
 
-                total++;
+                total +=
+                unbreakable.size();
+                unbreakable.clear();
             }
 
             if (rows.size() != 0) height +=

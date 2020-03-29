@@ -16,8 +16,10 @@ namespace gui::text
         Opacity opacity () override { return semitransparent; }
 
         void on_change (void* what) override {
-             if (what == &value) resize(XY(value.now.width,
+             if (what == &value) { resize(XY(value.now.width,
                  value.now.ascent + value.now.descent));
+                 update();
+             }
         }
         void on_render (pix::frame<RGBA> frame, XY offset, uint8_t alpha) override {
              value.now.render(frame, offset, alpha, coord.now.x);

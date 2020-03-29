@@ -122,7 +122,9 @@ namespace gui::text
                 proceed(e, styles, formats);
 
             if (entity.name == "h4") {
-                sections.back().tokens += token::data{"\n", styles.back()};
+                if (sections.size() > 0 &&
+                    sections.back().tokens.size() > 0)
+                    sections.back().tokens += token::data{"\n", styles.back()};
             }
 
         }

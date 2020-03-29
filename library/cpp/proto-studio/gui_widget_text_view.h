@@ -4,7 +4,8 @@
 #include "gui_widget_canvas.h"
 namespace gui::text
 {
-    struct view final : widget<view>
+    struct view:
+    widget<view>
     {
         canvas canvas; page page;
         unary_property<str> text;
@@ -14,6 +15,7 @@ namespace gui::text
         binary_property<sys::font> font;
         binary_property<glyph_style> style;
         binary_property<bool> word_wrap = true;
+        binary_property<bool> ellipsis = false;
         binary_property<XY> alignment = XY{center, center};
         binary_property<XY> shift;
 
@@ -27,6 +29,7 @@ namespace gui::text
             format.width = coord.now.size.x;
             format.alignment = alignment.now;
             format.word_wrap = word_wrap.now;
+            format.ellipsis = ellipsis.now;
 
             model = htmlmodel(entities, glyph_style_index(style.now), format);
             page.fill (model.sections);
@@ -59,6 +62,12 @@ namespace gui::text
                 entities = doc::syntax::html::combine(
                            doc::syntax::html::parse(
                            doc::lexica::html::parse(doc::text(html.now))));
+                if (false) { // debug
+                    auto tokens = doc::syntax::html::print(entities);
+                    entities.clear();
+                    entities += doc::entity{"", "text", ""};
+                    entities.back().head = tokens;
+                }
                 refresh();
             }
             if (what == &skin)

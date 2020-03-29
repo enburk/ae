@@ -151,12 +151,20 @@ namespace aux
             return std::upper_bound(begin(), end(), e, compare);
         }
         template<class Compare>
+        range equal_range (const type & e, Compare compare = std::less<>{})
+        {
+            auto r = std::equal_range (begin(), end(), e, compare);
+            return range{this,
+                (int)(r.first-begin()),
+                (int)(r.second-r.first)};
+        }
+        template<class Compare> const
         range equal_range (const type & e, Compare compare = std::less<>{}) const
         {
             auto r = std::equal_range (begin(), end(), e, compare);
             return range{this,
                 (int)(r.first-begin()),
-                (int)(r.second()-r.first())};
+                (int)(r.second-r.first)};
         }
 
         ////////////////////////////////////////////////////////////////////////
