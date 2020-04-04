@@ -175,6 +175,7 @@
     <ClInclude Include="library\cpp\proto-studio\gui_widget_scroller.h" />
     <ClInclude Include="library\cpp\proto-studio\gui_widget_splitter.h" />
     <ClInclude Include="library\cpp\proto-studio\gui_widget_text_aux.h" />
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_text_column.h" />
     <ClInclude Include="library\cpp\proto-studio\gui_widget_text_editor.h" />
     <ClInclude Include="library\cpp\proto-studio\gui_widget_text_lineditor.h" />
     <ClInclude Include="library\cpp\proto-studio\gui_widget_text_model.h" />

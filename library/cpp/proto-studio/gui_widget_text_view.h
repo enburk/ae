@@ -1,5 +1,5 @@
 #pragma once
-#include "gui_widget_text_page.h"
+#include "gui_widget_text_column.h"
 #include "gui_widget_text_model.h"
 #include "gui_widget_canvas.h"
 namespace gui::text
@@ -7,7 +7,8 @@ namespace gui::text
     struct view:
     widget<view>
     {
-        canvas canvas; page page;
+        canvas canvas;
+        column column;
         unary_property<str> text;
         unary_property<str> html;
 
@@ -17,6 +18,8 @@ namespace gui::text
         binary_property<bool> word_wrap = true;
         binary_property<bool> ellipsis = false;
         binary_property<XY> alignment = XY{center, center};
+        binary_property<XY> margin_right;
+        binary_property<XY> margin_left;
         binary_property<XY> shift;
 
         htmlmodel model; array<doc::entity> entities;
@@ -27,17 +30,28 @@ namespace gui::text
         {
             format format;
             format.width = coord.now.size.x;
+            format.margin_right = margin_right.now;
+            format.margin_left = margin_left.now;
             format.alignment = alignment.now;
             format.word_wrap = word_wrap.now;
-            format.ellipsis = ellipsis.now;
+            format.ellipsis = ellipsis.now; if (ellipsis.now)
+            format.height = coord.now.size.y;
 
             model = htmlmodel(entities, glyph_style_index(style.now), format);
-            page.fill (model.sections);
-            page.move_to(XY(
+            column.fill (model.sections);
+            align();
+        }
+
+        void align ()
+        {
+            int H = coord.now.size.y;
+            int h = column.coord.now.size.y;
+
+            column.move_to(XY(
                 shift.now.x,
                 shift.now.y + (
-                alignment.now.y == center ? coord.now.size.y/2 - page.coord.now.size.y/2 :
-                alignment.now.y == bottom ? coord.now.size.y   - page.coord.now.size.y   :
+                alignment.now.y == center ? H/2 - h/2 :
+                alignment.now.y == bottom ? H   - h   :
                 0)));
         }
 
@@ -99,65 +113,16 @@ namespace gui::text
                 refresh();
             }
             if (what == &word_wrap
+            ||  what == &margin_right
+            ||  what == &margin_left
             ||  what == &alignment)
             {
                 refresh();
             }
             if (what == &shift)
             {
-                page.move_to(XY(
-                    shift.now.x,
-                    shift.now.y + (
-                    alignment.now.y == center ? coord.now.size.y/2 - page.coord.now.size.y/2 :
-                    alignment.now.y == bottom ? coord.now.size.y   - page.coord.now.size.y   :
-                    0)));
+                align();
             }
-        }
-
-        //struct Place { int line = 0, row = 0, col = 0; };
-        //
-        //Place place (int charnumber)
-        //{
-        //    for (auto & line : page) {
-        //        if (line.size() == 0) continue;
-        //        if (line.back().doc_token.offset +
-        //            line.back().doc_token.text.size() <= charnumber) continue;
-        //
-        //        for (auto & token : line) {
-        //            if (token.doc_token.offset +
-        //                token.doc_token.text.size() <= charnumber) continue;
-        //
-        //
-        //        int token_number = 0;
-        //        for (auto & row : line.rows) {
-        //            if (row.offsets.size() == 0) continue;
-        //            token_number += row.offsets.size();
-        //            if (line(token_number-1).doc_token.offset +
-        //                line(token_number-1).doc_token.text.size() <= charnumber) continue;
-        //        }
-        //
-        //    }
-        //    return Place{page.size(), 0, 0};
-        //}
-
-        XYWH position (int n)
-        {
-            //for (auto & line : page) {
-            //    if (line.size() == 0) continue;
-            //    if (line.back().doc_token.offset +
-            //        line.back().doc_token.text.size() <= n) continue;
-            //
-            //    for (auto & token : line) {
-            //        if (token.doc_token.offset +
-            //            token.doc_token.text.size() <= n) continue;
-            //        return
-            //            token.glyphs(n - token.doc_token.offset).coord.now + 
-            //            token.coord.now.origin +
-            //            line .coord.now.origin +
-            //            page .coord.now.origin;
-            //    }
-            //}
-            return XYWH();
         }
     };
 } 

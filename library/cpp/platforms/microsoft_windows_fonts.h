@@ -17,9 +17,12 @@ struct GDI_FONT
         HDC dc = ::CreateCompatibleDC (hdc);//(NULL);
         ReleaseDC (Hwnd, hdc);
 
+        if (font.face == "") font.face = "Segoe UI";
+        if (font.size ==  0) font.size = gui::metrics::text::height;
+
         LOGFONT lf;
         _tcscpy_s (
-        lf.lfFaceName       , 32, aux::str(font.face.upto(31)).c_str());
+        lf.lfFaceName       , 32, str(font.face.upto(31)).c_str());
         lf.lfHeight         = font.size >= 0 ? -font.size : MulDiv (font.size, ::GetDeviceCaps (dc,LOGPIXELSY), 72);
         lf.lfWidth          = 0;
         lf.lfEscapement     = 0;
@@ -189,13 +192,15 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
     int w = width;
     int h = ascent + descent;
 
-    if (frame.size.x <= 0 || offset.x >= w) return;
-    if (frame.size.y <= 0 || offset.y >= h) return;
-
-    frame = frame.crop(XYWH(-offset.x,-offset.y, w, h));
+    // this glyph origin is shifted by 'offset' from the frame origin
+    XYWH frame_coord (-offset.x, -offset.y, frame.size.x, frame.size.y); // relative glyph
+    XYWH glyph_coord ( offset.x,  offset.y, w, h); // relative frame
+    auto crop = frame.crop(glyph_coord);
+    if (crop.size.x <= 0) return;
+    if (crop.size.y <= 0) return;
 
     if (false) { // test for rendering speed
-        frame.blend(RGBA::random(), alpha);
+        crop.blend(RGBA::random(), alpha);
         return;
     }
 
@@ -203,9 +208,9 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
     if (!solid_color_background)
     {
         bool ok = true;
-        RGBA c = frame(0,0);
-        for (int y=0; y<frame.size.y; y++)
-        for (int x=0; x<frame.size.x; x++) if (frame(x,y) != c) ok = false;
+        RGBA c = crop(0,0);
+        for (int y=0; y<crop.size.y; y++)
+        for (int x=0; x<crop.size.x; x++) if (crop(x,y) != c) ok = false;
     
         if (ok) { solid_color_background = true; c.blend(back, alpha); back = c; }
     }
@@ -227,7 +232,7 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
         auto it = cache.find(cache_glyphs_key{text, style.font, fore, back});
         if (it != cache.end())
         {
-            frame.blend_from(it->second, alpha);
+            crop.blend_from(it->second.crop(frame_coord), alpha);
             return;
         }
     }
@@ -274,8 +279,8 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
     // default underline thickness = 1/6 of width of the period mark
     // optimal Y position is the goden ratio point between the baseline and the descender line
 
-    frame.blend(back, alpha);
-    frame.blend_from(view, alpha);
+    crop.blend(back, alpha);
+    crop.blend_from(view, alpha);
     
     if (cacheable)
     {

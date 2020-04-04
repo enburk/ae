@@ -153,5 +153,8 @@
     <ClInclude Include="library\cpp\proto-studio\doc_syntax_html.h">
       <Filter>proto-studio</Filter>
     </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\gui_widget_text_column.h">
+      <Filter>gui</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

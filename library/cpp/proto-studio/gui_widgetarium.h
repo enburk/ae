@@ -21,8 +21,19 @@ namespace gui
                     widget::notify(i);
         }
 
-        const T & operator () (int pos) const { return *deque[indices[pos]]; }
-        /***/ T & operator () (int pos) /***/ { return *deque[indices[pos]]; }
+        const T & operator () (int pos) const {
+            if (pos >= size()) throw std::out_of_range
+                ("widgetarium size = " + std::to_string(size())
+                    + ", accessed at " + std::to_string(pos));
+            return *deque[indices[pos]];
+        }
+        /***/ T & operator () (int pos) /***/ {
+            if (pos > size()) throw std::out_of_range
+                ("widgetarium size = " + std::to_string(size())
+                    + ", accessed at " + std::to_string(pos));
+            if (pos == size()) emplace_back();
+            return *deque[indices[pos]];
+        }
 
         const T & back () const { return *deque[indices.back()]; }
         /***/ T & back () /***/ { return *deque[indices.back()]; }

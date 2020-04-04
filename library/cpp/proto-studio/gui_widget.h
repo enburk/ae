@@ -56,6 +56,7 @@ namespace gui::base
 
         void render (pix::frame<RGBA> frame, XY offset, uint8_t combined_alpha = 255)
         {
+            // this widget origin is shifted by 'offset' from the frame origin (frame.offset)
             combined_alpha = ((combined_alpha+1) * alpha.now) >> 8; if (combined_alpha == 0) return;
             on_render (frame, offset, combined_alpha);
             for (auto child : children) {
@@ -74,8 +75,9 @@ namespace gui::base
 
         widget* mouse_press_child = nullptr;
         widget* mouse_hover_child = nullptr;
-
+        double  mouse_wheel_speed = 1.0;
         unary_property<str> mouse_image;
+
         virtual bool mouse_sensible (XY p) { return false; }
         virtual void on_mouse_press (XY, char button, bool down) {}
         virtual void on_mouse_wheel (XY, int) {}
@@ -158,7 +160,7 @@ namespace gui::base
             if (coord.now.local().excludes(p)) return;
             for (auto w : children)
                 w->mouse_wheel(p - w->coord.now.origin, delta);
-            on_mouse_wheel(p, delta);
+            on_mouse_wheel(p, int(delta*mouse_wheel_speed));
         }
 
         ////////////////////////////////////////////////////////////////////////

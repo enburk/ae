@@ -14,7 +14,9 @@ namespace gui
         binary_property<bool> mouse_hover = false;
         binary_property<bool> mouse_pressed = false;
         binary_property<bool> enter_pressed = false;
-        enum {normal, toggle, sticky} kind;
+        enum {normal, toggle, sticky} kind = normal;
+        bool notify_hover = false;
+        bool notify_off = false;
         bool repeating = false;
         time repeat_delay = 500ms;
         time repeat_lapse = 100ms;
@@ -58,7 +60,11 @@ namespace gui
             if (what == &enabled) on_change_state(); else
             if (what == &coord) on_change_state(); else
             if (what == &skin) on_change_state(); else
-            if (what == &on) { on_change_state(); notify(); }
+            if (what == &on) on_change_state();
+
+            if (what == &mouse_hover) if (notify_hover) notify();
+            if (what == &on) if (on.now or notify_off or kind == toggle)
+                notify();
 
             if (what == &timer) {
                 if (repeat_notch < time::now) {
@@ -84,6 +90,10 @@ namespace gui
                 case sticky: if (down) { on.now = false; on = true; }; break;
                 }
             }
+            else // if disabled
+                if (kind == normal && !down)
+                    on = false; // do not stick on disable on notify
+
             if (repeating) {
                 repeat_notch = time::now + repeat_delay;
                 timer.go (down ? time::infinity : time(),
@@ -105,23 +115,35 @@ namespace gui
 
     struct radio
     {
-        struct button : gui::widget<button>
+        struct button : gui::button
         {
-            gui::button sensor;
-
             button ()
             {
-                sensor.kind = gui::button::sticky;
+                kind = gui::button::sticky;
             }
         };
 
-        struct group : gui::widget<group>
+        struct group : widgetarium<button>
         {
-            gui::widgetarium<button> buttons;
-
             void on_notify (gui::base::widget* w) override
             {
-                for (auto & b : buttons) b.sensor.on = &b == w; notify();
+                int n = -1;
+                
+                for (int i=0; i<size(); i++)
+                    if (w == &(*this)(i))
+                        n = i;
+
+                if (n == -1) return;
+
+                if (!(*this)(n).on.now) return;
+
+                if (!(*this)(n).mouse_pressed.now) return;
+
+                for (int i=0; i<size(); i++)
+                    if (i != n)
+                        (*this)(i).on = false;
+
+                notify(n);
             }
         };
     };

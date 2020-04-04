@@ -100,6 +100,7 @@ namespace gui::text
                                 val.truncate();
                                 int x = std::atoi(val.c_str());
                                 x = x * sys::metrics(style.font).height;
+                                // x += formats.back().margin_left.x;
                                 formats += formats.back();
                                 formats.back().margin_left = XY(x, max<int>());
                             }

@@ -33,7 +33,7 @@ struct Editor : gui::widget<Editor>
     {
         auto r = coord.now.local();
         
-        int d = gui::metrics::text::height;
+        int d = gui::metrics::text::height + 2*gui::metrics::line::width;
 
         if (editor.model.size.x > r.w)
         {
