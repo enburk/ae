@@ -21,7 +21,7 @@ namespace gui::text
             glyphs = unicode::glyphs(text);
             for (int i=0; i<glyphs.size(); i++)
             {
-                glyph & glyph = i < size() ? (*this)(i) : emplace_back();
+                glyph & glyph = (*this)(i);
                 glyph.value = sys::glyph(glyphs[i], style);
                 ascent  = max(ascent,  glyph.value.now.ascent);
                 descent = max(descent, glyph.value.now.descent);
@@ -125,10 +125,15 @@ namespace gui::text
             
     struct line final : widgetarium<token>
     {
+        struct data { format format; array<token::data> tokens; };
+
         array<row> rows;
 
-        void fill (array<token::data>::range lexemes, format format)
+        void fill (data data)
         {
+            auto & format = data.format;
+            auto & tokens = data.tokens;
+
             rows.clear();
 
             if (format.width  <= 0) { resize(XY()); return; }
@@ -141,15 +146,15 @@ namespace gui::text
 
             array<token*> unbreakable;
 
-            for(auto [lexeme, n] : lexemes)
+            for(auto [lexeme, n] : tokens.whole())
             {
-                token & token = n < size() ? (*this)(n) : emplace_back();
+                token & token = (*this)(n);
                 token.fill(lexeme.text, lexeme.style);
 
                 unbreakable += &token;
                 if (token.text != " " &&
                     token.text != "\n" &&
-                    n != lexemes.length-1)
+                    n != tokens.size()-1)
                     continue;
 
                 if (rows.size() == 0 || !rows.back().add(unbreakable))
@@ -209,66 +214,21 @@ namespace gui::text
 
     ///////////////////////////////////////////////////////////////////////
             
-    struct section : widgetarium<line>
+    struct column : widgetarium<line>
     {
-        struct data { format format; array<token::data> tokens; };
-
-        void fill (data data)
-        {
-            auto & format = data.format;
-            auto & tokens = data.tokens;
-
-            int lines = 0; int width = 0; int height = 0;
-
-            for (auto i = tokens.begin(); i != tokens.end(); )
-            {
-                auto j = std::find_if(i, tokens.end(),
-                [](auto token){ return token.text == "\n"; });
-                if (j != tokens.end()) j++;
-
-                line & line = lines < size() ? (*this)(lines) : emplace_back();
-                line.fill(tokens
-                    .from((int)(i - tokens.begin()))
-                    .upto((int)(j - tokens.begin()))
-                    , format);
-                line.move_to(XY(0, height));
-                lines++;
-
-                int w = line.coord.now.size.x;  width = max(width, w);
-                int h = line.coord.now.size.y;  height += h; 
-
-                format.height         = max (0, format.height         - h);
-                format.margin_left.y  = max (0, format.margin_left.y  - h);
-                format.margin_right.y = max (0, format.margin_right.y - h);
-
-                if (format.height == 0) break;
-
-                i = j;
-            }
-
-            truncate(lines);
-
-            resize(XY(width, height));
-        }        
-    };
-
-    ///////////////////////////////////////////////////////////////////////
-            
-    struct column : widgetarium<section>
-    {
-        void fill (const array<section::data> & datae)
+        void fill (const array<line::data> & datae)
         {
             int n = 0; int width = 0; int height = 0;
 
             for (const auto & data : datae)
             {
-                section & section = n < size() ? (*this)(n) : emplace_back();
-                section.fill(data);
-                section.move_to(XY(0, height));
+                line & line = (*this)(n);
+                line.fill(data);
+                line.move_to(XY(0, height));
                 n++;
 
-                width = max(width, section.coord.now.size.x);
-                height += section.coord.now.size.y;
+                width = max(width, line.coord.now.size.x);
+                height += line.coord.now.size.y;
             }
 
             truncate(n);

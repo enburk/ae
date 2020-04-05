@@ -122,7 +122,109 @@ namespace gui::text
             if (y < d) y = d;
             if (y > 0) y = 0;
             scroll.y.top =-y;
-            //view.shift = XY (view.shift.now.x, y);
+        }
+
+        bool touch = false; XY touch_point; time touch_time;
+
+        bool mouse_sensible (XY p) override { return true; }
+
+        void on_mouse_press (XY p, char button, bool down) override
+        {
+            if (button == 'R') return; // todo contex menu: cut, copy, paste
+            if (button != 'L') return;
+            if (down && !touch)
+            {
+                //if (touch_point == p && time::now - touch_time < 1000ms)
+                //{
+                //    go(-TOKEN); go(+TOKEN, true); // select token
+                //    while (caret_upto > 0 &&
+                //        symbol_kind(caret_upto-1) == ' ')
+                //        caret_upto--;
+                //    refresh();
+                //}
+                //else
+                //{
+                //    int i = 0;
+                //    for (int j=0; j<line.size(); j++)
+                //        if (line(j).coord.now.x + line.coord.now.origin.x <= p.x)
+                //            i = j;
+                //    caret_from = caret_upto = i;
+                //    refresh();
+                //}
+                touch_point = p;
+                touch_time = time::now;
+            }
+            touch = down;
+        }
+
+        void on_mouse_hover (XY p) override
+        {
+            bool drag_and_drop = false;
+            bool inside_selection = false;
+
+            mouse_image = drag_and_drop ?
+            inside_selection ? "noway" : "arrow" :
+            inside_selection ? "arrow" : "editor";
+
+            if (!drag_and_drop)
+            {
+                if (touch)
+                {
+                    //int i = 0;
+                    //for (int j=0; j<line.size(); j++)
+                    //    if (line(j).coord.now.x + line.coord.now.origin.x <= p.x)
+                    //        i = j;
+                    //caret_upto = i;
+                    //refresh();
+                }
+            }
+        }
+
+        void on_key_pressed (str key, bool down) override
+        {
+            //if (!down) return;
+            //if (touch) return; // mouse
+            //if (key == "space" ) return;
+            //if (key.size() <= 1) return; // "", "0", "A", ...
+            //if (key.size() <= 7 && key.starts_with("shift+")) return; // shift+0, shift+A, ...
+            //
+            //if (key == "ctrl+C") key = "ctrl+insert"; else // copy
+            //if (key == "ctrl+V") key = "shift+insert"; else // paste
+            //if (key == "ctrl+X") key = "shift+delete"; else // cut
+            //if (key == "ctrl+Z") key = "alt+backspace"; else // undo
+            //
+            //if (key == "ctrl+Y"      ) key = "ctrl+backspace"; else // redo
+            //if (key == "ctrl+shift+Z") key = "ctrl+backspace"; else // redo
+            //{}
+            //
+            //if (key == "left"       ) go(-GLYPH); else
+            //if (key == "right"      ) go(+GLYPH); else
+            //if (key == "shift+left" ) go(-GLYPH, true); else
+            //if (key == "shift+right") go(+GLYPH, true); else
+            //
+            //if (key == "ctrl+left"       ) go(-TOKEN); else
+            //if (key == "ctrl+right"      ) go(+TOKEN); else
+            //if (key == "ctrl+shift+left" ) go(-TOKEN, true); else
+            //if (key == "ctrl+shift+right") go(+TOKEN, true); else
+            //
+            //if (key == "home"      ) go(BEGIN); else
+            //if (key == "end"       ) go(END  ); else
+            //if (key == "shift+home") go(BEGIN, true); else
+            //if (key == "shift+end" ) go(END,   true); else
+            //
+            //if (key == "insert"      ) { caret.insert_mode = !caret.insert_mode.now; } else
+            //if (key == "shift+insert") { insert(sys::clipboard::get::string()); } else
+            //if (key == "ctrl+insert" ) { sys::clipboard::set(selected()); } else
+            //
+            //if (key == "delete"      ) { erase(); } else
+            //if (key == "shift+delete") { sys::clipboard::set(selected()); erase(); } else
+            //
+            //if (key == "backspace"     ) { backspace(); } else
+            //if (key == "alt+backspace" ) { undo(); refresh(); } else
+            //if (key == "ctrl+backspace") { redo(); refresh(); } else // != VS
+            //
+            //if (key == "escape") { go(THERE); } else
+            //{}
         }
     };
 } 

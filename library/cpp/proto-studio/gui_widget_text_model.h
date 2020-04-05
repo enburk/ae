@@ -7,7 +7,7 @@ namespace gui::text
 {
     struct htmlmodel
     {
-        array<section::data> sections;
+        array<line::data> lines;
 
         htmlmodel (){}
         htmlmodel (const array<doc::entity> & entities, glyph_style_index s, format f)
@@ -28,19 +28,20 @@ namespace gui::text
         {
             if (entity.kind == "text")
             {
-                if (sections.size() == 0 ||
-                    sections.back().format != formats.back())
-                    sections += section::data{formats.back()};
+                if (lines.size() == 0 ||
+                    lines.back().format != formats.back())
+                    lines += line::data{formats.back()};
 
                 for (auto token : entity.head)
-                    sections.back().tokens +=
+                    lines.back().tokens +=
                         token::data{token.text,
                             styles.back()};
             }
             else
             if (entity.name == "br")
             {
-                sections.back().tokens += token::data{"\n", styles.back()};
+                lines.back().tokens += token::data{"\n", styles.back()};
+                lines += line::data{formats.back()};
             }
             else
             if (entity.name == "h4") {
@@ -123,9 +124,11 @@ namespace gui::text
                 proceed(e, styles, formats);
 
             if (entity.name == "h4") {
-                if (sections.size() > 0 &&
-                    sections.back().tokens.size() > 0)
-                    sections.back().tokens += token::data{"\n", styles.back()};
+                if (lines.size() > 0 &&
+                    lines.back().tokens.size() > 0) {
+                    lines.back().tokens += token::data{"\n", styles.back()};
+                    lines += line::data{formats.back()};
+                }
             }
 
         }
