@@ -8,8 +8,8 @@ namespace gui::text
     widget<view>
     {
         canvas ground;
-        widgetarium<canvas> highlight;
-        widgetarium<canvas> selection;
+        widgetarium<canvas> highlight_bars;
+        widgetarium<canvas> selection_bars;
         column column;
 
         unary_property<str> text;
@@ -24,6 +24,9 @@ namespace gui::text
         binary_property<XY> margin_right;
         binary_property<XY> margin_left;
         binary_property<XY> shift;
+
+        unary_property<array<range>> highlights;
+        unary_property<array<range>> selections;
 
         htmlmodel model; array<doc::entity> entities;
 
@@ -56,6 +59,56 @@ namespace gui::text
                 alignment.now.y == center ? H/2 - h/2 :
                 alignment.now.y == bottom ? H   - h   :
                 0)));
+
+            highlight(highlights.now, highlight_bars, skins[skin.now].highlight);
+            highlight(selections.now, selection_bars, skins[skin.now].selection);
+        }
+
+        void highlight (array<range> ranges, widgetarium<canvas> & bars, RGBA color)
+        {
+            int n = 0;
+
+            for (auto [from, upto] : ranges)
+            {
+                if (from > upto) std::swap (from, upto);
+
+                for (; from.line <= upto.line; from.line++, from.offset = 0)
+                {
+                    if (from.line >= column.size()) break;
+                    int from_offset = from.offset;
+                    int upto_offset = from.line == upto.line ?
+                        upto.offset : column(from.line).length();
+                    if (from_offset >= upto_offset) continue;
+
+                    int x = column.coord.now.x + column(from.line).coord.now.x;
+                    int y = column.coord.now.y + column(from.line).coord.now.y;
+                    int offset = 0;
+
+                    for (auto & token : column(from.line))
+                    {
+                        if (upto_offset <= offset) break;
+                        if (from_offset <= offset + token.size() - 1)
+                        {
+                            int from_glyph = max(from_offset - offset, 0);
+                            int upto_glyph = min(upto_offset - offset, token.size());
+
+                            auto & g1 = token(from_glyph);
+                            auto & g2 = token(upto_glyph-1);
+                            auto & bar = bars(n++);
+                            bar.color = color;
+                            bar.coord = XYXY (
+                                x + token.coord.now.x + g1.coord.now.x,
+                                y + token.coord.now.y + g1.coord.now.y,
+                                x + token.coord.now.x + g2.coord.now.x + g2.coord.now.w,
+                                y + token.coord.now.y + g2.coord.now.y + g2.coord.now.h
+                            );
+                        }
+                        offset += token.size();
+                    }
+                }
+            }
+
+            bars.truncate(n);
         }
 
         void on_change (void* what) override
@@ -63,6 +116,8 @@ namespace gui::text
             if (what == &coord && coord.was.size != coord.now.size)
             {
                 ground.coord = coord.now.local();
+                highlight_bars.coord = coord.now.local();
+                selection_bars.coord = coord.now.local();
                 refresh();
             }
             if (what == &text)
@@ -126,25 +181,16 @@ namespace gui::text
             {
                 align();
             }
+            if (what == &highlights)
+            {
+                highlight(highlights.now, highlight_bars,
+                    skins[skin.now].highlight);
+            }
+            if (what == &selections)
+            {
+                highlight(selections.now, selection_bars,
+                    skins[skin.now].selection);
+            }
         }
-
-        struct place
-        {
-            int line = 0, offset = 0; // bool operator <=> (place p) const = default;
-            bool operator == (place p) const { return line == p.line && offset == p.offset; }
-            bool operator != (place p) const { return line != p.line || offset != p.offset; }
-            bool operator <= (place p) const { return line <  p.line || offset <= p.offset && line == p.line; }
-            bool operator <  (place p) const { return line <  p.line || offset <  p.offset && line == p.line; }
-            bool operator >= (place p) const { return line >  p.line || offset >= p.offset && line == p.line; }
-            bool operator >  (place p) const { return line >  p.line || offset >  p.offset && line == p.line; }
-        };
-
-        struct range
-        {
-            place from, upto;
-            bool empty () const { return from == upto; }
-            bool operator == (range r) const { return from == r.from && upto == r.upto; }
-            bool operator != (range r) const { return from != r.from || upto != r.upto; }
-        };
     };
 } 

@@ -19,6 +19,7 @@ namespace gui
     {
         sys::font font;
         RGBA black, white;
+        RGBA highlight, selection;
         pair_of_colors light, normal, heavy,
         active, hovered, touched, disabled,
         focus, error;
@@ -51,8 +52,11 @@ namespace gui
         for (auto [name, palette] : palettes) {
             auto & skin = skins[name];
 
-            skin.black   = palette[0].fore_color;
-            skin.white   = palette[9].fore_color;
+            skin.black = palette[0].fore_color;
+            skin.white = palette[9].fore_color;
+
+            skin.highlight = palette[3].back_color;
+            skin.selection = palette[4].back_color;
 
             skin.light   = palette[1];
             skin.normal  = palette[3];

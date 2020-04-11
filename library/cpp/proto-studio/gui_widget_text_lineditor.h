@@ -32,6 +32,11 @@ namespace gui::text
                 background.coord = r;
                 refresh();
             }
+            if (what == &skin)
+            {
+                selection.color = skins[skin.now].selection;
+                caret.canvas.color = skins[skin.now].touched.back_color;
+            }
             if (what == &text) refresh();
             if (what == &alignment) refresh();
             if (what == &style) style_index = sys::glyph_style_index(style.now);

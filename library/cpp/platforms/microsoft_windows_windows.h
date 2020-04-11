@@ -270,10 +270,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR pCmdLine, int nCmdShow
     sys::app_instance app;
 
     WNDCLASS wc = { };
-    wc.lpfnWndProc   = WindowProc;
-    wc.hInstance     = hInstance;
-    wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
     wc.lpszClassName = TEXT("DPP IDE class name");
+    wc.lpfnWndProc = WindowProc;
+    wc.hInstance = hInstance;
+    wc.hCursor = NULL; // If the class cursor is not NULL,
+    // the system restores the class cursor each time the mouse is moved.
     RegisterClass(&wc);
 
     HWND hwnd = Hwnd = CreateWindowEx(

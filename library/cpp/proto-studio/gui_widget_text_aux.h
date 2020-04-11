@@ -85,4 +85,25 @@ namespace gui::text
             && margin_right == f.margin_right;
         }
     };
+
+    ///////////////////////////////////////////////////////////////////////
+
+    struct place
+    {
+        int line = 0, offset = 0; // bool operator <=> (place p) const = default;
+        bool operator == (place p) const { return line == p.line && offset == p.offset; }
+        bool operator != (place p) const { return line != p.line || offset != p.offset; }
+        bool operator <= (place p) const { return line <  p.line || offset <= p.offset && line == p.line; }
+        bool operator <  (place p) const { return line <  p.line || offset <  p.offset && line == p.line; }
+        bool operator >= (place p) const { return line >  p.line || offset >= p.offset && line == p.line; }
+        bool operator >  (place p) const { return line >  p.line || offset >  p.offset && line == p.line; }
+    };
+
+    struct range
+    {
+        place from, upto;
+        bool empty () const { return from == upto; }
+        bool operator == (range r) const { return from == r.from && upto == r.upto; }
+        bool operator != (range r) const { return from != r.from || upto != r.upto; }
+    };
 } 

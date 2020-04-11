@@ -12,9 +12,8 @@ namespace gui::base
         array  <widget*> children;
         widget (widget &&) = delete;
         widget (const widget &) = delete;
-        widget (widget* parent) : parent(parent)
-                  { if (parent) parent->children += this; }
-       ~widget () { if (parent) parent->children.try_erase(this); }
+        widget (widget* p) : parent(p) { if (parent) parent->children += this; }
+       ~widget () { update(); if (parent) parent->children.try_erase(this); }
 
         ////////////////////////////////////////////////////////////////////////
 

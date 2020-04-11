@@ -72,6 +72,22 @@ namespace gui::text
             ||  what == &margin_right
             ||  what == &margin_left)
                 refresh();
+
+            if (what == &timer) {
+                if (select_notch < time::now) {
+                    select_notch = time::now + select_lapse;
+                    int d = gui::metrics::text::height/2;
+                    int x = select_point.x, w = coord.now.size.x, dx = 0;
+                    int y = select_point.y, h = coord.now.size.y, dy = 0;
+                    if (x < 0) dx = x; else if (x > w) dx = x-w;
+                    if (y < 0) dy = y; else if (y > h) dy = y-h;
+                    dx = dx/d*(int)(log(abs(dx)));
+                    dy = dy/d*(int)(log(abs(dy)));
+                    if (dy != 0) scroll.x.top = scroll.x.top.now + dx;
+                    if (dy != 0) scroll.y.top = scroll.y.top.now + dy;
+                    on_mouse_hover(select_point);
+                }
+            }
         }
 
         void refresh ()
@@ -124,37 +140,91 @@ namespace gui::text
             scroll.y.top =-y;
         }
 
-        bool touch = false; XY touch_point; time touch_time;
+        range point (XY p)
+        {
+            range point;
+            point.from.line = -1;
+            point.upto.line = -1;
+
+            auto & column = view.column;
+
+            XY cp = p - column.coord.now.origin;
+
+            for (auto & line : column)
+            {
+                XY lp = cp - line.coord.now.origin;
+                if (lp.y < 0) break;
+                point.from.line++;
+                point.from.offset = 0;
+                point.upto = point.from;
+                if (lp.y >= line.coord.now.size.y) {
+                    point.from.offset += line.length();
+                    point.upto = point.from;
+                    continue;
+                }
+
+                for (auto & token : line)
+                {
+                    XY tp = lp - token.coord.now.origin;
+                    if (tp.y < 0) break;
+                    if (tp.y >= token.coord.now.size.y ||
+                        tp.x >= token.coord.now.size.x) {
+                        point.from.offset += token.size();
+                        point.upto = point.from;
+                        continue;
+                    }
+
+                    for (auto & glyph : token)
+                    {
+                        XY gp = tp - glyph.coord.now.origin;
+                        if (gp.x < 0) return point;
+                        point.from.offset = point.upto.offset;
+                        point.upto.offset++;
+                    }
+                }
+            }
+
+            return point;
+        }
+
+        bool touch = false; XY touch_point; range touch_range; time touch_time;
+        
+        property<time> timer;
+        time select_delay = time();
+        time select_lapse = 100ms;
+        time select_notch;
+        XY select_point;
 
         bool mouse_sensible (XY p) override { return true; }
 
         void on_mouse_press (XY p, char button, bool down) override
         {
-            if (button == 'R') return; // todo contex menu: cut, copy, paste
+            if (button == 'R') return;
             if (button != 'L') return;
             if (down && !touch)
             {
-                //if (touch_point == p && time::now - touch_time < 1000ms)
-                //{
-                //    go(-TOKEN); go(+TOKEN, true); // select token
-                //    while (caret_upto > 0 &&
-                //        symbol_kind(caret_upto-1) == ' ')
-                //        caret_upto--;
-                //    refresh();
-                //}
-                //else
-                //{
-                //    int i = 0;
-                //    for (int j=0; j<line.size(); j++)
-                //        if (line(j).coord.now.x + line.coord.now.origin.x <= p.x)
-                //            i = j;
-                //    caret_from = caret_upto = i;
-                //    refresh();
-                //}
+                if (touch_point == p && time::now - touch_time < 1000ms)
+                {
+                    //go(-TOKEN); go(+TOKEN, true); // select token
+                    //while (caret_upto > 0 &&
+                    //    symbol_kind(caret_upto-1) == ' ')
+                    //    caret_upto--;
+                    //refresh();
+                }
+                else
+                {
+                    select_point = p;
+                    touch_range = point(p);
+                    view.selections = array<range>{};
+                }
                 touch_point = p;
                 touch_time = time::now;
             }
             touch = down;
+
+            select_notch = time::now + select_delay;
+            timer.go (down ? time::infinity : time(),
+                      down ? time::infinity : time());
         }
 
         void on_mouse_hover (XY p) override
@@ -162,20 +232,18 @@ namespace gui::text
             bool drag_and_drop = false;
             bool inside_selection = false;
 
-            mouse_image = drag_and_drop ?
-            inside_selection ? "noway" : "arrow" :
-            inside_selection ? "arrow" : "editor";
 
             if (!drag_and_drop)
             {
                 if (touch)
                 {
-                    //int i = 0;
-                    //for (int j=0; j<line.size(); j++)
-                    //    if (line(j).coord.now.x + line.coord.now.origin.x <= p.x)
-                    //        i = j;
-                    //caret_upto = i;
-                    //refresh();
+                    select_point = p;
+                    range selection;
+                    selection.from = touch_range.from;
+                    selection.upto = point(p).upto;
+                    array<range> selections;
+                    selections += selection;
+                    view.selections = selections;
                 }
             }
         }

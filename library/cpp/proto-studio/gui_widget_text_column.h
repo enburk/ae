@@ -44,9 +44,10 @@ namespace gui::text
     {
         format format;
         array<int> offsets;
+        array<int> indices;
         bool the_last_row = true;
 
-        bool add (array<token*> tokens)
+        bool add (array<token*> tokens, int index)
         {
             int Width =
                 format.width -
@@ -71,11 +72,12 @@ namespace gui::text
 
             for (auto token : tokens)
             {
-                ascent  = max (ascent,  token->ascent);
-                descent = max (descent, token->descent);
+                indices += index;
                 offsets += width + advance;
                 width = offsets.back() + token->width;
                 advance = token->advance;
+                ascent  = max (ascent,  token->ascent);
+                descent = max (descent, token->descent);
                 outlines.size.y = ascent + descent;
                 outlines.size.x = token->text == " " || token->text == "\n" ?
                 outlines.size.x : width;
@@ -157,7 +159,7 @@ namespace gui::text
                     n != tokens.size()-1)
                     continue;
 
-                if (rows.size() == 0 || !rows.back().add(unbreakable))
+                if (rows.size() == 0 || !rows.back().add(unbreakable, total))
                 {
                     if (rows.size() != 0)
                     {
@@ -175,7 +177,9 @@ namespace gui::text
                     rows += row{};
                     rows.back().format = format;
                     rows.back().outlines.y = height;
-                    rows.back().add(unbreakable); // at least one should be accepted
+                    rows.back().add(unbreakable, total);
+                    // at least one glyph would be accepted
+                    // and no row would be empty
                 }
 
                 total +=
@@ -209,6 +213,13 @@ namespace gui::text
             }
 
             resize(XY(width, height));
+        }
+
+        int length ()
+        {
+            int length = 0;
+            for (auto & token : *this) length += token.glyphs.size();
+            return length;
         }
     };
 
