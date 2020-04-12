@@ -48,8 +48,6 @@ namespace gui
             page_down.on_change_state = [](){};
             page_up.repeating = true;
             page_down.repeating = true;
-            page_up.repeat_delay = time();
-            page_down.repeat_delay = time();
         }
 
         void on_change (void* what) override
@@ -82,8 +80,10 @@ namespace gui
             if (what == &top)
             {
                 top.now = max (0, min (top.now, span.now - coord.now.size.y));
-                refresh();
-                notify(top.now);
+                if (top.now != top.was) {
+                    refresh();
+                    notify(top.now);
+                }
             }
         }
 

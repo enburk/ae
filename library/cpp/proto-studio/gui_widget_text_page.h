@@ -105,8 +105,11 @@ namespace gui::text
                 view.column.coord.now.size.y > size.y;
             
             int d = gui::metrics::text::height + 2*gui::metrics::line::width;
-            int x = scroll_x ? scroll_y ? size.x - d : size.x : 0;
-            int y = scroll_y ? scroll_x ? size.y - d : size.y : 0;
+            int x = scroll_x ? size.x - d : size.x;
+            int y = scroll_y ? size.y - d : size.y;
+
+            scroll.x.show (scroll_x);
+            scroll.y.show (scroll_y);
 
             scroll.x.coord = XYWH(0, size.y-d, x, d);
             scroll.y.coord = XYWH(size.x-d, 0, d, y);

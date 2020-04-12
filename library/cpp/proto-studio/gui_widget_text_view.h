@@ -122,11 +122,15 @@ namespace gui::text
             }
             if (what == &text)
             {
-                entities.clear();
-                entities += doc::entity{"", "text", ""};
-                entities.back().head = doc::lexica::txt::parse(doc::text(text.now));
-                html.now = doc::lexica::html::encoded(text.now);
-                refresh();
+                //entities.clear();
+                //entities += doc::entity{"", "text", ""};
+                //entities.back().head = doc::lexica::txt::parse(doc::text(text.now));
+                //for (auto & token : entities.back().head) token.text.replace_all("\n", "<br>");
+                //html.now = doc::lexica::html::encoded(text.now);
+                //refresh();
+                str s = doc::lexica::html::encoded(text.now);
+                s.replace_all("\n", "<br>");
+                html = s;
             }
             if (what == &html)
             {

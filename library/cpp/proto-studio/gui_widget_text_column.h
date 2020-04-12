@@ -8,7 +8,13 @@ namespace gui::text
 {
     struct token final : widgetarium<glyph>, glyph_metrics
     {
-        struct data { str text; glyph_style_index style; };
+        struct data { str text; glyph_style_index style;
+            bool operator != (const data & d) const { return !(*this == d); }
+            bool operator == (const data & d) const { return true
+                && text  == d.text
+                && style == d.style;
+            }
+        };
 
         str text; glyph_style_index style; void fill (
         str text, glyph_style_index style)
@@ -127,14 +133,23 @@ namespace gui::text
             
     struct line final : widgetarium<token>
     {
-        struct data { format format; array<token::data> tokens; };
+        struct data { format format; array<token::data> tokens;
+            bool operator != (const data & d) const { return !(*this == d); }
+            bool operator == (const data & d) const { return true
+                && format == d.format
+                && tokens == d.tokens;
+            }
+        };
 
+        data data_copy;
         array<row> rows;
 
         void fill (data data)
         {
-            auto & format = data.format;
-            auto & tokens = data.tokens;
+            if (data_copy == data) return;
+            /**/data_copy = std::move(data);
+            auto & format = data_copy.format;
+            auto & tokens = data_copy.tokens;
 
             rows.clear();
 
@@ -227,14 +242,14 @@ namespace gui::text
             
     struct column : widgetarium<line>
     {
-        void fill (const array<line::data> & datae)
+        void fill (array<line::data> datae)
         {
             int n = 0; int width = 0; int height = 0;
 
-            for (const auto & data : datae)
+            for (auto && data : datae)
             {
                 line & line = (*this)(n);
-                line.fill(data);
+                line.fill(std::move(data));
                 line.move_to(XY(0, height));
                 n++;
 
