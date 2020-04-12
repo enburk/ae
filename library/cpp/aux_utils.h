@@ -5,6 +5,7 @@
 #include <variant>
 #include <optional>
 #include <algorithm>
+#include <shared_mutex>
 namespace aux
 {
     struct nothing {};
@@ -40,6 +41,7 @@ namespace aux
         const Error && error () const && { if (ok()) return std::get<1>(std::move(*this)); throw std::runtime_error("It was OK."); }
     };
 
+    ////////////////////////////////////////////////////////////////////////////
     // Sean Parent, CppCon 2019
     // Russian coat check algorithm
     template<class T> struct registry
@@ -73,6 +75,7 @@ namespace aux
         }
     };
 
+    ////////////////////////////////////////////////////////////////////////////
     template<class type> struct deque : public std::deque<type>
     {
         using base = std::deque<type>;
@@ -114,6 +117,7 @@ namespace aux
         };\
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     namespace unicode
     {
         array<str> glyphs (str s)

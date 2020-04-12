@@ -1,4 +1,5 @@
 #pragma once
+#include "gui_colors.h"
 #include "gui_widget.h"
 namespace gui
 {
