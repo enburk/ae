@@ -21,6 +21,9 @@ namespace pix
         bool operator != ( const RGBA & c ) const { return value != c.value; }
         bool operator <  ( const RGBA & c ) const { return value <  c.value; }
 
+        static const int color_channels = 3;
+        static const int total_channels = 4;
+
         void blend (RGBA c, uint8_t alpha = 255) {
             uint8_t
                 A = alpha == 255 ? c.a : c.a * alpha >> 8;

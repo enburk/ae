@@ -39,6 +39,7 @@ expected<image<RGBA>> pix::unpack (std::byte* buffer, int size) try
 
     return result;
 }
+catch(std::exception & e) { return error("pix::unpack: " + str(e.what())); }
 catch(...){ return error("pix::unpack: EXCEPTION"); }
 
 
@@ -55,6 +56,7 @@ expected<pix::image<RGBA>> pix::read (std::filesystem::path path) try
 
     return result;
 }
+catch(std::exception & e) { return error("pix::read: " + str(e.what())); }
 catch(...){ return error("pix::read: EXCEPTION " + path.string()); }
 
 
@@ -62,8 +64,7 @@ expected<nothing> pix::write (frame<RGBA> frame, std::filesystem::path path, int
 {
     auto dir = path.parent_path();
     if (dir != std::filesystem::path())
-        if (!std::filesystem::create_directories(dir))
-            return error("pix::write: couldn't create dirs for: " + path.string());
+        std::filesystem::create_directories(dir);
 
     if( quality == -1 ) quality = 95;
     EncoderParameters encoderParameters;
@@ -95,6 +96,7 @@ expected<nothing> pix::write (frame<RGBA> frame, std::filesystem::path path, int
     if (rc == Ok) return nothing{};
     else return error("pix::write: error: " + path.string());
 }
+catch(std::exception & e) { return error("pix::write: " + str(e.what())); }
 catch(...){ return error("pix::write: EXCEPTION " + path.string()); }
 
 
@@ -154,6 +156,7 @@ expected<array<std::byte>> pix::pack (frame<RGBA> frame, str format, int quality
     if (rc != "") return error("pix::pack: error: " + rc);
     return result;
 }
+catch(std::exception & e) {return error("pix::pack: " + str(e.what())); }
 catch(...){ return error("pix::pack: EXCEPTION"); }
 
 ///////////////////////////////////////////////////////////////////////////////

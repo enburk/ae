@@ -159,5 +159,11 @@
     <ClInclude Include="library\cpp\proto-studio\gui_widget_text_console.h">
       <Filter>gui</Filter>
     </ClInclude>
+    <ClInclude Include="library\cpp\pix_sampling.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\pix_process.h">
+      <Filter>aux</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

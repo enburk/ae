@@ -192,6 +192,15 @@ namespace aux
              triml(chars);
         }
 
+        void align_left (int n, char padding = ' ') {
+            if (size() < n) *this += str(padding, n - size());
+        }
+        void align_right (int n, char padding = ' ') {
+            if (size() < n) *this = str(padding, n - size()) + *this;
+        }
+        str left_aligned  (int n, char padding = ' ') { str s = *this; s.align_left (n, padding); return s; }
+        str right_aligned (int n, char padding = ' ') { str s = *this; s.align_right(n, padding); return s; }
+
         int replace_all (str from, str to) {
             int pos = 0, nn = 0;
             while (true) {
@@ -200,6 +209,24 @@ namespace aux
                 pos += to.size ();
                 nn++;
             };
+            return nn;
+        }
+        int replace_all (char c, int ccc, str to) // c repeated exactly ccc times
+        {
+            int pos = 0, nn = 0;
+            while (true) {
+                auto range = find(str(c, ccc), start_from(pos)); if (range.empty()) break;
+                pos = range.offset;
+                if (pos+ccc >= size() || at(pos+ccc) != c) {
+                    range.replace_by(to);
+                    pos += to.size ();
+                    nn++;
+                }
+                else {
+                    range = find(one_not_of{str(c, 1)}, start_from(pos)); if (range.empty()) break;
+                    pos = range.offset;
+                }
+            }
             return nn;
         }
     

@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include <cmath>
 #include <random>
 #include <numeric>
@@ -31,10 +32,10 @@ namespace aux
     }
 
     template<class T, int D> struct vector_data { std::array<T, D> data{}; void resize(int) {} }; // value-initialized
-    template<class T> struct vector_data<T, 1> { union { std::array<T, 1> data; struct { T x; }; }; void resize(int) {} };
-    template<class T> struct vector_data<T, 2> { union { std::array<T, 2> data; struct { T x, y; }; }; void resize(int) {} };
-    template<class T> struct vector_data<T, 3> { union { std::array<T, 3> data; struct { T x, y, z; }; }; void resize(int) {} };
-    template<class T> struct vector_data<T, 4> { union { std::array<T, 4> data; struct { T x, y, z, w; }; }; void resize(int) {} };
+    template<class T> struct vector_data<T, 1> { union { std::array<T, 1> data{}; struct { T x; }; }; void resize(int) {} };
+    template<class T> struct vector_data<T, 2> { union { std::array<T, 2> data{}; struct { T x, y; }; }; void resize(int) {} };
+    template<class T> struct vector_data<T, 3> { union { std::array<T, 3> data{}; struct { T x, y, z; }; }; void resize(int) {} };
+    template<class T> struct vector_data<T, 4> { union { std::array<T, 4> data{}; struct { T x, y, z, w; }; }; void resize(int) {} };
     template<class T> struct vector_data<T, 0> { std::vector<T> data; void resize(int n) { data.resize(n); } };
 
     template<int D, class T = float> struct vector : vector_data<T, D>

@@ -152,6 +152,8 @@
     <ClInclude Include="library\cpp\pix_color.h" />
     <ClInclude Include="library\cpp\pix_coord.h" />
     <ClInclude Include="library\cpp\pix_image.h" />
+    <ClInclude Include="library\cpp\pix_process.h" />
+    <ClInclude Include="library\cpp\pix_sampling.h" />
     <ClInclude Include="library\cpp\platforms\microsoft_windows.h" />
     <ClInclude Include="library\cpp\platforms\microsoft_windows_fonts.h" />
     <ClInclude Include="library\cpp\platforms\microsoft_windows_images.h" />

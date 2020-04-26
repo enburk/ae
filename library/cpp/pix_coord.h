@@ -14,14 +14,21 @@ namespace pix
         XY (            ) : x (0), y (0) {}
         XY (int x, int y) : x (x), y (y) {}
 
-        void operator += (XY r) { x += r.x; y += r.y; }; friend XY operator + (XY a, XY b) { a += b; return a; }
-        void operator -= (XY r) { x -= r.x; y -= r.y; }; friend XY operator - (XY a, XY b) { a -= b; return a; }
+        void operator += (XY r) { x += r.x; y += r.y; };
+        void operator -= (XY r) { x -= r.x; y -= r.y; };
 
-        void operator *= (int n) { x *= n; y *= n; }; friend XY operator * (XY a, int n) { a *= n; return a; }
-        void operator /= (int n) { x /= n; y /= n; }; friend XY operator / (XY a, int n) { a /= n; return a; }
+        void operator *= (int n) { x *= n; y *= n; };
+        void operator /= (int n) { x /= n; y /= n; };
 
-        bool operator == (XY r) const { return x == r.x && y == r.y; }
-        bool operator != (XY r) const { return ! (*this == r); }
+        bool operator == (XY v) const { return x == v.x && y == v.y; }
+        bool operator != (XY v) const { return ! (*this == v); }
+
+        friend XY operator + (XY a, XY b) { a += b; return a; }
+        friend XY operator - (XY a, XY b) { a -= b; return a; }
+
+        friend XY operator * (int n, XY v) { v *= n; return v; }
+        friend XY operator * (XY v, int n) { v *= n; return v; }
+        friend XY operator / (XY v, int n) { v /= n; return v; }
     };
     struct XYXY
     {
