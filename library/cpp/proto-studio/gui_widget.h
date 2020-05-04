@@ -3,6 +3,7 @@
 #include <set>
 #include "../aux_utils.h"
 #include "../pix_image.h"
+#include "../pix_sampling.h"
 #include "gui_effect.h"
 namespace gui::base
 {

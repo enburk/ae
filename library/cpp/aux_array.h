@@ -66,6 +66,9 @@ namespace aux
             const iterator end   () const { auto p = arr->data(); return iterator{p+offset, p+offset+length}; }
             auto data () { return arr->data() + offset; }
 
+            const type& operator [] (int i) const { return (*arr)[offset + i]; }
+            /***/ type& operator [] (int i) /***/ { return (*arr)[offset + i]; }
+
             explicit
             operator bool () const { return length > 0; }
             bool empty () const { return length == 0; }

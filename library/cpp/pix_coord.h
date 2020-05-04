@@ -33,14 +33,15 @@ namespace pix
     struct XYXY
     {
         union  {
+        struct { int l, t, r, b; };
+        struct { int x1, y1, x2, y2; };
+        struct { int xl, yl, xh, yh; };
+        struct { int left,top, right,bottom; };
+        struct { XY  left_top, right_bottom; };
+        struct { XY  origin, end; };
         struct { XY  p1, p2; };
         struct { XY  lt, rb; };
-        struct { XY  origin, end; };
-        struct { XY  left_top, right_bottom; };
-        struct { int left,top, right,bottom; };
-        struct { int xl, yl, xh, yh; };
-        struct { int x1, y1, x2, y2; };
-        struct { int l, t, r, b; };  };
+        };
 
         XYXY (                          ) : l (0), t (0), r (0), b (0) {}
         XYXY (int l, int t, int r, int b) : l (l), t (t), r (r), b (b) {}
@@ -83,9 +84,10 @@ namespace pix
     struct XYWH
     {
         union  {
+        struct { int x, y, w, h; };
         struct { int left, top, width, height; };
-        struct { XY  origin, size;  };
-        struct { int x, y, w, h; }; };
+        struct { XY  origin, size; };
+        };
 
         XYWH (                          ) : x (0), y (0), w (0), h (0) {}
         XYWH (int x, int y, int w, int h) : x (x), y (y), w (w), h (h) {}

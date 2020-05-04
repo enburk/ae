@@ -14,11 +14,19 @@ static expected<image<RGBA>> FromImage (Image*);
 static Image* MakeImage (frame<RGBA>);
 
 
-expected<image<RGBA>> pix::unpack (array<std::byte>::range r)
+expected<XY> pix::size (array<sys::byte>::range r)
+{
+    auto result = unpack(r);
+    if (!result.ok()) return result.error();
+    return result.value().size;
+}
+
+expected<image<RGBA>> pix::unpack (array<sys::byte>::range r)
 {
     return unpack (r.arr->data() + r.offset, r.length);
 }
-expected<image<RGBA>> pix::unpack (std::byte* buffer, int size) try
+
+expected<image<RGBA>> pix::unpack (sys::byte* buffer, int size) try
 {
     if (size <= 0) return image<RGBA>();
 
@@ -100,7 +108,7 @@ catch(std::exception & e) { return error("pix::write: " + str(e.what())); }
 catch(...){ return error("pix::write: EXCEPTION " + path.string()); }
 
 
-expected<array<std::byte>> pix::pack (frame<RGBA> frame, str format, int quality) try
+expected<array<sys::byte>> pix::pack (frame<RGBA> frame, str format, int quality) try
 {
     if( quality == -1 ) quality = 95;
     EncoderParameters encoderParameters;
@@ -122,7 +130,7 @@ expected<array<std::byte>> pix::pack (frame<RGBA> frame, str format, int quality
     if (encoder == "") return error("pix::pack: unsupported format: " + format);
     auto parameters = encoder == "image/jpeg" ? &encoderParameters : nullptr;
 
-    array<std::byte> result; str rc;
+    array<sys::byte> result; str rc;
 
     GDI_PLUS_INIT;
     CLSID clsid; GetEncoderClsid(winstr(encoder).c_str(), &clsid);

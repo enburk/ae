@@ -208,17 +208,24 @@ namespace sys
 
         void render (pix::frame<RGBA>, XY offset=XY(), uint8_t alpha=255, int x=0);
     };
+
+    using byte = unsigned char;
 }
 namespace pix
 {
-    expected<image<RGBA>>      read   (std::filesystem::path);
-    expected<nothing>          write  (frame<RGBA>, std::filesystem::path, int quality = -1);
-    expected<array<std::byte>> pack   (frame<RGBA>, str format, int quality = -1);
-    expected<image<RGBA>>      unpack (array<std::byte>::range);
-    expected<image<RGBA>>      unpack (std::byte* buffer, int size);
+    using byte = sys::byte;
+
+    expected<image<RGBA>> read   (std::filesystem::path);
+    expected<nothing>     write  (frame<RGBA>, std::filesystem::path, int quality = -1);
+    expected<array<byte>> pack   (frame<RGBA>, str format, int quality = -1);
+    expected<image<RGBA>> unpack (byte* buffer, int size);
+    expected<image<RGBA>> unpack (array<byte>::range);
+    expected<XY>          size   (array<byte>::range);
 }
 namespace aux
 {
-    expected<array<std::byte>> zip    (array<std::byte>::range bytes);
-    expected<array<std::byte>> unzip  (array<std::byte>::range bytes, int uncompressed_size);
+    using byte = sys::byte;
+
+    expected<array<byte>> zip    (array<byte>::range bytes);
+    expected<array<byte>> unzip  (array<byte>::range bytes, int uncompressed_size);
 }

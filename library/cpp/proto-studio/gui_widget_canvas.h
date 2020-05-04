@@ -32,7 +32,7 @@ namespace gui
         property<RGBA> color;
         property<int> thickness = gui::metrics::line::width;
 
-        canvas l, t, r, b;
+        canvas l, t, r, b; // left, top, right, bottom
 
         void on_change () override
         {

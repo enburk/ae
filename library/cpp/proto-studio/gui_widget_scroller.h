@@ -149,4 +149,11 @@ namespace gui
         bool touch = false;
         XY touch_point;
     };
+
+    struct scroll
+    {
+        enum class mode { none, automatic, permanent };
+        struct X : scroller<horizontal> { mode mode = mode::automatic; }; X x;
+        struct Y : scroller<vertical>   { mode mode = mode::automatic; }; Y y;
+    };
 }

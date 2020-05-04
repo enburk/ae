@@ -96,7 +96,7 @@ namespace gui
 
     template<class type> struct property : base_property
     {
-        type from, to, was, now;
+        type now, was, from, to;
         time notch, lapse, transition_time = default_transition_time;
         base::widget* widget = nullptr; std::optional<size_t> receipt;
 
@@ -133,7 +133,7 @@ namespace gui
 
     template<class type> struct binary_property
     {
-        type was, now; base::widget* widget = nullptr;
+        type now, was; base::widget* widget = nullptr;
 
         binary_property (type value = type()) : was(value), now(value) {}
 

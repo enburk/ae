@@ -19,13 +19,7 @@ namespace gui::text
         binary_property<XY> alignment = XY{center, center};
         binary_property<XY> margin_right;
         binary_property<XY> margin_left;
-        struct scroll
-        {
-            enum class mode { none, automatic, permanent };
-            struct X : scroller<horizontal> { mode mode = mode::automatic; }; X x;
-            struct Y : scroller<vertical>   { mode mode = mode::automatic; }; Y y;
-        }
-        scroll;
+        scroll scroll;
 
         void on_change (void* what) override
         {
@@ -105,8 +99,8 @@ namespace gui::text
                 view.column.coord.now.size.y > size.y;
             
             int d = gui::metrics::text::height + 2*gui::metrics::line::width;
-            int x = scroll_x ? size.x - d : size.x;
-            int y = scroll_y ? size.y - d : size.y;
+            int x = scroll_y ? size.x - d : size.x;
+            int y = scroll_x ? size.y - d : size.y;
 
             scroll.x.show (scroll_x);
             scroll.y.show (scroll_y);
