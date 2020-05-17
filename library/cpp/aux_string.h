@@ -134,6 +134,7 @@ namespace aux
         array<str> split_by (pattern pattern) const
         {
             array<str> result;
+            if (size() == 0) return result;
             int start = 0; while (true) {
                 auto range = find(pattern, start_from(start));
                 bool found = bool(range);
@@ -146,6 +147,7 @@ namespace aux
         array<str> split () const
         {
             array<str> result;
+            if (size() == 0) return result;
             std::size_t start = 0, end = 0;
             while ((end = std::string::find('\n', start)) != std::string::npos) {
                 auto n = end - start; if (n > 0 && (*this)[n] == '\r') n--;

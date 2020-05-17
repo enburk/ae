@@ -97,5 +97,7 @@ namespace gui
         };
         iterator<T> begin () { return iterator<T>{this, 0}; }
         iterator<T> end   () { return iterator<T>{this, size()}; }
+        const iterator<T> begin () const { return iterator<T>{const_cast<widgetarium*>(this), 0}; }
+        const iterator<T> end   () const { return iterator<T>{const_cast<widgetarium*>(this), size()}; }
     };
 }

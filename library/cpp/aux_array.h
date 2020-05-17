@@ -143,6 +143,9 @@ namespace aux
         bool contains     (const type & e) const { return std::find (begin(), end(), e) != end(); }
         bool binary_found (const type & e) const { return std::binary_search (begin(), end(), e); }
 
+        template<class P> auto find_if     (P p) const { return std::find_if     (begin(), end(), p); }
+        template<class P> auto find_if_not (P p) const { return std::find_if_not (begin(), end(), p); }
+
         template<class Compare>
         auto lower_bound (const type & e, Compare compare = std::less<>{}) const
         {

@@ -205,6 +205,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
         case WM_SETFOCUS        : sys::keyboard::on::focus (true); break;
         case WM_KILLFOCUS       : sys::keyboard::on::focus (false); break;
+        case WM_SYSKEYDOWN      : sys::keyboard::on::press (wm_key(wparam, lparam, true ), true ); break;
+        case WM_SYSKEYUP        : sys::keyboard::on::press (wm_key(wparam, lparam, false), false); break;
         case WM_KEYDOWN         : sys::keyboard::on::press (wm_key(wparam, lparam, true ), true ); break;
         case WM_KEYUP           : sys::keyboard::on::press (wm_key(wparam, lparam, false), false); break;
         case WM_CHAR            : sys::keyboard::on::input (wm_char(wparam, lparam)); break;

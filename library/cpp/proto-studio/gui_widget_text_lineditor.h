@@ -17,12 +17,10 @@ namespace gui::text
         binary_property<sys::glyph_style> style;
         sys::glyph_style_index style_index;
 
+        array<str> glyphs;
         int caret_from = 0;
         int caret_upto = 0;
         int shift = 0;
-
-        void undo () {}
-        void redo () {}
 
         void on_change (void* what) override
         {
@@ -48,9 +46,10 @@ namespace gui::text
             str junk;
             text.now.split_by("\n", text.now, junk);
             line.fill(text.now + "\n", style_index);
+            glyphs = unicode::glyphs(text.now);
 
-            caret_from = aux::clamp(caret_from, 0, line.size()-1);
-            caret_upto = aux::clamp(caret_upto, 0, line.size()-1);
+            caret_from = aux::clamp(caret_from, 0, glyphs.size());
+            caret_upto = aux::clamp(caret_upto, 0, glyphs.size());
 
             int width = line.coord.now.size.x;
             int Width = coord.now.size.x;
@@ -83,9 +82,11 @@ namespace gui::text
 
         enum WHERE { THERE, GLYPH, TOKEN, BEGIN, END };
 
-        char symbol_kind (int i) {
-            auto & s = line.glyphs[i];
-            return s.size() > 1 || 
+        char symbol_kind (int i) const {
+            const str & s = glyphs[i];
+            return
+                s.size() < 1 ? '\0' :
+                s.size() > 1 || // UTF-8
                 ('0' <= s[0] && s[0] <= '9') ||
                 ('A' <= s[0] && s[0] <= 'Z') ||
                 ('a' <= s[0] && s[0] <= 'z') ? 'A' :
@@ -94,10 +95,10 @@ namespace gui::text
         void go_to_the_next_token ()
         {
             auto kind = symbol_kind(caret_upto);
-            while (caret_upto < line.glyphs.size()-1 &&
+            while (caret_upto < glyphs.size() &&
                 symbol_kind(caret_upto) == kind)
                 caret_upto++;
-            while (caret_upto < line.glyphs.size()-1 &&
+            while (caret_upto < glyphs.size() &&
                 symbol_kind(caret_upto) == ' ')
                 caret_upto++;
         }
@@ -115,40 +116,43 @@ namespace gui::text
         {
             switch(where){
             case THERE: caret_from = caret_upto; break;
-            case-GLYPH: caret_upto = clamp(caret_upto-1, 0, line.size()-1); break;
-            case+GLYPH: caret_upto = clamp(caret_upto+1, 0, line.size()-1); break;
+            case-GLYPH: caret_upto = clamp(caret_upto-1, 0, glyphs.size()); break;
+            case+GLYPH: caret_upto = clamp(caret_upto+1, 0, glyphs.size()); break;
             case-TOKEN: go_to_the_prev_token(); break;
             case+TOKEN: go_to_the_next_token(); break;
             case BEGIN: caret_upto = 0; break;
-            case END  : caret_upto = line.size()-1; break;
+            case END  : caret_upto = glyphs.size(); break;
             }
             if (!selective) caret_from = caret_upto;
             refresh();
         }
 
-        str selected ()
+        str selected () const
         {
             int from = min(caret_from, caret_upto);
             int upto = max(caret_from, caret_upto);
-            return str(line.glyphs.from(from).upto(upto), "");
+            return str(glyphs.from(from).upto(upto), "");
         }
         bool erase_selected ()
         {
             if (caret_from == caret_upto) return false;
             int from = min(caret_from, caret_upto);
             int upto = max(caret_from, caret_upto);
-            line.glyphs.from(from).upto(upto).erase();
+            glyphs.from(from).upto(upto).erase();
             caret_from = caret_upto = from;
             return true;
         }
 
+        void undo () {}
+        void redo () {}
+
         void erase ()
         {
             if (!erase_selected() &&
-                 caret_from < line.glyphs.size()-1)
-                 line.glyphs.erase(caret_from);
+                 caret_from < glyphs.size())
+                 glyphs.erase(caret_from);
 
-            text = str(line.glyphs, "");
+            text = str(glyphs, "");
             notify();
         }
 
@@ -158,9 +162,9 @@ namespace gui::text
             {
                  caret_from--;
                  caret_upto--;
-                 line.glyphs.erase(caret_from);
+                 glyphs.erase(caret_from);
             }
-            text = str(line.glyphs, "");
+            text = str(glyphs, "");
             notify();
         }
 
@@ -168,13 +172,13 @@ namespace gui::text
         {
             if (!erase_selected() &&
                 !caret.insert_mode.now &&
-                 caret_from < line.glyphs.size()-1)
-                 line.glyphs.erase(caret_from);
+                 caret_from < glyphs.size())
+                 glyphs.erase(caret_from);
 
-            line.glyphs.insert(caret_from, s);
+            glyphs.insert(caret_from, unicode::glyphs(s));
             caret_from += s.size();
             caret_upto += s.size();
-            text = str(line.glyphs, "");
+            text = str(glyphs, "");
             notify();
         }
 
@@ -268,6 +272,7 @@ namespace gui::text
             if (key == "end"       ) go(END  ); else
             if (key == "shift+home") go(BEGIN, true); else
             if (key == "shift+end" ) go(END,   true); else
+            if (key == "ctrl+A"  ) { go(BEGIN); go(END, true); } else
 
             if (key == "insert"      ) { caret.insert_mode = !caret.insert_mode.now; } else
             if (key == "shift+insert") { insert(sys::clipboard::get::string()); } else

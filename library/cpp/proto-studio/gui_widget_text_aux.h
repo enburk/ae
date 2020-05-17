@@ -33,22 +33,35 @@ namespace gui::text
         canvas canvas;
         property<time> timer;
         binary_property<bool> insert_mode = true;
+
+        caret () { canvas.color = skins[skin.now].touched.back_color; }
+
         void on_change (void* what) override
         {
             if (timer.now == time())
                 timer.go (time::infinity,
                           time::infinity);
 
+            if (what == &insert_mode)
+            {
+                canvas.color = insert_mode.now ?
+                    skins[skin.now].black:
+                    skins[skin.now].heavy.back_color;
+            }
             if (what == &coord && coord.now.size != coord.was.size
-            ||  what == &insert_mode) {
+            ||  what == &insert_mode)
+            {
                 XYWH r = coord.now.local();
-                if (insert_mode.now) r.w = max (1, r.h/16);
+                if (insert_mode.now) r.w = max (1, r.h/10);
                 canvas.coord = r;
             }
-            if (what == &timer) {
-                int ms = time::now.ms % 1024;
-                if (ms > 512) ms = 1024-ms-1;
-                canvas.alpha = 192 * ms/512 + 64 - 1;
+            if (what == &timer)
+            {
+                const int MS = 1024;
+                int ms = time::now.ms % MS;
+                if (ms > MS/2) ms = MS-ms;
+                canvas.alpha = aux::clamp<uint8_t>
+                    (256 * ms/(MS/2) + 00 - 1);
             }
         }
     };

@@ -28,7 +28,12 @@ namespace gui::text
         unary_property<array<range>> highlights;
         unary_property<array<range>> selections;
 
-        htmlmodel model; array<doc::entity> entities;
+        widgetarium<caret> carets;
+        binary_property<bool> insert_mode = true;
+        binary_property<bool> virtual_space = false;
+        binary_property<bool> focused = false;
+
+        html_model html_model; model* model = &html_model;
 
         view () { on_change(&skin); }
 
@@ -43,8 +48,8 @@ namespace gui::text
             format.ellipsis = ellipsis.now; if (ellipsis.now)
             format.height = coord.now.size.y;
 
-            model = htmlmodel(entities, glyph_style_index(style.now), format);
-            column.fill(model.lines);
+            model->set(glyph_style_index(style.now), format);
+            column.fill(model->lines);
             align();
         }
 
@@ -62,13 +67,48 @@ namespace gui::text
 
             highlight(highlights.now, highlight_bars, skins[skin.now].highlight);
             highlight(selections.now, selection_bars, skins[skin.now].selection);
+
+            refresh_carets ();
+        }
+
+        void refresh_carets ()
+        {
+            int n = 0;
+
+            for (auto range : selections.now)
+                carets(n++).coord = column.bar(range.upto, virtual_space.now)
+                    + column.coord.now.origin;
+
+            carets.truncate(n);
+
+            for (auto & caret : carets) {
+                caret.insert_mode = insert_mode.now;
+                caret.show(focused.now);
+            }
         }
 
         void highlight (array<range> ranges, widgetarium<canvas> & bars, RGBA color)
         {
             int n = 0;
 
-            for (auto [from, upto] : ranges)
+            for (auto range : ranges)
+            {
+                for (XYWH r : column.bars(range))
+                {
+                    auto & bar = bars(n++);
+                    bar.color = color;
+                    bar.coord = r + column.coord.now.origin;
+                }
+            }
+
+            bars.truncate(n);
+        }
+
+        str selected () const
+        {
+            str s;
+
+            for (auto [from, upto] : selections.now)
             {
                 if (from > upto) std::swap (from, upto);
 
@@ -80,8 +120,6 @@ namespace gui::text
                         upto.offset : column(from.line).length();
                     if (from_offset >= upto_offset) continue;
 
-                    int x = column.coord.now.x + column(from.line).coord.now.x;
-                    int y = column.coord.now.y + column(from.line).coord.now.y;
                     int offset = 0;
 
                     for (auto & token : column(from.line))
@@ -92,23 +130,16 @@ namespace gui::text
                             int from_glyph = max(from_offset - offset, 0);
                             int upto_glyph = min(upto_offset - offset, token.size());
 
-                            auto & g1 = token(from_glyph);
-                            auto & g2 = token(upto_glyph-1);
-                            auto & bar = bars(n++);
-                            bar.color = color;
-                            bar.coord = XYXY (
-                                x + token.coord.now.x + g1.coord.now.x,
-                                y + token.coord.now.y + g1.coord.now.y,
-                                x + token.coord.now.x + g2.coord.now.x + g2.coord.now.w,
-                                y + token.coord.now.y + g2.coord.now.y + g2.coord.now.h
-                            );
+                            s += str(token.glyphs
+                                .from(from_glyph)
+                                .upto(upto_glyph), "");
                         }
                         offset += token.size();
                     }
                 }
             }
 
-            bars.truncate(n);
+            return s;
         }
 
         void on_change (void* what) override
@@ -118,32 +149,23 @@ namespace gui::text
                 ground.coord = coord.now.local();
                 highlight_bars.coord = coord.now.local();
                 selection_bars.coord = coord.now.local();
+                carets.coord = coord.now.local();
                 refresh();
             }
             if (what == &text)
             {
-                //entities.clear();
-                //entities += doc::entity{"", "text", ""};
-                //entities.back().head = doc::lexica::txt::parse(doc::text(text.now));
-                //for (auto & token : entities.back().head) token.text.replace_all("\n", "<br>");
-                //html.now = doc::lexica::html::encoded(text.now);
-                //refresh();
-                str s = doc::lexica::html::encoded(text.now);
-                s.replace_all("\n", "<br>");
-                html = s;
+                highlights = array<range>{};
+                selections = array<range>{};
+                model->set(text.now, "text");
+                html.now = model->html();
+                refresh();
             }
             if (what == &html)
             {
-                text.now = doc::lexica::html::untagged(html.now);
-                entities = doc::syntax::html::combine(
-                           doc::syntax::html::parse(
-                           doc::lexica::html::parse(doc::text(html.now))));
-                if (false) { // debug
-                    auto tokens = doc::syntax::html::print(entities);
-                    entities.clear();
-                    entities += doc::entity{"", "text", ""};
-                    entities.back().head = tokens;
-                }
+                highlights = array<range>{};
+                selections = array<range>{};
+                model->set(html.now, "html");
+                text.now = model->text();
                 refresh();
             }
             if (what == &skin)
@@ -194,7 +216,15 @@ namespace gui::text
             {
                 highlight(selections.now, selection_bars,
                     skins[skin.now].selection);
+
+                refresh_carets ();
+            }
+            if (what == &focused || what == &insert_mode)
+            {
+                refresh_carets();
             }
         }
+
+        void on_focus (bool on) override { focused = on; }
     };
 } 

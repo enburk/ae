@@ -141,13 +141,126 @@ namespace gui
     struct scroller<horizontal>:
     widget<scroller<horizontal>>
     {
+        struct Runner : button
+        {
+            void on_mouse_hover (XY p) override
+            {
+                button::on_mouse_hover(p);
+                parent->on_mouse_hover(p + coord.now.origin);
+            }
+            void on_mouse_press (XY p, char button, bool down) override
+            {
+                button::on_mouse_press(p, button, down);
+                parent->on_mouse_press(p + coord.now.origin, button, down);
+            }
+        };
+
         canvas canvas;
-        button runner;
+        Runner runner;
         button left, right, page_left, page_right;
         property<double> ratio = 1;//.6180339887498948482;
         property<int> span = 0, top = 0, step = 1;
         bool touch = false;
-        XY touch_point;
+        int  touch_point;
+        int  touch_top;
+
+        scroller ()
+        {
+            left.text.text = (char*)(u8"\u25C0");
+            right.text.text = (char*)(u8"\u25B6");
+            left.repeating = true;
+            right.repeating = true;
+            page_left.on_change_state = [](){};
+            page_right.on_change_state = [](){};
+            page_left.repeating = true;
+            page_right.repeating = true;
+        }
+
+        void on_change (void* what) override
+        {
+            if (what == &coord || what == &ratio)
+            {
+                int w = coord.now.size.x;
+                int h = coord.now.size.y;
+                int d = clamp<int>(std::round(h/ratio.now));
+                left.coord = XYWH(0,0,d,h);
+                right.coord = XYWH(w-d,0,d,h);
+                canvas.coord = XYWH(0,0,w,h);
+                left.text.font = sys::font{"", d*2/3};
+                right.text.font = sys::font{"", d*2/3};
+                refresh();
+            }
+            if (what == &skin)
+            {
+                canvas.color = gui::skins[skin.now].light.back_color;
+            }
+            if (what == &span)
+            {
+                if (span.now < 0) throw std::out_of_range
+                    ("scroller: negative span");
+
+                int x = max (0, min (top.now, span.now - coord.now.size.x));
+                if (top.now != x) top = x;
+                else refresh();
+            }
+            if (what == &top)
+            {
+                top.now = max (0, min (top.now, span.now - coord.now.size.x));
+                if (top.now != top.was) {
+                    refresh();
+                    notify(top.now);
+                }
+            }
+        }
+
+        void refresh ()
+        {
+            assert(top.now >= 0);
+            assert(span.now >= 0);
+            assert(top.now <= span.now);
+
+            int real_page = coord.now.size.x; if (real_page <= 0) return;
+            int fake_span = coord.now.size.x - 2*left.coord.now.size.x;
+            int fake_page = fake_span * real_page / max(1, span.now);
+            int fake_top  = fake_span * top.now   / max(1, span.now);
+            fake_page = min(fake_span, fake_page);
+            int h = left.coord.now.size.y;
+            int d = left.coord.now.size.x;
+
+            runner.coord = XYWH(d+fake_top, 0, fake_page, h);
+            page_left.coord = XYXY(d, 0, runner.coord.now.y, h);
+            page_right.coord = XYXY(d+fake_top+fake_page, 0, right.coord.now.y, h);
+
+            left.enabled = top.now > 0;
+            right.enabled = top.now < span.now - real_page;
+            runner.enabled = left.enabled.now or right.enabled.now;
+        }
+
+        void on_notify (gui::base::widget* w) override
+        {
+            if (w == &left) top = top.now - step.now;
+            if (w == &right) top = top.now + step.now;
+            if (w == &page_left) top = top.now - coord.now.size.x;
+            if (w == &page_right) top = top.now + coord.now.size.x;
+        }
+
+        void on_mouse_press (XY p, char button, bool right) override
+        {
+            if (button != 'L') return;
+            if (right && !touch) touch_point = p.x;
+            if (right && !touch) touch_top = top.now;
+            touch = right;
+        }
+        void on_mouse_hover (XY p) override
+        {
+            if (!touch) return;
+            int real_page = coord.now.size.x; if (real_page <= 0) return;
+            int fake_span = coord.now.size.x - 2*left.coord.now.size.x;
+            int fake_page = fake_span * real_page / max(1, span.now);
+            int fake_top  = fake_span * top.now   / max(1, span.now);
+            fake_page = min(fake_span, fake_page); if (fake_page <= 0) return;
+            top = touch_top + (p.x - touch_point) * real_page/fake_page;
+        }
     };
 
     struct scroll

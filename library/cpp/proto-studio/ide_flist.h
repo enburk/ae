@@ -11,6 +11,7 @@ struct Flist : gui::widget<Flist>
     gui::widgetarium<gui::button> subs;
     typedef std::filesystem::path path;
     gui::binary_property<path> root;
+    gui::binary_property<path> selected;
 
     static bool less(path a, path b)
     {
@@ -43,6 +44,7 @@ struct Flist : gui::widget<Flist>
             dir.coord = XYWH(r.x, y, r.w, h); y += h; for (auto & sub : subs) {
             sub.coord = XYWH(r.x, y, r.w, h); y += h; }
         }
+
         if (what == &root)
         {
             subs.clear();
@@ -83,6 +85,19 @@ struct Flist : gui::widget<Flist>
                 }
             }
             dir.text = root.now.string();
+        }
+
+        if (what == &selected)
+        {
+            notify();
+        }
+    }
+
+    void on_notify (gui::base::widget* w, int n) override
+    {
+        if (w == &subs)
+        {
+            selected = root.now / std::string(subs(n).text.text.now);
         }
     }
 }; 

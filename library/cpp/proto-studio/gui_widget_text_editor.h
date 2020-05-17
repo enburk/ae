@@ -1,80 +1,90 @@
 #pragma once
+#include "doc_text.h"
 #include "gui_widget_text_aux.h"
 #include "gui_widget_text_model.h"
 #include "gui_widget_text_view.h"
 namespace gui::text
 {
-    struct editor final : widget<editor>
+    struct editor final : widget<editor>, model
     {
-        //doc::Document _document;
-        //doc::Document* document = &_document;
-        //
-        //struct model
-        //{
-        //    XY shift;
-        //    array<XY> metrics;
-        //    array<XY> metrics_word_wrap;
-        //    struct caret { doc::place position, selection; };
-        //    array <caret> carets = {caret{}};
-        //}
-        //model;
-
-        model model;
-
-        canvas background;
-        widgetarium<canvas> highlight;
-        widgetarium<canvas> selection;
-        view view; // after selection, before carets
-        widgetarium<caret> carets;
-
+        page page;
         binary_property<bool> insert_mode = true;
         binary_property<bool> virtual_space = false;
+        doc::text_model model;
+        html_model html_model;
 
-        property<XY> offset;
-
-        void on_change (void* what) override
+        editor ()
         {
-            if (what == &coord && coord.now.size != coord.was.size)
-            {
-                auto r = coord.now.local();
-                background.coord = r;
-                highlight.coord = r;
-                selection.coord = r;
-                carets.coord = r;
-                view.coord = r;
+            page.view.model = this;
+            page.alignment = XY{gui::text::left, gui::text::top};
+        }
 
-                refresh();
-            }
-            if (what == &insert_mode)
+        str text () override { return ""; }
+        str html () override { return ""; }
+
+        void set (str text, str format) override
+        {
+            model = doc::text_model(text);
+            page.view.refresh();
+            page.refresh();
+            refresh();
+        }
+
+        void set (glyph_style_index s, format f) override
+        {
+            lines = {line::data{f}};
+
+            for (const auto & t : model.tokens)
             {
-                for (auto & caret : carets)
-                    caret.insert_mode =
-                    insert_mode.now;
+                if (t.text == "\n")
+                {
+                    lines.back().tokens += token::data{str(' ', 128), s}; // huge slowdown
+                    lines.back().tokens += token::data{"\n", s};
+                    lines += {line::data{f}};
+                }
+                else lines.back().tokens += token::data{t.text, s};
             }
         }
 
         void refresh ()
         {
-            //view.tokens = document->lines[0].tokens;
+            array<range> selections;
+            for (auto s : model.selections)
+                selections += range{
+                    place{s.from.line, s.from.offset},
+                    place{s.upto.line, s.upto.offset}};
+                
+            page.view.selections = selections;
 
-            //for (int i=0; i<model.carets.size(); i++)
-            //{
-            //    auto & caret = model.carets[i];
-            //    auto & Caret = i < carets.size() ? carets(i) : carets.emplace_back();
-            //
-            //    Caret.insert_mode = insert_mode.now || !caret.selection.empty();
-            //
-            //    auto color = i == 0 ?
-            //        schemas[""].touched.back_color:
-            //        schemas[""].focus.back_color;
-            //    color.a = 192;
-            //    Caret.canvas.color = color;
-            //    Caret.coord = view.position(caret.position);
-            //    Caret.insert_mode = insert_mode.now;
-            //}
-            //carets.truncate(model.carets.size());
+            if (page.view.carets.size() == 0) return;
+            
+            XYXY r = page.view.carets.back().coord.now;
 
-            notify();
+            int d = metrics::text::height;
+            int w = coord.now.size.x, dx = 0;
+            int h = coord.now.size.y, dy = 0;
+
+            if (r.xl-d < 0) dx = r.xl-d; else if (r.xh+d > w) dx = r.xh+d-w;
+            if (r.yl-d < 0) dy = r.yl-d; else if (r.yh+d > h) dy = r.yh+d-h;
+
+            if (dx != 0) page.scroll.x.top = page.scroll.x.top.now + dx;
+            if (dy != 0) page.scroll.y.top = page.scroll.y.top.now + dy;
+        }
+
+        void on_change (void* what) override
+        {
+            if (what == &coord && coord.now.size != coord.was.size)
+            {
+                page.coord = coord.now.local();
+            }
+            if (what == &virtual_space)
+            {
+                page.view.virtual_space = virtual_space.now;
+            }
+            if (what == &insert_mode)
+            {
+                page.view.insert_mode = insert_mode.now;
+            }
         }
 
         enum WHERE { THERE = 0,
@@ -84,41 +94,125 @@ namespace gui::text
 
         void go (int where, bool selective = false)
         {
-            // XYWH r = model.current_glyph();
-            // XY p = r.origin;
-            // switch (where) {
-            // case THERE: break;
-            // case GLYPH: 
-            // case TOKEN:
-            // case LINE: case LINE_BEGIN: case LINE_END: case PAGE_TOP:
-            // case PAGE: case TEXT_BEGIN: case TEXT_END: case PAGE_BOTTOM:
-            // }
-            // model.go(p, selective);
+            int n = model.selections.size();
+            if (n >= 2 && !selective) {
+                model.selections[0] = 
+                model.selections[n-1];
+                model.selections.truncate(1);
+            }
+
+            for (auto & caret : model.selections)
+                go(caret, where, selective);
+
+            refresh();
+        }
+        void go (doc::range & caret, int where, bool selective)
+        {
+            auto & [from, upto] = caret;
+            auto & line = model.lines[upto.line];
+
+            switch(where){
+            case THERE: from = caret.upto; break;
+
+            case-GLYPH: upto.offset--;
+                if (upto.offset < 0 && virtual_space.now) upto.offset++; else
+                if (upto.offset < 0 && upto.line > 0) {
+                    upto.offset = model.lines[upto.line].size();
+                    upto.line--;
+                }
+                break;
+            case+GLYPH: upto.offset++;
+                if (upto.offset > line.size() && virtual_space.now) {;} else
+                if (upto.offset > line.size() && upto.line < model.lines.size()-1) {
+                    upto.offset = 0;
+                    upto.line++;
+                }
+                break;
+
+            case LINE_END  : upto.offset = line.size(); break;
+            case LINE_BEGIN:
+                {
+                    auto i = line.find_if([](auto s){ return s != " "; });
+                    if (i == line.end()) upto.offset = 0; else {
+                        int n = (int)(i - line.begin());
+                        upto.offset = upto.offset != n ? n : 0;
+                    }
+                }
+                break;
+
+            case-LINE: upto.line--;
+                if (upto.line < 0) upto.line++; else
+                if (upto.offset > model.lines[upto.line].size() && !virtual_space.now)
+                    upto.offset = model.lines[upto.line].size();
+                break;
+            case+LINE: upto.line++;
+                if (upto.line  >= model.lines.size()) upto.line--; else
+                if (upto.offset > model.lines[upto.line].size() && !virtual_space.now)
+                    upto.offset = model.lines[upto.line].size();
+                break;
+
+            //case-TOKEN: break;
+            //case+TOKEN: break;
+
+            case-PAGE: upto.line -= page.view.coord.now.h /
+                sys::metrics(page.view.font.now).height;
+                if (upto.line < 0)
+                    upto.line = 0;
+                break;
+            case+PAGE: upto.line += page.view.coord.now.h /
+                sys::metrics(page.view.font.now).height;
+                if (upto.line > model.lines.size() - 1)
+                    upto.line = model.lines.size() - 1;
+                break;
+
+            //case PAGE_TOP   : break;
+            //case PAGE_BOTTOM: break;
+
+            case TEXT_BEGIN: upto.line = 0; upto.offset = 0; break;
+            case TEXT_END  : upto.line = model.lines.size()-1;
+                upto.offset = model.lines[upto.line].size();
+                break;
+            }
+
+            if (!selective) from = upto;
         }
 
         void show (int where)
         {
+            switch(where){
+            case-LINE:
+                page.scroll.y.top = page.scroll.y.top.now
+                - sys::metrics(page.view.font.now).height;
+                break;
+            case+LINE:
+                page.scroll.y.top = page.scroll.y.top.now
+                + sys::metrics(page.view.font.now).height;
+                break;
+            case-PAGE:
+                page.scroll.y.top = page.scroll.y.top.now - page.view.coord.now.h
+                / sys::metrics(page.view.font.now).height
+                * sys::metrics(page.view.font.now).height;
+                break;
+            case+PAGE:
+                page.scroll.y.top = page.scroll.y.top.now + page.view.coord.now.h
+                / sys::metrics(page.view.font.now).height
+                * sys::metrics(page.view.font.now).height;
+                break;
+            }
         }
 
-        void erase (int where = GLYPH)
+        void update_view ()
         {
-            // str s = model.selection();
-            // if (where == GLYPH) model.insert("", false);
-            // if (where == -GLYPH)
-            // if (where == LINE)
-            // model.erase(); refresh();
+            page.view.refresh();
+            page.refresh();
+            refresh();
+            notify();
         }
-
-        void insert (str s)
-        {
-            // str s = model.selection();
-            // if (s == "\t")
-            // if (s == "shift+\t")
-            // 
-            // model.insert(s, insert_mode.now);
-            // 
-            // refresh();
-        }
+        void undo        () { if (model.undo     ()) update_view(); }
+        void redo        () { if (model.redo     ()) update_view(); }
+        void erase       () { if (model.erase    ()) update_view(); }
+        void backspace   () { if (model.backspace()) update_view(); }
+        void insert (str s) { if (model.insert  (s)) update_view(); }
 
         void on_key_pressed (str key, bool down) override
         {
@@ -137,25 +231,43 @@ namespace gui::text
             if (key == "ctrl+shift+Z") key = "ctrl+backspace"; else // redo
             {}
 
+            if (key == "alt+shift+left" ) key = "shift+left";
+            if (key == "alt+shift+right") key = "shift+right";
+
             if (key == "alt+shift+up")
             {
-                // int n = model.carets.size();
-                // if (n >= 2 &&
-                //     model.carets[n-2].position.line == 
-                //     model.carets[n-1].position.line + 1)
-                //     model.carets.truncate();
-                // else model.carets += model::caret {
-                //     doc::place{model.carets[n-1].position.line - 1},
-                //     doc::range{}
-                // };
+                int n = model.selections.size();
+                if (n >= 2 &&
+                    model.selections[n-2].upto.line == 
+                    model.selections[n-1].upto.line - 1)
+                    model.selections.truncate();
+                else
+                if (n >= 1 &&
+                    model.selections[n-1].upto.line < model.lines.size())
+                    model.selections += doc::range{
+                        {model.selections[n-1].from.line-1, model.selections[n-1].from.offset},
+                        {model.selections[n-1].upto.line-1, model.selections[n-1].upto.offset}};
+                else return;
+                refresh();
             }
+            else
             if (key == "alt+shift+down")
             {
+                int n = model.selections.size();
+                if (n >= 2 &&
+                    model.selections[n-2].upto.line == 
+                    model.selections[n-1].upto.line + 1)
+                    model.selections.truncate();
+                else
+                if (n >= 1 &&
+                    model.selections[n-1].upto.line > 0)
+                    model.selections += doc::range{
+                        {model.selections[n-1].from.line+1, model.selections[n-1].from.offset},
+                        {model.selections[n-1].upto.line+1, model.selections[n-1].upto.offset}};
+                else return;
+                refresh();
             }
-
-            key.replace_all("alt+shift+", "shift+");
-
-            // horizontal: 1 glyph, 2 token, 3 
+            else
 
             if (key == "left" ) go(-GLYPH); else
             if (key == "right") go(+GLYPH); else
@@ -199,12 +311,12 @@ namespace gui::text
 
             if (key == "insert"           ) { insert_mode = !insert_mode.now; } else
             if (key == "shift+insert"     ) { insert(sys::clipboard::get::string()); } else
-            if (key == "ctrl+insert"      ) { sys::clipboard::set(model.selection()); } else
+            if (key == "ctrl+insert"      ) { sys::clipboard::set(page.view.selected()); } else
             if (key == "ctrl+shift+insert") {} else // VS: clipboard contex menu
 
             if (key == "delete"           ) { erase(); } else
-            if (key == "shift+delete"     ) { sys::clipboard::set(model.selection()); erase(); } else
-            if (key == "ctrl+delete"      ) { erase(LINE); } else // != VS
+            if (key == "shift+delete"     ) { sys::clipboard::set(page.view.selected()); erase(); } else
+            if (key == "ctrl+delete"      ) {} else
             if (key == "ctrl+shift+delete") {} else
 
             if (key == "enter"            ) { insert("\n"); } else
@@ -212,17 +324,15 @@ namespace gui::text
             if (key == "ctrl+enter"       ) { go(LINE_BEGIN); insert("\n"); } else
             if (key == "ctrl+shift+enter" ) { go(LINE_END  ); insert("\n"); } else
 
-            if (key == "backspace"        ) { erase(-GLYPH); } else
-            if (key == "alt+backspace"    ) { model.undo(); refresh(); } else
-            if (key == "ctrl+backspace"   ) { model.redo(); refresh(); } else // != VS
+            if (key == "backspace"        ) { backspace(); } else
+            if (key == "alt+backspace"    ) { undo(); } else
+            if (key == "ctrl+backspace"   ) { redo(); } else // != VS
 
             if (key == "tab"              ) { insert("\t"); } else
             if (key == "shift+tab"        ) { insert("shift+\t"); } else
             if (key == "escape"           ) { go(THERE); } else
 
-            {
-                insert(" [" + key + "] "); //(down ? " (down) " : " (up) ");
-            }
+            {} // insert(" [" + key + "] "); // (down ? " (down) " : " (up) ");
         }
         void on_keyboard_input (str symbol) override
         {
@@ -230,19 +340,13 @@ namespace gui::text
         }
         void on_focus (bool on) override
         {
-            for (auto & caret : carets)
-                caret.show(on);
+            page.view.on_focus(on);
         }
 
         bool touch = false;  XY touch_point; time touch_time;
 
         bool mouse_sensible (XY p) override { return true; }
 
-        void on_mouse_wheel (XY p, int delta) override
-        {
-            if (delta < 0) while (delta++) show(-LINE);
-            if (delta > 0) while (delta--) show(+LINE);
-        }
         void on_mouse_press (XY p, char button, bool down) override
         {
             if (button != 'L') return;
@@ -258,9 +362,6 @@ namespace gui::text
                 }
                 else
                 {
-                    touch_point = p;
-                    touch_time = time::now;
-                    //go(model.position(p + offset.now));
                 }
             }
             touch = down;
@@ -280,7 +381,15 @@ namespace gui::text
             }
             else
             {
-                //if (touch) go(model.position(p + offset.now), true);
+            }
+
+            int n = page.view.selections.now.size();
+            model.selections.resize(n);
+            for (int i=0; i<n; i++) {
+                auto r = page.view.selections.now[i];
+                model.selections[i] = doc::range{
+                    doc::place{r.from.line, r.from.offset},
+                    doc::place{r.upto.line, r.upto.offset}};
             }
         }
     };

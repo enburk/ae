@@ -25,7 +25,7 @@ struct IDE : gui::widget<IDE>
 
     struct document
     {
-        doc::Document document;
+        //doc::Document document;
         //gui::text::editor::model::context context;
     };
 
@@ -78,7 +78,7 @@ struct IDE : gui::widget<IDE>
         if (w == &flist)
         {
             //documents[flist.path.was].context= editor.model.context;
-            //editor.load(flist.path);
+            editor.object.load(flist.object.selected.now);
         }
     }
 

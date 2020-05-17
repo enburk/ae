@@ -100,6 +100,13 @@ namespace gui
                           down ? time::infinity : time());
             }
         }
+
+        void on_focus (bool on) override { focused = on; }
+
+        void on_key_pressed (str key, bool down) override
+        {
+            if (key == "enter") enter_pressed = down;
+        }
     };
 
     struct checkbox : button

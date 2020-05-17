@@ -11,8 +11,18 @@ struct Editor : gui::widget<Editor>
     str filename;
 
     gui::text::editor editor;
-    gui::scroller<gui::vertical> vscroller;
-    gui::scroller<gui::horizontal> hscroller;
+
+    void load (std::filesystem::path path)
+    {
+        std::ifstream stream(path); str text = std::string{(
+        std::istreambuf_iterator<char>(stream)),
+        std::istreambuf_iterator<char>()};
+
+        if (text.starts_with("\xEF" "\xBB" "\xBF"))
+            text.upto(3).erase(); // UTF-8 BOM
+
+        editor.set(text, "text");
+    }
 
     void on_change (void* what) override
     {
@@ -20,38 +30,14 @@ struct Editor : gui::widget<Editor>
         {
             int h = gui::metrics::text::height;
 
-            editor.background.color = pix::white;
-            editor.view.style = sys::glyph_style{
+            editor.coord = coord.now.local();
+            editor.virtual_space = true;
+            editor.page.view.word_wrap = false;
+            editor.page.view.ground.color = pix::white;
+            editor.page.style = sys::glyph_style{
                 sys::font{"Consolas", h*110/100},
                 pix::black };
-
-            refresh();
         }
-    }
-
-    void refresh ()
-    {
-        auto r = coord.now.local();
-        
-        int d = gui::metrics::text::height + 2*gui::metrics::line::width;
-
-        if (editor.model.size.x > r.w)
-        {
-            hscroller.coord = XYWH(r.x,       r.y+r.h-d, r.w-d,     d);
-            vscroller.coord = XYWH(r.x+r.w-d, r.y,           d, r.h-d);
-            editor   .coord = XYWH(r.x,       r.y,       r.w-d, r.h-d);
-        }
-        else
-        {
-            hscroller.coord = XYWH();
-            vscroller.coord = XYWH(r.x+r.w-d, r.y,     d, r.h);
-            editor   .coord = XYWH(r.x,       r.y, r.w-d, r.h);
-        }
-
-        hscroller.span = editor.model.size.x;
-        vscroller.span = editor.model.size.y;
-        hscroller.top  = editor.offset.now.x;
-        vscroller.top  = editor.offset.now.y;
     }
 
     void on_focus (bool on) override { editor.on_focus(on); }
@@ -60,11 +46,8 @@ struct Editor : gui::widget<Editor>
 
     void on_notify (gui::base::widget* w) override
     {
-        if (w == &editor) refresh();
     }
     void on_notify (gui::base::widget* w, int n) override
     {
-        if (w == &hscroller) editor.offset = XY(n, editor.offset.now.y);
-        if (w == &vscroller) editor.offset = XY(editor.offset.now.x, n);
     }
 };
