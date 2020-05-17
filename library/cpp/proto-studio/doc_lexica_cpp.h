@@ -1,83 +1,109 @@
 #pragma once
-#include "cpp_data.h"
-
-    inline constexpr auto ascii (char c) { return c >= ' ' && c <= '~'; };
-    inline constexpr auto space (char c) { return c == ' ' || c =='\t'; };
-    inline constexpr auto digit (char c) { return c >= '0' && c <= '9'; };
-    inline constexpr auto alpha (char c) { return c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z'; };
-
-deque<Token> lexica (array<Source> & sources, string file)
+#include "doc.h"
+namespace doc::lexica::cpp
 {
-    deque<Token> output; Source & source = sources.back (); source.lines += ""; Token t;
+    inline constexpr auto ascii (char c) { return c >= ' ' && c <= '~'; }
+    inline constexpr auto space (char c) { return c == ' ' || c =='\t'; }
+    inline constexpr auto digit (char c) { return c >= '0' && c <= '9'; }
+    inline constexpr auto alpha (char c) { return c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z'; }
 
-    bool UTF_8_BOM = false; if (file.headed("\xEF" "\xBB" "\xBF")) { UTF_8_BOM = true; file.erase (0,3); }
+    inline auto ascii (str c) { return c.size() == 1 && ascii(c[0]); }
+    inline auto space (str c) { return c.size() == 1 && space(c[0]); }
+    inline auto digit (str c) { return c.size() == 1 && digit(c[0]); }
+    inline auto alpha (str c) { return c.size() == 1 && alpha(c[0]); }
 
-    file += "\n\n"; // happy ending
-
-    for (char c : file)
+    inline array<token> parse (const text & text)
     {
-        if (c != '\n' && !ascii(c) && !space(c) && !UTF_8_BOM) throw Error ("Lexica: non-ASCII character without UTF-8 BOM", t);
+        array<token> tokens; token t; str comment;
 
-        if (c == '\n') source.lines += ""; else source.lines.back () += c;
-
-        if (t.text == "/*"  && c != '*') {                 continue; }
-        if (t.text == "/*"  && c == '*') { t.text = "/**"; continue; }
-        if (t.text == "/**" && c != '/') { t.text = "/*";  continue; }
-        if (t.text == "/**" && c == '/') { t.text = "";    continue; }
-
-        if (t.text == "//"  && c !='\n') {                 continue; }
-        if (t.text == "//"  && c =='\n') { t.text = "";    continue; }
-
-        bool same = false;
-
-        if (t.type == "space"  ) same = space (c); else
-        if (t.type == "name"   ) same = alpha (c) || digit (c) || c == '_'; else
-        if (t.type == "number" ) same = alpha (c) || digit (c) || c == '.'; else
-        if (t.type == "literal") same = t.text == "\"" || !t.text.tailed ("\"") || t.text.tailed ("\\\""); else
-        if (t.type == "char"   ) same = t.text == "\'" || !t.text.tailed ("\'") || t.text.tailed ("\\\'"); else
-        if (t.type == "symbol" ) same = false
-                
-        ||  t.text == "+" && ( c == '=' || c == '+' )
-        ||  t.text == "-" && ( c == '=' || c == '-' || c == '>' )
-        ||  t.text == "/" && ( c == '=' || c == '*' || c == '/' )
-        ||  t.text == "*" && ( c == '=' )
-
-        ||  t.text == "<" && ( c == '=' || c == '<' )
-        ||  t.text == ">" && ( c == '=' || c == '>' )
-        ||  t.text == "&" && ( c == '=' || c == '&' )
-        ||  t.text == "|" && ( c == '=' || c == '|' )
-        ||  t.text == "!" && ( c == '=' )
-        ||  t.text == "=" && ( c == '=' )
-        ||  t.text == ":" && ( c == ':' )
-
-        ||  t.text =="<<" && ( c == '=' )
-        ||  t.text ==">>" && ( c == '=' )
-
-        ||  t.text == "." && ( c == '.' )
-        ||  t.text ==".." && ( c == '.' )
-        
-        ||  t.text.size () == 1 && (static_cast<uint8_t>(t.text [0]) & 0b11000000) == 0b11000000 // UTF-8: 110xxxxx 10xxxxxx
-        ||  t.text.size () == 2 && (static_cast<uint8_t>(t.text [0]) & 0b11100000) == 0b11100000 // UTF-8: 1110xxxx 10xxxxxx 10xxxxxx
-        ||  t.text.size () == 3 && (static_cast<uint8_t>(t.text [0]) & 0b11110000) == 0b11110000 // UTF-8: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-        ;
-        if (same) t.text += c; else
+        for (auto [line, n] : text.lines.whole())
         {
-            if (t.text != "") output += t;
+            if (comment == "//") comment = "";
+            if (comment == "/**") comment = "/*";
 
-            t.text   = c;
-            t.source = sources.             size () - 1;
-            t.line   = source.lines.        size () - 1;
-            t.column = source.lines.back ().size () - 1;
-            t.type   =
+            for (auto [c, offset] : line.whole())
+            {
+                if (comment != "") { t.kind = "comment"; t.text += c; }
 
-                alpha (c) ? "name"    :
-                digit (c) ? "number"  :
-                space (c) ? "space"   : 
-                c == '\"' ? "literal" : 
-                c == '\'' ? "char"    : 
-                            "symbol"  ;
+                if (comment == "/*"  && c != "*") {                  continue; }
+                if (comment == "/*"  && c == "*") { comment = "/**"; continue; }
+                if (comment == "/**" && c != "/") { comment = "/*";  continue; }
+                if (comment == "/**" && c == "/") { comment = "";    continue; }
+
+                if (comment == "//") continue;
+
+                bool same = false;
+
+                if (t.kind == "space"  ) same = space (c); else
+                if (t.kind == "name"   ) same = alpha (c) || digit (c) || c == "_"; else
+                if (t.kind == "number" ) same = alpha (c) || digit (c) || c == "."; else
+                if (t.kind == "literal") same = t.text == "\"" || !t.text.ends_with("\"") || t.text.ends_with("\\\""); else
+                if (t.kind == "char"   ) same = t.text == "\'" || !t.text.ends_with("\'") || t.text.ends_with("\\\'"); else
+                if (t.kind == "symbol" ) same = false
+                
+                ||  t.text == "+" && ( c == "=" || c == "+" )
+                ||  t.text == "-" && ( c == "=" || c == "-" || c == ">" )
+                ||  t.text == "/" && ( c == "=" || c == "*" || c == "/" )
+                ||  t.text == "*" && ( c == "=" )
+
+                ||  t.text == "<" && ( c == "=" || c == "<" )
+                ||  t.text == ">" && ( c == "=" || c == ">" )
+                ||  t.text == "&" && ( c == "=" || c == "&" )
+                ||  t.text == "|" && ( c == "=" || c == "|" )
+                ||  t.text == "!" && ( c == "=" )
+                ||  t.text == "=" && ( c == "=" )
+                ||  t.text == ":" && ( c == ":" )
+
+                ||  t.text =="<<" && ( c == "=" )
+                ||  t.text ==">>" && ( c == "=" )
+
+                ||  t.text == "." && ( c == "." )
+                ||  t.text ==".." && ( c == "." )
+                ;
+                if (same)
+                {
+                    t.text += c;
+                    if (t.text == "//" ||
+                        t.text == "/*") {
+                        t.kind = "comment";
+                        comment = t.text;
+                    }
+                }
+                else
+                {
+                    if (t.text != "") tokens += t;
+
+                    t = token {c, "", range{
+                        {n, offset+1},
+                        {n, offset+1}}
+                    };
+                    t.kind =
+                        alpha (c) ? "name"    :
+                        digit (c) ? "number"  :
+                        space (c) ? "space"   : 
+                        c == "\"" ? "literal" : 
+                        c == "\'" ? "char"    : 
+                                    "symbol"  ;
+                }
+            }
+
+            if (t.text != "") tokens += t;
+
+            if (n != text.lines.size()-1)
+            {
+                tokens += token {"\n", "", range{
+                    {n, line.size()},
+                    {n, line.size()}}
+                };
+
+                t = token {"", "", range{
+                    {n+1, 0},
+                    {n+1, 0}}
+                };
+            }
         }
-    }
 
-    return output;
+        return tokens;
+    }
 }
+

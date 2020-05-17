@@ -13,6 +13,8 @@ namespace gui::text
         doc::text_model model;
         html_model html_model;
 
+        std::map<str, glyph_style_index> styles;
+
         editor ()
         {
             page.view.model = this;
@@ -24,7 +26,7 @@ namespace gui::text
 
         void set (str text, str format) override
         {
-            model = doc::text_model(text);
+            model = doc::text_model(text, format);
             page.view.refresh();
             page.refresh();
             refresh();
@@ -42,7 +44,15 @@ namespace gui::text
                     lines.back().tokens += token::data{"\n", s};
                     lines += {line::data{f}};
                 }
-                else lines.back().tokens += token::data{t.text, s};
+                else
+                {
+                    glyph_style_index style = s;
+                    if (auto it = styles.find(t.kind);
+                        it != styles.end())
+                        style = it->second;
+
+                    lines.back().tokens += token::data{t.text, style};
+                }
             }
         }
 

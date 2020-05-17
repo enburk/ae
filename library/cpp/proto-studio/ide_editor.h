@@ -21,7 +21,18 @@ struct Editor : gui::widget<Editor>
         if (text.starts_with("\xEF" "\xBB" "\xBF"))
             text.upto(3).erase(); // UTF-8 BOM
 
-        editor.set(text, "text");
+        str ext = path.extension().string();
+
+        if (ext == ".ae!" || ext == ".ae")
+            ext =  "ae";
+        else
+        if (ext == ".cpp" || ext == ".hpp"
+        ||  ext == ".cxx" || ext == ".hxx"
+        ||  ext == ".c++" || ext == ".h++"
+        ||  ext == ".h")
+            ext =  "cpp";
+
+        editor.set(text, ext);
     }
 
     void on_change (void* what) override
@@ -37,6 +48,15 @@ struct Editor : gui::widget<Editor>
             editor.page.style = sys::glyph_style{
                 sys::font{"Consolas", h*110/100},
                 pix::black };
+
+            auto s = editor.page.style.now;
+            s.color = pix::black;   editor.styles["name"   ] = sys::glyph_style_index(s);
+            s.color = pix::navy;    editor.styles["number" ] = sys::glyph_style_index(s);
+            s.color = pix::white;   editor.styles["space"  ] = sys::glyph_style_index(s); 
+            s.color = pix::navy;    editor.styles["literal"] = sys::glyph_style_index(s); 
+            s.color = pix::navy;    editor.styles["char"   ] = sys::glyph_style_index(s); 
+            s.color = pix::maroon;  editor.styles["symbol" ] = sys::glyph_style_index(s);
+            s.color = pix::fuchsia; editor.styles["comment"] = sys::glyph_style_index(s);
         }
     }
 
