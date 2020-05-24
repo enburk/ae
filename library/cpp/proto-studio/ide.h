@@ -13,6 +13,8 @@ using namespace pix;
 struct IDE : gui::widget<IDE>
 {
     gui::canvas toolbar;
+    gui::button button_save;
+    gui::button button_run;
     gui::button button_test;
 
     gui::area<Console> console;
@@ -33,8 +35,13 @@ struct IDE : gui::widget<IDE>
 
     IDE()
     {
-        gui::window = this;
+        gui::window = this; skin = "gray";
+
+        button_save.text.text = "Save";
+        button_run .text.text = "Run";
         button_test.text.text = "Test";
+        button_save.enabled = false;
+        button_run .enabled = false;
         button_test.kind = gui::button::toggle;
         test.hide();
     }
@@ -51,6 +58,8 @@ struct IDE : gui::widget<IDE>
             int H = coord.now.h; int h = gui::metrics::text::height*2;
 
             toolbar.coord = XYWH(0, 0, W, h);
+            button_save.coord = XYWH(0, 0, w, h);
+            button_run .coord = XYWH(W/2-w/2, 0, w, h);
             button_test.coord = XYWH(W-w, 0, w, h);
 
             int d = gui::metrics::line::width * 4;
@@ -77,8 +86,24 @@ struct IDE : gui::widget<IDE>
 
         if (w == &flist)
         {
-            //documents[flist.path.was].context= editor.model.context;
             editor.object.load(flist.object.selected.now);
+            button_run.enabled = flist.object.selected.now.extension() == ".ae!";
+        }
+        if (w == &editor)
+        {
+            console.object.console.clear();
+            for (auto [token, what] : doc::errors) {
+                str s; if (token)
+                    s += std::to_string(token->range.from.line+1) + ":"
+                       + std::to_string(token->range.from.offset+1) + " ";
+                s += what;
+                console.object.console << "<font color=#B00020>" + s + "</font>";
+            }
+        }
+        if (w == &button_run)
+        {
+            console.object.console.clear();
+            console.object.console << "<b><font color=#000080> Run... </font></b>";
         }
     }
 

@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include <map>
-#include "doc_lexica_txt.h"
+#include "doc_text_lexica.h"
 namespace doc::lexica::html
 {
     inline deque<token> parse (const text & text)
@@ -50,7 +50,8 @@ namespace doc::lexica::html
 
     inline str encoded (str text)
     {
-        text.replace_all("&", "&amp;");
+        text.replace_all("&", "&amp;"); // before anything else
+        text.replace_all(" ", "&nbsp;");
         text.replace_all("<", "&lt;");
         text.replace_all(">", "&gt;");
         return text;

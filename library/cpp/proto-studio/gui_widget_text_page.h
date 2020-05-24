@@ -124,6 +124,9 @@ namespace gui::text
         {
             if (w == &scroll.x) view.shift = XY(-n, view.shift.now.y);
             if (w == &scroll.y) view.shift = XY(view.shift.now.x, -n);
+
+            if (w == &scroll.x) notify(w, view.shift.now.x);
+            if (w == &scroll.y) notify(w, view.shift.now.y);
         }
 
         void on_mouse_wheel (XY p, int delta) override

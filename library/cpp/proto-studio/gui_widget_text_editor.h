@@ -1,5 +1,5 @@
 #pragma once
-#include "doc_text.h"
+#include "doc_text_model.h"
 #include "gui_widget_text_aux.h"
 #include "gui_widget_text_model.h"
 #include "gui_widget_text_view.h"
@@ -30,6 +30,7 @@ namespace gui::text
             page.view.refresh();
             page.refresh();
             refresh();
+            notify();
         }
 
         void set (glyph_style_index s, format f) override
@@ -401,6 +402,12 @@ namespace gui::text
                     doc::place{r.from.line, r.from.offset},
                     doc::place{r.upto.line, r.upto.offset}};
             }
+        }
+
+        void on_notify (gui::base::widget* w, int n) override
+        {
+            if (w == &page.scroll.x) notify(w, n);
+            if (w == &page.scroll.y) notify(w, n);
         }
     };
 } 

@@ -1,7 +1,10 @@
 #pragma once
 #include "doc.h"
-#include "doc_lexica_cpp.h"
-#include "doc_lexica_txt.h"
+#include "doc_ae_lexica.h"
+#include "doc_ae_syntax.h"
+#include "doc_cpp_lexica.h"
+#include "doc_cpp_syntax.h"
+#include "doc_text_lexica.h"
 namespace doc
 {
     struct text_model : text
@@ -10,6 +13,8 @@ namespace doc
 
         array<token> tokens;
 
+        array<element> elements;
+
         str format;
 
         explicit text_model (str t = "", str f = "txt") : text(t), format(f)
@@ -17,10 +22,19 @@ namespace doc
             if (lines.size() == 0)
             lines += array<glyph>{"\n"};
             selections = array<range>{range{}};
+            process();
+        }
 
+        void process ()
+        {
             tokens = 
+                format == "ae"  ? doc::lexica::ae ::parse(*this):
                 format == "cpp" ? doc::lexica::cpp::parse(*this):
                                   doc::lexica::txt::parse(*this);
+            elements = 
+                format == "ae"  ? doc::syntax::ae ::parse(tokens):
+                format == "cpp" ? doc::syntax::cpp::parse(tokens):
+                array<element>{};
         }
 
         struct replace
@@ -108,9 +122,7 @@ namespace doc
             if (dir == 1) undoes += undo;
             if (dir ==-1) redoes += undo;
 
-            tokens = 
-                format == "cpp" ? doc::lexica::cpp::parse(*this):
-                                  doc::lexica::txt::parse(*this);
+            process();
 
             return true;
         }

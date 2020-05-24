@@ -1,6 +1,6 @@
 #pragma once
 #include "doc.h"
-#include "doc_syntax_html.h"
+#include "doc_html_syntax.h"
 #include "gui_widget.h"
 #include "gui_widget_text_aux.h"
 namespace gui::text

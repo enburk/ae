@@ -174,6 +174,9 @@ namespace gui::base
         void notify () { if (parent) parent->on_notify(this); }
         void notify (int i) { if (parent) parent->on_notify(this, i); }
 
+        void notify (widget* w) { if (parent) parent->on_notify(w); }
+        void notify (widget* w, int i) { if (parent) parent->on_notify(w, i); }
+
         virtual void on_notify (widget*) {}
         virtual void on_notify (widget*, int) {}
 

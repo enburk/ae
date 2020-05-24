@@ -150,22 +150,31 @@
     <ClInclude Include="library\cpp\proto-studio\doc.h">
       <Filter>doc</Filter>
     </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_lexica_cpp.h">
+    <ClInclude Include="library\cpp\proto-studio\doc_ae_lexica.h">
       <Filter>doc</Filter>
     </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_lexica_txt.h">
+    <ClInclude Include="library\cpp\proto-studio\doc_cpp_lexica.h">
       <Filter>doc</Filter>
     </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_lexica_xml.h">
+    <ClInclude Include="library\cpp\proto-studio\doc_html_lexica.h">
       <Filter>doc</Filter>
     </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_lexica_xpp.h">
+    <ClInclude Include="library\cpp\proto-studio\doc_html_syntax.h">
       <Filter>doc</Filter>
     </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_syntax_html.h">
+    <ClInclude Include="library\cpp\proto-studio\doc_text_lexica.h">
       <Filter>doc</Filter>
     </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_text.h">
+    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc_cpp_syntax.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc_text_model.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc_cpp_preprocessor.h">
       <Filter>doc</Filter>
     </ClInclude>
   </ItemGroup>

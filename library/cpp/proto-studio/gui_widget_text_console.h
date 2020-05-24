@@ -21,6 +21,7 @@ namespace gui::text
         {
             std::lock_guard guard{mutex};
             addon.clear();
+            addon += "<script type=\"text/javascript\"></script>"; // HTML NOOP
             log.clear();
         }
 
