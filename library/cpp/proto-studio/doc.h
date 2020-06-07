@@ -1,5 +1,7 @@
 #pragma once
 #include <cassert>
+#include <compare>
+#include <variant>
 #include "../aux_string.h"
 #include "../aux_utils.h"
 namespace doc
@@ -30,13 +32,9 @@ namespace doc
 
     struct place
     {
-        int line = 0, offset = 0; // bool operator <=> (place p) const = default;
-        bool operator == (place p) const { return line == p.line && offset == p.offset; }
-        bool operator != (place p) const { return line != p.line || offset != p.offset; }
-        bool operator <= (place p) const { return line <  p.line || offset <= p.offset && line == p.line; }
-        bool operator <  (place p) const { return line <  p.line || offset <  p.offset && line == p.line; }
-        bool operator >= (place p) const { return line >  p.line || offset >= p.offset && line == p.line; }
-        bool operator >  (place p) const { return line >  p.line || offset >  p.offset && line == p.line; }
+        int line = 0;
+        int offset = 0;
+        auto operator <=> (const place & p) const = default;
     };
 
     struct range
@@ -59,14 +57,6 @@ namespace doc
         }
     };
 
-    struct element
-    {
-        str name, kind;
-        array<token*> head;
-        array<element> body;
-        array<token*> tail;
-    };
-
     struct entity
     {
         str name, kind, info;
@@ -81,20 +71,6 @@ namespace doc
     void error (token* token, str what) {
         errors += std::pair{token, what};
         if (token) token->kind = "error";
-    }
-
-    namespace lexica
-    {
-        inline constexpr bool ascii (char c) { return c >= ' ' && c <= '~'; }
-        inline constexpr bool space (char c) { return c == ' ' || c =='\t'; }
-        inline constexpr bool digit (char c) { return c >= '0' && c <= '9'; }
-        inline constexpr bool alpha (char c) { return c >= 'A' && c <= 'Z' ||
-                                                      c >= 'a' && c <= 'z'; }
-
-        inline bool ascii (str c) { return c.size() == 1 && ascii(c[0]); }
-        inline bool space (str c) { return c.size() == 1 && space(c[0]); }
-        inline bool digit (str c) { return c.size() == 1 && digit(c[0]); }
-        inline bool alpha (str c) { return c.size() == 1 && alpha(c[0]); }
     }
 }
 

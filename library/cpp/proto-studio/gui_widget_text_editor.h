@@ -26,6 +26,7 @@ namespace gui::text
 
         void set (str text, str format) override
         {
+            page.view.column.clear(); // reset cache
             model = doc::text_model(text, format);
             page.view.refresh();
             page.refresh();

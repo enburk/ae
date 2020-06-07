@@ -11,3 +11,11 @@ struct type__system
     type__console console;
 };
 type__system system;
+
+
+
+void type__system::type__console::operator_lt_lt_lt (ae::span data)
+{
+    std::cout::write((char*)data.data, data.size);
+    std::cout::flush();
+}

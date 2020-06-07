@@ -4,12 +4,13 @@ vector<2> = vector<2, int>;
 
 ;; types and functions are first class citizens
 
-::type property (::type type, type value)
+property (::type type)
 {
-	from, to, was, now : type(value);
+	from, to, was, now : type;
+    
 	time notch, lapse, transition_time = default_transition_time;
 
-	void operator = (type value) { go (value, time(0)); }
+	void operator == (type value) { go (value, time(0)); }
 
 	void go (type to_) { go (to_, transition_time); }
 
@@ -31,6 +32,51 @@ vector<2> = vector<2, int>;
 	}
 };
 
+
+type property (type type)
+{
+	from, to, was, now : type;
+    
+	time notch, lapse, transition_time = default_transition_time;
+
+	operator == (type value) = go (value, time(0));
+
+	function go (type to_) = go (to_, transition_time);
+
+	function go (type to_, time lapse_) = {
+		from = now; to = to_;
+		notch = time::now;
+		lapse = lapse_;
+		tick();
+	}
+
+	void tick () override { 
+		was = now; notch += time::pause;
+		if (now != to)
+			now = transition_state (from, to,
+				std::min(time::now - notch, lapse).ms, lapse.ms);
+		if (now == to && receipt) { active_properties.erase(*receipt); receipt.reset(); }
+		if (now != to && !receipt) receipt = active_properties.append(this);
+		if (now != was) ::meta::parent::on.change(::meta::name);
+	}
+}
+
+
+                                                                                                                                        inplace {                                                                                                                                                                                                                                                                
+        type { int x, y, w, h; };                                                                                                                                                                                                                                                                
+        type { int left, top, width, height; };                                                                                                                                                                                                                                                                
+        type { XY  origin, size; };                                                                                                                                                                                                                                                                
+        };                                                                                                                                                                                                                                                                
+                                                                                                                                                                                                                                                                
+left, top, width, height : integer;                                                                                                                                
+                                                                                                                                
+x : integer; left = x;                                                                                                                                
+
+        function includes (point p) = x <= p.x and p.x < x + w and y <= p.y and p.y < y + h;                                                                                                                                                                                                                                                                
+        function excludes (point p) = not includes(p);                                                                                                                                                                                                                                                                
+                                                                                                                                                                                                                                                                
+        mutation inflate.by (int n) = { x -= n; y -= n; w += n+n; h += n+n; }                                                                                                                                
+        mutation deflate.by (int n) = { x += n; y += n; w -= n+n; h -= n+n; }                                                                                                                                
 
 
 widget = 

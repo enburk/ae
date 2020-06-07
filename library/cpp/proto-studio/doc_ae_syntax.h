@@ -1,59 +1,49 @@
 #pragma once
 #include "doc.h"
-namespace doc::syntax::ae
+namespace doc::ae::syntax
 {
-    array<element> bracketing (deque<token*> & input, str closing)
+    struct scope;
+
+    struct element;
+
+    struct brackets
     {
-        auto close = [&input](element & e, str s)
-        {
-            if (input.size() == 0) {
-                error(e.head[0], "unclosed '" + e.head[0]->text + "'");
-                return;
-            }
-            auto token = input.front();
-            input.pop_front();
-            e.tail += token;
-        };
+        token* opening = nullptr;
+        token* closing = nullptr;
+        array<element> body;
+    };
 
-        array<element> output; while (input.size() > 0)
-        {
-            auto token = input.front();
+    struct unqualified_name
+    {
+        token* coloncolon = nullptr;
+        token* identifier = nullptr;
+        array<brackets> params;
+    };
 
-            if (token->text == "}" && closing == "}") break;
-            if (token->text == ")" && closing == ")") break;
-            if (token->text == "]" && closing == ")") break;
-            
-            input.pop_front();
+    struct name { array<unqualified_name> names; };
 
-            if (token->text == "}") { error(token, "unexpected '}'"); } else
-            if (token->text == ")") { error(token, "unexpected ')'"); } else
-            if (token->text == "]") { error(token, "unexpected ']'"); }
+    struct statement
+    {
+        str kind, id; name type;
+        scope * scope = nullptr;
+        array<element> elements;
+        array<statement> body;
+    };
 
-            element e; e.head += token;
+    using variant = std::variant
+    <
+        token*,
+        brackets,
+        name
+    >;
 
-            if (token->text == "{") { e.kind = "{}"; e.body = bracketing(input, "}"); close(e, "}"); } else
-            if (token->text == "(") { e.kind = "()"; e.body = bracketing(input, ")"); close(e, ")"); } else
-            if (token->text == "[") { e.kind = "()"; e.body = bracketing(input, ")"); close(e, ")"); }
-
-            output += e;
+    struct element : variant {
+        using variant::variant;
+        element(variant v) : variant(std::move(v)) {}
+        auto operator = (variant v) { variant::
+            operator = (std::move(v));
+            return *this;
         }
-        return output;
-    }
-    array<element> bracketing (deque<token*> input) {
-            return bracketing (input, "");
-    }
-
-    inline array<element> parse (array<token> & input)
-    {
-        errors.clear();
-
-        deque<token*> tokens;
-        for (auto & token : input)
-            if (token.kind != "space" &&
-                token.kind != "comment")
-                tokens += &token;
-
-        return bracketing(tokens);
-    }
+    };
 }
 

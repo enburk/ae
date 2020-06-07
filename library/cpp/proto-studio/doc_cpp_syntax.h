@@ -3,6 +3,14 @@
 #include "doc_cpp_preprocessor.h"
 namespace doc::syntax::cpp
 {
+    struct element
+    {
+        str name, kind;
+        array<token*> head;
+        array<element> body;
+        array<token*> tail;
+    };
+
     array<element> bracketing (deque<token*> & input, str closing)
     {
         auto close = [&input](element & e, str s)

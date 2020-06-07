@@ -146,8 +146,7 @@ namespace gui::text
 
         void fill (data data)
         {
-            if (data_copy == data) return;
-            /**/data_copy = std::move(data);
+            data_copy = std::move(data);
             auto & format = data_copy.format;
             auto & tokens = data_copy.tokens;
 
@@ -248,13 +247,47 @@ namespace gui::text
 
             for (auto && data : datae)
             {
-                line & line = (*this)(n);
-                line.fill(std::move(data));
-                line.move_to(XY(0, height));
-                n++;
+                auto refill = [&]()
+                {
+                    if (size() <= n) return true;
 
+                    if ((*this)(n).data_copy == data) return false;
+
+                    if (size() == datae.size()) return true;
+
+                    // style could be changed by syntax highlighting
+                    const auto & tt1 = (*this)(n).data_copy.tokens;
+                    const auto & tt2 = data.tokens;
+                    bool same_text = tt1.size() == tt2.size();
+                    if (same_text)
+                        for (int i=0; i<tt1.size(); i++)
+                            if (tt1[i].text != tt2[i].text)
+                                { same_text = false; break; }
+
+                    if (same_text) return true;
+
+                    if (size() < datae.size())
+                    { // lines were inserted
+                        emplace_back().fill(std::move(data));
+                        rotate(n, size()-1, size());
+                        return false;
+                    }
+                    else
+                    { // lines were removed
+                        rotate(n, size()-datae.size()+n, size());
+                        truncate(datae.size());
+                        return (*this)(n).data_copy != data;
+                    }
+                };
+
+                if (refill())
+                    (*this)(n).fill(std::move(data));
+
+                line & line = (*this)(n);
+                line.move_to(XY(0, height));
                 width = max(width, line.coord.now.size.x);
                 height += line.coord.now.size.y;
+                n++;
             }
 
             truncate(n);

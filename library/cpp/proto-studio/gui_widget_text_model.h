@@ -39,7 +39,7 @@ namespace gui::text
             if (false) { // debug
                 auto tokens = doc::syntax::html::print(entities);
                 entities.clear();
-                entities += doc::entity{"", "text", ""};
+                entities += doc::entity{.name="", .kind="text", .info=""};
                 entities.back().head = tokens;
             }
         }

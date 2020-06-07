@@ -1,7 +1,8 @@
 #pragma once
 #include "doc.h"
 #include "doc_ae_lexica.h"
-#include "doc_ae_syntax.h"
+#include "doc_ae_syntax_parsing.h"
+#include "doc_ae_syntax_scopes.h"
 #include "doc_cpp_lexica.h"
 #include "doc_cpp_syntax.h"
 #include "doc_text_lexica.h"
@@ -12,8 +13,6 @@ namespace doc
         array<range> selections;
 
         array<token> tokens;
-
-        array<element> elements;
 
         str format;
 
@@ -28,13 +27,12 @@ namespace doc
         void process ()
         {
             tokens = 
-                format == "ae"  ? doc::lexica::ae ::parse(*this):
+                format == "ae"  ? doc::ae::lexica ::parse(*this):
                 format == "cpp" ? doc::lexica::cpp::parse(*this):
                                   doc::lexica::txt::parse(*this);
-            elements = 
-                format == "ae"  ? doc::syntax::ae ::parse(tokens):
-                format == "cpp" ? doc::syntax::cpp::parse(tokens):
-                array<element>{};
+
+            if (format == "ae" ) doc::ae::syntax ::parse(tokens);
+            if (format == "cpp") doc::syntax::cpp::parse(tokens);
         }
 
         struct replace
@@ -75,8 +73,7 @@ namespace doc
                 undo.replaces += replace{range{}, text{}};
                 undo.replaces.back().text.lines.reserve(upto.line - from.line + 1);
 
-                for (place p = from; p < upto; p.offset = 0, p.line++)
-                {
+                for (place p = from; p <= upto; p.offset = 0, p.line++) {
                     undo.replaces.back().text.lines += p.line == upto.line ?
                         lines[p.line].from(p.offset).upto(upto.offset) :
                         lines[p.line].from(p.offset);
@@ -150,17 +147,17 @@ namespace doc
 
             array<replace> replaces;
             
-            for (range selection : selections)
+            for (auto [from, upto] : selections)
             {
-                range range = selection;
-                auto & [from, upto] = range;
-                auto & [line, offset] = from < upto ? upto : from;
-                if (from != upto) {;} else
-                if (offset >= lines[line].size() && line >= lines.size()-1) return false; else
-                if (offset >= lines[line].size()) { line++; offset = 0; } else
-                    offset++;
+                if (from == upto)
+                {
+                    auto & [line, offset] = upto; int n = lines[line].size();
+                    if (offset >= n && line >= lines.size()-1) return false; else
+                    if (offset >= n) { line++; offset = 0; } else
+                        offset++;
+                }
 
-                replaces += replace{range, text{}};
+                replaces += replace{range{from, upto}, text{}};
             }
 
             return perform(replaces);
@@ -172,17 +169,17 @@ namespace doc
 
             array<replace> replaces;
             
-            for (range selection : selections)
+            for (auto [from, upto] : selections)
             {
-                range range = selection;
-                auto & [from, upto] = range;
-                auto & [line, offset] = from < upto ? from : upto;
-                if (from != upto) {;} else
-                if (offset == 0 && line == 0) return false; else
-                if (offset == 0) { line--; offset = lines[line].size(); } else
-                    offset--;
+                if (from == upto)
+                {
+                    auto & [line, offset] = upto;
+                    if (offset == 0 && line == 0) return false; else
+                    if (offset == 0) { line--; offset = lines[line].size(); } else
+                        offset--;
+                }
 
-                replaces += replace{range, text{}};
+                replaces += replace{range{from, upto}, text{}};
             }
 
             return perform(replaces);
@@ -194,6 +191,55 @@ namespace doc
 
             array<replace> replaces;
             
+            if (s == "\n" &&
+                selections.size() == 1 &&
+                selections[0].from == selections[0].upto &&
+                selections[0].from.offset > 0)
+            {
+                int spaces = 0;
+                str lead = " ";
+                int line = selections[0].from.line;
+                while (line >= 0)
+                {
+                    for (auto c : lines[line]) {
+                        lead = c; if (c == " ")
+                            spaces++; else
+                            break;
+                    }
+                    if (lead != " ") break;
+                    spaces = 0;
+                    line--;
+                }
+                if (lead == "{") spaces += 4;
+                s += str(' ', spaces);
+
+                replaces += replace{selections[0], text(s)};
+            }
+            else
+            if (s == "\t" || s == "shift+\t")
+            {
+                for (auto [from, upto] : selections)
+                {
+                    if (from == upto)
+                    {
+                        if (s == "\t")
+                            replaces += replace{range{from, from},
+                                text(str(' ', 4 - from.offset % 4))};
+                        else {
+                            int n = from.offset % 4;
+                            if (n == 0) n = 4;
+                            for (int i=0; i<n; i++)
+                                if (from.offset > 0)
+                                    if (lines[from.line].size() <= from.offset ||
+                                        lines[from.line][from.offset] == " ")
+                                        from.offset--;
+                            replaces += replace{range{from, upto}, text{}};
+                        }
+                    }
+
+                }
+            }
+            else
             for (range selection : selections)
             {
                 replaces += replace{selection, text(s)};

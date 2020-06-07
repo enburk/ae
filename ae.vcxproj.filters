@@ -171,10 +171,25 @@
     <ClInclude Include="library\cpp\proto-studio\doc_cpp_syntax.h">
       <Filter>doc</Filter>
     </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_text_model.h">
-      <Filter>gui</Filter>
-    </ClInclude>
     <ClInclude Include="library\cpp\proto-studio\doc_cpp_preprocessor.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc_ae_synthesis.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc_ae_translator.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc_text_model.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_schema.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_parsing.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_scopes.h">
       <Filter>doc</Filter>
     </ClInclude>
   </ItemGroup>

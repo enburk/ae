@@ -17,9 +17,9 @@ namespace pix
         RGBA () : value (0) {}
         RGBA (int r, int g, int b, int a = 255) : b(b), g(g), r(r), a(a) {}
 
-        bool operator == ( const RGBA & c ) const { return value == c.value; }
-        bool operator != ( const RGBA & c ) const { return value != c.value; }
-        bool operator <  ( const RGBA & c ) const { return value <  c.value; }
+        bool operator == (const RGBA & c) const { return value == c.value; }
+        bool operator != (const RGBA & c) const { return value != c.value; }
+        bool operator <  (const RGBA & c) const { return value <  c.value; }
 
         static const int color_channels = 3;
         static const int total_channels = 4;

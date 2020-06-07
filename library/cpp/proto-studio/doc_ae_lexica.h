@@ -1,7 +1,18 @@
 #pragma once
 #include "doc.h"
-namespace doc::lexica::ae
+namespace doc::ae::lexica
 {
+    inline constexpr bool ascii (char c) { return c >= ' ' && c <= '~'; }
+    inline constexpr bool space (char c) { return c == ' ' || c =='\t'; }
+    inline constexpr bool digit (char c) { return c >= '0' && c <= '9'; }
+    inline constexpr bool alpha (char c) { return c >= 'A' && c <= 'Z' ||
+                                                  c >= 'a' && c <= 'z'; }
+
+    inline bool ascii (str c) { return c.size() == 1 && ascii(c[0]); }
+    inline bool space (str c) { return c.size() == 1 && space(c[0]); }
+    inline bool digit (str c) { return c.size() == 1 && digit(c[0]); }
+    inline bool alpha (str c) { return c.size() == 1 && alpha(c[0]); }
+
     inline array<token> parse (const text & text)
     {
         array<token> tokens; token t;
@@ -33,6 +44,7 @@ namespace doc::lexica::ae
                 ||  t.text == ">" && (c == "=" || c == ">")
                 ||  t.text == "=" && (c == "=")
                 ||  t.text == ":" && (c == ":")
+                ||  t.text == ";" && (c == ";")
 
                 ||  t.text =="<<" && (c == "<")
                 ||  t.text ==">>" && (c == ">")

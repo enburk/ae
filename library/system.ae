@@ -1,7 +1,16 @@
 system
 {
-    console
+
+    out
     {
-        operator <<< text;
+        operator <<< (byte[]) {external}
     }
+
+    ;; istream { operator >>> (byte[]) }
+    ;; ostream { operator <<< (byte[]) }
+    ;; iostream : istream, ostream {}
+    
+    ;; in  : istream;
+    ;; out : ostream;
+    ;; err : ostream;
 }
