@@ -386,6 +386,8 @@ namespace gui::text
         XYWH bar (place place, bool virtual_space)
         {
             if (place.line >= size()) return XYWH{};
+            if (place.offset < 0)
+                place.offset = 0;
 
             int offset = 0;
 

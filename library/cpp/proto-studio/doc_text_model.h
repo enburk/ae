@@ -67,8 +67,11 @@ namespace doc
                 auto & [from, upto] = r.range;
                 from = aux::clamp(from, front(), back());
                 upto = aux::clamp(upto, front(), back());
-                if (from == upto && r.text == text{}) continue;
-                if (from >= upto) std::swap(from, upto);
+                if (from > upto) std::swap(from, upto);
+                if (from == upto && r.text == text{}) {
+                    selections += range{from, upto};
+                    continue;
+                }
 
                 undo.replaces += replace{range{}, text{}};
                 undo.replaces.back().text.lines.reserve(upto.line - from.line + 1);
@@ -120,7 +123,6 @@ namespace doc
             if (dir ==-1) redoes += undo;
 
             process();
-
             return true;
         }
 
@@ -218,25 +220,83 @@ namespace doc
             else
             if (s == "\t" || s == "shift+\t")
             {
+                bool case2 = false;
                 for (auto [from, upto] : selections)
+                    if (from != upto) case2 = true;
+
+                if (not case2)
                 {
-                    if (from == upto)
+                    for (auto [from, upto] : selections)
                     {
                         if (s == "\t")
                             replaces += replace{range{from, from},
                                 text(str(' ', 4 - from.offset % 4))};
+
                         else {
                             int n = from.offset % 4;
                             if (n == 0) n = 4;
                             for (int i=0; i<n; i++)
                                 if (from.offset > 0)
-                                    if (lines[from.line].size() <= from.offset ||
-                                        lines[from.line][from.offset] == " ")
+                                    if (lines[from.line].size() < from.offset ||
+                                        lines[from.line][from.offset-1] == " ")
                                         from.offset--;
+
                             replaces += replace{range{from, upto}, text{}};
                         }
                     }
+                }
+                else
+                {
+                    std::map<int, int> spaces_by_line;
 
+                    for (auto [from, upto] : selections)
+                        for (place p = from; p < upto; p.offset = 0, p.line++)
+                            for (int n=0; n<lines[p.line].size(); n++)
+                                if (lines[p.line][n] != " ") break;
+                                    else spaces_by_line[p.line] = n+1;
+
+                    int spaces = 
+                        spaces_by_line.size() == 0 ? 0 : std::min_element(
+                        spaces_by_line.begin(),
+                        spaces_by_line.end())
+                        ->second; 
+
+                    if (s == "shift+\t" && spaces == 0) return false;
+
+                    reundo undo {.selections=selections};
+
+                    for (auto & [from, upto] : selections)
+                    {
+                        for (place p = from; p < upto; p.offset = 0, p.line++)
+                        {
+                            if (s == "\t")
+                            {
+                                int n = 4 - spaces % 4;
+                                array<glyph> ss; for (int i=0; i<n; i++) ss += " ";
+                                lines[p.line].insert(0, ss);
+                                from.offset += n;
+                                upto.offset += n;
+                                undo.replaces += replace{range{
+                                    place{p.line, 0}, place{p.line, n}},
+                                    text{}};
+                            }
+                            else if (s == "shift+\t")
+                            {
+                                int n = spaces % 4; if (n == 0) n = 4;
+                                lines[p.line].upto(n).erase();
+                                from.offset -= n; if (from.offset < 0) from.offset = 0;
+                                upto.offset -= n; if (upto.offset < 0) upto.offset = 0;
+                                undo.replaces += replace{range{
+                                    place{p.line, 0}, place{p.line, 0}},
+                                    text{str(' ', n)}};
+                            }
+                            else std::terminate();
+                        }
+                    }
+
+                    undoes += undo;
+                    process();
+                    return true;
                 }
             }
             else
