@@ -127,13 +127,12 @@ namespace gui::base
                 return;
             }
             widget* hover = nullptr;
-            for (auto w : children) {
-                if (w->mouse_sense (p - w->coord.now.origin)) {
-                    w->mouse_move  (p - w->coord.now.origin);
-                    hover = w;
-                    break;
-                }
-            }
+            for (auto w : children)
+                if (w->mouse_sense (p - w->coord.now.origin))
+                    hover = w; // last sibling wins
+
+            if (hover) hover->mouse_move(p - hover->coord.now.origin);
+
             if (mouse_hover_child &&
                 mouse_hover_child != hover)
                 mouse_hover_child->mouse_leave();

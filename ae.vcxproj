@@ -134,6 +134,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -141,9 +142,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="proto-studio.cpp" />
-  </ItemGroup>
   <ItemGroup>
     <ClInclude Include="library\cpp\aux_abc.h" />
     <ClInclude Include="library\cpp\aux_array.h" />
@@ -161,7 +159,8 @@
     <ClInclude Include="library\cpp\proto-studio\doc.h" />
     <ClInclude Include="library\cpp\proto-studio\doc_ae_lexica.h" />
     <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax.h" />
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_parsing.h" />
+    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_analysis.h" />
+    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_parser.h" />
     <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_schema.h" />
     <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_scopes.h" />
     <ClInclude Include="library\cpp\proto-studio\doc_ae_synthesis.h" />
@@ -202,6 +201,9 @@
     <ClInclude Include="library\cpp\proto-studio\test_fonts.h" />
     <ClInclude Include="library\cpp\proto-studio\test_pix.h" />
     <ClInclude Include="library\cpp\sys.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="library\cpp\proto-studio\proto-studio.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

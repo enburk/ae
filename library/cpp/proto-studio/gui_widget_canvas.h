@@ -85,8 +85,8 @@ namespace gui
         void on_keyboard_input (str symbol) override { object.on_keyboard_input(symbol); }
         void on_key_pressed (str key, bool down) override { object.on_key_pressed(key,down); }
 
-        void on_notify (gui::base::widget*) override { notify(); }
-        void on_notify (gui::base::widget*, int n) override { notify(n); }
+        void on_notify (gui::base::widget* w) override { notify(w == &object ? this : w); }
+        void on_notify (gui::base::widget* w, int n) override { notify(w == &object ? this : w, n); }
     };
 
 }

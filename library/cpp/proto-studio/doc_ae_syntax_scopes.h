@@ -1,7 +1,7 @@
 #pragma once
 #include <map>
 #include "doc_ae_syntax.h"
-#include "doc_ae_syntax_schema.h"
+//#include "doc_ae_syntax_schema.h"
 namespace doc::ae::syntax
 {
     struct scope

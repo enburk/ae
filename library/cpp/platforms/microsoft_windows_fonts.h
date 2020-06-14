@@ -192,15 +192,8 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
     int w = width;
     int h = ascent + descent;
 
-    // this glyph origin is shifted by 'offset' from the frame origin
-    XYWH frame_coord (-offset.x, -offset.y, frame.size.x, frame.size.y); // relative glyph
-    XYWH glyph_coord ( offset.x,  offset.y, w, h); // relative frame
-    auto crop = frame.crop(glyph_coord);
-    if (crop.size.x <= 0) return;
-    if (crop.size.y <= 0) return;
-
     if (false) { // test for rendering speed
-        crop.blend(RGBA::random(), alpha);
+        frame.blend(RGBA::random(), alpha);
         return;
     }
 
@@ -208,10 +201,9 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
     if (!solid_color_background)
     {
         bool ok = true;
-        RGBA c = crop(0,0);
-        for (int y=0; y<crop.size.y; y++)
-        for (int x=0; x<crop.size.x; x++) if (crop(x,y) != c) ok = false;
-    
+        RGBA c = frame(0,0);
+        for (int y=0; y<frame.size.y; y++)
+        for (int x=0; x<frame.size.x; x++) if (frame(x,y) != c) ok = false;
         if (ok) { solid_color_background = true; c.blend(back, alpha); back = c; }
     }
 
@@ -232,7 +224,8 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
         auto it = cache.find(cache_glyphs_key{text, style.font, fore, back});
         if (it != cache.end())
         {
-            crop.blend_from(it->second.crop(frame_coord), alpha);
+            frame.blend_from(it->second.crop()
+                .from(offset.x, offset.y), alpha);
             return;
         }
     }
@@ -263,8 +256,8 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
 
     pix::view<RGBA> view ((RGBA*)bits, XY(w,h), w);
 
-    if (!solid_color_background) frame.copy_to(view);
-    if (!solid_color_background) view.blend(back, alpha);
+    if (!solid_color_background) frame.copy_to(view.from(offset.x, offset.y));
+    if (!solid_color_background) view.from(offset.x, offset.y).blend(back, alpha);
 
     for (int y=0; y<h; y++)
     for (int x=0; x<w; x++) view(x,y).a = 255;
@@ -279,8 +272,8 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
     // default underline thickness = 1/6 of width of the period mark
     // optimal Y position is the goden ratio point between the baseline and the descender line
 
-    crop.blend(back, alpha);
-    crop.blend_from(view, alpha);
+    frame.blend(back, alpha);
+    frame.blend_from(view.from(offset.x, offset.y), alpha);
     
     if (cacheable)
     {

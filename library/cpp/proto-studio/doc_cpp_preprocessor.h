@@ -1,82 +1,89 @@
 #pragma once
 #include "doc.h"
-namespace doc::syntax::cpp
+namespace doc::cpp::syntax
 {
-    deque<token*> preprocessor (deque<token*> & input)
+    struct preprocessor
     {
-        deque<token*> output;
+        report & log;
 
-        struct define { array<str> args; array<token*> text; };
+        preprocessor (report & log) : log(log) {}
 
-        std::unordered_map<str, define> defines;
-
-        auto read = [&input](token*& token, str what)
+        deque<token*> proceed (deque<token*> & input)
         {
-            if (input.size() == 0) error(token, what); else {
-                token = input.front();
-                input.pop_front();
-            }
-        };
+            deque<token*> output;
 
-        auto todo = [&input, read](token* token)
-        {
-            token->kind = "pragma";
-            while (true) {
-                read(token, "unexpected end of file");
-                if (token->text == "\n") return; else
-                    token->kind = "macros";
-            }
-        };
+            struct define { array<str> args; array<token*> text; };
 
-        auto parse = [&input, read, todo](token* token)
-        {
-            read(token, "preprocessor directive expected");
-            
-            str directive = token->text;
+            std::unordered_map<str, define> defines;
 
-            if (directive == "if") todo(token); else
-            if (directive == "elif") todo(token); else
-            if (directive == "else") todo(token); else
-            if (directive == "endif") todo(token); else
-            if (directive == "ifdef") todo(token); else
-            if (directive == "ifndef") todo(token); else
-            if (directive == "define") todo(token); else
-            if (directive == "undef") todo(token); else
-            if (directive == "include") todo(token); else
-            if (directive == "line") todo(token); else
-            if (directive == "error") todo(token); else
-            if (directive == "pragma") todo(token); else
-            if (directive == "defined") todo(token); else
-
-            error(token, "unrecognized preprocessing directive");
-        };
-
-        auto process = [&input, read, &output](token* t)
-        {
-            output += t;
-        };
-
-        bool newline = true;
-
-        while (input.size() > 0)
-        {
-            auto token = input.front(); input.pop_front();
-
-            if (token->text == "\n") newline = true; else
-
-            if (!newline) process(token); else
+            auto read = [this, &input](token*& token, str what)
             {
-                if (token->text == "#") {
-                    token->kind = "pragma";
-                    parse(token);
+                if (input.size() == 0) log.error(token, what); else {
+                    token = input.front();
+                    input.pop_front();
                 }
-                else {
-                    newline = false;
-                    process(token);
+            };
+
+            auto todo = [&input, read](token* token)
+            {
+                token->kind = "pragma";
+                while (true) {
+                    read(token, "unexpected end of file");
+                    if (token->text == "\n") return; else
+                        token->kind = "macros";
+                }
+            };
+
+            auto parse = [this, &input, read, todo](token* token)
+            {
+                read(token, "preprocessor directive expected");
+            
+                str directive = token->text;
+
+                if (directive == "if") todo(token); else
+                if (directive == "elif") todo(token); else
+                if (directive == "else") todo(token); else
+                if (directive == "endif") todo(token); else
+                if (directive == "ifdef") todo(token); else
+                if (directive == "ifndef") todo(token); else
+                if (directive == "define") todo(token); else
+                if (directive == "undef") todo(token); else
+                if (directive == "include") todo(token); else
+                if (directive == "line") todo(token); else
+                if (directive == "error") todo(token); else
+                if (directive == "pragma") todo(token); else
+                if (directive == "defined") todo(token); else
+
+                log.error(token, "unrecognized preprocessing directive");
+            };
+
+            auto process = [&input, read, &output](token* t)
+            {
+                output += t;
+            };
+
+            bool newline = true;
+
+            while (input.size() > 0)
+            {
+                auto token = input.front(); input.pop_front();
+
+                if (token->text == "\n") newline = true; else
+
+                if (!newline) process(token); else
+                {
+                    if (token->text == "#") {
+                        token->kind = "pragma";
+                        parse(token);
+                    }
+                    else {
+                        newline = false;
+                        process(token);
+                    }
                 }
             }
+            return output;
         }
-        return output;
-    }
+    };
 }
 

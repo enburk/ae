@@ -5,86 +5,65 @@
 #include "gui_widget_text_lineditor.h"
 using namespace pix;
 
+struct flist : gui::widget<flist>
+{
+    gui::widgetarium<gui::button> list;
+
+    void on_notify (gui::base::widget* w, int n) override { notify (n); }
+
+    void on_mouse_wheel (XY p, int delta) override { parent->on_mouse_wheel(p, delta); }
+};
+
 struct Flist : gui::widget<Flist>
 {
-    gui::text::view dir;
-    gui::widgetarium<gui::button> subs;
+    gui::text::view dir; flist flist;
+    gui::scroller<gui::vertical> scroller;
     typedef std::filesystem::path path;
     gui::binary_property<path> root;
     gui::binary_property<path> selected;
 
-    static bool less(path a, path b)
+    void refresh ()
     {
-        path pa = a.parent_path();
-        path pb = b.parent_path();
-        bool da = std::filesystem::is_directory(a);
-        bool db = std::filesystem::is_directory(b);
-        if ( da && !db) return less(a, pb);
-        if (!da &&  db) return less(pa, b);
-        if (!da && !db && less(pa, pb)) return true;
-        if (!da && !db && less(pb, pa)) return false;
-        return a < b;
+        int W = coord.now.w; if (W <= 0) return;
+        int H = coord.now.h; if (H <= 0) return;
+        int d = gui::metrics::text::height + 2*gui::metrics::line::width;
+        int h = gui::metrics::text::height * 12/7;
+        int hh = h * flist.list.size();
+        int w = W - d;
+
+        if (h + hh <= H) w = W;
+
+        dir.coord = XYXY(0, 0, W, h);
+        flist.coord = XYXY(0, h, w, H);
+        scroller.coord = XYXY(w, h, W, H);
+
+        int y = 0;
+        for (auto & line : flist.list) {
+        line.coord = XYWH(0, y, w, h); y += h; }
+
+        y = flist.list.coord.now.y;
+        flist.list.coord = XYWH(0, y, w, hh);
+
+        scroller.span = hh;
+        scroller.step = h;
     }
 
     void on_change (void* what) override
     {
-        using namespace std::filesystem;
-
         if (what == &coord && coord.was.size != coord.now.size)
         {
             if (root.now == path())
-                root = current_path();
+                root = std::filesystem::current_path();
 
-            auto r = coord.now.local();
-
-            subs.coord = r;
-
-            int h = 2 * gui::metrics::text::height; int y = 0;
-
-            dir.coord = XYWH(r.x, y, r.w, h); y += h; for (auto & sub : subs) {
-            sub.coord = XYWH(r.x, y, r.w, h); y += h; }
+            refresh();
         }
 
         if (what == &root)
         {
-            subs.clear();
-            array<path> paths;
-            for (recursive_directory_iterator next(root.now), end; next != end; ++next)
-            {
-                path p = next->path();
-                if (is_directory (p)) {
-                    str name = p.filename().string();
-                    if (name.starts_with(".")
-                    ||  name.starts_with("_")
-                    ||  name == "packages") { next.disable_recursion_pending(); continue; }
-                    paths += p;
-                }
-                if (is_regular_file (p)) {
-                    auto ext = p.extension();
-                    if (ext != ".ae!" && ext != ".ae"
-                    &&  ext != ".cpp" && ext != ".hpp"
-                    &&  ext != ".cxx" && ext != ".hxx"
-                    &&  ext != ".c++" && ext != ".h++" && ext != ".h") continue;
-                    paths += p;
-                }
-            }
-
-            paths.sort([](path a, path b) { return less(a,b); });
-
-            for (auto p : paths) {
-                if (is_directory (p)) {
-                    auto & it = subs.emplace_back();
-                    it.text.alignment = XY(gui::text::left, gui::text::center);
-                    it.text.text = std::filesystem::relative(p, root.now).string();
-                    it.enabled = false;
-                }
-                if (is_regular_file (p)) {
-                    auto & it = subs.emplace_back();
-                    it.text.alignment = XY(gui::text::left, gui::text::center);
-                    it.text.text = std::filesystem::relative(p, root.now).string();
-                }
-            }
             dir.text = root.now.string();
+            flist.list.clear();
+            fill(root.now);
+            refresh();
         }
 
         if (what == &selected)
@@ -93,11 +72,70 @@ struct Flist : gui::widget<Flist>
         }
     }
 
+    void fill(path dir)
+    {
+        using namespace std::filesystem;
+
+        std::map<str, path> files, dirs;
+
+        for (directory_iterator next(dir), end; next != end; ++next)
+        {
+            path p = next->path();
+            if (is_directory (p)) {
+                str name = p.filename().string();
+                if (name.starts_with(".")
+                ||  name.starts_with("_")
+                ||  name == "packages") continue;
+                dirs[p.filename().string()] = relative(p, root.now);
+            }
+            if (is_regular_file (p)) {
+                auto ext = p.extension();
+                if (ext != ".ae!" && ext != ".ae"
+                &&  ext != ".cpp" && ext != ".hpp"
+                &&  ext != ".cxx" && ext != ".hxx"
+                &&  ext != ".c++" && ext != ".h++" && ext != ".h") continue;
+                files[p.filename().string()] = relative(p, root.now);
+            }
+        }
+
+        for (auto [filename, path] : files) {
+            auto & it = flist.list.emplace_back();
+            it.text.alignment = XY(gui::text::left, gui::text::center);
+            it.text.text = path.string();
+        }
+
+        for (auto [filename, path] : dirs) {
+            auto & it = flist.list.emplace_back();
+            it.text.alignment = XY(gui::text::left, gui::text::center);
+            it.text.text = path.string();
+            it.enabled = false;
+            fill(path);
+        }
+    }
+
     void on_notify (gui::base::widget* w, int n) override
     {
-        if (w == &subs)
+        if (w == &flist)
         {
-            selected = root.now / std::string(subs(n).text.text.now);
+            selected = root.now / std::string(flist.list(n).text.text.now);
         }
+        if (w == &scroller) {
+            XYWH r =
+            flist.list.coord.now; r.y = -n;
+            flist.list.coord = r;
+        }
+    }
+
+    void on_mouse_wheel (XY p, int delta) override
+    {
+        int h = scroller.step.now; if (h <= 0) h = gui::metrics::text::height;
+        delta = delta/120 * h; if (delta == 0) delta = delta < 0 ? -h : h;
+        if (sys::keyboard::shift) delta *= coord.now.size.y;
+        if (sys::keyboard::ctrl) delta *= 5;
+        int d = flist.coord.now.size.y - flist.list.coord.now.size.y; // may be negative
+        int y = flist.list.coord.now.y + delta;
+        if (y < d) y = d;
+        if (y > 0) y = 0;
+        scroller.top =-y;
     }
 }; 

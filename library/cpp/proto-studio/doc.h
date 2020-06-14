@@ -66,12 +66,35 @@ namespace doc
         array<token> tail;
     };
 
-    inline
-    array<std::pair<token*, str>> errors;
-    void error (token* token, str what) {
-        errors += std::pair{token, what};
-        if (token) token->kind = "error";
-    }
+    struct report
+    {
+        struct message { token* token; str kind, what; };
+        array <message> messages;
+
+        void error (token* token, str what) {
+            messages += message{token, "error", what};
+            if (token) token->kind = "error";
+        }
+
+        str operator () () const
+        {
+            str s; for (auto [token, kind, what] : messages)
+            {
+                if (kind == "error") s += "<font color=#B00020>";
+
+                if (token)
+                    s += std::to_string(token->range.from.line+1) + ":"
+                       + std::to_string(token->range.from.offset+1) + " ";
+
+                s += what;
+
+                if (kind == "error") s += "</font>";
+
+                s += "<br>";
+            }
+            return s;
+        }
+    };
 }
 
 

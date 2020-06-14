@@ -1,8 +1,7 @@
 #pragma once
 #include "doc.h"
 #include "doc_ae_lexica.h"
-#include "doc_ae_syntax_parsing.h"
-#include "doc_ae_syntax_scopes.h"
+#include "doc_ae_syntax_analysis.h"
 #include "doc_cpp_lexica.h"
 #include "doc_cpp_syntax.h"
 #include "doc_text_lexica.h"
@@ -10,11 +9,10 @@ namespace doc
 {
     struct text_model : text
     {
-        array<range> selections;
-
-        array<token> tokens;
-
         str format;
+        array<range> selections;
+        array<token> tokens;
+        report log;
 
         explicit text_model (str t = "", str f = "txt") : text(t), format(f)
         {
@@ -31,8 +29,10 @@ namespace doc
                 format == "cpp" ? doc::lexica::cpp::parse(*this):
                                   doc::lexica::txt::parse(*this);
 
-            if (format == "ae" ) doc::ae::syntax ::parse(tokens);
-            if (format == "cpp") doc::syntax::cpp::parse(tokens);
+            log.messages.clear();
+
+            if (format == "ae" ) { doc::ae ::syntax::analysis(log).proceed(tokens); }
+            if (format == "cpp") { doc::cpp::syntax::analysis(log).proceed(tokens); }
         }
 
         struct replace

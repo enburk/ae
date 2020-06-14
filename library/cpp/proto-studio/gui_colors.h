@@ -20,7 +20,7 @@ namespace gui
         sys::font font;
         RGBA black, white;
         RGBA highlight, selection;
-        pair_of_colors light, normal, middle, heavy,
+        pair_of_colors ultralight, light, normal, middle, heavy,
         active, hovered, touched, disabled,
         focus, error;
     };
@@ -58,10 +58,11 @@ namespace gui
             skin.highlight = palette[3].back_color;
             skin.selection = palette[4].back_color;
 
-            skin.light   = palette[1];
-            skin.normal  = palette[3];
-            skin.middle  = palette[4];
-            skin.heavy   = palette[5];
+            skin.ultralight = palette[0];
+            skin.light      = palette[1];
+            skin.normal     = palette[3];
+            skin.middle     = palette[4];
+            skin.heavy      = palette[5];
 
             skin.hovered = palette[6];
             skin.active  = palette[7];

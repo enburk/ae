@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="proto-studio.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <Filter Include="platforms">
       <UniqueIdentifier>{d5bb69b5-336f-4f06-abac-a77bd894f396}</UniqueIdentifier>
     </Filter>
@@ -186,11 +183,17 @@
     <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_schema.h">
       <Filter>doc</Filter>
     </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_parsing.h">
-      <Filter>doc</Filter>
-    </ClInclude>
     <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_scopes.h">
       <Filter>doc</Filter>
     </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_analysis.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_parser.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="library\cpp\proto-studio\proto-studio.cpp" />
   </ItemGroup>
 </Project>

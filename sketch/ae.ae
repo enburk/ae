@@ -21,3 +21,13 @@ type place : ordered { int line, char }
 
 ;; property field:
 ;; window.size.x -= d;
+
+
+
+;; instead of std::rotate(f, m, l) :
+::swap([f, m), [m, l));
+;; declarations/definitions:
+swap (range a, range b) requires intersection(a, b) = nil
+{ ... }
+swap (range a, range b) requires contiguous([a.begin, b.end)) and a.end = b.begin
+{ ... }

@@ -1,9 +1,11 @@
 #pragma once
+#include <experimental/coroutine>
 #include "gui_window.h"
 #include "gui_widget_image.h"
 #include "gui_widget_canvas.h"
 #include "gui_widget_button.h"
 #include "gui_widget_splitter.h"
+#include "doc_ae_translator.h"
 #include "ide_console.h"
 #include "ide_flist.h"
 #include "ide_editor.h"
@@ -25,13 +27,10 @@ struct IDE : gui::widget<IDE>
     gui::splitter splitter_editor_l;
     gui::splitter splitter_editor_r;
 
-    struct document
-    {
-        //doc::Document document;
-        //gui::text::editor::model::context context;
-    };
-
-    std::map<std::filesystem::path, document> documents;
+    enum class status { loading, ready, error };
+    std::atomic<status> library_status = status::loading;
+    gui::property<gui::time> timer;
+    std::thread thread;
 
     IDE()
     {
@@ -44,10 +43,48 @@ struct IDE : gui::widget<IDE>
         button_run .enabled = false;
         button_test.kind = gui::button::toggle;
         test.hide();
+
+        thread = std::thread([this]()
+        {
+            console.object.console << "Prepare library...";
+
+            for (std::filesystem::directory_iterator next
+                (std::filesystem::current_path() / "library"),
+                end; next != end; ++next)
+            {
+                auto path = next->path();
+                if (std::filesystem::is_regular_file (path) &&
+                    path.extension() == ".ae")
+                {
+                    console.object.console << path.string();
+                    doc::ae::translator::add(path);
+                    //if (doc::errors.size() > 0) break;
+                }
+            }
+
+            if (true)//doc::errors.size() == 0)
+            {
+                console.object.console << "DONE.";
+                library_status = status::ready;
+            }
+            else
+            {
+                library_status = status::error;
+            }
+        });
+    }
+    ~IDE()
+    {
+        if (thread.joinable())
+            thread.join();
     }
 
     void on_change (void* what) override
     {
+        if (timer.now == gui::time())
+            timer.go (gui::time::infinity,
+                      gui::time::infinity);
+
         if (what == &coord)
         {
             gui::skins[""].font = sys::font{"Segoe UI", gui::metrics::text::height};
@@ -55,7 +92,8 @@ struct IDE : gui::widget<IDE>
             toolbar.color = gui::skins[""].light.back_color;
 
             int W = coord.now.w; int w = gui::metrics::text::height*10;
-            int H = coord.now.h; int h = gui::metrics::text::height*2;
+            int H = coord.now.h; int h = gui::metrics::text::height*12/7;
+            if (W <= 0 || H <= 0) return;
 
             toolbar.coord = XYWH(0, 0, W, h);
             button_save.coord = XYWH(0, 0, w, h);
@@ -63,8 +101,8 @@ struct IDE : gui::widget<IDE>
             button_test.coord = XYWH(W-w, 0, w, h);
 
             int d = gui::metrics::line::width * 4;
-            int l = sys::settings::load("splitter.editor.l.permyriad", 2'500) * W / 10'000;
-            int r = sys::settings::load("splitter.editor.r.permyriad", 7'500) * W / 10'000;
+            int l = sys::settings::load("splitter.editor.l.permyriad", 18'00) * W / 100'00;
+            int r = sys::settings::load("splitter.editor.r.permyriad", 70'00) * W / 100'00;
 
             splitter_editor_l.coord = XYWH(l-d, h, 2*d, H-h);
             splitter_editor_r.coord = XYWH(r-d, h, 2*d, H-h);
@@ -78,27 +116,39 @@ struct IDE : gui::widget<IDE>
             editor.coord = XYWH(l, h, r-l, H-h);
             console.coord = XYWH(r, h, W-r, H-h);
         }
+
+        if (what == &timer)
+        {
+            auto ext = editor.object.path.now.extension();
+            button_run.enabled = ext == ".ae!" &&
+                library_status == status::ready;
+        }
     }
+
 
     void on_notify (gui::base::widget* w) override
     {
-        if (w == &button_test) test.show (test.alpha.to == 0, gui::time(500));
+        if (w == &button_test)
+        {
+            test.show (test.alpha.to == 0, gui::time(500));
+        //  flist.show (test.alpha.to != 0, gui::time(500));
+        //  editor.show (test.alpha.to != 0, gui::time(500));
+        //  console.show (test.alpha.to != 0, gui::time(500));
+        }
 
         if (w == &flist)
         {
             editor.object.load(flist.object.selected.now);
-            button_run.enabled = flist.object.selected.now.extension() == ".ae!";
+        }
+        if (w == &editor.object.flist)
+        {
+            editor.object.load(editor.object.flist.selected.now);
         }
         if (w == &editor)
         {
             console.object.console.clear();
-            for (auto [token, what] : doc::errors) {
-                str s; if (token)
-                    s += std::to_string(token->range.from.line+1) + ":"
-                       + std::to_string(token->range.from.offset+1) + " ";
-                s += what;
-                console.object.console << "<font color=#B00020>" + s + "</font>";
-            }
+            if (str log = editor.object.editor.model.log(); log != "")
+                console.object.console << log;
         }
         if (w == &button_run)
         {

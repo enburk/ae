@@ -6,12 +6,91 @@
 #include "gui_widget_text_editor.h"
 using namespace pix;
 
+struct EditorFlist : gui::widget<EditorFlist>
+{
+    gui::canvas canvas;
+    gui::radio::group buttons;
+    gui::binary_property<std::filesystem::path> selected;
+    struct data { std::filesystem::path path; long ago = 0; };
+    array<data> datae;
+
+    void load (std::filesystem::path path)
+    {
+        if (auto it = datae.find_if([path](auto d)
+            { return d.path == path; });
+            it != datae.end())
+        {
+            selected = it->path;
+            for (auto & d : datae) if (d.ago < it->ago) d.ago++; it->ago = 0;
+            for (auto & button : buttons) button.on = false;
+            buttons((int)(it - datae.begin())).on = true;
+            on_change(&coord); // could be out of view now
+        }
+        else
+        {
+            selected = path;
+            for (auto & d : datae) d.ago++;
+            for (auto & button : buttons) button.on = false;
+            datae += data { path, 0 };
+            buttons.emplace_back();
+            buttons.back().text.text = path.filename().string();
+            buttons.back().on = true;
+            on_change(&coord);
+        }
+    }
+
+    void on_change (void* what) override
+    {
+        if (what == &coord)
+        {
+            canvas.coord = coord.now.local();
+            buttons.coord = coord.now.local();
+            if (datae.size() == 0) return;
+
+            int W = coord.now.w; if (W <= 0) return;
+            int H = coord.now.h; if (H <= 0) return;
+            int h = gui::metrics::text::height;
+            const int cell_width_in_heights = 15;
+            int w = cell_width_in_heights * h;
+            int n = W/w; if (n == 0) n = 1;
+
+            // std::stable_partition... sort of...
+            for (int i=0; i<min(n, datae.size());)
+            {
+                if (datae[i].ago < n) i++; else {
+                    std::rotate(datae.begin()+i, datae.begin()+i+1, datae.end());
+                    buttons.rotate(i, i+1, buttons.size());
+                }
+            }
+            for (int i=0; i<buttons.size(); i++)
+            {
+                buttons(i).show(datae[i].ago < n);
+                buttons(i).coord = XYWH(i*w, 0, w, H);
+            }
+        }
+        if (what == &skin)
+        {
+            canvas.color = gui::skins[skin.now].light.back_color;
+        }
+    }
+
+    void on_notify (gui::base::widget* w, int n) override
+    {
+        if (w == &buttons && selected.now != datae[n].path) {
+            selected = datae[n].path;
+            notify();
+        }
+    }
+};
+
 struct Editor : gui::widget<Editor>
 {
     str filename;
 
-    gui::text::view   lineup;
+    EditorFlist flist;
+    gui::text::view lineup;
     gui::text::editor editor;
+    gui::binary_property<std::filesystem::path> path;
 
     Editor ()
     {
@@ -19,6 +98,8 @@ struct Editor : gui::widget<Editor>
 
     void load (std::filesystem::path path)
     {
+        flist.load(path);
+
         std::ifstream stream(path); str text = std::string{(
         std::istreambuf_iterator<char>(stream)),
         std::istreambuf_iterator<char>()};
@@ -38,6 +119,8 @@ struct Editor : gui::widget<Editor>
             ext =  "cpp";
 
         editor.set(text, ext);
+
+        this->path = path;
     }
 
     void on_change (void* what) override
@@ -46,17 +129,18 @@ struct Editor : gui::widget<Editor>
         {
             int W = coord.now.w; if (W <= 0) return;
             int H = coord.now.h; if (H <= 0) return;
-            int h = gui::metrics::text::height;
+            int h = gui::metrics::text::height * 12/7;
             int d = 3*h;
 
-            lineup.coord = XYXY(0, 0, d, H);
-            editor.coord = XYXY(d, 0, W, H);
+            flist .coord = XYXY(0, 0, W, h);
+            lineup.coord = XYXY(0, h, d, H);
+            editor.coord = XYXY(d, h, W, H);
         }
         if (what == &skin)
         {
             int h = gui::metrics::text::height;
 
-            lineup.ground.color = gui::skins[skin.now].light.back_color;
+            lineup.ground.color = gui::skins[skin.now].ultralight.back_color;
             lineup.alignment = XY{gui::text::right, gui::text::top};
             lineup.word_wrap = false;
             lineup.style = sys::glyph_style{
@@ -65,6 +149,7 @@ struct Editor : gui::widget<Editor>
 
             editor.virtual_space = true;
             editor.page.view.word_wrap = false;
+            editor.page.scroll.x.mode = gui::scroll::mode::none;
             editor.page.view.ground.color = pix::white;
             editor.page.style = sys::glyph_style{
                 sys::font{"Consolas", h*110/100},
@@ -104,6 +189,11 @@ struct Editor : gui::widget<Editor>
             }
 
             notify();
+        }
+
+        if (w == &flist)
+        {
+            notify(&flist);
         }
     }
     void on_notify (gui::base::widget* w, int n) override

@@ -110,6 +110,17 @@ namespace pix
             return f;
         }
 
+        frame from (XY p) const { return from(p.x, p.y); }
+        frame from (int x, int y) const
+        {
+            if (x < offset.x or offset.x + size.x <= x) return frame();
+            if (y < offset.y or offset.y + size.y <= y) return frame();
+            frame f; f.image = image;
+            f.offset = XY(offset.x + x, offset.y + y);
+            f.size   = XY(size.x - x, size.y - y);
+            return f;
+        }
+
         void  fill (const type & c)
         {
             for (int y=0; y<size.y; y++)

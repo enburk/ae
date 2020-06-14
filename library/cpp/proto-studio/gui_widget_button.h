@@ -113,7 +113,6 @@ namespace gui
     {
         checkbox ()
         {
-
             on_change_state = [this]()
             {
             };

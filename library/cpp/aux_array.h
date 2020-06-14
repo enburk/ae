@@ -145,6 +145,8 @@ namespace aux
 
         template<class P> auto find_if     (P p) const { return std::find_if     (begin(), end(), p); }
         template<class P> auto find_if_not (P p) const { return std::find_if_not (begin(), end(), p); }
+        template<class P> auto find_if     (P p) /***/ { return std::find_if     (begin(), end(), p); }
+        template<class P> auto find_if_not (P p) /***/ { return std::find_if_not (begin(), end(), p); }
 
         template<class Compare>
         auto lower_bound (const type & e, Compare compare = std::less<>{}) const

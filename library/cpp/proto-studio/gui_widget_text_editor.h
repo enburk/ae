@@ -11,7 +11,6 @@ namespace gui::text
         binary_property<bool> insert_mode = true;
         binary_property<bool> virtual_space = false;
         doc::text_model model;
-        html_model html_model;
 
         std::map<str, glyph_style_index> styles;
 

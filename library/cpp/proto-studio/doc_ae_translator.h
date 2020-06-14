@@ -4,11 +4,14 @@
 #include "doc_ae_synthesis.h"
 namespace doc::ae::translator
 {
-    syntax::scope global_scope;
+    //doc::errors errors;
 
-    void add_library (std::filesystem::path path)
+    doc::ae::syntax::scope global_scope;
+
+    void add (std::filesystem::path path)//, syntax::scope & scope = global_scope)
     {
     }
+
 
     /*
     void print (const entity & entity, array<str> & lines, int indent = 0, bool semicolon = true)
