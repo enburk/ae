@@ -25,6 +25,7 @@ namespace gui::text
 
         void set (str text, str format) override
         {
+            update(); // speed up
             page.view.column.clear(); // reset cache
             model = doc::text_model(text, format);
             page.view.refresh();
@@ -41,6 +42,7 @@ namespace gui::text
             {
                 if (t.text == "\n")
                 {
+                    if (virtual_space.now)
                     lines.back().tokens += token::data{str(' ', 128), s}; // huge slowdown
                     lines.back().tokens += token::data{"\n", s};
                     lines += {line::data{f}};

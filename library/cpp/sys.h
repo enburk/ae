@@ -167,7 +167,8 @@ namespace sys
 
         static inline array<sys::glyph_style> glyph_styles = {sys::glyph_style{}};
 
-        glyph_style style () const { return glyph_styles[value]; }
+        const glyph_style & style () const { return glyph_styles[value]; }
+        /***/ glyph_style & style () /***/ { return glyph_styles[value]; }
 
         explicit glyph_style_index () = default;
         explicit glyph_style_index (const glyph_style & style) :

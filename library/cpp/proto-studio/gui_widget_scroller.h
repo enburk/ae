@@ -244,12 +244,12 @@ namespace gui
             if (w == &page_right) top = top.now + coord.now.size.x;
         }
 
-        void on_mouse_press (XY p, char button, bool right) override
+        void on_mouse_press (XY p, char button, bool down) override
         {
             if (button != 'L') return;
-            if (right && !touch) touch_point = p.x;
-            if (right && !touch) touch_top = top.now;
-            touch = right;
+            if (down && !touch) touch_point = p.x;
+            if (down && !touch) touch_top = top.now;
+            touch = down;
         }
         void on_mouse_hover (XY p) override
         {
@@ -259,7 +259,7 @@ namespace gui
             int fake_page = fake_span * real_page / max(1, span.now);
             int fake_top  = fake_span * top.now   / max(1, span.now);
             fake_page = min(fake_span, fake_page); if (fake_page <= 0) return;
-            top = touch_top + (p.x - touch_point) * real_page/fake_page;
+            top = (touch_top * fake_page + (p.x - touch_point) * real_page)/fake_page;
         }
     };
 

@@ -122,6 +122,9 @@ namespace gui::text
 
         void on_notify (gui::base::widget* w, int n) override
         {
+            if (w == &scroll.x) update(); // speed up
+            if (w == &scroll.y) update(); // speed up
+
             if (w == &scroll.x) view.shift = XY(-n, view.shift.now.y);
             if (w == &scroll.y) view.shift = XY(view.shift.now.x, -n);
 

@@ -16,6 +16,8 @@ namespace gui::text
             }
         };
 
+        static inline std::unordered_map<int, int> spaces;
+
         str text; glyph_style_index style; void fill (
         str text, glyph_style_index style)
         {
@@ -25,6 +27,8 @@ namespace gui::text
             width = ascent = descent = advance = 0;
 
             glyphs = unicode::glyphs(text);
+            reserve(glyphs.size());
+
             for (int i=0; i<glyphs.size(); i++)
             {
                 glyph & glyph = (*this)(i);
@@ -149,6 +153,7 @@ namespace gui::text
             data_copy = std::move(data);
             auto & format = data_copy.format;
             auto & tokens = data_copy.tokens;
+            reserve(tokens.size());
 
             rows.clear();
 
@@ -244,6 +249,8 @@ namespace gui::text
         void fill (array<line::data> datae)
         {
             int n = 0; int width = 0; int height = 0;
+
+            reserve(datae.size());
 
             for (auto && data : datae)
             {

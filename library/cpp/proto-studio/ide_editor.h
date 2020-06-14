@@ -144,7 +144,7 @@ struct Editor : gui::widget<Editor>
             lineup.alignment = XY{gui::text::right, gui::text::top};
             lineup.word_wrap = false;
             lineup.style = sys::glyph_style{
-                sys::font{"Consolas", h*110/100},
+                sys::font{"Consolas", h},
                 pix::teal};
 
             editor.virtual_space = true;
@@ -152,7 +152,7 @@ struct Editor : gui::widget<Editor>
             editor.page.scroll.x.mode = gui::scroll::mode::none;
             editor.page.view.ground.color = pix::white;
             editor.page.style = sys::glyph_style{
-                sys::font{"Consolas", h*110/100},
+                sys::font{"Consolas", h},
                 pix::black};
 
             auto s = editor.page.style.now;

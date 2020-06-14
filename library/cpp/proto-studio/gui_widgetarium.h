@@ -15,6 +15,13 @@ namespace gui
 
         int size () const { return indices.size(); }
 
+        void reserve (int n)
+        {
+            holes.reserve(n);
+            indices.reserve(n);
+            children.reserve(n);
+        }
+
         void on_notify (base::widget* w) override {
             for (int i = 0; i < size(); i++)
                 if (&(*this)(i) == w)

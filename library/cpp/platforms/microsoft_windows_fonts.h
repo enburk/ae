@@ -106,11 +106,12 @@ MAKE_HASHABLE(cache_metrics_key, t.text, t.font);
 
 static std::unordered_map<cache_metrics_key, sys::glyph_metrics> cache_metrics;
 
+static array<std::unordered_map<str, sys::glyph_metrics>> cache_metrics2;
+
 sys::glyph::glyph (str text, sys::glyph_style_index style_index) : text(text), style_index(style_index)
 {
     if (text == "") return;
-    auto style = this->style();
-
+    const auto & style = this->style();
     cache_metrics_key key {text, style.font};
     auto it = cache_metrics.find(key);
     if (it != cache_metrics.end()) glyph_metrics::operator = (it->second); else
@@ -178,7 +179,7 @@ MAKE_HASHABLE(cache_glyphs_key, t.text, t.font, t.fore, t.back);
 
 void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x)
 {
-    auto style = this->style();
+    const auto & style = this->style();
     if (alpha == 0) return;
     if (text == "") return;
     if (text.contains_only(str::one_of(" \t\r\n"))
