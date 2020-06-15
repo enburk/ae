@@ -46,7 +46,7 @@ struct IDE : gui::widget<IDE>
 
         thread = std::thread([this]()
         {
-            console.object.console << "Prepare library...";
+            console.object.compiler << "Prepare library...";
 
             for (std::filesystem::directory_iterator next
                 (std::filesystem::current_path() / "library"),
@@ -56,7 +56,7 @@ struct IDE : gui::widget<IDE>
                 if (std::filesystem::is_regular_file (path) &&
                     path.extension() == ".ae")
                 {
-                    console.object.console << path.string();
+                    console.object.compiler << path.string();
                     doc::ae::translator::add(path);
                     //if (doc::errors.size() > 0) break;
                 }
@@ -64,7 +64,7 @@ struct IDE : gui::widget<IDE>
 
             if (true)//doc::errors.size() == 0)
             {
-                console.object.console << "DONE.";
+                console.object.compiler << "DONE.";
                 library_status = status::ready;
             }
             else
@@ -125,15 +125,11 @@ struct IDE : gui::widget<IDE>
         }
     }
 
-
     void on_notify (gui::base::widget* w) override
     {
         if (w == &button_test)
         {
             test.show (test.alpha.to == 0, gui::time(500));
-        //  flist.show (test.alpha.to != 0, gui::time(500));
-        //  editor.show (test.alpha.to != 0, gui::time(500));
-        //  console.show (test.alpha.to != 0, gui::time(500));
         }
 
         if (w == &flist)
@@ -146,14 +142,17 @@ struct IDE : gui::widget<IDE>
         }
         if (w == &editor)
         {
-            console.object.console.clear();
-            if (str log = editor.object.editor.model.log(); log != "")
-                console.object.console << log;
+            console.object.editor.clear();
+            if (str log = editor.object.editor.model.log(); log != "") {
+                console.object.activate(&console.object.editor);
+                console.object.editor << log;
+            }
         }
         if (w == &button_run)
         {
-            console.object.console.clear();
-            console.object.console << "<b><font color=#000080> Run... </font></b>";
+            console.object.activate(&console.object.compiler);
+            console.object.compiler.clear();
+            console.object.compiler << "<b><font color=#000080> Run... </font></b>";
         }
     }
 

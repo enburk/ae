@@ -212,7 +212,8 @@ namespace doc
                     spaces = 0;
                     line--;
                 }
-                if (lead == "{") spaces += 4;
+                if (lead == "{" and spaces <= selections[0].from.offset) spaces += 4;
+                else spaces = min(spaces, selections[0].from.offset);
                 s += str(' ', spaces);
 
                 replaces += replace{selections[0], text(s)};
