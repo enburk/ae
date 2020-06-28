@@ -48,6 +48,75 @@ void sys::mouse::cursor(str image)
     ));
 }
 
+
+sys::process::process (std::filesystem::path path, str args, options opt)
+{
+    HANDLE out = 0; if (opt.out != std::filesystem::path{})
+    {
+        SECURITY_ATTRIBUTES sa;
+        sa.nLength = sizeof(sa);
+        sa.lpSecurityDescriptor = NULL;
+        sa.bInheritHandle = TRUE;       
+
+        out = CreateFileW(
+            winstr(opt.out.string()).c_str(),
+            FILE_APPEND_DATA,
+            FILE_SHARE_WRITE | FILE_SHARE_READ,
+            &sa,
+            OPEN_ALWAYS,
+            FILE_ATTRIBUTE_NORMAL,
+            NULL);
+    }
+
+    STARTUPINFOW si;
+    PROCESS_INFORMATION pi; 
+    ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+    ZeroMemory(&si, sizeof(STARTUPINFO));
+    si.cb = sizeof(STARTUPINFO); 
+
+    if (opt.out != std::filesystem::path{}) {
+        si.dwFlags |= STARTF_USESTDHANDLES;
+        si.hStdInput = NULL;
+        si.hStdError = out;
+        si.hStdOutput = out;
+    }
+
+    DWORD flags = 0; if (opt.hidden) flags = CREATE_NO_WINDOW;
+
+    auto ws = winstr(" " + args);
+    array<WCHAR> buffer; buffer.resize((int)(ws.size()));
+    std::copy(ws.begin(), ws.end(), buffer.begin());
+
+    BOOL rc = CreateProcessW(
+        winstr(path.string()).c_str(),
+        buffer.data(),
+        NULL, NULL, TRUE, flags,
+        NULL, NULL, &si, &pi);
+
+    if (!rc) throw std::runtime_error(
+        GetErrorMessage(::GetLastError()));
+
+    handle = (size_t)(pi.hProcess);
+    if (out != 0) CloseHandle(out);
+    ::CloseHandle(pi.hThread);
+
+    if (opt.ms_wait_for_input_idle > 0) ::WaitForInputIdle(pi.hProcess, 
+        opt.ms_wait_for_input_idle);
+}
+bool sys::process::wait (int ms)
+{
+    if (handle == 0) return false;
+    DWORD time = ms == max<int>() ? INFINITE : ms;
+    auto rc = ::WaitForSingleObject((HANDLE)(handle), time);
+    return rc == WAIT_OBJECT_0 || rc == WAIT_ABANDONED_0;
+
+}
+sys::process::~process ()
+{
+    if (handle != 0) ::CloseHandle((HANDLE)(handle));
+}
+
+
 struct Clipboard
 {
     Clipboard (const Clipboard&) = delete;

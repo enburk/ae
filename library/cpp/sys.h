@@ -102,6 +102,24 @@ namespace sys
     };
     inline app_base * app_instance::app = nullptr;
 
+    struct process
+    {
+        size_t handle = 0;
+        struct options
+        {
+            bool hidden = false;
+            std::filesystem::path out;
+            int ms_wait_for_input_idle = 0;
+        };
+        process () noexcept = default;
+        process (const process&) = delete;
+        process (process&& p) noexcept { handle = p.handle; }
+        process (std::filesystem::path, str args, options=options{});
+       ~process ();
+
+        bool wait (int ms = max<int>());
+    };
+
     struct font
     {
         str face; int size; bool bold; bool italic;

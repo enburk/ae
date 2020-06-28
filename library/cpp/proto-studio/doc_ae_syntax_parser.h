@@ -8,14 +8,16 @@ namespace doc::ae::syntax
 
         parser (report & log) : log(log) {}
 
-        array<element> bracketing (deque<token*> & input, str closing)
+        auto bracketing (deque<token*> & input, str closing) -> array<element>
         {
-            auto close = [this, &input](brackets & e)
+            auto close = [this, &input](element & e)
             {
                 if (input.size() > 0) {
                     auto token = input.front();
                     input.pop_front();
                     e.closing = token;
+                    e.name = e.opening->text + e.closing->text;
+                    e.kind = "()";
                 }
                 else log.error(e.opening, "unclosed '" + e.opening->text + "'");
             };
@@ -34,122 +36,106 @@ namespace doc::ae::syntax
                 if (token->text == ")") { log.error(token, "unexpected ')'"); } else
                 if (token->text == "]") { log.error(token, "unexpected ']'"); }
 
-                brackets e; e.opening = token;
+                element e; e.opening = token;
 
-                if (token->text == "{") { e.body = bracketing(input, "}"); close(e); output += e; } else
-                if (token->text == "(") { e.body = bracketing(input, ")"); close(e); output += e; } else
-                if (token->text == "[") { e.body = bracketing(input, ")"); close(e); output += e; } else
+                if (token->text == "{") { e.elements = bracketing(input, "}"); close(e); } else
+                if (token->text == "(") { e.elements = bracketing(input, ")"); close(e); } else
+                if (token->text == "[") { e.elements = bracketing(input, ")"); close(e); }
 
-                output += token;
+                output += e;
             }
             return output;
         }
-        array<element> bracketing (deque<token*> input) {
+        auto bracketing (deque<token*> input) -> array<element> {
                 return bracketing (input, "");
         }
 
-        array<statement> statementing (array<element> input)
+        auto statementing (array<element> input) -> array<element>
         {
-            array<statement> output; statement s;
+            array<element> output; element s;
 
             if (log.messages.size() > 0) return output;
         
             for (auto && e : input)
             {
-                if (std::holds_alternative<token*>(e) &&
-                    std::get<token*>(e)->text == ";") {
-                    if (s.elements.size() > 0 || s.body.size() > 0) {
-                        output += s; s = statement{};
-                    }
+                if (e.opening->text == ";")
+                {
+                    if (s.elements.empty()) continue;
+                    output += std::move(s);
+                    s = element{};
                 }
                 else
-                if (std::holds_alternative<brackets>(e)) {
-                    if (auto & b = std::get<brackets>(e);
-                        b.opening->text == "{" &&
-                        b.closing->text == "}") {
-                        s.body = statementing(b.body);
-                        if (s.body.size() == 0)
-                            s.body += statement{};
-                        output += s; s = statement{};
-                    }
+                if (e.name == "{}")
+                {
+                    e.elements = statementing(e.elements);
+                    s.elements += std::move(e);
+                    output += std::move(s);
+                    s = element{};
+                }
+                else
+                if (e.kind == "()")
+                {
+                    e.elements = argumenting(e.elements);
+                    s.elements += std::move(e);
+                }
+                else s.elements += std::move(e);
+            }
+
+            if (not s.elements.empty())
+                output += std::move(s);
+    
+            return output;
+        }
+
+        auto argumenting (array<element> input) -> array<element>
+        {
+            array<element> output; element s;
+
+            for (auto && e : input)
+            {
+                if (e.opening->text == ";")
+                {
+                    log.error(e.opening, "unexpected ';'");
+                }
+                if (e.opening->text == ",")
+                {
+                    output += std::move(s);
+                    s = element{};
+                }
+                else
+                if (e.name == "{}")
+                {
+                    e.elements = statementing(e.elements);
+                    s.elements += std::move(e);
+                }
+                else
+                if (e.kind == "()")
+                {
+                    e.elements = argumenting(e.elements);
+                    s.elements += std::move(e);
                 }
                 else s.elements += e;
             }
 
-            if (s.elements.size() > 0 ||
-                s.body.size() > 0)
+            if (not s.elements.empty())
                 output += s;
     
             return output;
         }
 
-        void combinaming (array<statement> & statements)
-        {
-            for (auto && s : statements)
-            {
-                array<element> elements; for (auto && e : s.elements)
-                {
-                    if (elements.size() > 0 &&
-                        std::holds_alternative<name>(elements.back())) {
-                        auto & names = std::get<name>(elements.back()).names;
-
-                        if (std::holds_alternative<token*>(e))
-                        {
-                            token* t = std::get<token*>(e);
-
-                            if (t->text == "::" &&
-                                names.back().identifier != nullptr) {
-                                names += unqualified_name{.coloncolon=t};
-                                continue;
-                            }
-                            if (t->kind == "name" &&
-                                names.back().coloncolon != nullptr &&
-                                names.back().identifier == nullptr) {
-                                names.back().identifier = t;
-                                continue;
-                            }
-                        }
-
-                        if (std::holds_alternative<brackets>(e)) {
-                            names.back().params += std::get<brackets>(e);
-                            continue;
-                        }
-                    }
-
-                    if (std::holds_alternative<token*>(e) &&
-                        std::get<token*>(e)->text == "::")
-                        elements += name{array{unqualified_name{
-                            .coloncolon=std::get<token*>(e)}}};
-                    else
-                    if (std::holds_alternative<token*>(e) &&
-                        std::get<token*>(e)->kind == "name")
-                        elements += name{array{unqualified_name{
-                            .identifier=std::get<token*>(e)}}};
-                    else
-                        elements += e;
-                }
-
-                s.elements = elements;
-                combinaming(s.body);
-            }
-        }
-
-        array<statement> proceed (array<token> & input)
+        auto proceed (array<token> & input) -> array<element>
         {
             deque<token*> tokens;
             for (auto & token : input)
                 if (token.kind != "space" &&
-                    token.kind != "comment")
+                    token.kind != "comment"&&
+                    token.text != "\n")
                     tokens += &token;
 
-            auto statements = 
+            return 
                 statementing(
                 bracketing(
                 tokens));
-
-            combinaming(statements);
-
-            return statements;
         }
     };
 }

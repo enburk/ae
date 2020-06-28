@@ -82,8 +82,27 @@ namespace aux
 
         int size () const { return (int) base::size(); }
 
-        void operator += (const type  & e) { base::push_back(e); }
-        void operator += (const deque & a) { base::insert(base::end(), a.begin(), a.end()); }
+        deque (              ) = default;
+        deque (const deque  &) = default;
+        deque (      deque &&) = default;
+        deque (const base  &c) : base(c) {}
+        deque (      base &&c) : base(std::move(c)) {}
+
+        explicit deque (const array<type>  &a) : base(a.begin(), a.end()) {}
+        explicit deque (      array<type> &&a) : base(
+            std::make_move_iterator(a.begin()),
+            std::make_move_iterator(a.end  ())) {}
+
+        auto& operator =  (const deque  & a) { base::operator = (a); return *this; }
+        auto& operator =  (      deque && a) { base::operator = (std::move(a)); return *this; }
+
+        void  operator += (const type   & e) { base::push_back(e); }
+        void  operator += (      type  && e) { base::push_back(std::move(e)); }
+
+        void  operator += (const deque  & a) { base::insert(base::end(), a.begin(), a.end()); }
+        void  operator += (      deque && a) { base::insert(base::end(),
+            std::make_move_iterator(a.begin()),
+            std::make_move_iterator(a.end())); }
     };
 
     // C++ Core Guidelines C.21:

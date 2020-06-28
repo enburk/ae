@@ -11,6 +11,7 @@ struct Console : gui::widget<Console>
     gui::text::console compiler;
     std::array<gui::text::console*, 2> consoles = {&editor, &compiler};
     static inline const str titles [] = {"Editor", "Compiler"};
+    gui::button copy;
 
     Console ()
     {
@@ -20,6 +21,8 @@ struct Console : gui::widget<Console>
         buttons(0).on = true;
         for (int i=1; i<consoles.size(); i++)
             consoles[i]->hide();
+
+        copy.text.text = "copy";
     }
 
     void activate (gui::text::console * console)
@@ -30,6 +33,15 @@ struct Console : gui::widget<Console>
 
         for (int i=0; i<consoles.size(); i++)
             consoles[i]->show(buttons(i).on.now);
+
+        refresh();
+    }
+
+    void refresh ()
+    {
+        for (int i=0; i<consoles.size(); i++)
+            if (buttons(i).on.now) copy.show(
+                consoles[i]->page.view.selected() != "");
     }
 
     void on_change (void* what) override
@@ -43,6 +55,7 @@ struct Console : gui::widget<Console>
 
             canvas.coord = XYWH(0, 0, W, h);
             buttons.coord = XYWH(0, 0, W, h);
+            copy.coord = XYWH(0, 0, w/2, h);
 
             for (int i=0; i<consoles.size(); i++)
             {
@@ -50,7 +63,7 @@ struct Console : gui::widget<Console>
 
                 auto & console = *consoles[i];
                 console.coord = XYXY(0, h, W, H);
-                console.page.view.ground.color = gui::skins[skin.now].light.back_color;
+                console.page.view.ground.color = gui::skins[skin.now].ultralight.back_color;
                 console.page.alignment = XY{gui::text::left, gui::text::top};
                 console.page.style = sys::glyph_style{
                     sys::font{"Consolas", gui::metrics::text::height},
@@ -63,12 +76,28 @@ struct Console : gui::widget<Console>
         }
     }
 
+    void on_notify (gui::base::widget* w) override
+    {
+        if (w == &copy) {
+            for (int i=0; i<consoles.size(); i++)
+                if (buttons(i).on.now)
+                    sys::clipboard::set(
+                        consoles[i]->page.view.selected());
+        }
+    }
+
     void on_notify (gui::base::widget* w, int n) override
     {
         if (w == &buttons) {
             for (int i=0; i<consoles.size(); i++)
                 consoles[i]->show(buttons(i).on.now);
         }
+        refresh();
+    }
+
+    void on_mouse_press (XY, char button, bool down) override
+    {
+        refresh();
     }
 };
  

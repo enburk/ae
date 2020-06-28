@@ -99,12 +99,14 @@ namespace gui::base
             // button ?
             if (down) {
                 mouse_press_child = nullptr;
-                for (auto w : children) {
-                    if (w->mouse_sense (p - w->coord.now.origin)) {
-                        w->mouse_press (p - w->coord.now.origin, button, true);
-                        mouse_press_child = w;
-                        return;
-                    }
+                for (auto w : children)
+                    if (w->mouse_sense (p - w->coord.now.origin))
+                        mouse_press_child = w; // last sibling wins
+
+                if (mouse_press_child) {
+                    mouse_press_child->mouse_press (p -
+                    mouse_press_child->coord.now.origin, button, true);
+                    return;
                 }
             }
             else { 

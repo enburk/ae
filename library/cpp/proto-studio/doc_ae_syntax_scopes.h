@@ -24,7 +24,7 @@ namespace doc::ae::syntax
         // 3. block variables in "if", "for", "catch"
         // 4. import ?
 
-        void fill (array<statement> & input)
+        void fill (array<element> & input)
         {
             //for (auto & s : input)
             //{

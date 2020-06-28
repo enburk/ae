@@ -12,6 +12,10 @@ namespace doc::ae::lexica
     inline bool space (str c) { return c.size() == 1 && space(c[0]); }
     inline bool digit (str c) { return c.size() == 1 && digit(c[0]); }
     inline bool alpha (str c) { return c.size() == 1 && alpha(c[0]); }
+    inline bool brace (str c) { return
+        c == "{" or c == "(" or c == "[" or
+        c == "}" or c == ")" or c == "]";
+    }
 
     inline array<token> parse (const text & text)
     {
@@ -24,34 +28,19 @@ namespace doc::ae::lexica
                 bool same = false;
 
                 if (t.kind == "comment") same = true; else
-                if (t.kind == "space"  ) same = space (c); else
-                if (t.kind == "name"   ) same = alpha (c) || digit (c) || c == "."; else
-                if (t.kind == "number" ) same = alpha (c) || digit (c) || c == "."; else
-
+                if (t.kind == "space"  ) same = space(c); else
+                if (t.kind == "name"   ) same = alpha(c) || digit(c) || c == "."; else
+                if (t.kind == "number" ) same = alpha(c) || digit(c) || c == "."; else
+                if (t.kind == "symbol" ) same =
+                    not alpha(c) && not brace(c) &&
+                    not digit(c) && not brace(t.text) &&
+                    not space(c);
+                else
                 if (t.kind == "literal") same =
                     t.text == "\"" || not
                     t.text.ends_with("\"") ||
-                    t.text.ends_with("\\\""); else
+                    t.text.ends_with("\\\"");
 
-                if (t.kind == "symbol" ) same = false
-                
-                ||  t.text == "+" && (c == "=" || c == "+")
-                ||  t.text == "-" && (c == "=" || c == "-" || c == ">")
-                ||  t.text == "/" && (c == "=" || c == "/")
-                ||  t.text == "*" && (c == "=" || c == "*")
-
-                ||  t.text == "<" && (c == "=" || c == "<")
-                ||  t.text == ">" && (c == "=" || c == ">")
-                ||  t.text == "=" && (c == "=")
-                ||  t.text == ":" && (c == ":")
-                ||  t.text == ";" && (c == ";")
-
-                ||  t.text =="<<" && (c == "<")
-                ||  t.text ==">>" && (c == ">")
-
-                ||  t.text == "." && (c == ".")
-                ||  t.text ==".." && (c == ".")
-                ;
                 if (same)
                 {
                     t.text += c;

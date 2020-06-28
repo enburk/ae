@@ -2,48 +2,116 @@
 #include "doc.h"
 namespace doc::ae::syntax
 {
-    struct scope;
+    struct element
+    {
+        str kind, name;
+        token* opening = nullptr;
+        token* closing = nullptr;
+        array<element> elements;
+    };
 
-    struct element;
+    struct statement;
+    struct expression;
+    struct conditional;
+    struct loop;
+
+    struct number  { token* token; };
+    struct literal { token* token; };
 
     struct brackets
     {
         token* opening = nullptr;
         token* closing = nullptr;
-        array<element> body;
+        array<statement> list;
     };
 
-    struct unqualified_name
+    struct named_unit
     {
         token* coloncolon = nullptr;
         token* identifier = nullptr;
-        array<brackets> params;
+        array<brackets> parameters;
     };
 
-    struct name { array<unqualified_name> names; };
+    struct named_pack { array<named_unit> units; };
 
-    struct statement
+    struct operation
     {
-        str kind, id; name type;
-        scope * scope = nullptr;
-        array<element> elements;
+        token* token = nullptr;
+        array<expression> operands;
+        str kind;
+    };
+
+    struct expression_if
+    {
+        token* title = nullptr;
+        array<expression> condition; // array prevents infinite recursion
+        array<expression> then_body; // array prevents infinite recursion
+        array<expression> else_body; // array prevents infinite recursion
+    };
+
+    struct expression_for
+    {
+        token* title = nullptr;
+        token* index = nullptr;
+        array<expression> container; // array prevents infinite recursion
+    };
+
+    struct expression
+    {
+        std::variant
+        <
+            number,
+            literal,
+            named_pack,
+            operation,
+            brackets,
+            expression_if,
+            expression_for
+        >
+        variant;
+    };
+
+    struct conditional
+    {
+        token* title = nullptr;
+        expression condition;
+        array<statement> then_body;
+        array<statement> else_body;
+    };
+
+    struct loop
+    {
+        token* title = nullptr;
+        expression condition;
+        array<statement> initial;
+        array<statement> iterational;
         array<statement> body;
     };
 
-    using variant = std::variant
-    <
-        token*,
-        brackets,
-        name
-    >;
+    struct pragma
+    {
+        token* title = nullptr;
+        array<expression> arguments;
+    };
 
-    struct element : variant {
-        using variant::variant;
-        element(variant v) : variant(std::move(v)) {}
-        auto operator = (variant v) { variant::
-            operator = (std::move(v));
-            return *this;
-        }
+    struct declaration
+    {
+        token* name = nullptr;
+        named_pack type;
+        array<statement> body;
+    };
+
+    struct statement
+    {
+        std::variant
+        <
+            loop,
+            expression,
+            conditional,
+            declaration,
+            pragma
+        >
+        variant;
     };
 }
 

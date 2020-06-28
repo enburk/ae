@@ -2,22 +2,26 @@
 #include "doc.h"
 namespace doc::ae::synthesis
 {
-    /*
-    array<entity> proceed (array<element> input)
+    using namespace doc::ae::syntax;
+
+    array<entity> proceed (array<statement> input)
     {
         array<entity> output;
         
         for (auto && e : input)
         {
             entity E;
-            for (auto && t : e.head) E.head += *t;
-            for (auto && t : e.tail) E.tail += *t;
-            E.body = proceed(e.body);
+
+            //if (e.opening) E.head += *e.opening;
+            //
+            //E.body += proceed(e.elements);
+            //
+            //if (e.closing) E.tail += *e.closing;
+
             output += E;
         }
 
         return output;
     }
-    */
 }
 

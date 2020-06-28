@@ -185,6 +185,7 @@ struct Editor : gui::widget<Editor>
                 text.reserve(n2*(int)(std::log10(n2)));
                 for (int i=0; i<n2; i++)
                     text += std::to_string(i+1) + " \n";
+                text.truncate();
                 lineup.text = text;
             }
 

@@ -1,0 +1,321 @@
+factorial 0 = 1
+factorial n = n * factorial (n - 1)
+
+main = print (take 10 triples)
+ 
+triples = [(x, y, z) | z <- [1..]
+                     , x <- [1..z]
+                     , y <- [x..z]
+                     , x^2 + y^2 == z^2]
+					 
+template<InputIterator I, Regular S, Function<ValueType<I>> F>
+    requires EqualityComparable<I, S>
+F for_each(I first, S last, F f)
+{
+    for(; first != last; ++first)
+        f(*first);
+    return f;
+}
+
+range.exclusive
+range.inclusive
+a.erase([f, l));
+image.crop([p1, p2));
+image.crop((p1, p2));
+
+
+array { int size; ... }
+vector { array; int dimention = array::size; ... }
+string = array(byte) { int length = array::size; ... }
+system
+{
+	memory
+	{
+		byte[] request (integer) external;
+	}
+}
+auto a = system::memory::request(1024 K);
+integer aa = a::meta::address;
+some_variable::meta::address = aa;
+::meta(some_variable)::address = aa;
+str s = 40 "-";
+str s = x "-";
+int y = a x + b x + c;
+>>> def make_incrementor(n):
+...     return lambda x: x + n
+make_incrementor(n) = return f(x) = x + n;
+make_incrementor(n) = { return f(x) = x + n; }
+A is a B // inheritance
+C is an A // inheritance
+
+Python
+======
+squares = [x**2 for x in range(10)]
+https://nbviewer.jupyter.org/url/norvig.com/ipython/xkcd1313.ipynb?create=1
+def regex_parts(winners, losers):
+    "Return parts that match at least one winner, but no loser."
+    wholes = {'^' + w + '$'  for w in winners}
+    parts = {d for w in wholes for p in subparts(w) for d in dotify(p)}
+    return wholes | {p for p in parts if not matches(p, losers)}
+>>> with open('workfile') as f:
+...     read_data = f.read()
+def reverse(data):
+    for index in range(len(data)-1, -1, -1):
+        yield data[index]
+        
+AE
+==
+if {}
+if = { return false }
+then = { return true }
+::if if xor then ::then {}
+for i = 1..n do {}
+for.each x from xx {}
+a += x.name for.each x from xx;
+inet::oidc : base = {}
+array(type) = {}
+operator <<< text { cout << text << endl }
+f(x) = { return x*x }
+f(x) = x*x;
+pi = 3.14;
+XYXY =
+{
+    x, y, w, h : integer;
+}
+XYXY == XYXY(1,1,1,1};
+XYXY::x = 1;
+a : integer {
+    get { return b = 1 }
+    set { b = a + 1 }
+}
+norm(x) = sqrt(x*x);
+function norm(x) = sqrt(x*x);
+real2real : type = function (real) -> (real);
+norm : real2real == sqrt(x*x);
+norm(x) : function = sqrt(x*x);
+norm : function(x) = sqrt(x*x);
+norm(x) -> auto = sqrt(x*x);
+norm(x) -> real = sqrt(x*x);
+norm2(x) -> meta::type(x) = x*x;
+norm2(x) -> auto = x*x;
+noop : function = {}
+
+
+operator
+function
+mutation
+variable
+mutable ?
+constant
+constructor ?
+destructor ?
+thread ?
+process ?
+
+namespace pix
+{
+    struct RGBA
+    {
+        union
+        {
+            struct {
+            uint8_t b, g, r, a; };
+            uint8_t channels [4];
+            uint32_t value; // byte-order-dependent
+        };
+
+array(type) {}
+array(bool) {}
+function div(int,int)
+function div(real,real)
+variable kind : meta::type = array(real);
+variable f : (real) -> (real); // return real()
+variable f = sqrt;
+variable x : vector = {1, 2, 3}
+constant pi = 3.14;
+
+
+
+        // function vs. type
+        // 1. assigment (optional)
+        // 2. call (optional)
+        // 3. return (optional)
+        // empty procedure ?
+
+
+str c = a b;
+str c = a_b;
+str c = a|b;
+str d = a" "b;
+str d = a' 'b;
+
+operator (str a) == (str b) = {...}
+operator (byte a) or (byte b) = {...}
+operator ++ (integer i) {...}
+operator (integer i) ++ {...}
+operator (type agr...) = {...}
+operator [int x, int y] = {...}
+variable op : operator (byte a) or (byte b) = {...}
+variable fn : function (real) -> real = {...}
+constant fn : function (real) -> real = {...}
+
+function square(x) = x**2;
+constant square(x) = x**2;
+constant square : function (auto x) = x**2;
+constant square : function (auto x) -> auto = x**2;
+constant square : function (auto x) -> auto = { return x**2 }
+variable op(x) = x**2;
+variable op = square;
+
+a(x) = max(b, c) - (d - e);
+x = (a & b) or (c & d);
+::a(x)::f(y{1, 2, 3})[0] = ...;
+x += x***2 + -a |"s"; x++ ++; a:: ::type
+Ax Ey>0
+for i in [0, 100] do a(i)++ = b(i)++, --c(i);
+i++ = --j; a = -b; if a = -1 then ++ b else--b;
+a = -1;
+b = +1;
+thread : system::thread;
+thread::procedure = { while true do {...} }
+thread::start;
+system::thread::start({ while true do {...} });
+::sort(.range = [f, l), .ordered.before = $1 < $2);
+::sort(.range = [f, l), .ordered.before = (a, b){ return a < b });
+::sort(.range = [f, l), .ordered.before = (a, b) = a < b);
+::sort(.range = [f, l), .strict.weak.ordering(a, b) = a < b);
+::sort(.range = [f, l), .ordering(a, b) = a < b);
+::sort(.range = [f, l), a .precede b = a < b);
+
+https://en.cppreference.com/w/cpp/named_req/Compare
+For all a, comp(a,a)==false
+If comp(a,b)==true then comp(b,a)==false
+if comp(a,b)==true and comp(b,c)==true then comp(a,c)==true
+
+a : type {...}
+b : a
+{
+    type := ::nil;
+    type : = ::nil;
+    type : auto = ::nil;
+    type : ::type = ::nil;
+    value : ::integer == 5;
+    value := 5;
+    value : = 5;
+    value : auto = 5;
+    value : = player(audio);
+    value : player == (audio, video);
+    value : player == audio;
+    value : player(audio);
+    data : array(integer) == (1, 2, ...);
+    data : map(text, integer)::value.type == (1, 2, ...);
+    data : map(text -> integer) == (("a", 1), ("b", 2), ...);
+}
+let int = integer;
+
+
+::keywords -= (async, await, yield); ::import "net/http";
+::keywords += (async, await, yield);
+
+
+function type (type t) -> type { ... }
+
+class
+{
+    detail { variable propertied : integer }
+    function propertied = -detail::propertied; // getter
+    mutation propertied (value: integer) { detail::propertied = -value; refresh } // setter
+}
+
+vector(type : type, d : integer) : type
+{
+    data : array(type, d);
+    operator (a : vector) + (b : vector) {
+        for i in [0, d) do a(i) += b(i);
+        return a;
+    }
+}
+xyz (t : type = real) : type
+{
+    v : vector (3, t);
+    let x = v(0);
+    let y = v(1);
+    let z = v(2);
+    void rotate (angle : radians) = {...}
+}
+constant radians : type = real;
+constant pi : radians = 3.14159;
+cartesian
+affine
+polar
+
+static/dynamic
+constant/variable
+
+vector
+{
+    x, y, z : real;
+}
+
+array : type
+{
+    constant value.type : type;
+    constant initial.capacity : natural;
+    constant allocator : system::allocator;
+    ;; constructor (value.type : type, initial.capacity : natural = 0)
+    ;; : value.type(value.type), initial.capacity(initial.capacity)
+    ;; {}
+    
+    operator = (array other) requires other::value.type = value.type {...}
+    operator = (array other) requires other::value.type ::convertible.to value.type {...}
+    
+    function range () -> range = range(a.begin, a.end);
+}
+
+implicit conversion (array a) -> range = a.range();
+explicit conversion (array a) -> list = list(a.range());
+
+type
+{
+}
+
+a : array(real);
+b : array(real, 5);
+c : array(real, .allocator = my.allocator);
+
+a : integer[] == (1, 2, 3);
+a : integer[] == [1, 2, 3];
+a : integer[10] = (0);
+a : integer[10] = [0];
+a : integer[10] = [0...];
+range : type
+{
+    constant value.type : type;
+    variable begin, end : contiguous.iterator;
+    operator (i : integer) = (begin + i)::value;
+}
+
+function system::memory::request (n : integer) -> byte[] = {...};
+
+span : byte[] = system::memory::request(10M);
+
+::sort(.range = [f, l), .ordering(a, b) = a < b);
+
+
+variable T : type
+
+height = max (player.height(width) for each player from players);
+
+boost::copy( orig | filtered(predicate), std::back_inserter(collection));
+
+GO
+==
+func f(a, b int) (int, string) {
+	return a+b, "сложение"
+}
+func incTwo(a, b int) (c, d int) {
+	c = a+1
+	d = b+1
+	return
+}
+

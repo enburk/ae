@@ -52,5 +52,13 @@ namespace gui::text
                 page.scroll.y.top = max<int>();
             }
         }
+
+        void on_mouse_press (XY p, char button, bool down) override
+        {
+            if (parent)
+                parent->on_mouse_press (
+                    p + coord.now.origin,
+                    button, down);
+        }
     };
 } 

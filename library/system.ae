@@ -3,7 +3,7 @@ system
 
     out
     {
-        operator <<< (byte[]) {external}
+        operator <<< (byte[]) {...}
     }
 
     ;; istream { operator >>> (byte[]) }

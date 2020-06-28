@@ -17,7 +17,7 @@ namespace doc
         explicit text_model (str t = "", str f = "txt") : text(t), format(f)
         {
             if (lines.size() == 0)
-            lines += array<glyph>{"\n"};
+            lines += array<glyph>{};
             selections = array<range>{range{}};
             process();
         }
@@ -65,8 +65,9 @@ namespace doc
             for (auto && r : replaces)
             {
                 auto & [from, upto] = r.range;
-                from = aux::clamp(from, front(), back());
-                upto = aux::clamp(upto, front(), back());
+                place last = back(); last.offset = max<int>();
+                from = aux::clamp(from, front(), last);
+                upto = aux::clamp(upto, front(), last);
                 if (from > upto) std::swap(from, upto);
                 if (from == upto && r.text == text{}) {
                     selections += range{from, upto};

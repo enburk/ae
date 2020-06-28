@@ -18,26 +18,26 @@ namespace gui::text
     {
         array<doc::entity> entities; str source;
 
-        str text () override { return doc::lexica::html::untagged(source); }
+        str text () override { return doc::html::lexica::untagged(source); }
         str html () override { return source; }
 
         void set (str text, str format) override
         {
             if (format == "text")
             {
-                text = doc::lexica::html::encoded(text);
+                text = doc::html::lexica::encoded(text);
                 text.replace_all("\n", "<br>");
             }
 
             source = text;
             entities =
-                doc::syntax::html::combine(
-                    doc::syntax::html::parse(
-                        doc::lexica::html::parse(
+                doc::html::syntax::combine(
+                    doc::html::syntax::parse(
+                        doc::html::lexica::parse(
                             doc::text(text))));
 
             if (false) { // debug
-                auto tokens = doc::syntax::html::print(entities);
+                auto tokens = doc::html::syntax::print(entities);
                 entities.clear();
                 entities += doc::entity{.name="", .kind="text", .info=""};
                 entities.back().head = tokens;

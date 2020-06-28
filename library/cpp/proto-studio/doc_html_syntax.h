@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <deque>
 #include "doc_html_lexica.h"
-namespace doc::syntax::html
+namespace doc::html::syntax
 {
     inline deque<entity> parse (deque<token> tokens)
     {

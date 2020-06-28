@@ -27,6 +27,7 @@ struct IDE : gui::widget<IDE>
     gui::splitter splitter_editor_l;
     gui::splitter splitter_editor_r;
 
+    bool syntax_errors = false;
     enum class status { loading, ready, error };
     std::atomic<status> library_status = status::loading;
     gui::property<gui::time> timer;
@@ -44,6 +45,8 @@ struct IDE : gui::widget<IDE>
         button_test.kind = gui::button::toggle;
         test.hide();
 
+        console.object.activate(&console.object.compiler);
+
         thread = std::thread([this]()
         {
             console.object.compiler << "Prepare library...";
@@ -58,19 +61,16 @@ struct IDE : gui::widget<IDE>
                 {
                     console.object.compiler << path.string();
                     doc::ae::translator::add(path);
-                    //if (doc::errors.size() > 0) break;
+                    if (str log = doc::ae::translator::log(); log != "") {
+                        console.object.compiler << log;
+                        library_status = status::error;
+                        return;
+                    }
                 }
             }
 
-            if (true)//doc::errors.size() == 0)
-            {
-                console.object.compiler << "DONE.";
-                library_status = status::ready;
-            }
-            else
-            {
-                library_status = status::error;
-            }
+            console.object.compiler << "Done.";
+            library_status = status::ready;
         });
     }
     ~IDE()
@@ -100,12 +100,12 @@ struct IDE : gui::widget<IDE>
             button_run .coord = XYWH(W/2-w/2, 0, w, h);
             button_test.coord = XYWH(W-w, 0, w, h);
 
-            int d = gui::metrics::line::width * 4;
+            int d = gui::metrics::line::width * 6;
             int l = sys::settings::load("splitter.editor.l.permyriad", 18'00) * W / 100'00;
             int r = sys::settings::load("splitter.editor.r.permyriad", 70'00) * W / 100'00;
 
-            splitter_editor_l.coord = XYWH(l-d, h, 2*d, H-h);
-            splitter_editor_r.coord = XYWH(r-d, h, 2*d, H-h);
+            splitter_editor_l.coord = XYXY(l-d, h, l+d, H);
+            splitter_editor_r.coord = XYXY(r-d, h, r+d, H);
             splitter_editor_l.lower = 1'000 * W / 10'000;
             splitter_editor_l.upper = 3'500 * W / 10'000;
             splitter_editor_r.lower = 6'500 * W / 10'000;
@@ -121,7 +121,8 @@ struct IDE : gui::widget<IDE>
         {
             auto ext = editor.object.path.now.extension();
             button_run.enabled = ext == ".ae!" &&
-                library_status == status::ready;
+                library_status != status::loading &&
+                !syntax_errors;
         }
     }
 
@@ -142,17 +143,24 @@ struct IDE : gui::widget<IDE>
         }
         if (w == &editor)
         {
+            syntax_errors = false;
             console.object.editor.clear();
             if (str log = editor.object.editor.model.log(); log != "") {
                 console.object.activate(&console.object.editor);
                 console.object.editor << log;
+                syntax_errors = true;
             }
         }
         if (w == &button_run)
         {
             console.object.activate(&console.object.compiler);
-            console.object.compiler.clear();
-            console.object.compiler << "<b><font color=#000080> Run... </font></b>";
+            if (library_status == status::ready) {
+                console.object.compiler.clear();
+                console.object.compiler << "Run...";
+                doc::ae::translator::run(editor.object.path.now);
+                if (str log = doc::ae::translator::log(); log != "")
+                    console.object.compiler << log;
+            }
         }
     }
 

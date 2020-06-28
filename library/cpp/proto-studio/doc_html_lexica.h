@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <map>
 #include "doc_text_lexica.h"
-namespace doc::lexica::html
+namespace doc::html::lexica
 {
     inline deque<token> parse (const text & text)
     {
