@@ -145,7 +145,7 @@ struct IDE : gui::widget<IDE>
         {
             syntax_errors = false;
             console.object.editor.clear();
-            if (str log = editor.object.editor.model.log(); log != "") {
+            if (str log = editor.object.log(); log != "") {
                 console.object.activate(&console.object.editor);
                 console.object.editor << log;
                 syntax_errors = true;

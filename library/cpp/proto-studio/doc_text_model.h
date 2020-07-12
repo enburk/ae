@@ -9,31 +9,25 @@ namespace doc
 {
     struct text_model : text
     {
-        str format;
         array<range> selections;
         array<token> tokens;
-        report log;
 
-        explicit text_model (str t = "", str f = "txt") : text(t), format(f)
+        void operator = (str s)
         {
-            if (lines.size() == 0)
-            lines += array<glyph>{};
+            text::operator = (text{s});
+            for (auto & line : lines)
+                while (line.size() > 0 && line.back() == " ")
+                    line.truncate();
+            if (lines.size() == 0) lines += array<glyph>{};
             selections = array<range>{range{}};
-            process();
+            proceed(*this, tokens);
         }
 
-        void process ()
+        std::function<void(const text&, array<token>&)> proceed
+            = [this](const text& text, array<token>& tokens)
         {
-            tokens = 
-                format == "ae"  ? doc::ae::lexica ::parse(*this):
-                format == "cpp" ? doc::lexica::cpp::parse(*this):
-                                  doc::lexica::txt::parse(*this);
-
-            log.messages.clear();
-
-            if (format == "ae" ) { doc::ae ::syntax::analysis(log).proceed(tokens); }
-            if (format == "cpp") { doc::cpp::syntax::analysis(log).proceed(tokens); }
-        }
+            tokens = doc::lexica::txt::parse(text);
+        };
 
         struct replace
         {
@@ -123,7 +117,7 @@ namespace doc
             if (dir == 1) undoes += undo;
             if (dir ==-1) redoes += undo;
 
-            process();
+            proceed(*this, tokens);
             return true;
         }
 
@@ -297,7 +291,7 @@ namespace doc
                     }
 
                     undoes += undo;
-                    process();
+                    proceed(*this, tokens);
                     return true;
                 }
             }

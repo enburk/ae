@@ -1,9 +1,11 @@
 system
 {
-
     out
     {
-        operator <<< (byte[]) {...}
+        mutation write (data: byte[]) -> void = {...}
+        
+        operator (this) <<< (data: byte[]) = write(data)
+        operator (data: byte[]) >>> (this) = write(data)
     }
 
     ;; istream { operator >>> (byte[]) }
@@ -14,3 +16,9 @@ system
     ;; out : ostream;
     ;; err : ostream;
 }
+
+;; out
+;; 
+;;   mutation write (data: byte[]) -> void = {...}
+;;   operator (this) <<< (data: byte[]) = write(data)
+;;   operator (data: byte[]) >>> (this) = write(data)

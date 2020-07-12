@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <set>
 #include "doc_ae_syntax.h"
 namespace doc::ae::syntax
@@ -80,61 +80,156 @@ namespace doc::ae::syntax
                 s.else_body = read_statement_or_body(input);
                 return statement{std::move(s)};
             }
-/*
-        auto & elements = statement.elements;
+            if (input[0].opening->text == "for")
+            {
+                loop_for s;
+                s.title = read_token(input); s.title->kind = "keyword";
+                read_name(input, "each")->kind = "keyword";
+                s.names = read_list_of_names(input);
+                read_name(input, "in")->kind = "keyword";
+                s.range = read_expression_until("do", input);
+                s.body = read_statement_or_body(input);
+                return statement{std::move(s)};
+            }
+            if (input[0].opening->text == "while")
+            {
+                loop_while s;
+                s.title = read_token(input); s.title->kind = "keyword";
+                s.condition = read_expression_until("do", input);
+                s.body = read_statement_or_body(input);
+                return statement{std::move(s)};
+            }
+            if (input[0].opening->text == "until")
+            {
+                loop_while s;
+                s.title = read_token(input); s.title->kind = "keyword";
+                s.condition = read_expression_until("do", input);
+                s.body = read_statement_or_body(input);
+                return statement{std::move(s)};
+            }
 
-        if (elements.size() == 0) return;
-        if (elements[0].opening->text == "if"
-        or  elements[0].opening->text == "else"
-        or  elements[0].opening->text == "for"
-        or  elements[0].opening->text == "while"
-        or  elements[0].opening->text == "do"
-        or  elements[0].opening->text == "goto"
-        ) {
-            statement.kind = "operator";
-            statement.name = elements[0].opening->text;
-            statement.opening = elements[0].opening;
-            elements.erase(0);
-        }
+            str schema; array<token*> names;
 
-        str schema; array<str> names;
+            for (auto & e : input)
+            {
+                schema += " ";
 
-        for (auto & e : elements)
-        {
-            if (e.kind == "{}") schema += "{}"; else
-            if (e.kind == "()") schema += "()"; else
-            if (e.opening->kind == "symbol" or
-                e.opening->kind == "name" and
-                keywords.find(e.opening->text) != keywords.end())
-                schema += e.opening->text; else
-                schema += e.opening->kind;
+                if (e.name == "{}") schema += "{}"; else
+                if (e.kind == "()") schema += "()"; else
+                if (e.opening->text == "=") schema += "="; else
+                if (e.opening->text == ":") schema += ":"; else
+                if (e.opening->text == ":=") schema += ":="; else
+                if (e.opening->text == (char*)(u8"→")) schema += "->"; else
+                if (e.opening->kind == "name" and
+                    keywords.find(e.opening->text) != keywords.end())
+                    schema += e.opening->text; else
+                    schema += e.opening->kind;
             
-            if (schema.ends_with(" name"))
-                names += e.opening->text;
+                if (schema.ends_with(" ="))  break;
+                if (schema.ends_with(" :"))  break;
+                if (schema.ends_with(" :="))  break;
+                if (schema.ends_with(" name"))
+                    names += e.opening;
 
-            schema += " ";
-        }
-        schema.truncate();
+                if (schema.ends_with(" names , name")) schema.truncate(schema.size() - 7);
+                if (schema.ends_with(" name , name")){ schema.truncate(schema.size() - 7);
+                    schema += "s";
+                }
+            }
 
-        auto & kind = statement.kind;
-        auto & name = statement.name;
+            if (schema != "") schema.erase(0); // leading " "
 
-        if (schema == "name {}") { kind = "singleton"; name = names[0]; } else
+            if (schema == "name {}")
+            {
+                declaration s;
+                s.names = names;
+                s.type.units += named_unit{.identifier=names[0]};
+                s.kind = "singleton";
+                s.body = proceed(std::move(input[1].elements));
+                return statement{std::move(s)};
+            }
 
-        if (schema == "operator id = {}") { statement.kind = "operator"; statement.id = ids[0]; } else
-        if (schema == "function id = {}") { statement.kind = "function"; statement.id = ids[0]; } else
-        if (schema == "mutation id = {}") { statement.kind = "mutation"; statement.id = ids[0]; } else
-        if (schema == "variable id = {}") { statement.kind = "variable"; statement.id = ids[0]; } else
-        if (schema == "constant id = {}") { statement.kind = "constant"; statement.id = ids[0]; } else
+            if (schema.starts_with("function ")
+            or  schema.starts_with("mutation "))
+            {
+                subroutine s;
+                s.title = read_token(input);
+                s.title->kind = "keyword";
+                s.kind = s.title->text;
+                s.name = read_name(input);
+                s.parameters = read_parameters(input);
 
+                if (schema.starts_with("function name () -> ")
+                or  schema.starts_with("mutation name () -> ")) {
+                    read_symbol(input, (char*)(u8"→"));
+                    s.type = read_named_pack(input);
+                }
 
+                read_symbol(input, "=");
+                s.body = read_statement_or_body(input);
+                return statement{std::move(s)};
+            }
 
-        {}
+            if (schema.starts_with("operator "))
+            {
+                schema.replace_all(" name "  , " x ");
+                schema.replace_all(" symbol ", " x ");
 
-    }
-*/
+                subroutine s;
+                s.title = read_token(input);
+                s.title->kind = "keyword";
 
-            throw error("invalid statement");
+                if (schema == "operator () =")
+                {
+                    s.kind = "operator ()";
+                    s.parameters = read_parameters(input);
+                    read_symbol(input, "=");
+                    s.body = read_statement_or_body(input);
+                    return statement{std::move(s)};
+                }
+                if (schema == "operator x () =")
+                {
+                    s.kind = "prefix operator";
+                    s.name = read_token(input);
+                    s.parameters = read_parameters(input);
+                    if (s.parameters.size() != 1) throw error
+                    ("expected exactly one parameter");
+                    read_symbol(input, "=");
+                    s.body = read_statement_or_body(input);
+                    return statement{std::move(s)};
+                }
+                if (schema == "operator () x =")
+                {
+                    s.kind = "postfix operator";
+                    s.parameters = read_parameters(input);
+                    if (s.parameters.size() != 1) throw error
+                    ("expected exactly one parameter");
+                    s.name = read_token(input);
+                    read_symbol(input, "=");
+                    s.body = read_statement_or_body(input);
+                    return statement{std::move(s)};
+                }
+                if (schema == "operator () x () =")
+                {
+                    s.kind = "binary operator";
+                    s.parameters = read_parameters(input);
+                    if (s.parameters.size() != 1) throw error
+                    ("expected exactly one parameter");
+                    s.name = read_token(input);
+                    s.parameters += read_parameters(input);
+                    if (s.parameters.size() != 2) throw error
+                    ("expected exactly one parameter");
+                    read_symbol(input, "=");
+                    s.body = read_statement_or_body(input);
+                    return statement{std::move(s)};
+                }
+
+                if (input.size() == 0)
+                throw error ("expected parameter, name or symbol");
+                throw error ("expected '='");
+            }
+
+            return statement{read_expression_until("", input)};
         }
 
         token* read_token (deque & input, str what = "")
@@ -142,6 +237,13 @@ namespace doc::ae::syntax
             if (what != "" && input.empty()) throw error(what);
             token* token = last_token = input[0].opening;
             input.pop_front();
+            return token;
+        }
+
+        token* read_symbol (deque & input, str symbol)
+        {
+            token* token = read_token(input, "expected '" + symbol + "'");
+            if (token->text != symbol) throw error("expected '" + symbol + "'");
             return token;
         }
 
@@ -157,6 +259,98 @@ namespace doc::ae::syntax
             token* token = read_token(input, "expected name");
             if (token->kind != "name") throw error("expected name");
             return token;
+        }
+
+        array<token*> read_list_of_names (deque & input)
+        {
+            array<token*> names;
+            names += read_name(input);
+            while (input.size() > 0) {
+                if (input[0].opening->text != ",") break;
+                read_token(input);
+                names += read_name(input);
+            }
+            return names;
+        }
+
+        parameter read_parameter (deque & input)
+        {
+            parameter parameter;
+            parameter.name = read_name(input);
+            if (parameter.name->text == "this")
+                parameter.name->kind = "keyword";
+            if (input.size() == 0) return parameter;
+            read_name(input, ":");
+            parameter.type = read_named_pack(input);
+            return parameter;
+        }
+
+        array<parameter> read_parameters (deque & input)
+        {
+            if (input.size() == 0 || input[0].name != "()")
+                throw error("expected parameters");
+
+            array<parameter> parameters;
+
+            for (auto && e : input[0].elements) {
+                auto elements = deque(std::move(e.elements));
+                parameters += read_parameter(elements);
+            }
+
+            input.pop_front();
+            return parameters;
+        }
+
+        array<statement> read_statement_or_body (deque & input)
+        {
+            if (input.size() == 0) throw error("expected statement");
+
+            if (input.size() == 1 && input[0].name == "{}")
+                return proceed(std::move(input[0].elements));
+
+            array<statement> body;
+            body += read_statement(std::move(input));
+            return body;
+        }
+
+        named_pack read_named_pack (deque & input)
+        {
+            named_pack pack; pack.units += named_unit{};
+
+            if (input.size() == 0) throw error("expected name");
+
+            while (input.size() > 0)
+            {
+                auto & last = pack.units.back();
+
+                if (input[0].opening->text == "::")
+                {
+                    if (last.identifier == nullptr) break;
+                    if (last.coloncolon != nullptr) pack.units += named_unit{};
+                    pack.units.back().coloncolon = read_token(input);
+                }
+                if (input[0].opening->kind == "name")
+                {
+                    if (last.identifier != nullptr) break;
+                    last.identifier = read_token(input);
+                }
+                if (input[0].kind == "()")
+                {
+                    if (last.identifier == nullptr) break;
+                    brackets b;
+                    b.opening = input[0].opening;
+                    b.closing = input[0].closing;
+                    b.list = proceed(std::move(input[0].elements));
+                    last.parameters += std::move(b);
+                    input.pop_front();
+                }
+                break;
+            }
+
+            if (pack.units.back().identifier == nullptr)
+                throw error("expected name");
+
+            return pack;
         }
 
         expression read_expression_until (str until, deque & input)
@@ -201,10 +395,10 @@ namespace doc::ae::syntax
                 {
                     expression_for e;
                     e.title = token; e.title->kind = "keyword";
-                    token = read_name(input, "each"); token->kind = "keyword";
-                    e.index = read_name(input);
-                    token = read_name(input, "in"); token->kind = "keyword";
-                    e.container += read_expression_until("", input);
+                    read_name(input, "each")->kind = "keyword";
+                    e.names = read_list_of_names(input);
+                    read_name(input, "in"  )->kind = "keyword";
+                    e.range += read_expression_until("", input);
                     o.operands += expression{e};
                 }
                 else
@@ -231,18 +425,6 @@ namespace doc::ae::syntax
             if (o.operands.size() == 0) throw error("expected expression");
             if (o.operands.size() == 1) return o.operands[0];
             return expression{o};
-        }
-
-        array<statement> read_statement_or_body (deque & input)
-        {
-            if (input.size() == 0) throw error("expected statement");
-
-            if (input.size() == 1 && input[0].name == "{}")
-                return proceed(std::move(input[0].elements));
-
-            array<statement> body;
-            body += read_statement(std::move(input));
-            return body;
         }
     };
 }

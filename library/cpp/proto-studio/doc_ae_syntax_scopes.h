@@ -1,66 +1,86 @@
 #pragma once
 #include <map>
 #include "doc_ae_syntax.h"
-//#include "doc_ae_syntax_schema.h"
 namespace doc::ae::syntax
 {
     struct scope
     {
+        //struct signature { token* name; array<named_pack> args;
+        //    bool operator != (const signature & s) const { return ! (*this == s); }
+        //    bool operator == (const signature & s) const { return
+        //        name == s.name &&
+        //        args == s.args; }
+        //};
+        struct member { named_pack type; };
+        using signature = str;
+
         scope * outer = nullptr;
-        std::map<str, scope> named;
         std::list<scope> unnamed;
+        std::map<str, scope> named;
+        std::map<signature, member> members;
 
-        // Named:
-        // 1. type
-        // 2. singleton (type + variable)
-        // Unnamed:
-        // 1. function/operator
-        // 2. block "if", "else", "for", "do", "while", "until"
-        // 3. const/variable initializer list ?
-
-        // Scopes population:
-        // 1. const/variable
-        // 2. function/operator args
-        // 3. block variables in "if", "for", "catch"
-        // 4. import ?
-
-        void fill (array<element> & input)
-        {
-            //for (auto & s : input)
-            //{
-            //    s.scope = this; if (s.body.size() > 0)
-            //    {
-            //        if (s.elements.size() > 0 &&
-            //            std::holds_alternative<name>(s.elements.front())) {
-            //            auto names = std::get<name>(s.elements.front()).names;
-            //            if (names.size() != 1) { error(names[0].identifier,
-            //                "unexpected qualified name with body");
-            //                continue;
-            //            }
-            //
-            //            scope * current = this;
-            //            if (names[0].coloncolon) 
-            //                while (current->outer)
-            //                    current = current->outer;
-            //
-            //            str id = names[0].identifier->text;
-            //            if (current->named.find(id) != current->named.end()) {
-            //                error(names[0].identifier, "named scope '"+id+"' already exists");
-            //                continue;
-            //            }
-            //
-            //            // "if", "else", "for", "for.each", "do", "while", "until"
-            //
-            //        }
-            //        else
-            //        {
-            //            unnamed.push_back(scope{.outer=this});
-            //            unnamed.back().parse(s.body);
-            //        }
-            //    }
-            //}
+        void add (const scope & scope) { // shared_ptr?
+            for (auto [str, sco] : scope.named)
+                named.emplace(str, sco);
+            for (auto [sig, mem] : scope.members)
+                members.emplace(sig, mem);
         }
-        
+
+        void fill (array<statement> & input, report & log)
+        {
+            for (auto & statement : input)
+            {
+                statement.scope = this;
+
+                std::visit(aux::overloaded
+                {
+                    [this, &log](loop_for    s) { add(log, s); },
+                    [this, &log](loop_while  s) { add(log, s); },
+                    [this, &log](expression  s) { add(log, s); },
+                    [this, &log](conditional s) { add(log, s); },
+                    [this, &log](declaration s) { add(log, s); },
+                    [this, &log](subroutine  s) { add(log, s); },
+                    [this, &log](pragma      s) { add(log, s); },
+                },
+                statement.variant);
+            }
+        }
+
+        void add (report & log, loop_for    & s) {  }
+        void add (report & log, loop_while  & s) {  }
+        void add (report & log, expression  & s) {  }
+        void add (report & log, conditional & s) {  }
+        void add (report & log, declaration & s)
+        {
+            for (auto name : s.names)
+            {
+                auto [it, inserted] = members.emplace(name->text, member{s.type});
+                if (!inserted) { log.error(name, "name '" + name->text
+                    + "' already exists"); return; }
+
+                if (s.kind == "singleton" || s.kind == "class" || s.kind == "union")
+                    named.emplace(name->text, scope{.outer=this})
+                        .first->second.fill(s.body, log);
+            }
+        }
+        void add (report & log, subroutine  & s)
+        {
+            signature signature = s.name->text;
+            signature += "("; //for (auto & p : s.parameters)
+            //signature += type(p.type);
+            signature += ")";
+
+            auto [it, inserted] = members.emplace(signature, member{s.type});
+            if (!inserted) { log.error(s.name, "signature '" + signature
+                + "' already exists"); return; }
+
+            unnamed.emplace_back(scope{.outer=this}).fill(s.body, log);
+        }
+        void add (report & log, pragma      & s) {  }
+
+
+
+
         /*
         Scope * find (string & name) 
         {
@@ -156,4 +176,18 @@ namespace doc::ae::syntax
 
 
 }
+
+        // Named:
+        // 1. type
+        // 2. singleton (type + variable)
+        // Unnamed:
+        // 1. function/operator
+        // 2. block "if", "else", "for", "do", "while", "until"
+        // 3. const/variable initializer list ?
+
+        // Scopes population:
+        // 1. const/variable
+        // 2. function/operator args
+        // 3. block variables in "if", "for", "catch"
+        // 4. import ?
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "doc.h"
-#include "doc_text_lexica.h"
+#include "doc_cpp_syntax.h"
+#include "doc_ae_syntax_analysis.h"
 #include "gui_widget_button.h"
 #include "gui_widget_scroller.h"
 #include "gui_widget_text_editor.h"
@@ -91,6 +92,7 @@ struct Editor : gui::widget<Editor>
     gui::text::view lineup;
     gui::text::editor editor;
     gui::binary_property<std::filesystem::path> path;
+    doc::report log;
 
     Editor ()
     {
@@ -118,6 +120,18 @@ struct Editor : gui::widget<Editor>
         ||  ext == ".h")
             ext =  "cpp";
 
+        editor.model.proceed =
+        [this, path, ext] (const doc::text& text, array<doc::token>& tokens)
+        {
+            tokens = 
+                ext == "ae"  ? doc::ae::lexica ::parse(text):
+                ext == "cpp" ? doc::lexica::cpp::parse(text):
+                               doc::lexica::txt::parse(text);
+            log = 
+                ext == "ae"  ? doc::ae ::syntax::analysis::proceed(path, tokens).log:
+                ext == "cpp" ? doc::cpp::syntax::analysis::proceed(path, tokens).log:
+                               doc::report{};
+        };
         editor.set(text, ext);
 
         this->path = path;

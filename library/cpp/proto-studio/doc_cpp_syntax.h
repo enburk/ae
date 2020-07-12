@@ -137,15 +137,15 @@ namespace doc::cpp::syntax
         }
     };
 
-    struct analysis
+    namespace analysis
     {
-        report & log;
+        struct data { report log; };
 
-        analysis (report & log) : log(log) {}
-
-        void proceed (array<token> & tokens)
+        data proceed (std::filesystem::path, array<token> & tokens)
         {
-            parser(log).proceed(tokens);
+            data d;
+            parser(d.log).proceed(tokens);
+            return d;
         }
     };
 }

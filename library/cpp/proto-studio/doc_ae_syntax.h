@@ -10,6 +10,7 @@ namespace doc::ae::syntax
         array<element> elements;
     };
 
+    struct scope;
     struct statement;
     struct expression;
     struct conditional;
@@ -36,7 +37,7 @@ namespace doc::ae::syntax
 
     struct operation
     {
-        token* token = nullptr;
+        token* title = nullptr;
         array<expression> operands;
         str kind;
     };
@@ -52,8 +53,8 @@ namespace doc::ae::syntax
     struct expression_for
     {
         token* title = nullptr;
-        token* index = nullptr;
-        array<expression> container; // array prevents infinite recursion
+        array<token*> names;
+        array<expression> range; // array prevents infinite recursion
     };
 
     struct expression
@@ -79,12 +80,18 @@ namespace doc::ae::syntax
         array<statement> else_body;
     };
 
-    struct loop
+    struct loop_for
+    {
+        token* title = nullptr;
+        array<token*> names;
+        expression range;
+        array<statement> body;
+    };
+
+    struct loop_while
     {
         token* title = nullptr;
         expression condition;
-        array<statement> initial;
-        array<statement> iterational;
         array<statement> body;
     };
 
@@ -94,10 +101,27 @@ namespace doc::ae::syntax
         array<expression> arguments;
     };
 
-    struct declaration
+    struct parameter
     {
+        token* name;
+        named_pack type;
+    };
+
+    struct subroutine
+    {
+        str kind;
+        token* title = nullptr;
         token* name = nullptr;
         named_pack type;
+        array<parameter> parameters;
+        array<statement> body;
+    };
+
+    struct declaration
+    {
+        str kind;
+        named_pack type;
+        array<token*> names;
         array<statement> body;
     };
 
@@ -105,13 +129,16 @@ namespace doc::ae::syntax
     {
         std::variant
         <
-            loop,
+            loop_for,
+            loop_while,
             expression,
             conditional,
             declaration,
+            subroutine,
             pragma
         >
         variant;
+        scope* scope = nullptr;
     };
 }
 

@@ -1,29 +1,12 @@
 #pragma once
 #include <filesystem>
+#include "../sys.h"
 #include "doc_ae_lexica.h"
+#include "doc_html_lexica.h"
 #include "doc_ae_syntax_analysis.h"
 #include "doc_ae_synthesis.h"
 namespace doc::ae::translator
 {
-    report log;
-
-    using syntax::element;
-    using syntax::scope;
-
-    scope global_scope;
-
-    str load (std::filesystem::path path)
-    {
-        std::ifstream stream(path); str text = std::string{(
-        std::istreambuf_iterator<char>(stream)),
-        std::istreambuf_iterator<char>()};
-
-        if (text.starts_with("\xEF" "\xBB" "\xBF"))
-            text.upto(3).erase(); // UTF-8 BOM
-
-        return text;
-    }
-
     void print (entity e, array<str> & lines, int indent = 0, bool semicolon = true)
     {
         str line;
@@ -59,21 +42,38 @@ namespace doc::ae::translator
         }
     }
 
-
-    void add (std::filesystem::path path)//, syntax::scope & scope = global_scope)
+    str load (std::filesystem::path path)
     {
+        std::ifstream stream(path); str text = std::string{(
+        std::istreambuf_iterator<char>(stream)),
+        std::istreambuf_iterator<char>()};
+
+        if (text.starts_with("\xEF" "\xBB" "\xBF"))
+            text.upto(3).erase(); // UTF-8 BOM
+
+        return text;
     }
 
-    void run (std::filesystem::path path)//, syntax::scope & scope = global_scope)
+    report log;
+
+    void add (std::filesystem::path path)
     {
-        array<token> tokens = lexica::parse(text{load(path)});
-        array<entity> statements = 
-            synthesis::proceed(
-            syntax::analysis(log).proceed(
-                tokens));
+        log.messages += syntax::analysis::proceed(path).log.messages;
+
+        syntax::analysis::standard_library += path;
+    }
+
+    void run (std::filesystem::path path)
+    {
+        auto analysis = syntax::analysis::proceed(path);
+        log.messages = analysis.log.messages;
+        if (!log.messages.empty()) return;
+
+        array<entity> statements = synthesis::proceed(analysis);
 
         array<str> lines;
-        for (auto && s : statements) print (s, lines);
+        for (auto && s : statements)
+            print(s, lines);
 
         path.replace_extension(path.extension().string() + ".cpp");
         {
@@ -102,7 +102,7 @@ namespace doc::ae::translator
             sys::process compile(cl, "\"" + path.string() + "\"",
             sys::process::options{.hidden = true, .out = cllog});
             if (!compile.wait(5*1000)) throw std::runtime_error(
-                "It takes too long.");
+                "Compilation takes too long.");
         }
         catch (const std::exception & e) {
             log.error(nullptr, e.what());

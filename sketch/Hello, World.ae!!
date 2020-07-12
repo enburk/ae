@@ -1,5 +1,7 @@
 app
 {
+"Hello, World!" >>> system::out;
+system::out <<< "Hello, World!!"
 }
 
 app

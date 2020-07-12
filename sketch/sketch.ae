@@ -1,3 +1,21 @@
+net.ae
+net.3.2.1.ae
+using "net/http"; using "net/oidc"; using "../data/format/json"; using "crypto"; using "net/util/base64";
+using "common"; using "aux"; using "utils";
+net
+{
+    using http = "net/http.8.3.15";
+    include "net/http";
+    http {...}
+}
+net/http.ae
+net::http
+{
+}
+array
+{
+}
+
 factorial 0 = 1
 factorial n = n * factorial (n - 1)
 
@@ -62,6 +80,13 @@ def regex_parts(winners, losers):
 def reverse(data):
     for index in range(len(data)-1, -1, -1):
         yield data[index]
+        
+Ñ#
+==
+var sequence =
+    for thing in SomeSequence()
+        where thing % 3 == 0
+        select thing * thing;
         
 AE
 ==
@@ -275,6 +300,34 @@ array : type
 implicit conversion (array a) -> range = a.range();
 explicit conversion (array a) -> list = list(a.range());
 
+rectangle
+{
+    rectangle (l, t, r, b : scalar) = (.l=l, .t=t, .r=r, .b=b);
+    
+    rectangle (point, point) = ...
+    
+    constant type scalar;
+    union {
+        class { scalar l, t, r, b }
+        class { scalar left, top, right, bottom }
+        class { point left.top, right.bottom }
+    }
+    union {
+        class { l, t, r, b : scalar }
+        class { left, top, right, bottom : scalar }
+        class { left.top, right.bottom : point }
+    }
+    
+    points : point[2];
+    let l = points[0].x;
+    let t = points[0].y;
+    let r = points[1].x;
+    let b = points[1].y;
+}
+
+rectangle r = ((x1, y1), (x2, y2));
+rectangle r = ((x, y), size(w, h));
+
 type
 {
 }
@@ -283,6 +336,8 @@ a : array(real);
 b : array(real, 5);
 c : array(real, .allocator = my.allocator);
 
+a := (1, 2, 3);
+a : = (1, 2, 3);
 a : integer[] == (1, 2, 3);
 a : integer[] == [1, 2, 3];
 a : integer[10] = (0);
@@ -294,6 +349,10 @@ range : type
     variable begin, end : contiguous.iterator;
     operator (i : integer) = (begin + i)::value;
 }
+
+if x not empty | x = y.find(z) then
+if x not empty where x = y.find(z) then
+if x not empty for x = y.find(z) then
 
 function system::memory::request (n : integer) -> byte[] = {...};
 

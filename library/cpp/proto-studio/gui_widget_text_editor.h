@@ -27,7 +27,7 @@ namespace gui::text
         {
             update(); // speed up
             page.view.column.clear(); // reset cache
-            model = doc::text_model(text, format);
+            model = text;
             page.view.refresh();
             page.refresh();
             refresh();
@@ -214,6 +214,24 @@ namespace gui::text
             }
         }
 
+        str selected () const
+        {
+            array<str> ss;
+
+            for (auto [from, upto] : page.view.selections.now)
+            {
+                if (from > upto) std::swap (from, upto);
+
+                for (place p = from; p <= upto; p.offset = 0, p.line++) {
+                    ss += str(p.line == upto.line ?
+                        model.lines[p.line].from(p.offset).upto(upto.offset) :
+                        model.lines[p.line].from(p.offset), "");
+                }
+            }
+
+            return str(ss);
+        }
+
         void update_view ()
         {
             page.view.refresh();
@@ -324,11 +342,11 @@ namespace gui::text
 
             if (key == "insert"           ) { insert_mode = !insert_mode.now; } else
             if (key == "shift+insert"     ) { insert(sys::clipboard::get::string()); } else
-            if (key == "ctrl+insert"      ) { sys::clipboard::set(page.view.selected()); } else
+            if (key == "ctrl+insert"      ) { sys::clipboard::set(selected()); } else
             if (key == "ctrl+shift+insert") {} else // VS: clipboard contex menu
 
             if (key == "delete"           ) { erase(); } else
-            if (key == "shift+delete"     ) { sys::clipboard::set(page.view.selected()); erase(); } else
+            if (key == "shift+delete"     ) { sys::clipboard::set(selected()); erase(); } else
             if (key == "ctrl+delete"      ) {} else
             if (key == "ctrl+shift+delete") {} else
 
