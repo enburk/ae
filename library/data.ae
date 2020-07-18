@@ -1,0 +1,3 @@
+operator (x) >>> (f) = f(x);
+operator (f) <<< (x) = f(x);
+

@@ -4,9 +4,17 @@ system
     {
         mutation write (data: byte[]) -> void = {...}
         
-        operator (this) <<< (data: byte[]) = write(data)
-        operator (data: byte[]) >>> (this) = write(data)
+        operator (this) <<< (data: byte[]) = write(data);
+        operator (data: byte[]) >>> (this) = write(data);
     }
+
+  ; function out (data: byte[]) -> expected(void) = {...}
+  
+  ;; input
+  ;;   function read () -> (data: byte[]) = {...}
+  ;;   operator (this) >>> (data: byte[]) = read;
+  ;;   operator (data: byte[]) <<< (this) = read;
+
 
     ;; istream { operator >>> (byte[]) }
     ;; ostream { operator <<< (byte[]) }

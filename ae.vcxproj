@@ -164,7 +164,6 @@
     <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_schema.h" />
     <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_scopes.h" />
     <ClInclude Include="library\cpp\proto-studio\doc_ae_synthesis.h" />
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_translator.h" />
     <ClInclude Include="library\cpp\proto-studio\doc_cpp_lexica.h" />
     <ClInclude Include="library\cpp\proto-studio\doc_cpp_preprocessor.h" />
     <ClInclude Include="library\cpp\proto-studio\doc_cpp_syntax.h" />
@@ -193,7 +192,7 @@
     <ClInclude Include="library\cpp\proto-studio\gui_widget_text_view.h" />
     <ClInclude Include="library\cpp\proto-studio\gui_window.h" />
     <ClInclude Include="library\cpp\proto-studio\ide.h" />
-    <ClInclude Include="library\cpp\proto-studio\ide_common.h" />
+    <ClInclude Include="library\cpp\proto-studio\ide_compiler.h" />
     <ClInclude Include="library\cpp\proto-studio\ide_console.h" />
     <ClInclude Include="library\cpp\proto-studio\ide_editor.h" />
     <ClInclude Include="library\cpp\proto-studio\ide_flist.h" />

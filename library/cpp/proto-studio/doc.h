@@ -76,6 +76,10 @@ namespace doc
             if (token) token->kind = "error";
         }
 
+        void info (token* token, str what) {
+            messages += message{token, "info", what};
+        }
+
         str operator () () const
         {
             str s; for (auto [token, kind, what] : messages)

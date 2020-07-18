@@ -5,10 +5,10 @@
 #include "gui_widget_canvas.h"
 #include "gui_widget_button.h"
 #include "gui_widget_splitter.h"
-#include "doc_ae_translator.h"
+#include "ide_compiler.h"
 #include "ide_console.h"
-#include "ide_flist.h"
 #include "ide_editor.h"
+#include "ide_flist.h"
 #include "test.h"
 using namespace pix;
 
@@ -27,11 +27,11 @@ struct IDE : gui::widget<IDE>
     gui::splitter splitter_editor_l;
     gui::splitter splitter_editor_r;
 
-    bool syntax_errors = false;
-    enum class status { loading, ready, error };
-    std::atomic<status> library_status = status::loading;
+    bool syntax_ok = false;
     gui::property<gui::time> timer;
+    gui::time last_compile_time;
     std::thread thread;
+    std::atomic<bool> finished = true;
 
     IDE()
     {
@@ -47,6 +47,8 @@ struct IDE : gui::widget<IDE>
 
         console.object.activate(&console.object.compiler);
 
+        finished = false;
+
         thread = std::thread([this]()
         {
             console.object.compiler << "Prepare library...";
@@ -59,18 +61,14 @@ struct IDE : gui::widget<IDE>
                 if (std::filesystem::is_regular_file (path) &&
                     path.extension() == ".ae")
                 {
-                    console.object.compiler << path.string();
-                    doc::ae::translator::add(path);
-                    if (str log = doc::ae::translator::log(); log != "") {
-                        console.object.compiler << log;
-                        library_status = status::error;
-                        return;
-                    }
+                    ide::compiler::add_std_library(
+                        path, console.object.compiler);
                 }
             }
 
             console.object.compiler << "Done.";
-            library_status = status::ready;
+
+            finished = true;
         });
     }
     ~IDE()
@@ -119,10 +117,29 @@ struct IDE : gui::widget<IDE>
 
         if (what == &timer)
         {
+
             auto ext = editor.object.path.now.extension();
-            button_run.enabled = ext == ".ae!" &&
-                library_status != status::loading &&
-                !syntax_errors;
+            button_run.enabled = ext == ".ae!" and syntax_ok;
+            
+            using namespace std::literals::chrono_literals;
+            if (timer.now - last_compile_time > 5s
+                and button_run.enabled
+                and finished)
+            {
+                if (thread.joinable())
+                    thread.join();
+
+                last_compile_time = timer.now;
+
+                finished = false;
+                thread = std::thread([this]()
+                {
+                    ide::compiler::compile(
+                        editor.object.path.now,
+                        console.object.compiler);
+                    finished = true;
+                });
+            }
         }
     }
 
@@ -143,24 +160,31 @@ struct IDE : gui::widget<IDE>
         }
         if (w == &editor)
         {
-            syntax_errors = false;
+            syntax_ok = true;
             console.object.editor.clear();
             if (str log = editor.object.log(); log != "") {
                 console.object.activate(&console.object.editor);
                 console.object.editor << log;
-                syntax_errors = true;
+                syntax_ok = false;
             }
+            last_compile_time = gui::time::now;
         }
         if (w == &button_run)
         {
             console.object.activate(&console.object.compiler);
-            if (library_status == status::ready) {
-                console.object.compiler.clear();
-                console.object.compiler << "Run...";
-                doc::ae::translator::run(editor.object.path.now);
-                if (str log = doc::ae::translator::log(); log != "")
-                    console.object.compiler << log;
-            }
+
+            if (thread.joinable())
+                thread.join();
+
+            last_compile_time = gui::time::now;
+
+            finished = false;
+            thread = std::thread([this]()
+            {
+                ide::compiler::run(editor.object.path.now,
+                    console.object.compiler);
+                finished = true;
+            });
         }
     }
 

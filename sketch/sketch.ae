@@ -1,3 +1,26 @@
+data
+  operator (x) >>> (f) = f(x)
+  operator (f) <<< (x) = f(x)
+  
+  expected(value.type) : variant(value.type, error)
+    value = if variant::holds(type)
+    error = if 
+
+system 
+  function out (data: byte[]) -> expected(void) = {...}
+  input
+    function read () -> (data: byte[]) = {...}
+    operator (this) >>> (data: byte[]) = read;
+    operator (data: byte[]) <<< (this) = read;
+
+"Hello, World!" >>> system::out
+a := (3, 1, 2); a >>> data::sort >>> system::out;
+
+i : integer; i <<< system::input
+system::input >>> a;
+system::input >>> b;
+
+
 net.ae
 net.3.2.1.ae
 using "net/http"; using "net/oidc"; using "../data/format/json"; using "crypto"; using "net/util/base64";
@@ -299,6 +322,23 @@ array : type
 
 implicit conversion (array a) -> range = a.range();
 explicit conversion (array a) -> list = list(a.range());
+
+let x.y = vector(2)
+
+x.y
+  x, y : property(real)
+  on.change (what) = notify
+
+window : type
+
+  origin, size : property(x.y)
+  on.change (what) = 
+    if what = origin then ...
+    if what = size then ...
+
+w: window
+w::size::x += delta
+
 
 rectangle
 {

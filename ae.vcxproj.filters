@@ -54,9 +54,6 @@
     <ClInclude Include="library\cpp\proto-studio\ide.h">
       <Filter>proto-studio</Filter>
     </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\ide_common.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
     <ClInclude Include="library\cpp\proto-studio\ide_console.h">
       <Filter>proto-studio</Filter>
     </ClInclude>
@@ -174,9 +171,6 @@
     <ClInclude Include="library\cpp\proto-studio\doc_ae_synthesis.h">
       <Filter>doc</Filter>
     </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_translator.h">
-      <Filter>doc</Filter>
-    </ClInclude>
     <ClInclude Include="library\cpp\proto-studio\doc_text_model.h">
       <Filter>doc</Filter>
     </ClInclude>
@@ -191,6 +185,9 @@
     </ClInclude>
     <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_parser.h">
       <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\ide_compiler.h">
+      <Filter>proto-studio</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
