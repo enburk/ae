@@ -65,6 +65,14 @@ namespace doc::ae::syntax
         {
             assert(input.size() > 0);
 
+            if (input[0].opening->text == "using")
+            {
+                pragma s;
+                s.title = read_token(input); s.title->kind = "keyword";
+                s.param = read_literal(input);
+                return statement{std::move(s)};
+            }
+
             if (input[0].opening->text == "if")
             {
                 conditional s;
@@ -258,6 +266,16 @@ namespace doc::ae::syntax
         {
             token* token = read_token(input, "expected name");
             if (token->kind != "name") throw error("expected name");
+            return token;
+        }
+
+        token* read_literal (deque & input)
+        {
+            token* token = read_token(input, "expected literal");
+            if (token->kind != "literal") throw error("expected literal");
+            if (token->text.size() < 2) throw error("expected \"\"");
+            if (token->text.front() != '\"') throw error("expected \"\"");
+            if (token->text.back() != '\"') throw error("expected \"\"");
             return token;
         }
 

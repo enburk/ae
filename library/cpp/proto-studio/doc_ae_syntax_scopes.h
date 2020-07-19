@@ -19,7 +19,7 @@ namespace doc::ae::syntax
         std::map<str, scope> named;
         std::map<signature, member> members;
 
-        void add (const scope & scope) { // shared_ptr?
+        void add (const scope & scope) {
             for (auto [str, sco] : scope.named)
                 named.emplace(str, sco);
             for (auto [sig, mem] : scope.members)

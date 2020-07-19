@@ -87,8 +87,9 @@ namespace doc
                 if (kind == "error") s += "<font color=#B00020>";
 
                 if (token)
-                    s += std::to_string(token->range.from.line+1) + ":"
-                       + std::to_string(token->range.from.offset+1) + " ";
+                    s += "("
+                    + std::to_string(token->range.from.line+1) + ":"
+                    + std::to_string(token->range.from.offset+1) + ") ";
 
                 s += what;
 

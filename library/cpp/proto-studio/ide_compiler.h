@@ -60,17 +60,27 @@ namespace ide::compiler
         return text;
     }
 
-    bool add_std_library (path path, gui::text::console & console)
+    void add_std_library (path path)
     {
-        console << path.string();
-
-        auto log = ae::syntax::analysis::proceed(path).log();
-
         ae::syntax::analysis::standard_library += path;
+    }
 
-        if (log != "") console << log;
+    bool prepare (gui::text::console & console)
+    {
+        console << "Prepare library...";
+
+        for (auto path : ae::syntax::analysis::standard_library)
+        {
+            console << path.string();
+
+            auto log = ae::syntax::analysis::proceed(path).log();
+
+            if (log != "") { console << log; return false; }
+        }
+
+        console << "Done.";
         
-        return log == "";
+        return true;
     }
 
     bool compile (path src, gui::text::console & console)
@@ -141,6 +151,8 @@ namespace ide::compiler
             console << "<font color=#B00020>" + str(e.what()) + "</font>";
             return false;
         }
+
+        // "fatal error LNK1104:"
 
         if (str sss = load(cllog);
             sss.find("error:") or sss.find("warning:") or

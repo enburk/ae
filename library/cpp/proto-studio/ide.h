@@ -51,8 +51,6 @@ struct IDE : gui::widget<IDE>
 
         thread = std::thread([this]()
         {
-            console.object.compiler << "Prepare library...";
-
             for (std::filesystem::directory_iterator next
                 (std::filesystem::current_path() / "library"),
                 end; next != end; ++next)
@@ -61,12 +59,11 @@ struct IDE : gui::widget<IDE>
                 if (std::filesystem::is_regular_file (path) &&
                     path.extension() == ".ae")
                 {
-                    ide::compiler::add_std_library(
-                        path, console.object.compiler);
+                    ide::compiler::add_std_library(path);
                 }
             }
 
-            console.object.compiler << "Done.";
+            ide::compiler::prepare(console.object.compiler);
 
             finished = true;
         });
@@ -168,6 +165,16 @@ struct IDE : gui::widget<IDE>
                 syntax_ok = false;
             }
             last_compile_time = gui::time::now;
+        }
+        if (w == &console)
+        {
+            std::string source = console.object.pressed_file;
+            if (source != "" and std::filesystem::exists(source))
+                editor.object.load(source);
+
+            editor.object.editor.go(doc::place{
+                std::stoi(console.object.pressed_line)-1,
+                std::stoi(console.object.pressed_char)-1});
         }
         if (w == &button_run)
         {

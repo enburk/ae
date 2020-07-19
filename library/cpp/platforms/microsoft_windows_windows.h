@@ -142,7 +142,8 @@ void directory_watcher::watch ()
     {
         auto return_code = ::ReadDirectoryChangesW
         (
-            handle, buffer.data(), buffer.size(),
+            handle, buffer.data(),
+            (DWORD)(buffer.size()),
             TRUE, // recursive
             FILE_NOTIFY_CHANGE_SIZE,
             &bytes_written,

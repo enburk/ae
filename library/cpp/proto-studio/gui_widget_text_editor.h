@@ -190,6 +190,19 @@ namespace gui::text
             if (!selective) from = upto;
         }
 
+        void go (doc::place place)
+        {
+            model.selections.resize(1);
+            model.selections.back().from = 
+            model.selections.back().upto = place;
+
+            page.scroll.y.top = 
+            sys::metrics(page.view.font.now).height * place.line
+            - page.view.coord.now.h / 2;
+
+            refresh();
+        }
+
         void show (int where)
         {
             switch(where){

@@ -98,7 +98,7 @@ namespace doc::ae::syntax
     struct pragma
     {
         token* title = nullptr;
-        array<expression> arguments;
+        token* param = nullptr;
     };
 
     struct parameter
