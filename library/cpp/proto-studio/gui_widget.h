@@ -183,6 +183,10 @@ namespace gui::base
 
         ////////////////////////////////////////////////////////////////////////
 
+        virtual void on_close () {}
+
+        ////////////////////////////////////////////////////////////////////////
+
         size_t size_in_bytes;
         bool inholds (void* p) {
             std::byte* begin = (std::byte*) this;

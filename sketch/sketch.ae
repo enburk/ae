@@ -16,6 +16,13 @@ system
 "Hello, World!" >>> system::out
 a := (3, 1, 2); a >>> data::sort >>> system::out;
 
+sorting { function order; operator (range) -> range {...} } 
+function sort (order := <) = sorting{order}
+a >>> sort(case.insensitive) >>> system::out;
+a >>> ::data::sort(::data::case.insensitive) >>> ::system::out;
+a >>> ::std::sort(::std::case.insensitive) >>> ::std::system::out;
+a >>> ::sort(::case.insensitive) >>> ::system::out;
+
 i : integer; i <<< system::input
 system::input >>> a;
 system::input >>> b;

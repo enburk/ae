@@ -48,6 +48,8 @@ struct Flist : gui::widget<Flist>
         scroller.step = h;
     }
 
+    void reload () { on_change(&root); }
+
     void on_change (void* what) override
     {
         if (what == &coord && coord.was.size != coord.now.size)
@@ -74,6 +76,12 @@ struct Flist : gui::widget<Flist>
 
     void fill(path dir)
     {
+         int num = 0;
+         fill(dir, num);
+         flist.list.truncate(num);
+    }
+    void fill(path dir, int & num)
+    {
         using namespace std::filesystem;
 
         std::map<str, path> files, dirs;
@@ -99,17 +107,18 @@ struct Flist : gui::widget<Flist>
         }
 
         for (auto [filename, path] : files) {
-            auto & it = flist.list.emplace_back();
+            auto & it = flist.list(num++);
             it.text.alignment = XY(gui::text::left, gui::text::center);
             it.text.text = path.string();
+            it.enabled = true;
         }
 
         for (auto [filename, path] : dirs) {
-            auto & it = flist.list.emplace_back();
+            auto & it = flist.list(num++);
             it.text.alignment = XY(gui::text::left, gui::text::center);
             it.text.text = path.string();
             it.enabled = false;
-            fill(path);
+            fill(path, num);
         }
     }
 

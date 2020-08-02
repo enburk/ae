@@ -117,76 +117,109 @@ sys::process::~process ()
 }
 
 
-struct directory_watcher
+str sys::dialog (str title, str text, sys::choice choice)
 {
-    std::filesystem::path dir;
-    std::function<void(std::filesystem::path, str what)> action;
-    std::function<void(aux::error)> error;
-    std::atomic<bool> stop = false;
+    UINT type = MB_OK;
+    switch (choice) {
+    case sys::choice::ok:                  type = MB_OK                ; break;
+    case sys::choice::ok_cancel:           type = MB_OKCANCEL          ; break;
+    case sys::choice::yes_no:              type = MB_YESNO             ; break;
+    case sys::choice::yes_no_cancel:       type = MB_YESNOCANCEL       ; break;
+    case sys::choice::abort_retry_ignore:  type = MB_ABORTRETRYIGNORE  ; break;
+    case sys::choice::cancel_try_continue: type = MB_CANCELTRYCONTINUE ; break;
+    case sys::choice::retry_cancel:        type = MB_RETRYCANCEL       ; break;
+    }
 
-    void watch ();
+    type |= MB_APPLMODAL | MB_ICONWARNING;
 
-};
+    auto rc = ::MessageBox(Hwnd, text.c_str(), title.c_str(), type);
 
-void directory_watcher::watch ()
+    switch (rc) {
+    case IDOK       : return "ok";
+    case IDCANCEL   : return "cancel";
+    case IDABORT    : return "abort";
+    case IDRETRY    : return "retry";
+    case IDIGNORE   : return "ignore";
+    case IDYES      : return "yes";
+    case IDNO       : return "no";
+    case IDTRYAGAIN : return "try again";
+    case IDCONTINUE : return "continue";
+    default: return "";
+    }
+}
+
+
+void sys::directory_watcher::watch ()
 {
-    std::array<std::byte, 64*1024> buffer; DWORD bytes_written = 0;
-
-    auto handle = ::CreateFile(dir.string().c_str(), FILE_LIST_DIRECTORY,
-        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
-        OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
-
-    if (handle == INVALID_HANDLE_VALUE) { error(GetErrorMessage(::GetLastError())); return; }
-
-    while (!stop)
+    thread = std::thread([this]()
     {
-        auto return_code = ::ReadDirectoryChangesW
-        (
-            handle, buffer.data(),
-            (DWORD)(buffer.size()),
-            TRUE, // recursive
-            FILE_NOTIFY_CHANGE_SIZE,
-            &bytes_written,
-            NULL, // synchronous calls
-            NULL // completion routine
-        );
+        std::array<std::byte, 64*1024> buffer; DWORD bytes_written = 0;
 
-        if (return_code == 0) { error(GetErrorMessage(::GetLastError())); return; }
-        if (bytes_written == 0) { error("buffer too big or too small"); return; }
+        auto handle = ::CreateFile(dir.string().c_str(), FILE_LIST_DIRECTORY,
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
+            OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
 
-        size_t buffer_offset = 0;
+        if (handle == INVALID_HANDLE_VALUE) { error(GetErrorMessage(::GetLastError())); return; }
 
         while (!stop)
         {
-            if (buffer_offset == bytes_written) break;
-            if (buffer_offset >= bytes_written) {
-                error("offset out of range");
-                return;
+            auto return_code = ::ReadDirectoryChangesW
+            (
+                handle, buffer.data(),
+                (DWORD)(buffer.size()),
+                TRUE, // recursive
+                FILE_NOTIFY_CHANGE_DIR_NAME |
+                FILE_NOTIFY_CHANGE_FILE_NAME |
+                FILE_NOTIFY_CHANGE_LAST_WRITE,
+                &bytes_written,
+                NULL, // synchronous calls
+                NULL // completion routine
+            );
+
+            if (return_code == 0) { error(GetErrorMessage(::GetLastError())); return; }
+            if (bytes_written == 0) { error("buffer too big or too small"); return; }
+
+            size_t buffer_offset = 0;
+
+            while (!stop)
+            {
+                if (buffer_offset == bytes_written) break;
+                if (buffer_offset >= bytes_written) {
+                    error("offset out of range");
+                    return;
+                }
+
+                auto info = (PFILE_NOTIFY_INFORMATION)(buffer.data() + buffer_offset);
+
+                if (info->NextEntryOffset > 0) buffer_offset +=
+                    info->NextEntryOffset; else buffer_offset =
+                    bytes_written;
+
+                str what = "unknown";
+
+                switch (info->Action) {
+                case FILE_ACTION_ADDED:            what = "added"; break;
+                case FILE_ACTION_RENAMED_OLD_NAME: what = "renamed (was)"; break;
+                case FILE_ACTION_RENAMED_NEW_NAME: what = "renamed (now)"; break;
+                case FILE_ACTION_REMOVED:          what = "removed"; break;
+                case FILE_ACTION_MODIFIED:         what = "modified"; break;
+                }
+
+                std::basic_string<WCHAR> filename(info->FileName, info->FileNameLength/2);
+
+                action(dir/filename, what);
             }
-
-            auto info = (PFILE_NOTIFY_INFORMATION)(buffer.data() + buffer_offset);
-
-            if (info->NextEntryOffset > 0) buffer_offset +=
-                info->NextEntryOffset; else buffer_offset =
-                bytes_written;
-
-            str what = "unknown";
-
-            switch (info->Action) {
-            case FILE_ACTION_ADDED:            what = "added"; break;
-            case FILE_ACTION_RENAMED_OLD_NAME: what = "renamed was"; break;
-            case FILE_ACTION_RENAMED_NEW_NAME: what = "renamed now"; break;
-            case FILE_ACTION_REMOVED:          what = "removed"; break;
-            case FILE_ACTION_MODIFIED:         what = "modified"; break;
-            }
-
-            std::basic_string<WCHAR> filename(info->FileName, info->FileNameLength/2);
-
-            action(dir/filename, what);
         }
-    }
+    });
 };
-
+void sys::directory_watcher::cancel ()
+{
+    stop = true;
+    if (thread.joinable()) {
+        ::CancelSynchronousIo(thread.native_handle());
+        thread.join();
+    }
+}
 
 struct Clipboard
 {

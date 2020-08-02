@@ -125,12 +125,12 @@ namespace pix
     inline XYXY operator | (XYWH a, XYXY b) { b |= XYXY(a); return b; }
 
     inline XYXY operator * (double k, XYXY r) {
-        r.l = clamp<int>(k*r.l); r.r = clamp<int>(k*r.r);
-        r.t = clamp<int>(k*r.t); r.b = clamp<int>(k*r.b);
+        r.l = clamp<int>(std::lround(k*r.l)); r.r = clamp<int>(std::lround(k*r.r));
+        r.t = clamp<int>(std::lround(k*r.t)); r.b = clamp<int>(std::lround(k*r.b));
         return r; }
     inline XYWH operator * (double k, XYWH r) {
-        r.x = clamp<int>(k*r.x); r.w = clamp<int>(k*r.w);
-        r.y = clamp<int>(k*r.y); r.h = clamp<int>(k*r.h);
+        r.x = clamp<int>(std::lround(k*r.x)); r.w = clamp<int>(std::lround(k*r.w));
+        r.y = clamp<int>(std::lround(k*r.y)); r.h = clamp<int>(std::lround(k*r.h));
         return r; }
 
     struct rectifier

@@ -1,5 +1,6 @@
 #pragma once
 #include "doc.h"
+#include "doc_text_repo.h"
 #include "doc_cpp_syntax.h"
 #include "doc_ae_syntax_analysis.h"
 #include "gui_widget_button.h"
@@ -94,47 +95,49 @@ struct Editor : gui::widget<Editor>
     gui::binary_property<std::filesystem::path> path;
     doc::report log;
 
-    Editor ()
+    void save ()
     {
+        doc::repo::modify(path.now, editor.model);
+        auto rc = doc::repo::save(path.now);
+        if (!rc.ok()) log.error(nullptr,
+            rc.error());
+    }
+    void save_all ()
+    {
+        auto rc = doc::repo::save_all();
+        if (!rc.ok()) log.error(nullptr,
+            rc.error());
+    }
+    void reload ()
+    {
+        auto rc = doc::repo::reload();
+        if (!rc.ok()) log.error(nullptr, rc.error());
+        internal_load();
     }
 
-    void load (std::filesystem::path path)
+    void internal_load ()
     {
-        flist.load(path);
+        auto rc = doc::repo::load(path.now, editor.model);
+        if (!rc.ok()) log.error(nullptr, rc.error());
 
-        std::ifstream stream(path); str text = std::string{(
-        std::istreambuf_iterator<char>(stream)),
-        std::istreambuf_iterator<char>()};
-
-        if (text.starts_with("\xEF" "\xBB" "\xBF"))
-            text.upto(3).erase(); // UTF-8 BOM
-
-        str ext = path.extension().string();
-
-        if (ext == ".ae!" || ext == ".ae")
-            ext =  "ae";
-        else
+        str ext = path.now.extension().string();
         if (ext == ".cpp" || ext == ".hpp"
         ||  ext == ".cxx" || ext == ".hxx"
-        ||  ext == ".c++" || ext == ".h++"
-        ||  ext == ".h")
-            ext =  "cpp";
+        ||  ext == ".c++" || ext == ".h++"  || ext == ".h") ext = "cpp"; else
+        if (ext == ".ae!" || ext == ".ae!!" || ext == ".ae") ext = "ae";
 
-        editor.model.proceed =
-        [this, path, ext] (const doc::text& text, array<doc::token>& tokens)
+        editor.model.proceed = [this, ext] (const doc::text& text, array<doc::token>& tokens)
         {
             tokens = 
                 ext == "ae"  ? doc::ae::lexica ::parse(text):
                 ext == "cpp" ? doc::lexica::cpp::parse(text):
                                doc::lexica::txt::parse(text);
             log = 
-                ext == "ae"  ? doc::ae ::syntax::analysis::proceed(path, tokens).log:
-                ext == "cpp" ? doc::cpp::syntax::analysis::proceed(path, tokens).log:
+                ext == "ae"  ? doc::ae ::syntax::analysis::proceed(path.now, tokens).log:
+                ext == "cpp" ? doc::cpp::syntax::analysis::proceed(path.now, tokens).log:
                                doc::report{};
         };
-        editor.set(text, ext);
-
-        this->path = path;
+        editor.reset();
     }
 
     void on_change (void* what) override
@@ -182,6 +185,14 @@ struct Editor : gui::widget<Editor>
             s.color = pix::fuchsia; editor.styles["comment"] = sys::glyph_style_index(s);
             s.color = pix::red;     editor.styles["error"  ] = sys::glyph_style_index(s);
         }
+        if (what == &path)
+        {
+            flist.load(path.now);
+
+            doc::repo::modify(path.was, editor.model);
+
+            internal_load();
+        }
     }
 
     void on_focus (bool on) override { editor.on_focus(on); }
@@ -192,6 +203,8 @@ struct Editor : gui::widget<Editor>
     {
         if (w == &editor)
         {
+            doc::repo::modify(path.now, editor.model);
+
             int n1 = lineup.model->lines.size();
             int n2 = editor.model.lines.size();
             if (n1 != n2) {
@@ -217,3 +230,7 @@ struct Editor : gui::widget<Editor>
             lineup.shift = XY(0, n);
     }
 };
+
+// struct text-model: selections, undoes/redoes, but no tokens
+// struct key-processor: modify text-model
+// struct 

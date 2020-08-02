@@ -20,15 +20,15 @@ namespace pix::sampling
         color co10 = frame (x1, y0);
         color co11 = frame (x1, y1);
 
-        co00.blend(co10, (int)(255*dx));
-        co10.blend(co11, (int)(255*dx));
-        co00.blend(co10, (int)(255*dy));
+        co00.blend(co10, aux::clamp<uint8_t>(std::lround(255*dx)));
+        co10.blend(co11, aux::clamp<uint8_t>(std::lround(255*dx)));
+        co00.blend(co10, aux::clamp<uint8_t>(std::lround(255*dy)));
 
         return co00;
     }
 
     template<class color> inline
-    color cubic (frame<color> & frame, double x, double y)
+    color cubic (frame<color> frame, double x, double y)
     {
         color co = pix::black;
 
@@ -38,7 +38,7 @@ namespace pix::sampling
         double dx2 = dx*dx; double dx3 = dx*dx2;
         double dy2 = dy*dy; double dy3 = dy*dy2;
 
-        auto source = [&frame](int x, int y)
+        auto source = [frame](int x, int y)
         {
             x = aux::clamp(x, 0, frame.size.x-1);
             y = aux::clamp(y, 0, frame.size.y-1);
@@ -92,26 +92,45 @@ namespace pix
     template<class color> inline
     image<color> resized (frame<color> src, XY size)
     {
+        if (size.x < src.size.x/2)
+        {
+            image<color> dst(XY(src.size.x/2, src.size.y));
+
+            for( int y=0; y<dst.size.y; y++ )
+            for( int x=0; x<dst.size.x; x++ )
+            {
+                dst(x, y) = src(x*2, y);
+                dst(x, y).blend(src(x*2+1, y), 128);
+            }
+
+            return resized(dst.crop(), size);
+        }
+
+        if (size.y < src.size.y/2)
+        {
+            image<color> dst(XY(src.size.x, src.size.y/2));
+
+            for( int y=0; y<dst.size.y; y++ )
+            for( int x=0; x<dst.size.x; x++ )
+            {
+                dst(x, y) = src(x, y*2);
+                dst(x, y).blend(src(x, y*2+1), 128);
+            }
+
+            return resized(dst.crop(), size);
+        }
+
         image<color> dst(size);
 
-        auto sample = [size, &src](double x, double y) {
-            return size.x * size.y < src.size.x * src.size.y ?
-                sampling::linear(src, x, y):
-                sampling::cubic (src, x, y);
-        };
-
-        vector<2> ax ({1.0f / size.x * src.size.x, 0.0f});
-        vector<2> ay ({0.0f, 1.0f / size.y * src.size.y});
+        vector<2> ax ({(float)(src.size.x+1) / size.x, 0.0f});
+        vector<2> ay ({0.0f, (float)(src.size.y+1) / size.y});
 
         for( int y=0; y<dst.size.y; y++ )
         for( int x=0; x<dst.size.x; x++ )
         {
             vector<2> p = x * ax + y * ay;
 
-            if (p.x < 0 or src.size.x <= p.x
-            or  p.y < 0 or src.size.y <= p.y) continue;
-
-            dst(x,y) = sample(p.x, p.y);
+            dst(x,y) = sampling::cubic(src, p.x, p.y);
         }
 
         return dst;
@@ -120,7 +139,8 @@ namespace pix
     template<class color> inline
     void resize (image<color> & img, XY size)
     {
-        img = resized(img.crop(), size);
+        if (img.size != size)
+            img = resized(img.crop(), size);
     }
 }
 

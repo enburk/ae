@@ -70,13 +70,7 @@ namespace ide::compiler
         console << "Prepare library...";
 
         for (auto path : ae::syntax::analysis::standard_library)
-        {
-            console << path.string();
-
-            auto log = ae::syntax::analysis::proceed(path).log();
-
-            if (log != "") { console << log; return false; }
-        }
+            console << ae::syntax::analysis::proceed(path).log();
 
         console << "Done.";
         
@@ -85,10 +79,20 @@ namespace ide::compiler
 
     bool compile (path src, gui::text::console & console)
     {
-        console << "Analysis...";
+        //console.clear();
         auto analysis = ae::syntax::analysis::proceed(src);
         if (analysis.log() != "") console << analysis.log();
-        if (analysis.log() != "") return false;
+        if (analysis.log.errors.size() > 0) return false;
+
+        path cpp = src; cpp.replace_extension(".ae!.cpp");
+        path obj = src; obj.replace_extension(".ae!.obj");
+        path exe = src; exe.replace_extension(".ae!.exe");
+
+        using namespace std::literals::chrono_literals;
+        if (std::filesystem::exists(exe) and
+            std::filesystem::last_write_time(exe) >
+            analysis.compile_time)
+            return true;
 
         console << "Synthesis...";
         array<entity> statements = ae::synthesis::proceed(analysis);
@@ -97,9 +101,6 @@ namespace ide::compiler
         for (auto && s : statements)
             print(s, lines);
 
-        path cpp = src; cpp.replace_extension(".ae!.cpp");
-        path obj = src; obj.replace_extension(".ae!.obj");
-        path exe = src; exe.replace_extension(".ae!.exe");
         {
             std::ofstream result(cpp);
             result << "\xEF" "\xBB" "\xBF"; // UTF-8 BOM

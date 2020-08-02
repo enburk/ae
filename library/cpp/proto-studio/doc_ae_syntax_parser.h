@@ -54,7 +54,7 @@ namespace doc::ae::syntax
         {
             array<element> output; element s;
 
-            if (log.messages.size() > 0) return output;
+            if (log.errors.size() > 0) return output;
         
             for (auto && e : input)
             {

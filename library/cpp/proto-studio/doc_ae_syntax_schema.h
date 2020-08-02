@@ -51,7 +51,7 @@ namespace doc::ae::syntax
                 {
                     output += read_statement(deque(es.elements));
 
-                    if (log.messages.size() > 0) break;
+                    if (log.errors.size() > 0) break;
 
                     //if (std::holds_alternative<operator_if>(output.back().variant))
                 }

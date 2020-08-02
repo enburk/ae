@@ -171,6 +171,7 @@
     <ClInclude Include="library\cpp\proto-studio\doc_html_syntax.h" />
     <ClInclude Include="library\cpp\proto-studio\doc_text_lexica.h" />
     <ClInclude Include="library\cpp\proto-studio\doc_text_model.h" />
+    <ClInclude Include="library\cpp\proto-studio\doc_text_repo.h" />
     <ClInclude Include="library\cpp\proto-studio\gui_colors.h" />
     <ClInclude Include="library\cpp\proto-studio\gui_effect.h" />
     <ClInclude Include="library\cpp\proto-studio\gui_widget.h" />

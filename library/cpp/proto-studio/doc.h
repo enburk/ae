@@ -1,4 +1,5 @@
 #pragma once
+#include <map>
 #include <cassert>
 #include <compare>
 #include <variant>
@@ -17,7 +18,8 @@ namespace doc
         bool operator == (const text & t) const { return lines == t.lines; }
         bool operator != (const text & t) const { return lines != t.lines; }
 
-        explicit text (str s = "") {
+        text () = default;
+        explicit text (str s) {
             lines.reserve(s.size()/80);
             for (str line : s.split_by("\n"))
                 lines += unicode::glyphs(line);
@@ -68,11 +70,13 @@ namespace doc
 
     struct report
     {
-        struct message { token* token; str kind, what; };
+        struct message { token* token = nullptr; str kind, what; };
         array <message> messages;
+        array <message> errors;
 
         void error (token* token, str what) {
             messages += message{token, "error", what};
+            errors += message{token, "error", what};
             if (token) token->kind = "error";
         }
 

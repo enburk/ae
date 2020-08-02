@@ -20,6 +20,11 @@ namespace aux
         }
     };
 
+    struct exception : std::runtime_error {
+        exception(std::string s) : std::runtime_error(
+            std::move(s)) {}
+    };
+
     template<class Value> struct expected : std::variant<Value, error>
     {
         using variant = std::variant<Value, error>;
@@ -28,17 +33,17 @@ namespace aux
         expected (error e) : variant(std::move(e)) {}
 
         bool ok  () const { return std::holds_alternative<Value>(*this); }
-        bool bad () const { return std::holds_alternative<error>(*this); }
+        bool bad () const { return std::holds_alternative<Error>(*this); }
 
-        /***/ Value &  value () /***/ &  { if (ok()) return std::get<0>(/*******/(*this)); throw std::runtime_error(std::get<1>(*this)); }
-        /***/ Value && value () /***/ && { if (ok()) return std::get<0>(std::move(*this)); throw std::runtime_error(std::get<1>(*this)); }
-        const Value &  value () const &  { if (ok()) return std::get<0>(/*******/(*this)); throw std::runtime_error(std::get<1>(*this)); }
-        const Value && value () const && { if (ok()) return std::get<0>(std::move(*this)); throw std::runtime_error(std::get<1>(*this)); }
+        /***/ Value &  value () /***/ &  { if (ok()) return std::get<0>(/*******/(*this)); throw exception(std::get<1>(*this)); }
+        /***/ Value && value () /***/ && { if (ok()) return std::get<0>(std::move(*this)); throw exception(std::get<1>(*this)); }
+        const Value &  value () const &  { if (ok()) return std::get<0>(/*******/(*this)); throw exception(std::get<1>(*this)); }
+        const Value && value () const && { if (ok()) return std::get<0>(std::move(*this)); throw exception(std::get<1>(*this)); }
         using Error =  error;
-        /***/ Error &  error () /***/ &  { if (ok()) return std::get<1>(/*******/(*this)); throw std::runtime_error("It was OK."); }
-        /***/ Error && error () /***/ && { if (ok()) return std::get<1>(std::move(*this)); throw std::runtime_error("It was OK."); }
-        const Error &  error () const &  { if (ok()) return std::get<1>(/*******/(*this)); throw std::runtime_error("It was OK."); }
-        const Error && error () const && { if (ok()) return std::get<1>(std::move(*this)); throw std::runtime_error("It was OK."); }
+        /***/ Error &  error () /***/ &  { if (bad()) return std::get<1>(/*******/(*this)); throw exception("It was OK."); }
+        /***/ Error && error () /***/ && { if (bad()) return std::get<1>(std::move(*this)); throw exception("It was OK."); }
+        const Error &  error () const &  { if (bad()) return std::get<1>(/*******/(*this)); throw exception("It was OK."); }
+        const Error && error () const && { if (bad()) return std::get<1>(std::move(*this)); throw exception("It was OK."); }
     };
 
     ////////////////////////////////////////////////////////////////////////////

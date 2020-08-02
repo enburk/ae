@@ -5,6 +5,7 @@
 #include "gui_widget_canvas.h"
 #include "gui_widget_button.h"
 #include "gui_widget_splitter.h"
+#include "doc_text_repo.h"
 #include "ide_compiler.h"
 #include "ide_console.h"
 #include "ide_editor.h"
@@ -16,6 +17,7 @@ struct IDE : gui::widget<IDE>
 {
     gui::canvas toolbar;
     gui::button button_save;
+    gui::button button_Save;
     gui::button button_run;
     gui::button button_test;
 
@@ -33,14 +35,20 @@ struct IDE : gui::widget<IDE>
     std::thread thread;
     std::atomic<bool> finished = true;
 
+    sys::directory_watcher watcher;
+    std::atomic<bool> reload_editor = false;
+    std::atomic<bool> reload_flist = false;
+
     IDE()
     {
         gui::window = this; skin = "gray";
 
         button_save.text.text = "Save";
+        button_Save.text.text = "Save All";
         button_run .text.text = "Run";
         button_test.text.text = "Test";
         button_save.enabled = false;
+        button_Save.enabled = false;
         button_run .enabled = false;
         button_test.kind = gui::button::toggle;
         test.hide();
@@ -67,12 +75,35 @@ struct IDE : gui::widget<IDE>
 
             finished = true;
         });
+
+        watcher.dir = std::filesystem::current_path();
+        watcher.action = [this](std::filesystem::path path, str what)
+        {
+            str s = path.string();
+            if (s.contains("\\.vs\\")) return;
+            if (s.contains("\\.vstudio\\")) return;
+            if (s.contains("\\enc_temp_folder\\")) return;
+            if (s.ends_with(".ae!.cpp") or s.ends_with(".ae!!.cpp")) return;
+            if (s.ends_with(".ae!.obj") or s.ends_with(".ae!!.obj")) return;
+            if (s.ends_with(".ae!.exe") or s.ends_with(".ae!!.exe")) return;
+            if (s.ends_with("cl.log.txt")) return;
+            console.object.compiler << path.string() + " " + what;
+            reload_editor = true; if (what != "modified")
+            reload_flist = true;
+        };
+        watcher.error = [this](aux::error error){
+            console.object.compiler << "<font color=#B00020>"
+                "watcher error: " + error + "</font>";
+        };
+        watcher.watch();
     }
     ~IDE()
     {
         if (thread.joinable())
             thread.join();
     }
+
+    void on_close () override { doc::repo::close(); }
 
     void on_change (void* what) override
     {
@@ -92,6 +123,7 @@ struct IDE : gui::widget<IDE>
 
             toolbar.coord = XYWH(0, 0, W, h);
             button_save.coord = XYWH(0, 0, w, h);
+            button_Save.coord = XYWH(w, 0, w, h);
             button_run .coord = XYWH(W/2-w/2, 0, w, h);
             button_test.coord = XYWH(W-w, 0, w, h);
 
@@ -114,29 +146,39 @@ struct IDE : gui::widget<IDE>
 
         if (what == &timer)
         {
+            if (reload_editor) {
+                reload_editor = false;
+                editor.object.reload();
+            }
+            if (reload_flist) {
+                reload_flist = false;
+                flist.object.reload();
+            }
 
             auto ext = editor.object.path.now.extension();
-            button_run.enabled = ext == ".ae!" and syntax_ok;
-            
-            using namespace std::literals::chrono_literals;
-            if (timer.now - last_compile_time > 5s
-                and button_run.enabled
-                and finished)
-            {
-                if (thread.joinable())
-                    thread.join();
+            button_run .enabled = ext == ".ae!" and syntax_ok;
+            button_save.enabled = doc::repo::saveable(editor.object.path.now);
+            button_Save.enabled = doc::repo::saveable();
 
-                last_compile_time = timer.now;
-
-                finished = false;
-                thread = std::thread([this]()
-                {
-                    ide::compiler::compile(
-                        editor.object.path.now,
-                        console.object.compiler);
-                    finished = true;
-                });
-            }
+            // using namespace std::literals::chrono_literals;
+            // if (timer.now - last_compile_time > 5s
+            //     and button_run.enabled
+            //     and finished)
+            // {
+            //     if (thread.joinable())
+            //         thread.join();
+            // 
+            //     last_compile_time = timer.now;
+            // 
+            //     finished = false;
+            //     thread = std::thread([this]()
+            //     {
+            //         ide::compiler::compile(
+            //             editor.object.path.now,
+            //             console.object.compiler);
+            //         finished = true;
+            //     });
+            // }
         }
     }
 
@@ -149,11 +191,11 @@ struct IDE : gui::widget<IDE>
 
         if (w == &flist)
         {
-            editor.object.load(flist.object.selected.now);
+            editor.object.path = flist.object.selected.now;
         }
         if (w == &editor.object.flist)
         {
-            editor.object.load(editor.object.flist.selected.now);
+            editor.object.path = editor.object.flist.selected.now;
         }
         if (w == &editor)
         {
@@ -170,11 +212,27 @@ struct IDE : gui::widget<IDE>
         {
             std::string source = console.object.pressed_file;
             if (source != "" and std::filesystem::exists(source))
-                editor.object.load(source);
+                editor.object.path = source;
 
             editor.object.editor.go(doc::place{
                 std::stoi(console.object.pressed_line)-1,
                 std::stoi(console.object.pressed_char)-1});
+        }
+        if (w == &button_save)
+        {
+            auto rc = doc::repo::save(editor.object.path.now); if (!rc.ok()) {
+                console.object.activate(&console.object.compiler);
+                console.object.compiler << "<font color=#B00020>"
+                "Save: " + rc.error() + "</font>";
+            }
+        }
+        if (w == &button_Save)
+        {
+            auto rc = doc::repo::save_all(); if (!rc.ok()) {
+                console.object.activate(&console.object.compiler);
+                console.object.compiler << "<font color=#B00020>"
+                "Save All: " + rc.error() + "</font>";
+            }
         }
         if (w == &button_run)
         {

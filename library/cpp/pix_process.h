@@ -12,9 +12,11 @@ namespace pix
         using std::exp;
         using std::sqrt;
 
-        radius = abs(radius); if (radius < 0.2) return kernel;
-
         const double pi = 3.14159265358979323846;
+
+        radius = abs(radius);
+        
+        if (radius < 0.2) return kernel;
 
         int dim = 1 + 2 * int(radius + 0.5);
 
@@ -25,13 +27,12 @@ namespace pix
         for (int x=0; x<dim; x++)
         {
             double r = x - dim/2.0 + 0.5;
-            double g = 1.0 / sqrt(2*pi*radius) * exp(-(r-0)*(r-0) / (2*radius*radius));
+            double g = 1.0 / sqrt(2*pi*radius)
+                * exp(-r*r / (2*radius*radius));
 
             kernel[x] = g; denom += g;
         }
-        for ( int x=0; x<dim; x++ )
-            
-            kernel[x] /= denom;
+        for (int x=0; x<dim; x++) kernel[x] /= denom;
 
         return kernel;
     }

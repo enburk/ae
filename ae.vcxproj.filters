@@ -189,6 +189,9 @@
     <ClInclude Include="library\cpp\proto-studio\ide_compiler.h">
       <Filter>proto-studio</Filter>
     </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc_text_repo.h">
+      <Filter>doc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="library\cpp\proto-studio\proto-studio.cpp" />

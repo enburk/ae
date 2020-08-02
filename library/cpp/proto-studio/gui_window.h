@@ -64,7 +64,7 @@ namespace gui
 
 void sys::app_instance::done  () {}
 void sys::app_instance::init  () { gui::init(); }
-void sys::window::on::finish  () { sys::window::on::turn_off(); }
+void sys::window::on::finish  () { sys::window::on::turn_off(); gui::window->on_close(); }
 void sys::window::on::start   () { sys::window::on::turn_on (); }
 void sys::window::on::turn_on () { gui::timer_stop = false; gui::timer = std::thread (gui::timer_proc); }
 void sys::window::on::turn_off() { gui::timer_stop = true; if (gui::timer.joinable()) gui::timer.join(); }

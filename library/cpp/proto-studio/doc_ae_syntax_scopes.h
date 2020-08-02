@@ -71,7 +71,8 @@ namespace doc::ae::syntax
             signature += ")";
 
             auto [it, inserted] = members.emplace(signature, member{s.type});
-            if (!inserted) { log.error(s.name, "signature '" + signature
+            if (!inserted) { log.error(s.name, "signature '"
+                + html::lexica::encoded(signature)
                 + "' already exists"); return; }
 
             unnamed.emplace_back(scope{.outer=this}).fill(s.body, log);

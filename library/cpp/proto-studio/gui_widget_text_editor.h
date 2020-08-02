@@ -23,11 +23,22 @@ namespace gui::text
         str text () override { return ""; }
         str html () override { return ""; }
 
+        void reset ()
+        {
+            update(); // speed up
+            page.view.column.clear(); // reset cache
+            model.proceed(model, model.tokens);
+            page.view.refresh();
+            page.refresh();
+            refresh();
+            notify();
+        }
+
         void set (str text, str format) override
         {
             update(); // speed up
             page.view.column.clear(); // reset cache
-            model = text;
+            model = doc::text_model{text};
             page.view.refresh();
             page.refresh();
             refresh();
@@ -369,6 +380,7 @@ namespace gui::text
             if (key == "ctrl+shift+enter" ) { go(LINE_END  ); insert("\n"); } else
 
             if (key == "backspace"        ) { backspace(); } else
+            if (key == "shift+backspace"  ) { backspace(); } else
             if (key == "alt+backspace"    ) { undo(); } else
             if (key == "ctrl+backspace"   ) { redo(); } else // != VS
 
@@ -425,15 +437,26 @@ namespace gui::text
             }
             else
             {
-            }
+                if (touch)
+                {
+                    int n = page.view.selections.now.size();
+                    model.selections.resize(n);
+                    for (int i=0; i<n; i++) {
+                        auto r = page.view.selections.now[i];
+                        model.selections[i] = doc::range{
+                            doc::place{r.from.line, r.from.offset},
+                            doc::place{r.upto.line, r.upto.offset}};
 
-            int n = page.view.selections.now.size();
-            model.selections.resize(n);
-            for (int i=0; i<n; i++) {
-                auto r = page.view.selections.now[i];
-                model.selections[i] = doc::range{
-                    doc::place{r.from.line, r.from.offset},
-                    doc::place{r.upto.line, r.upto.offset}};
+                        // hack for preventing focus hiding:
+                        auto & [from, upto] = model.selections[i];
+                        from = aux::clamp(from, model.front(), model.back());
+                        upto = aux::clamp(upto, model.front(), model.back());
+                        page.view.selections.now[i] = range{
+                            place{from.line, from.offset},
+                            place{upto.line, upto.offset}};
+                        refresh();
+                    }
+                }
             }
         }
 

@@ -12,6 +12,7 @@ namespace gui::text
 
         void operator << (str s)
         {
+            if (s == "") return;
             if (not s.ends_with("<br>")) s += "<br>";
             std::lock_guard guard{mutex};
             addon += std::move(s);

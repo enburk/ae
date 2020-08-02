@@ -1,7 +1,6 @@
 #pragma once
 #include "doc.h"
 #include "doc_ae_lexica.h"
-#include "doc_ae_syntax_analysis.h"
 #include "doc_cpp_lexica.h"
 #include "doc_cpp_syntax.h"
 #include "doc_text_lexica.h"
@@ -12,7 +11,8 @@ namespace doc
         array<range> selections;
         array<token> tokens;
 
-        void operator = (str s)
+        explicit text_model () : text_model("") {}
+        explicit text_model (str s)
         {
             text::operator = (text{s});
             for (auto & line : lines)
@@ -304,5 +304,4 @@ namespace doc
             return perform(replaces);
         }
     };
-
 }

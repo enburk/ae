@@ -1,6 +1,8 @@
 #pragma once
+#include <chrono>
 #include <fstream>
 #include <filesystem>
+#include "doc_text_repo.h"
 #include "doc_ae_syntax_parser.h"
 #include "doc_ae_syntax_schema.h"
 #include "doc_ae_syntax_scopes.h"
@@ -11,46 +13,50 @@ namespace doc::ae::syntax::analysis
 
     struct data
     {
-        report log;
-        scope scope;
         array<token> tokens;
         array<statement> statements;
         array<path> dependencies;
-        time time;
+        time compile_time;
+        scope scope;
+        report log;
     };
 
-    inline std::map<path, data> repo;
+    inline std::map<path, data> sources;
 
     inline array<path> standard_library;
 
     void pass1 (data & record, path source, array<token> &);
-    void pass1 (data & record, path source)
+    bool pass1 (data & record, path source)
     {
-        auto & log = record.log;
+        time edit_time;
+        text_model model;
+        time now = time::clock::now();
+        doc::repo::edittime(source, edit_time).value();
 
-        if (!std::filesystem::exists(source)) { record = data{};
-            log.error(nullptr, source.string() + ": file doesn't exist");
-            return;
+        if (record.compile_time >= edit_time)
+        {
+            bool up_to_date = true;
+
+            for (auto path : record.dependencies)
+            {
+                doc::repo::edittime(path, edit_time).value();
+                if (sources[path].compile_time < edit_time) {
+                    up_to_date = false;
+                    break;
+                }
+            }
+
+            if (up_to_date) return false;
         }
-        // prevent circular dependencies recursion
-        if (record.time == time{} // treat as "now"
-        or  record.time > std::filesystem::last_write_time(source)) {
-            return;
-        }
+
+        doc::repo::load(source, model).value();
 
         record = data{};
-        record.time = std::filesystem::last_write_time(source);
-
-        std::ifstream stream(source); str s = std::string{(
-        std::istreambuf_iterator<char>(stream)),
-        std::istreambuf_iterator<char>()};
-
-        if (s.starts_with("\xEF" "\xBB" "\xBF"))
-            s.upto(3).erase(); // UTF-8 BOM
-
-        record.tokens = lexica::parse(text{s});
-
+        record.compile_time = now;
+        record.log.info(nullptr, source.string());
+        record.tokens = lexica::parse(model);
         pass1 (record, source, record.tokens);
+        return true;
     };
 
     void pass1 (data & record, path source, array<token> & tokens)
@@ -62,19 +68,16 @@ namespace doc::ae::syntax::analysis
             parser(log).proceed(
             tokens));
 
-        if (not log.messages.empty()) return;
+        if (not log.errors.empty()) return;
 
         if (not standard_library.contains(source))
         {
             for (auto path : standard_library)
             {
-                record.dependencies += path;
-                auto data = repo[path]; pass1(data, path);
-                if (not data.log.messages.empty()) {
-                    log.error(nullptr, path.string());
-                    log.messages += data.log.messages;
-                    return;
-                }
+                record.dependencies.try_emplace(path);
+                auto & data = sources[path]; pass1(data, path);
+                for (auto p : data.dependencies) if (p != source)
+                    record.dependencies.try_emplace(p);
             }
         }
 
@@ -88,13 +91,11 @@ namespace doc::ae::syntax::analysis
                     s.pop_back(); s.erase(0,1); s += ".ae";
                     auto path = source.parent_path() / s;
                     if (record.dependencies.contains(path)) continue;
-                    record.dependencies += path;
-                    auto data = repo[path]; pass1(data, path);
-                    if (not data.log.messages.empty()) {
-                        log.error(that.param, "using " + that.param->text);
-                        log.messages += data.log.messages;
-                        return;
-                    }
+
+                    record.dependencies.try_emplace(path);
+                    auto & data = sources[path]; pass1(data, path);
+                    for (auto p : data.dependencies) if (p != source)
+                        record.dependencies.try_emplace(p);
                 }
             }
         }
@@ -105,28 +106,57 @@ namespace doc::ae::syntax::analysis
     void pass2 (data & record)
     {
         auto & log = record.log;
-
-        if (not log.messages.empty()) return;
+        if (not log.errors.empty()) return;
 
         //for (auto path : record.dependencies)
         //    record.scope.add(repo[path].scope);
+
     }
+
+    std::mutex mutex; // makes the thread safety of doc::repo pointless
 
     // run/compilation button
     const data & proceed (path source)
     {
-        data & record = repo[source];
-        pass1 (record, source);
-        pass2 (record);
+       std::unique_lock guard{mutex};
+
+        data & record = sources[source];
+        try
+        {
+            record.log = report{};
+            pass1(record, source);
+            pass2(record);
+            for (auto p : record.dependencies) {
+                auto & dependency = sources[p];
+                if (not dependency.log.errors.empty() or
+                    dependency.compile_time > record.compile_time)
+                    record.log.messages += dependency.log.messages;
+                    record.log.errors += dependency.log.errors;
+            }
+        }
+        catch (const aux::exception & e) {
+            record.log.error(nullptr, e.what());
+        }
         return record;
     }
 
     // live editor analysis
     const data & proceed (path source, array<token> & tokens)
     {
-        data & record = repo[source]; record.time = time(); // treat as "now"
-        pass1 (record, source, tokens);
-        pass2 (record);
+       std::unique_lock guard{mutex};
+
+        data & record = sources[source];
+        try
+        {
+            record = data{};
+            record.tokens = tokens;
+            record.compile_time = time::clock::now();
+            pass1(record, source, tokens);
+            pass2(record);
+        }
+        catch (const aux::exception & e) {
+            record.log.error(nullptr, e.what());
+        }
         return record;
     }
 }

@@ -1,4 +1,6 @@
 #pragma once
+#include <atomic>
+#include <thread>
 #include <filesystem>
 #include "aux_string.h"
 #include "aux_utils.h"
@@ -91,7 +93,7 @@ namespace sys
         static void done();
         static app_base * app;
         app_instance () { init(); if (app) app->constructor(); }
-       ~app_instance () { if (app) app->destructor (); done(); }
+       ~app_instance () { if (app) app->destructor();  done(); }
     };
     template<class APP> struct app : app_base
     {
@@ -120,7 +122,28 @@ namespace sys
         bool wait (int ms = max<int>());
     };
 
+    enum class choice
+    {
+        ok,               
+        ok_cancel,
+        yes_no,
+        yes_no_cancel,
+        abort_retry_ignore,
+        cancel_try_continue,
+        retry_cancel
+    };
 
+    str dialog (str title, str text, choice);
+
+    struct directory_watcher
+    {
+        using path = std::filesystem::path; path dir;
+        std::function<void(path, str)> action = [](path, str){};
+        std::function<void(aux::error)> error = [](aux::error){};
+        std::thread thread; void watch(); void cancel();
+        std::atomic<bool> stop = false;
+        ~directory_watcher(){cancel();}
+    };
 
     struct font
     {
