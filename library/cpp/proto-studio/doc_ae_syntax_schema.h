@@ -95,7 +95,8 @@ namespace doc::ae::syntax
                 read_name(input, "each")->kind = "keyword";
                 s.names = read_list_of_names(input);
                 read_name(input, "in")->kind = "keyword";
-                s.range = read_expression_until("do", input);
+                s.range = read_named_pack(input);
+                read_name(input, "do")->kind = "keyword";
                 s.body = read_statement_or_body(input);
                 return statement{std::move(s)};
             }
@@ -175,6 +176,18 @@ namespace doc::ae::syntax
 
                 read_symbol(input, "=");
                 s.body = read_statement_or_body(input);
+
+             // if (s.body.size() == 1 and std::holds_alternative<expression>
+             //    (s.body[0].variant) and std::holds_alternative<operation>(std::get<expression>
+             //    (s.body[0].variant).variant) and std::get<operation>(std::get<expression>
+             //    (s.body[0].variant).variant).title->text == "...")
+                if (s.body.size() == 1 and std::holds_alternative<expression>
+                   (s.body[0].variant) and std::holds_alternative<named_pack>(std::get<expression>
+                   (s.body[0].variant).variant) and std::get<named_pack>(std::get<expression>
+                   (s.body[0].variant).variant).units.size() == 1 and std::get<named_pack>(std::get<expression>
+                   (s.body[0].variant).variant).units[0].identifier->text == "...")
+                   {s.body.clear(); s.external = true;}
+
                 return statement{std::move(s)};
             }
 

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "doc.h"
 #include "doc_ae_lexica.h"
 #include "doc_cpp_lexica.h"
@@ -182,11 +182,63 @@ namespace doc
             return perform(replaces);
         }
 
+        bool base_insert (str s)
+        {
+            redoes.clear();
+
+            array<replace> replaces;
+
+            for (range selection : selections)
+            {
+                replaces += replace{selection, text(s)};
+            }
+
+            return perform(replaces);
+        }
+
         bool insert (str s)
         {
             redoes.clear();
 
             array<replace> replaces;
+
+            if (selections.size() == 1 &&
+                selections[0].from == selections[0].upto &&
+                selections[0].from.offset > 0)
+            {
+                glyph c = lines
+                [selections[0].from.line]
+                [selections[0].from.offset-1];
+
+                if (c == "-" && s == ">") {
+                    base_insert(">");
+                    selections[0].from.offset--;
+                    selections[0].from.offset--;
+                    base_insert((char*)(u8"→"));
+                    return true;
+                }
+                if (c == "!" && s == "=") {
+                    base_insert("=");
+                    selections[0].from.offset--;
+                    selections[0].from.offset--;
+                    base_insert((char*)(u8"≠"));
+                    return true;
+                }
+                if (c == "<" && s == "=") {
+                    base_insert("=");
+                    selections[0].from.offset--;
+                    selections[0].from.offset--;
+                    base_insert((char*)(u8"≤"));
+                    return true;
+                }
+                if (c == ">" && s == "=") {
+                    base_insert("=");
+                    selections[0].from.offset--;
+                    selections[0].from.offset--;
+                    base_insert((char*)(u8"≥"));
+                    return true;
+                }
+            }
             
             if (s == "\n" &&
                 selections.size() == 1 &&

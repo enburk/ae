@@ -61,11 +61,15 @@ namespace aux
             ++size; return next_id++;
         }
 
-        void erase(size_t id) noexcept {
+        void erase(size_t id) noexcept
+        {
             auto it = std::lower_bound(
                 pool.begin(), pool.end(), id,
-                    [](const auto & a, const auto & b) { return a.first < b; });
+                    [](const auto & a, const auto & b)
+                        { return a.first < b; });
+
             if (it == pool.end() || it->first != id || !it->second) return;
+
             it->second.reset(); --size;
             if (size < pool.size() / 2)
                 pool.erase(std::remove_if(pool.begin(), pool.end(),

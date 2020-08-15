@@ -11,6 +11,32 @@ namespace doc
         using path = std::filesystem::path;
         using time = std::filesystem::file_time_type;
 
+        namespace saveable
+        {
+            array<path> paths;
+            std::shared_mutex mutex;
+
+            void add (path path) {
+                std::shared_lock guard{mutex};
+                paths.try_emplace(path);
+            }
+            void del (path path) {
+                std::shared_lock guard{mutex};
+                paths.try_erase(path);
+            }
+
+            std::pair<bool, bool> any_one (path path)
+            {
+                std::pair<bool, bool> any_one {false, false};
+                std::shared_lock guard{mutex};
+                for (auto & p : paths) {
+                    any_one.first = true; if (p == path)
+                    any_one.second = true;
+                }
+                return any_one;
+            }
+        }
+
         struct data
         {
             path path;
@@ -47,6 +73,7 @@ namespace doc
                 model = text_model{s};
                 filetime = edittime = last_write_time;
                 saved_text = model;
+                saveable::del(path);
                 return nothing{};
             }
             catch (const std::exception & e) {
@@ -84,6 +111,7 @@ namespace doc
                 std::filesystem::rename(temp, path);
                 filetime = edittime = std::filesystem::last_write_time(path);
                 saved_text = model;
+                saveable::del(path);
                 return nothing{};
             }
             catch (const std::exception & e) {
@@ -146,6 +174,10 @@ namespace doc
             it->second.model = model; // problem: full text copy and comparison
             it->second.edittime = it->second.saved_text.lines == model.lines ?
             it->second.filetime : time::clock::now();
+            if (it->second.edittime >
+                it->second.filetime)
+                saveable::add(path); else
+                saveable::del(path);
             return nothing{};
         }
 
@@ -184,30 +216,6 @@ namespace doc
                     return rc;
             }
             return nothing{};
-        }
-
-        bool saveable (path path)
-        {
-            std::shared_lock guard{mutex};
-
-            auto it = map.find(path);
-            if (it == map.end()) return false;
-            auto & data = it->second;
-            std::shared_lock data_guard{data.mutex};
-            return data.edittime > data.filetime;
-        }
-
-        bool saveable ()
-        {
-            std::shared_lock guard{mutex};
-
-            for (auto & [path, data] : map) {
-                std::shared_lock data_guard{data.mutex};
-                if (data.edittime > data.filetime)
-                    return true;
-            }
-
-            return false;
         }
 
         void close ()

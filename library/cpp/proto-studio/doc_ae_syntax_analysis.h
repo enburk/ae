@@ -13,12 +13,16 @@ namespace doc::ae::syntax::analysis
 
     struct data
     {
+        path source;
         array<token> tokens;
         array<statement> statements;
         array<path> dependencies;
         time compile_time;
         scope scope;
         report log;
+        bool cpp = false;
+        bool pass2 = false;
+        bool synthesized = false;
     };
 
     inline std::map<path, data> sources;
@@ -52,9 +56,19 @@ namespace doc::ae::syntax::analysis
         doc::repo::load(source, model).value();
 
         record = data{};
+        record.source = source;
         record.compile_time = now;
         record.log.info(nullptr, source.string());
         record.tokens = lexica::parse(model);
+
+        if (source.string().ends_with(".c++")) {
+            report log = cpp::syntax::analysis::proceed(source, record.tokens).log;
+            record.log.messages += log.messages;
+            record.log.errors += log.errors;
+            record.cpp = true;
+            return true;
+        }
+
         pass1 (record, source, record.tokens);
         return true;
     };
@@ -88,7 +102,8 @@ namespace doc::ae::syntax::analysis
                 if (that.title->text == "using")
                 {
                     std::string s = that.param->text;
-                    s.pop_back(); s.erase(0,1); s += ".ae";
+                    s.pop_back(); s.erase(0,1); // quots
+                    if (not s.ends_with(".c++")) s += ".ae";
                     auto path = source.parent_path() / s;
                     if (record.dependencies.contains(path)) continue;
 
@@ -100,23 +115,29 @@ namespace doc::ae::syntax::analysis
             }
         }
 
-        record.scope.named["global"].fill(record.statements, log);
+        record.scope.fill(record.statements);
     }
 
+    void pass2 (data & record, array<statement> & body);
     void pass2 (data & record)
     {
-        auto & log = record.log;
-        if (not log.errors.empty()) return;
+        if (record.pass2 or record.cpp) return;
+            record.pass2 = true;
 
-        //for (auto path : record.dependencies)
-        //    record.scope.add(repo[path].scope);
+        for (auto p : record.dependencies)
+            pass2(sources[p]);
 
+        // record.log.info(nullptr, record.source.string() + " pass 2");
+
+        if (not record.log.errors.empty()) return; record.scope.check();
+        if (not record.log.errors.empty()) return;
+
+        pass2(record, record.statements);
     }
 
-    std::mutex mutex; // makes the thread safety of doc::repo pointless
+    std::mutex mutex; // makes thread safety of doc::repo pointless
 
-    // run/compilation button
-    const data & proceed (path source)
+    const data & proceed (path source) // run/compilation button
     {
        std::unique_lock guard{mutex};
 
@@ -140,8 +161,7 @@ namespace doc::ae::syntax::analysis
         return record;
     }
 
-    // live editor analysis
-    const data & proceed (path source, array<token> & tokens)
+    const data & proceed (path source, array<token> & tokens) // live editor analysis
     {
        std::unique_lock guard{mutex};
 
@@ -158,6 +178,115 @@ namespace doc::ae::syntax::analysis
             record.log.error(nullptr, e.what());
         }
         return record;
+    }
+
+    void pass2 (data & record, loop_for & s)
+    {
+        pass2(record, s.body);
+    }
+    void pass2 (data & record, loop_while & s)
+    {
+        pass2(record, s.body);
+    }
+    void pass2 (data & record, expression & e)
+    {
+        std::visit(aux::overloaded
+        {
+            [&](number  &v) {},
+            [&](literal &v) {},
+            [&](named_pack &v)
+            {
+                for (auto & u : v.units)
+                    for (auto & b : u.parameters)
+                        pass2(record, b.list);
+            },
+            [&](operation &v)
+            {
+                for (auto & o : v.operands)
+                    pass2(record, o);
+
+                deque<expression> deque(v.operands);
+
+                v.operands.clear();
+                v.operands += deque.front();
+                deque.pop_front();
+
+                while (deque.size() > 0)
+                {
+                    if (std::holds_alternative<named_pack>(v.operands.back().variant) and
+                        std::holds_alternative<named_pack>(deque.front().variant) &&
+                        std::get<named_pack>(deque.front().variant).units[0].coloncolon)
+                        std::get<named_pack>(v.operands.back().variant).units +=
+                        std::get<named_pack>(deque.front().variant).units;
+                    else
+                    if (std::holds_alternative<named_pack>(v.operands.back().variant) and
+                        std::holds_alternative<brackets>(deque.front().variant))
+                        std::get<named_pack>(v.operands.back().variant).units.back().parameters +=
+                        std::get<brackets>(deque.front().variant);
+
+                    else v.operands += deque.front();
+
+                    deque.pop_front();
+                }
+
+                if (v.operands.size() == 3 and
+                    std::holds_alternative<named_pack>(v.operands[1].variant) and
+                    std::get<named_pack>(v.operands[1].variant).units.size() == 1) { v.title =
+                    std::get<named_pack>(v.operands[1].variant).units[0].identifier;
+                    std::get<named_pack>(v.operands[2].variant).units[0].identifier->text = "type_" +
+                    std::get<named_pack>(v.operands[2].variant).units[0].identifier->text;
+                    v.operands.from(1).upto(2).erase();
+                }
+            },
+            [&](brackets &v)
+            {
+                pass2(record, v.list);
+            },
+            [&](expression_if &v)
+            {
+                for (auto & e : v.condition) pass2(record, e);
+                for (auto & e : v.then_body) pass2(record, e);
+                for (auto & e : v.else_body) pass2(record, e);
+            },
+            [&](expression_for &v)
+            {
+                for (auto & e : v.range) pass2(record, e);
+            },
+        },
+        e.variant);
+    }
+    void pass2 (data & record, conditional & s)
+    {
+        pass2(record, s.then_body);
+        pass2(record, s.else_body);
+    }
+    void pass2 (data & record, subroutine & s)
+    {
+        pass2(record, s.body);
+    }
+    void pass2 (data & record, declaration & s)
+    {
+        pass2(record, s.body);
+    }
+    void pass2 (data & record, pragma & s)
+    {
+    }
+    void pass2 (data & record, array<statement> & body)
+    {
+        for (auto & s : body)
+        {
+            std::visit(aux::overloaded
+            {
+                [&](loop_for    &s) { pass2(record, s); },
+                [&](loop_while  &s) { pass2(record, s); },
+                [&](expression  &s) { pass2(record, s); },
+                [&](conditional &s) { pass2(record, s); },
+                [&](declaration &s) { pass2(record, s); },
+                [&](subroutine  &s) { pass2(record, s); },
+                [&](pragma      &s) { pass2(record, s); },
+            },
+            s.variant);
+        }
     }
 }
 

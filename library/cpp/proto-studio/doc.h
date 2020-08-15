@@ -66,6 +66,10 @@ namespace doc
         array<token> head;
         array<entity> body;
         array<token> tail;
+
+        explicit entity() = default;
+        explicit entity(str s) { head += token{s}; }
+        explicit entity(str name, str kind) : name(name), kind(kind) {}
     };
 
     struct report

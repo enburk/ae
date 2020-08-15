@@ -110,6 +110,8 @@ namespace ide::compiler
             }
         }
 
+        console << "Build...";
+
         path sdk_include = "c:\\Program Files (x86)"
             "\\Windows Kits\\10\\Include\\10.0.18362.0";
 
@@ -133,7 +135,8 @@ namespace ide::compiler
 
         try
         {
-            str flags = "/EHsc /Fo\"" + obj.string() + "\"";
+            str flags = "/std:c++latest ";
+            flags += "/EHsc /Fo\"" + obj.string() + "\"";
             flags += " /I\"" + (vc/"include").string() + "\"";
             flags += " /I\"" + (sdk_include/"um").string() + "\"";
             flags += " /I\"" + (sdk_include/"ucrt").string() + "\"";
@@ -159,12 +162,16 @@ namespace ide::compiler
             sss.find("error:") or sss.find("warning:") or
             sss.find("error ") or sss.find("warning "))
         {
-            for (str s : sss.split())
+            for (str s : sss.split()) {
                 console << "<font color=#B00020>"
                 + doc::html::lexica::encoded(s)
-                + "</font>";
+                + "</font>"; if (s != "")
+                console << "<br>";
+            }
             return false;
         }
+
+        console << "Done.";
 
         return true;
     }
@@ -182,8 +189,10 @@ namespace ide::compiler
             path exe = src; exe.replace_extension(".ae!.exe");
 
             console << "Run...";
+          //sys::process run("cmd.exe", "/k \"" + exe.string() + "\"",
             sys::process run(exe, "",
             sys::process::options{});
+            console << "Done.";
         }
         catch (const std::exception & e) {
             console << e.what();

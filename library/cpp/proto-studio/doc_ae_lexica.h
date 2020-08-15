@@ -51,8 +51,6 @@ namespace doc::ae::lexica
                 }
                 else
                 {
-                    if (t.text == "->") t.text = (char*)(u8"→");
-
                     if (t.text != "") tokens += t;
 
                     t = token {c, "", range{
@@ -67,8 +65,6 @@ namespace doc::ae::lexica
                                     "symbol"  ;
                 }
             }
-
-            if (t.text == "->") t.text = (char*)(u8"→");
 
             if (t.text != "") tokens += t;
 

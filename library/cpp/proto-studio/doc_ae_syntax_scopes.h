@@ -5,28 +5,20 @@ namespace doc::ae::syntax
 {
     struct scope
     {
-        //struct signature { token* name; array<named_pack> args;
-        //    bool operator != (const signature & s) const { return ! (*this == s); }
-        //    bool operator == (const signature & s) const { return
-        //        name == s.name &&
-        //        args == s.args; }
-        //};
-        struct member { named_pack type; };
-        using signature = str;
-
         scope * outer = nullptr;
         std::list<scope> unnamed;
         std::map<str, scope> named;
-        std::map<signature, member> members;
 
-        void add (const scope & scope) {
-            for (auto [str, sco] : scope.named)
-                named.emplace(str, sco);
-            for (auto [sig, mem] : scope.members)
-                members.emplace(sig, mem);
-        }
+        struct member
+        {
+            token* name;
+            array<named_pack> args;
+            named_pack type;
+            int field = -1;
+        };
+        std::multimap<str, member> members;
 
-        void fill (array<statement> & input, report & log)
+        void fill (array<statement> & input)
         {
             for (auto & statement : input)
             {
@@ -34,52 +26,74 @@ namespace doc::ae::syntax
 
                 std::visit(aux::overloaded
                 {
-                    [this, &log](loop_for    s) { add(log, s); },
-                    [this, &log](loop_while  s) { add(log, s); },
-                    [this, &log](expression  s) { add(log, s); },
-                    [this, &log](conditional s) { add(log, s); },
-                    [this, &log](declaration s) { add(log, s); },
-                    [this, &log](subroutine  s) { add(log, s); },
-                    [this, &log](pragma      s) { add(log, s); },
+                    [this](loop_for    s) { add(s); },
+                    [this](loop_while  s) { add(s); },
+                    [this](expression  s) {},
+                    [this](conditional s) { add(s); },
+                    [this](declaration s) { add(s); },
+                    [this](subroutine  s) { add(s); },
+                    [this](pragma      s) {},
                 },
                 statement.variant);
             }
         }
 
-        void add (report & log, loop_for    & s) {  }
-        void add (report & log, loop_while  & s) {  }
-        void add (report & log, expression  & s) {  }
-        void add (report & log, conditional & s) {  }
-        void add (report & log, declaration & s)
+        void add (loop_for & s)
         {
-            for (auto name : s.names)
-            {
-                auto [it, inserted] = members.emplace(name->text, member{s.type});
-                if (!inserted) { log.error(name, "name '" + name->text
-                    + "' already exists"); return; }
+            unnamed.emplace_back(scope{.outer=this});
 
+            if (s.names.size() == 1)
+                unnamed.back().members.emplace(s.names[0]->text, 
+                    member{.name = s.names[0], .type = s.range});
+            else
+            {
+                int i = 0; for (auto name : s.names)
+                unnamed.back().members.emplace(name->text, 
+                    member{.name = name, .type = s.range, .field = i++});
+            }
+            
+            unnamed.back().fill(s.body);
+        }
+        void add (loop_while & s)
+        {
+            unnamed.emplace_back(scope{.outer=this});
+            unnamed.back().fill(s.body);
+        }
+        void add (conditional & s)
+        {
+            unnamed.emplace_back(scope{.outer=this});
+            unnamed.back().fill(s.then_body);
+            unnamed.emplace_back(scope{.outer=this});
+            unnamed.back().fill(s.else_body);
+        }
+        void add (subroutine & s)
+        {
+            member m {.name = s.name, .type = s.type};
+            for (auto & p : s.parameters) m.args += p.type;
+            members.emplace(m.name->text, m);
+            unnamed.emplace_back(scope{.outer=this})
+                .fill(s.body);
+        }
+        void add (declaration & s)
+        {
+            for (auto name : s.names) {
+                members.emplace(name->text, member{.name = name, .type = s.type});
                 if (s.kind == "singleton" || s.kind == "class" || s.kind == "union")
                     named.emplace(name->text, scope{.outer=this})
-                        .first->second.fill(s.body, log);
+                        .first->second.fill(s.body);
             }
         }
-        void add (report & log, subroutine  & s)
+
+        void check ()
         {
-            signature signature = s.name->text;
-            signature += "("; //for (auto & p : s.parameters)
-            //signature += type(p.type);
-            signature += ")";
-
-            auto [it, inserted] = members.emplace(signature, member{s.type});
-            if (!inserted) { log.error(s.name, "signature '"
-                + html::lexica::encoded(signature)
-                + "' already exists"); return; }
-
-            unnamed.emplace_back(scope{.outer=this}).fill(s.body, log);
+                //auto [it, inserted] = members.emplace(name->text, member{s.type});
+                //if (!inserted) { log.error(name, "name '" + name->text
+                //    + "' already exists"); return; }
+            // auto [it, inserted] = members.emplace(signature, member{s.type});
+            // if (!inserted) { log.error(s.name, "signature '"
+            //     + html::lexica::encoded(signature)
+            //     + "' already exists"); return; }
         }
-        void add (report & log, pragma      & s) {  }
-
-
 
 
         /*

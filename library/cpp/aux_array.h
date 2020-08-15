@@ -36,7 +36,7 @@ namespace aux
             std::make_move_iterator(a.end())); }
 
         friend array operator + (const array & a, const type  & b) { array r = a; r += b; return r; }
-        friend array operator + (const type  & a, const array & b) { array r = a; r += b; return r; }
+        friend array operator + (const type  & a, const array & b) { array r; r += a; r += b; return r; }
 
         ////////////////////////////////////////////////////////////////////////
 

@@ -84,7 +84,7 @@ namespace doc::ae::syntax
     {
         token* title = nullptr;
         array<token*> names;
-        expression range;
+        named_pack range;
         array<statement> body;
     };
 
@@ -115,6 +115,7 @@ namespace doc::ae::syntax
         named_pack type;
         array<parameter> parameters;
         array<statement> body;
+        bool external = false;
     };
 
     struct declaration

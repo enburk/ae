@@ -157,8 +157,10 @@ struct IDE : gui::widget<IDE>
 
             auto ext = editor.object.path.now.extension();
             button_run .enabled = ext == ".ae!" and syntax_ok;
-            button_save.enabled = doc::repo::saveable(editor.object.path.now);
-            button_Save.enabled = doc::repo::saveable();
+
+            auto any_one = doc::repo::saveable::any_one(editor.object.path.now);
+            button_save.enabled = any_one.second;
+            button_Save.enabled = any_one.first;
 
             // using namespace std::literals::chrono_literals;
             // if (timer.now - last_compile_time > 5s
