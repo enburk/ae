@@ -81,6 +81,7 @@ struct IDE : gui::widget<IDE>
         {
             str s = path.string();
             if (s.contains("\\.vs\\")) return;
+            if (s.contains("\\.astudio\\")) return;
             if (s.contains("\\.vstudio\\")) return;
             if (s.contains("\\enc_temp_folder\\")) return;
             if (s.ends_with(".ae!.cpp") or s.ends_with(".ae!!.cpp")) return;
@@ -156,7 +157,7 @@ struct IDE : gui::widget<IDE>
             }
 
             auto ext = editor.object.path.now.extension();
-            button_run .enabled = ext == ".ae!" and syntax_ok;
+            button_run .enabled = (ext == ".ae!" or ext == ".ae!!") and syntax_ok;
 
             auto any_one = doc::repo::saveable::any_one(editor.object.path.now);
             button_save.enabled = any_one.second;

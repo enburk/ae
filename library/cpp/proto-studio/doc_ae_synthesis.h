@@ -1,16 +1,10 @@
 #pragma once
 #include <span>
 #include <iostream>
+#include <filesystem>
 #include "doc_ae_syntax_analysis.h"
 namespace doc::ae::synthesis
 {
-    void out (std::span<uint8_t> span)
-    {
-        std::cout.write((char*)(span.data()), span.size());
-        std::cout.flush();
-    }
-
-
     using namespace doc::ae::syntax;
 
     struct context
@@ -145,18 +139,51 @@ namespace doc::ae::synthesis
         {
             if (s.kind == "singleton") {
                 str name = encoded(s.names[0]->text);
-                body += entity{"type_" + name + " " + name};
-                outer += entity{"struct type_" + name};
+
+                outer += entity{"namespace " + name};
+                context{nestedness + name, global, outer,
+                    outer.back().body}.proceed(s.body);
+                if (outer.back().body.empty())
+                    outer.back().body += entity{};
+
+            //  body += entity{"type_" + name + " " + name};
+            //  outer += entity{"struct type_" + name};
+            //  outer.back().kind = "class";
+            //  context{nestedness + name, global, outer,
+            //      outer.back().body}.proceed(s.body);
+            //  if (outer.back().body.empty())
+            //      outer.back().body += entity{};
+            }
+            if (s.kind == "type") {
+                str name = encoded(s.names[0]->text);
+                outer += entity{"struct " + name};
                 outer.back().kind = "class";
                 context{nestedness + name, global, outer,
                     outer.back().body}.proceed(s.body);
                 if (outer.back().body.empty())
                     outer.back().body += entity{};
             }
+            if (s.kind == "variable") {
+                body += entity{};
+                body.back().head += token{encoded_type(s.type)};
+                for (auto & name : s.names) {
+                    body.back().head += *name;
+                    body.back().head += token{","};
+                }
+                body.back().head.truncate();
+                if (not s.body.empty()) {
+                    body.back().head += token{"="};
+                    context{nestedness, global, outer,
+                        body.back().body}.proceed(s.body);
+                }
+            }
         }
         void add (const subroutine & s)
         {
-            auto & scope = body;
+            auto & scope =
+                s.kind.starts_with("operator ") or
+                s.kind.ends_with(" operator") ?
+                global : body;
 
             str head, args;
             for (auto & p : s.parameters) {
@@ -172,8 +199,8 @@ namespace doc::ae::synthesis
             if (head != "")
                 head = "template<" + head + "> ";
 
-            if (&body != &global)
-                head += "static ";
+            // if (&body != &global)
+            //     head += "static ";
 
             str type = encoded_type(s.type);
             str name = encoded(s.name->text);
@@ -191,70 +218,72 @@ namespace doc::ae::synthesis
         void add (const pragma & s) {}
     };
 
-    void proceed (
-        entity  & cpp,
-        context & mainer,
+    void proceed (syntax::analysis::data & data,
         context & global,
-        syntax::analysis::data & data)
+        context & main,
+        entity  & cpp)
     {
         if (data.synthesized) return; data.synthesized = true;
 
         for (auto dependency : data.dependencies)
-            proceed(cpp, mainer, global,
-                syntax::analysis::sources[dependency]);
+            proceed(syntax::analysis::sources[dependency],
+                global, main, cpp);
 
-        if (data.cpp)
-        {
-            token tt;
-            for (const auto & t : data.tokens) tt.text += t.text;
-            cpp.head += tt;
+        if (data.cpp) {
+            cpp.head += token{"#include \"" +
+                data.source.string() + "\""};
             return;
         }
+
+        str module_name = data.source.stem().string();
+        // if (module_name == "") return;
+        global.body += entity{"namespace " + module_name};
+        auto & body = global.body.back().body;
+        context context { array<str>{}, global.body, global.body, body};
 
         for (const auto & s : data.statements)
         {
             std::visit(aux::overloaded
             {
-                [&](loop_for    s) { mainer.add(s); },
-                [&](loop_while  s) { mainer.add(s); },
-                [&](expression  s) { mainer.add(s); },
-                [&](conditional s) { mainer.add(s); },
-                [&](declaration s) { mainer.add(s); },
-                [&](subroutine  s) { global.add(s); },
-                [&](pragma      s) { global.add(s); },
+                [&](loop_for    s) { main.add(s); },
+                [&](loop_while  s) { main.add(s); },
+                [&](expression  s) { main.add(s); },
+                [&](conditional s) { main.add(s); },
+                [&](declaration s) { main.add(s); },
+                [&](subroutine  s) { context.add(s); },
+                [&](pragma      s) { context.add(s); },
             },
             s.variant);
         }
+
+        if (body.empty()) body += entity{};
     }
 
     array<entity> proceed (syntax::analysis::data & data)
     {
+        for (auto dependency : data.dependencies)
+            syntax::analysis::sources[dependency]
+            .synthesized = false;
+
         array<entity> output;
         output += entity{"#include <span>"};
         output += entity{"#include <cstdint>"};
+        output += entity{"namespace ae"};
+        auto & ae = output.back().body;
 
-        entity main; main.head += token{"int main (int argc_, char *argv_[])"};
         entity cpp;
+        entity main; main.head += token{"void main_()"};
 
-        context global { array<str>{}, output, output, output};
-        context mainer { array<str>{}, output, output, main.body};
+        context global { array<str>{}, ae, ae, ae};
+        context mainer { array<str>{}, ae, ae, main.body};
 
-        for (auto dependency : data.dependencies)
-            syntax::analysis::sources[dependency].synthesized = false;
+        proceed(data, global, mainer, cpp);
 
-        proceed(cpp, mainer, global, data);
+        if (main.body.empty())
+            main.body +=
+            entity{};
 
-        if (main.body.empty()) main.body += entity{};
-
-        output += entity{"#include <iostream>"};
-
-        main.body += entity{"std::cout << \"\\n\""};
-        main.body += entity{"std::cout << \"press Enter to close...\""};
-        main.body += entity{"std::cout << std::endl"};
-        main.body += entity{"std::cin.get()"};
-
-        output += main;
-        output += cpp;
+        ae += main; output += cpp;
 
         return output;
     }

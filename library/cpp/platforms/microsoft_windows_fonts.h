@@ -192,6 +192,7 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
 
     int w = width;
     int h = ascent + descent;
+    if (w <= 0 or h <= 0) return;
 
     if (false) { // test for rendering speed
         frame.blend(RGBA::random(), alpha);

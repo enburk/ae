@@ -1,2 +1,7 @@
 using "data";
 using "system";
+
+;; type size ;; = math::vector(2)
+;; {
+;;     x, y : integer;
+;; }

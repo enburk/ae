@@ -1,35 +1,18 @@
-using "data";
+using "gui";
 using "system.c++";
 
-system
-{
-    function out (data: byte[]) → void = {...}
-    function err (data: byte[]) → void = {...}
+function out (data: byte[]) → void = {...}
+function err (data: byte[]) → void = {...}
 
-    ;; function out (data: byte[]) → expected(void) = {...}
-
-    ;; out
-    ;; {
-    ;;     mutation write (data: byte[]) -> void = {...}
-    ;;
-    ;;     operator (this) <<< (data: byte[]) = write(data);
-    ;;     operator (data: byte[]) >>> (this) = write(data);
-    ;; }
-
-  ;; input
-  ;;   function read () -> (data: byte[]) = {...}
-  ;;   operator (this) >>> (data: byte[]) = read;
-  ;;   operator (data: byte[]) <<< (this) = read;
+window  : gui::window;
+screen  : gui::screen;
+screens : gui::screen[];
 
 
-    ;; istream { operator >>> (byte[]) }
-    ;; ostream { operator <<< (byte[]) }
-    ;; iostream : istream, ostream {}
 
-    ;; in  : istream;
-    ;; out : ostream;
-    ;; err : ostream;
-}
+
+
+
 
 
 

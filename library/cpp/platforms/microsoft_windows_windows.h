@@ -365,7 +365,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     {
         case WM_COMMAND         : if (wparam == 11111) sys::window::on::timing(); break;
 
-        case WM_MOUSEMOVE       : sys::mouse::on::move  (XY(LX,LY)); break; // if( ! MouseSub ) ::SetCursor ( MouseImage ); break;
+        case WM_MOUSEMOVE       : sys::mouse::on::move  (XY(LX,LY)); break;
         case WM_MOUSEWHEEL      : sys::mouse::on::wheel (XY(LX,LY), HW); break;
         case WM_LBUTTONDOWN     : sys::mouse::on::press (XY(LX,LY), 'L', true ); SetCapture(Hwnd); break;
         case WM_LBUTTONUP       : sys::mouse::on::press (XY(LX,LY), 'L', false); ReleaseCapture(); break;

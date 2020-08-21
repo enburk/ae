@@ -98,7 +98,7 @@ struct Flist : gui::widget<Flist>
             }
             if (is_regular_file (p)) {
                 auto ext = p.extension();
-                if (ext != ".ae!" && ext != ".ae"
+                if (ext != ".ae!" && ext != ".ae!!" && ext != ".ae"
                 &&  ext != ".cpp" && ext != ".hpp"
                 &&  ext != ".cxx" && ext != ".hxx"
                 &&  ext != ".c++" && ext != ".h++" && ext != ".h") continue;

@@ -16,7 +16,7 @@ namespace doc::cpp::syntax
 
             std::unordered_map<str, define> defines;
 
-            auto read = [this, &input](token*& token, str what)
+            auto read = [&](token*& token, str what)
             {
                 if (input.size() == 0) log.error(token, what); else {
                     token = input.front();
@@ -24,17 +24,35 @@ namespace doc::cpp::syntax
                 }
             };
 
-            auto todo = [&input, read](token* token)
+            auto todo = [&](token* token)
             {
                 token->kind = "pragma";
-                while (true) {
+                bool backslash = false;
+                while (true)
+                {
                     read(token, "unexpected end of file");
-                    if (token->text == "\n") return; else
-                        token->kind = "macros";
+
+                    if (token->text.starts_with("\"") and
+                        token->text.ends_with("\\")) {
+                        token->text.truncate();
+                        backslash = true;
+                    }
+                    if (token->text == "\\") {
+                        backslash = true;
+                        continue;
+                    }
+                    if (token->text == "\n") {
+                        if (backslash) {
+                            backslash = false;
+                            continue;
+                        }
+                        return;
+                    }
+                    token->kind = "macros";
                 }
             };
 
-            auto parse = [this, &input, read, todo](token* token)
+            auto parse = [&](token* token)
             {
                 read(token, "preprocessor directive expected");
             
@@ -57,20 +75,23 @@ namespace doc::cpp::syntax
                 log.error(token, "unrecognized preprocessing directive");
             };
 
-            auto process = [&input, read, &output](token* t)
+            auto process = [&](token* t)
             {
                 output += t;
             };
 
             bool newline = true;
+            bool backslash = false;
 
             while (input.size() > 0)
             {
                 auto token = input.front(); input.pop_front();
 
-                if (token->text == "\n") newline = true; else
-
-                if (!newline) process(token); else
+                if (token->text == "\n") {
+                    newline = true;
+                }
+                else
+                if (not newline) process(token); else
                 {
                     if (token->text == "#") {
                         token->kind = "pragma";

@@ -84,9 +84,9 @@ namespace ide::compiler
         if (analysis.log() != "") console << analysis.log();
         if (analysis.log.errors.size() > 0) return false;
 
-        path cpp = src; cpp.replace_extension(".ae!.cpp");
-        path obj = src; obj.replace_extension(".ae!.obj");
-        path exe = src; exe.replace_extension(".ae!.exe");
+        path cpp = src; cpp.replace_extension(src.extension().string() + ".cpp");
+        path obj = src; obj.replace_extension(src.extension().string() + ".obj");
+        path exe = src; exe.replace_extension(src.extension().string() + ".exe");
 
         using namespace std::literals::chrono_literals;
         if (std::filesystem::exists(exe) and
@@ -113,40 +113,63 @@ namespace ide::compiler
         console << "Build...";
 
         path sdk_include = "c:\\Program Files (x86)"
-            "\\Windows Kits\\10\\Include\\10.0.18362.0";
+            "\\Windows Kits\\10\\Include";//\\10.0.18362.0";
+        for (std::filesystem::directory_iterator next(sdk_include),
+            end; next != end; ++next)
+            if (next->is_directory())
+                sdk_include = *next;
 
         path sdk_lib = "c:\\Program Files (x86)"
-            "\\Windows Kits\\10\\Lib\\10.0.18362.0";
+            "\\Windows Kits\\10\\Lib";//\\10.0.18362.0";
+        for (std::filesystem::directory_iterator next(sdk_lib),
+            end; next != end; ++next)
+            if (next->is_directory())
+                sdk_lib = *next;
 
         path vc = "c:\\Program Files (x86)"
             "\\Microsoft Visual Studio\\2019\\Community\\VC"
-            "\\Tools\\MSVC\\14.26.28801";
+            "\\Tools\\MSVC";//\\14.26.28801";
+        for (std::filesystem::directory_iterator next(vc),
+            end; next != end; ++next)
+            if (next->is_directory())
+                vc = *next;
 
         path cl = vc / "bin\\Hostx64\\x64\\cl.exe";
 
         if (!std::filesystem::exists(cl)) {
-            console << "<font color=#B00020>" "C++ compiler not found" "</font>";
+            console << "<font color=#B00020>"
+                "C++ compiler not found"
+                "</font>";
             return false;
         }
 
-        path cllog = "cl.log.txt";
+        std::filesystem::create_directories(".astudio");
+
+        path cllog = ".astudio/cl.log.txt";
         if (std::filesystem::exists(cllog)) 
             std::filesystem::remove(cllog);
 
         try
         {
-            str flags = "/std:c++latest ";
-            flags += "/EHsc /Fo\"" + obj.string() + "\"";
+            str flags = "/std:c++latest"; flags +=
+            src.extension() == ".ae!"  ? " /D \"SUBSYSTEM_CONSOLE\"" :
+            src.extension() == ".ae!!" ? " /D \"SUBSYSTEM_WINDOWS\"" : "";
+            flags += " /EHsc /Fo\".astudio/\"";
             flags += " /I\"" + (vc/"include").string() + "\"";
             flags += " /I\"" + (sdk_include/"um").string() + "\"";
             flags += " /I\"" + (sdk_include/"ucrt").string() + "\"";
-            str links = "/link /SUBSYSTEM:CONSOLE ";
+            flags += " /TP"; // treat all sources as c++
+            //flags += " /O2";
+            str links = "/link"; links += 
+            src.extension() == ".ae!"  ? " /SUBSYSTEM:CONSOLE" :
+            src.extension() == ".ae!!" ? " /SUBSYSTEM:WINDOWS /entry:mainCRTStartup" : "";
             links += " /LIBPATH:\"" + (vc/"lib/x64").string() + "\"";
             links += " /LIBPATH:\"" + (sdk_lib/"um/x64").string() + "\"";
             links += " /LIBPATH:\"" + (sdk_lib/"ucrt/x64").string() + "\"";
             links += " /OUT:\"" + exe.string() + "\"";
 
-            sys::process compile(cl, flags + " \"" + cpp.string() + "\" " + links,
+            str sources = "\"" + cpp.string() + "\"";
+            sys::process compile(cl, flags + " " + sources + " " + links,
             sys::process::options{.hidden = true, .out = cllog});
             if (!compile.wait(5*1000)) throw std::runtime_error(
                 "Compilation takes too long.");

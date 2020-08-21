@@ -3,19 +3,17 @@
 #include "doc_ae_syntax.h"
 namespace doc::ae::syntax
 {
-    static const std::set<str> pragmas = 
-    {
-        "using", "keywords"
-    };
     static const std::set<str> keywords = 
     {
+        "using", "keywords",
+
         "for", "while", "until", "do", "break", "continue", 
             
         "if", "then", "else", "select",
 
         "asynch", "await", "yield",
 
-        "ignore", "call", "goto", "return",
+        "call", "goto", "return", "ignore",
 
         "operator", "class",
         "function", "union",
@@ -27,9 +25,18 @@ namespace doc::ae::syntax
         "byte",
         "boolean",
         "natural",
+        "natural.16", "natural.16.BE", "natural.16.LE",
+        "natural.32", "natural.32.BE", "natural.32.LE",
+        "natural.64", "natural.64.BE", "natural.64.LE",
         "integer",
+        "integer.16", "integer.16.BE", "integer.16.LE",
+        "integer.32", "integer.32.BE", "integer.32.LE",
+        "integer.64", "integer.64.BE", "integer.64.LE",
         "rational",
         "real",
+        "real.32",
+        "real.64",
+        "real.80",
     };
 
     struct statementor
@@ -65,10 +72,39 @@ namespace doc::ae::syntax
         {
             assert(input.size() > 0);
 
-            if (input[0].opening->text == "using")
+            str schema; array<token*> names;
+
+            for (auto & e : input)
+            {
+                schema += " ";
+
+                if (e.name == "{}") schema += "{}"; else
+                if (e.kind == "()") schema += "()"; else
+                if (e.opening->text == "=") schema += "="; else
+                if (e.opening->text == ":") schema += ":"; else
+                if (e.opening->text == ":=") schema += ":="; else
+                if (e.opening->text == (char*)(u8"→")) schema += "->"; else
+                if (e.opening->kind == "name" and
+                    keywords.find(e.opening->text) != keywords.end()) {
+                    schema += e.opening->text; e.opening->kind = "keyword"; } else
+                    schema += e.opening->kind;
+            
+                if (schema.ends_with(" ="))  break;
+                if (schema.ends_with(" :"))  break;
+                if (schema.ends_with(" :="))  break;
+                if (schema.ends_with(" name"))
+                    names += e.opening;
+
+                if (schema.ends_with(" names , name")) schema.truncate(schema.size() - 7);
+                if (schema.ends_with(" name , name")){ schema.truncate(schema.size() - 7);
+                    schema += "s";
+                }
+            }
+
+            if (schema.starts_with("using "))
             {
                 pragma s;
-                s.title = read_token(input); s.title->kind = "keyword";
+                s.title = read_token(input);
                 s.param = read_literal(input);
                 return statement{std::move(s)};
             }
@@ -76,7 +112,7 @@ namespace doc::ae::syntax
             if (input[0].opening->text == "if")
             {
                 conditional s;
-                s.title = read_token(input); s.title->kind = "keyword";
+                s.title = read_token(input); //s.title->kind = "keyword";
                 s.condition = read_expression_until("then", input);
                 s.then_body = read_statement_or_body(input);
                 return statement{std::move(s)};
@@ -117,44 +153,39 @@ namespace doc::ae::syntax
                 return statement{std::move(s)};
             }
 
-            str schema; array<token*> names;
-
-            for (auto & e : input)
-            {
-                schema += " ";
-
-                if (e.name == "{}") schema += "{}"; else
-                if (e.kind == "()") schema += "()"; else
-                if (e.opening->text == "=") schema += "="; else
-                if (e.opening->text == ":") schema += ":"; else
-                if (e.opening->text == ":=") schema += ":="; else
-                if (e.opening->text == (char*)(u8"→")) schema += "->"; else
-                if (e.opening->kind == "name" and
-                    keywords.find(e.opening->text) != keywords.end())
-                    schema += e.opening->text; else
-                    schema += e.opening->kind;
-            
-                if (schema.ends_with(" ="))  break;
-                if (schema.ends_with(" :"))  break;
-                if (schema.ends_with(" :="))  break;
-                if (schema.ends_with(" name"))
-                    names += e.opening;
-
-                if (schema.ends_with(" names , name")) schema.truncate(schema.size() - 7);
-                if (schema.ends_with(" name , name")){ schema.truncate(schema.size() - 7);
-                    schema += "s";
-                }
-            }
-
             if (schema != "") schema.erase(0); // leading " "
 
             if (schema == "name {}")
             {
                 declaration s;
+                s.kind = "singleton";
                 s.names = names;
                 s.type.units += named_unit{.identifier=names[0]};
-                s.kind = "singleton";
                 s.body = proceed(std::move(input[1].elements));
+                return statement{std::move(s)};
+            }
+
+            if (schema == "name : type = {}")
+            {
+                declaration s;
+                s.kind = "type";
+                s.names = names;
+                s.body = proceed(std::move(input[4].elements));
+                return statement{std::move(s)};
+            }
+
+            if (schema.starts_with("name : ")
+            or  schema.starts_with("names : "))
+            {
+                declaration s;
+                s.kind = "variable";
+                s.names = read_list_of_names(input);
+                read_symbol(input, ":");
+                s.type = read_named_pack(input);
+                if (not input.empty()) {
+                    read_symbol(input, "=");
+                    s.body = read_statement_or_body(input);
+                }
                 return statement{std::move(s)};
             }
 

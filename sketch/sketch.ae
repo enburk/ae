@@ -1,3 +1,22 @@
+canvas : type widget
+{
+}
+canvas : type
+{
+    color : property(RGBA);
+    widget : widget;
+    widget::on.render(...) = {...}
+    widget::on.change(what) = {...}
+}
+
+function visit (action) = {
+    for each x in meta::members(this)
+        if meta::complex(x)
+        then x >>> visit(action);
+        else if meta::type(x) = widget
+            then x >>> action;
+}
+
 data
   operator (x) >>> (f) = f(x)
   operator (f) <<< (x) = f(x)

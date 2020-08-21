@@ -233,8 +233,6 @@ namespace doc::ae::syntax::analysis
                     std::holds_alternative<named_pack>(v.operands[1].variant) and
                     std::get<named_pack>(v.operands[1].variant).units.size() == 1) { v.title =
                     std::get<named_pack>(v.operands[1].variant).units[0].identifier;
-                    std::get<named_pack>(v.operands[2].variant).units[0].identifier->text = "type_" +
-                    std::get<named_pack>(v.operands[2].variant).units[0].identifier->text;
                     v.operands.from(1).upto(2).erase();
                 }
             },

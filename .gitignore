@@ -1,4 +1,5 @@
 .archive/
+.astudio/
 .vstudio/
 packages/
 ae.sln

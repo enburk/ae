@@ -1,0 +1,17 @@
+using "pix";
+using "system";
+
+screen : type = 
+{
+   size ;; : pix::size;
+   {
+       x, y : integer;
+   }
+}
+
+window : type = 
+{
+}
+
+
+
