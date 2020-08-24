@@ -8,11 +8,11 @@ namespace ae
     namespace data;
     template<class type_x, class type_f> auto name_gt_gt_gt_(type_x x, type_f f)
     {
-        ( f(x) );
+        f(x);
     };
     template<class type_f, class type_x> auto name_lt_lt_lt_(type_f f, type_x x)
     {
-        ( f(x) );
+        f(x);
     };
     namespace system
     {
@@ -33,13 +33,16 @@ namespace ae
     }
     void main_()
     {
-        : ( window , gui::window );
-        : ( screen , gui::screen );
-        : ( screens , gui::screen[] );
-        ( screen , : , type , ={namespace size} );
-        ( window , : , type , ={} );
-        ;
-        name_gt_gt_gt_ ( std::span<uint8_t>((uint8_t*)("Hello, World!"), 13) , system::out );
+        gui::window window;
+        gui::screen screen;
+        std::span<gui::screen> screens;
+        struct screen;
+        namespace size
+        {
+            int x, y;
+        }
+        struct window;
+        name_gt_gt_gt_ ( std::span<uint8_t>((uint8_t*)("Hello, World!"), 13), system::out );
     }
 }
 #include "D:\workn\ae\library\system.c++"

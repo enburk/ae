@@ -114,6 +114,12 @@ namespace aux
             std::make_move_iterator(a.end())); }
     };
 
+    ////////////////////////////////////////////////////////////////////////////
+    template<class T, class... Types>
+    constexpr bool got (const std::variant<Types...> & v) noexcept {
+        return std::holds_alternative<T>(v);
+    }
+
     // C++ Core Guidelines C.21:
     // If you define or delete any default operation,
     // define or delete them all

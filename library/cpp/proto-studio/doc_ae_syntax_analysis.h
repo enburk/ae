@@ -77,10 +77,10 @@ namespace doc::ae::syntax::analysis
     {
         auto & log = record.log;
 
-        record.statements = 
-            statementor(log).proceed(
-            parser(log).proceed(
-            tokens));
+        record.statements = statementor(parser(tokens
+            , log).output
+            , log).output
+            ;
 
         if (not log.errors.empty()) return;
 
@@ -193,52 +193,30 @@ namespace doc::ae::syntax::analysis
         std::visit(aux::overloaded
         {
             [&](number  &v) {},
+            [&](symbol  &v) {},
             [&](literal &v) {},
             [&](named_pack &v)
             {
-                for (auto & u : v.units)
-                    for (auto & b : u.parameters)
-                        pass2(record, b.list);
             },
             [&](operation &v)
             {
                 for (auto & o : v.operands)
                     pass2(record, o);
 
-                deque<expression> deque(v.operands);
-
-                v.operands.clear();
-                v.operands += deque.front();
-                deque.pop_front();
-
-                while (deque.size() > 0)
-                {
-                    if (std::holds_alternative<named_pack>(v.operands.back().variant) and
-                        std::holds_alternative<named_pack>(deque.front().variant) &&
-                        std::get<named_pack>(deque.front().variant).units[0].coloncolon)
-                        std::get<named_pack>(v.operands.back().variant).units +=
-                        std::get<named_pack>(deque.front().variant).units;
-                    else
-                    if (std::holds_alternative<named_pack>(v.operands.back().variant) and
-                        std::holds_alternative<brackets>(deque.front().variant))
-                        std::get<named_pack>(v.operands.back().variant).units.back().parameters +=
-                        std::get<brackets>(deque.front().variant);
-
-                    else v.operands += deque.front();
-
-                    deque.pop_front();
-                }
+                //deque<expression> deque(v.operands);
+                //
+                //v.operands.clear();
+                //v.operands += deque.front();
+                //deque.pop_front();
 
                 if (v.operands.size() == 3 and
-                    std::holds_alternative<named_pack>(v.operands[1].variant) and
-                    std::get<named_pack>(v.operands[1].variant).units.size() == 1) { v.title =
-                    std::get<named_pack>(v.operands[1].variant).units[0].identifier;
+                    aux::got<symbol>(v.operands[1].variant)) { v.title =
+                    std::get<symbol>(v.operands[1].variant).token;
                     v.operands.from(1).upto(2).erase();
                 }
             },
             [&](brackets &v)
             {
-                pass2(record, v.list);
             },
             [&](expression_if &v)
             {

@@ -16,12 +16,9 @@ namespace doc::ae::synthesis
 
         static str encoded (brackets b)
         {
-            array<entity> ee; context
-            {.global=ee, .outer=ee, .body=ee}.proceed(b.list);
-
             str es;
-            for (entity & e : ee) {
-                for (auto && t : e.head)
+            for (expression & e : b.list) {
+                for (auto && t : encoded(e))
                     es += t.text + " ";
                 es.truncate();
                 es += ",";
@@ -50,7 +47,7 @@ namespace doc::ae::synthesis
             str s;
             if (name.coloncolon) s += name.coloncolon->text;
             if (name.identifier) s += encoded(name.identifier->text);
-            for (auto & p : name.parameters) s += encoded(p);
+            for (auto & p : name.arguments) s += encoded(p);
             return s;
         }
         static str encoded (named_pack name)
@@ -62,7 +59,21 @@ namespace doc::ae::synthesis
         {
             bool range = false;
             str type = encoded(name);
-            if (type == "") return "auto";
+            if (type == ""          ) return "auto"; else
+            if (type == "byte"      ) return "uint8_t"; else
+            if (type == "boolean"   ) return "bool"; else
+            if (type == "natural"   ) return "unsigned"; else
+            if (type == "natural.16") return "uint16_t"; else
+            if (type == "natural.32") return "uint32_t"; else
+            if (type == "natural.64") return "uint64_t"; else
+            if (type == "integer"   ) return "int"; else
+            if (type == "integer.16") return "int16_t"; else
+            if (type == "integer.32") return "int32_t"; else
+            if (type == "integer.64") return "int64_t"; else
+            if (type == "real"      ) return "double"; else
+            if (type == "real.32"   ) return "float"; else
+            if (type == "real.64"   ) return "double"; else
+            if (type == "real.80"   ) return "long double"; else
             if (type.ends_with("[]")) {
                 type.truncate();
                 type.truncate();
@@ -73,13 +84,14 @@ namespace doc::ae::synthesis
             return type;
         }
 
-        array<token> encoded (expression e)
+        static array<token> encoded (expression e)
         {
             array<token> tokens;
 
             std::visit(aux::overloaded
             {
                 [&](number  v) { tokens += token{v.token->text}; },
+                [&](symbol  v) { tokens += token{v.token->text}; },
                 [&](literal v) { tokens += token{str()
 
                     + "std::span<uint8_t>((uint8_t*)(" + v.token->text + "), "
@@ -143,25 +155,19 @@ namespace doc::ae::synthesis
                 outer += entity{"namespace " + name};
                 context{nestedness + name, global, outer,
                     outer.back().body}.proceed(s.body);
-                if (outer.back().body.empty())
-                    outer.back().body += entity{};
 
             //  body += entity{"type_" + name + " " + name};
             //  outer += entity{"struct type_" + name};
             //  outer.back().kind = "class";
             //  context{nestedness + name, global, outer,
             //      outer.back().body}.proceed(s.body);
-            //  if (outer.back().body.empty())
-            //      outer.back().body += entity{};
             }
             if (s.kind == "type") {
                 str name = encoded(s.names[0]->text);
-                outer += entity{"struct " + name};
-                outer.back().kind = "class";
-                context{nestedness + name, global, outer,
-                    outer.back().body}.proceed(s.body);
-                if (outer.back().body.empty())
-                    outer.back().body += entity{};
+                body += entity{"struct " + name};
+                body.back().kind = "class";
+                context{nestedness + name, global, body,
+                    body.back().body}.proceed(s.body);
             }
             if (s.kind == "variable") {
                 body += entity{};
@@ -208,12 +214,6 @@ namespace doc::ae::synthesis
             scope.back().kind = "function";
             context{nestedness + name, global, outer,
                 scope.back().body}.proceed(s.body);
-            if (scope.back().body.empty() && not s.external)
-                scope.back().body += entity{};
-            else
-            {
-            }
-
         }
         void add (const pragma & s) {}
     };
@@ -236,7 +236,6 @@ namespace doc::ae::synthesis
         }
 
         str module_name = data.source.stem().string();
-        // if (module_name == "") return;
         global.body += entity{"namespace " + module_name};
         auto & body = global.body.back().body;
         context context { array<str>{}, global.body, global.body, body};

@@ -14,14 +14,15 @@ namespace ide::compiler
     void print (entity e, array<str> & lines, int indent = 0, bool semicolon = true)
     {
         str line;
-
-        for (auto && t : e.head) line += t.text + " "; line.truncate();
-
-        if (e.info != "") line += " // " + e.info;
+        for (auto && t : e.head) line +=
+            (line == "" or t.text == "," ? "" : " ")
+                + t.text;
 
         semicolon &= e.body.empty() and not line.starts_with("#");
 
         if (line != "" and semicolon) line += ";";
+        
+        if (line != "" and e.info != "") line += " "; if (e.info != "") line += "// " + e.info;
 
         if (line != "") line = str(' ', indent) + line;
         

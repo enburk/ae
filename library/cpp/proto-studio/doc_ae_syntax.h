@@ -17,20 +17,21 @@ namespace doc::ae::syntax
     struct loop;
 
     struct number  { token* token; };
+    struct symbol  { token* token; };
     struct literal { token* token; };
 
     struct brackets
     {
         token* opening = nullptr;
         token* closing = nullptr;
-        array<statement> list;
+        array<expression> list;
     };
 
     struct named_unit
     {
         token* coloncolon = nullptr;
         token* identifier = nullptr;
-        array<brackets> parameters;
+        array<brackets> arguments;
     };
 
     struct named_pack { array<named_unit> units; };
@@ -45,16 +46,18 @@ namespace doc::ae::syntax
     struct expression_if
     {
         token* title = nullptr;
-        array<expression> condition; // array prevents infinite recursion
-        array<expression> then_body; // array prevents infinite recursion
-        array<expression> else_body; // array prevents infinite recursion
+        array<expression> condition;
+        array<expression> then_body;
+        array<expression> else_body;
+    /// array prevents infinite recursion
     };
 
     struct expression_for
     {
         token* title = nullptr;
         array<token*> names;
-        array<expression> range; // array prevents infinite recursion
+        array<expression> range;
+    /// array prevents infinite recursion
     };
 
     struct expression
@@ -62,6 +65,7 @@ namespace doc::ae::syntax
         std::variant
         <
             number,
+            symbol,
             literal,
             named_pack,
             operation,
@@ -105,6 +109,7 @@ namespace doc::ae::syntax
     {
         token* name;
         named_pack type;
+        expression value;
     };
 
     struct subroutine
@@ -115,7 +120,6 @@ namespace doc::ae::syntax
         named_pack type;
         array<parameter> parameters;
         array<statement> body;
-        bool external = false;
     };
 
     struct declaration
@@ -139,6 +143,7 @@ namespace doc::ae::syntax
             pragma
         >
         variant;
+        str schema;
         scope* scope = nullptr;
     };
 }

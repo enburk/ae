@@ -25,6 +25,8 @@ namespace doc::ae::lexica
         {
             for (auto [c, offset] : line.whole())
             {
+                if (c == "\r") continue;
+
                 bool same = false;
 
                 if (t.kind == "comment") same = true; else

@@ -4,11 +4,24 @@ namespace doc::ae::syntax
 {
     struct parser
     {
-        report & log;
+        array<element> output;
+        array<token> & input; report & log; parser (
+        array<token> & input, report & log) : input(input), log(log)
+        {
+            deque<token*> tokens;
+            for (auto & token : input)
+                if (token.kind != "space" &&
+                    token.kind != "comment"&&
+                    token.text != "\n")
+                    tokens += &token;
 
-        parser (report & log) : log(log) {}
+            output = 
+            elementing(
+            bracketing(
+            tokens));
+        }
 
-        auto bracketing (deque<token*> & input, str closing) -> array<element>
+        auto bracketing (deque<token*> & input, str closing = "") -> array<element>
         {
             auto close = [this, &input](element & e)
             {
@@ -17,7 +30,7 @@ namespace doc::ae::syntax
                     input.pop_front();
                     e.closing = token;
                     e.name = e.opening->text + e.closing->text;
-                    e.kind = "()";
+                    e.kind = e.name == "{}" ? "{}" : "()";
                 }
                 else log.error(e.opening, "unclosed '" + e.opening->text + "'");
             };
@@ -46,11 +59,8 @@ namespace doc::ae::syntax
             }
             return output;
         }
-        auto bracketing (deque<token*> input) -> array<element> {
-                return bracketing (input, "");
-        }
 
-        auto statementing (array<element> input) -> array<element>
+        auto elementing (array<element> input) -> array<element>
         {
             array<element> output; element s;
 
@@ -67,7 +77,7 @@ namespace doc::ae::syntax
                 else
                 if (e.name == "{}")
                 {
-                    e.elements = statementing(e.elements);
+                    e.elements = elementing(e.elements);
                     s.elements += std::move(e);
                     output += std::move(s);
                     s = element{};
@@ -105,7 +115,7 @@ namespace doc::ae::syntax
                 else
                 if (e.name == "{}")
                 {
-                    e.elements = statementing(e.elements);
+                    e.elements = elementing(e.elements);
                     s.elements += std::move(e);
                 }
                 else
@@ -121,21 +131,6 @@ namespace doc::ae::syntax
                 output += s;
     
             return output;
-        }
-
-        auto proceed (array<token> & input) -> array<element>
-        {
-            deque<token*> tokens;
-            for (auto & token : input)
-                if (token.kind != "space" &&
-                    token.kind != "comment"&&
-                    token.text != "\n")
-                    tokens += &token;
-
-            return 
-                statementing(
-                bracketing(
-                tokens));
         }
     };
 }
