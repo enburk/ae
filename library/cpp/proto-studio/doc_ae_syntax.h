@@ -16,6 +16,7 @@ namespace doc::ae::syntax
     struct conditional;
     struct loop;
 
+    struct noop    {};
     struct number  { token* token; };
     struct symbol  { token* token; };
     struct literal { token* token; };
@@ -122,6 +123,14 @@ namespace doc::ae::syntax
         array<statement> body;
     };
 
+    struct definition
+    {
+        str kind;
+        named_pack type;
+        array<token*> names;
+        array<statement> body;
+    };
+
     struct declaration
     {
         str kind;
@@ -134,16 +143,19 @@ namespace doc::ae::syntax
     {
         std::variant
         <
+            noop,
             loop_for,
             loop_while,
             expression,
             conditional,
             declaration,
+            definition,
             subroutine,
             pragma
         >
         variant;
         str schema;
+        str source;
         scope* scope = nullptr;
     };
 }

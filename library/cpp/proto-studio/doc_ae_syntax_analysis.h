@@ -236,11 +236,15 @@ namespace doc::ae::syntax::analysis
         pass2(record, s.then_body);
         pass2(record, s.else_body);
     }
-    void pass2 (data & record, subroutine & s)
+    void pass2 (data & record, declaration & s)
     {
         pass2(record, s.body);
     }
-    void pass2 (data & record, declaration & s)
+    void pass2 (data & record, definition & s)
+    {
+        pass2(record, s.body);
+    }
+    void pass2 (data & record, subroutine & s)
     {
         pass2(record, s.body);
     }
@@ -253,11 +257,13 @@ namespace doc::ae::syntax::analysis
         {
             std::visit(aux::overloaded
             {
+                [&](noop        &s) {},
                 [&](loop_for    &s) { pass2(record, s); },
                 [&](loop_while  &s) { pass2(record, s); },
                 [&](expression  &s) { pass2(record, s); },
                 [&](conditional &s) { pass2(record, s); },
                 [&](declaration &s) { pass2(record, s); },
+                [&](definition  &s) { pass2(record, s); },
                 [&](subroutine  &s) { pass2(record, s); },
                 [&](pragma      &s) { pass2(record, s); },
             },

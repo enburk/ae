@@ -3,6 +3,7 @@
 #include <iostream>
 #include <filesystem>
 #include "doc_ae_syntax_analysis.h"
+#include "doc_ae_synthesis_print.h"
 namespace doc::ae::synthesis
 {
     using namespace doc::ae::syntax;
@@ -10,116 +11,7 @@ namespace doc::ae::synthesis
     struct context
     {
         array<str> nestedness;
-        array<entity> & global;
-        array<entity> & outer;
         array<entity> & body;
-
-        static str encoded (brackets b)
-        {
-            str es;
-            for (expression & e : b.list) {
-                for (auto && t : encoded(e))
-                    es += t.text + " ";
-                es.truncate();
-                es += ",";
-                es += " ";
-            }
-            es.truncate();
-            es.truncate();
-
-            str s;
-            if (b.opening) s += b.opening->text; s += es;
-            if (b.closing) s += b.closing->text;
-            return s;
-        }
-        static str encoded (str name)
-        {
-            if (name.contains("_")) return name;
-            name = html::lexica::encoded(name);
-            name.replace_all("&", "_");
-            name.replace_all(";", "_");
-            if (name.contains("_")) name = "name_" + name;
-            name.replace_all("__", "_");
-            return name;
-        }
-        static str encoded (named_unit name)
-        {
-            str s;
-            if (name.coloncolon) s += name.coloncolon->text;
-            if (name.identifier) s += encoded(name.identifier->text);
-            for (auto & p : name.arguments) s += encoded(p);
-            return s;
-        }
-        static str encoded (named_pack name)
-        {
-            str s; for (auto & unit : name.units) s += encoded(unit);
-            return s;
-        }
-        static str encoded_type (named_pack name)
-        {
-            bool range = false;
-            str type = encoded(name);
-            if (type == ""          ) return "auto"; else
-            if (type == "byte"      ) return "uint8_t"; else
-            if (type == "boolean"   ) return "bool"; else
-            if (type == "natural"   ) return "unsigned"; else
-            if (type == "natural.16") return "uint16_t"; else
-            if (type == "natural.32") return "uint32_t"; else
-            if (type == "natural.64") return "uint64_t"; else
-            if (type == "integer"   ) return "int"; else
-            if (type == "integer.16") return "int16_t"; else
-            if (type == "integer.32") return "int32_t"; else
-            if (type == "integer.64") return "int64_t"; else
-            if (type == "real"      ) return "double"; else
-            if (type == "real.32"   ) return "float"; else
-            if (type == "real.64"   ) return "double"; else
-            if (type == "real.80"   ) return "long double"; else
-            if (type.ends_with("[]")) {
-                type.truncate();
-                type.truncate();
-                range = true;
-            }
-            if (type == "byte") type = "uint8_t";
-            if (range) type = "std::span<" + type + ">";
-            return type;
-        }
-
-        static array<token> encoded (expression e)
-        {
-            array<token> tokens;
-
-            std::visit(aux::overloaded
-            {
-                [&](number  v) { tokens += token{v.token->text}; },
-                [&](symbol  v) { tokens += token{v.token->text}; },
-                [&](literal v) { tokens += token{str()
-
-                    + "std::span<uint8_t>((uint8_t*)(" + v.token->text + "), "
-                        + std::to_string(v.token->text.size() - 2) + ")"};
-                },
-                [&](named_pack v) { tokens += token{encoded(v)}; },
-                [&](operation  v) {
-
-                    if (v.title) tokens += token{encoded(v.title->text)};
-                    
-                    array<token> tt;
-                    for (auto o : v.operands)
-                    tt += encoded(o) + token{","};
-                    tt.truncate();
-
-                    tokens += token{"("} + tt + token{")"};
-                },
-                [&](brackets v)
-                {
-                    tokens += token{encoded(v)};
-                },
-                [&](expression_if  v) {},
-                [&](expression_for v) {},
-            },
-            e.variant);
-
-            return tokens;
-        }
 
         void proceed (const array<statement> & input)
         {
@@ -127,11 +19,13 @@ namespace doc::ae::synthesis
             {
                 std::visit(aux::overloaded
                 {
+                    [&](noop        s) { add(s); },
                     [&](loop_for    s) { add(s); },
                     [&](loop_while  s) { add(s); },
                     [&](expression  s) { add(s); },
                     [&](conditional s) { add(s); },
                     [&](declaration s) { add(s); },
+                    [&](definition  s) { add(s); },
                     [&](subroutine  s) { add(s); },
                     [&](pragma      s) { add(s); },
                 },
@@ -139,81 +33,71 @@ namespace doc::ae::synthesis
             }
         }
 
+        void add (const noop        & s) { body += entity{}; }
         void add (const loop_for    & s) {}
         void add (const loop_while  & s) {}
         void add (const expression  & s)
         {
-            body += entity{}; 
-            body.back().head = encoded(s);
+            body += entity{print(s)}; 
         }
         void add (const conditional & s) {}
         void add (const declaration & s)
         {
-            if (s.kind == "singleton") {
-                str name = encoded(s.names[0]->text);
-
-                outer += entity{"namespace " + name};
-                context{nestedness + name, global, outer,
-                    outer.back().body}.proceed(s.body);
-
-            //  body += entity{"type_" + name + " " + name};
-            //  outer += entity{"struct type_" + name};
-            //  outer.back().kind = "class";
-            //  context{nestedness + name, global, outer,
-            //      outer.back().body}.proceed(s.body);
+            if (s.kind == "variable")
+            {
+                entity e;
+                e.head += token{print_type(s.type)};
+                for (auto & name : s.names) {
+                    e.head += *name;
+                    e.head += token{","};
+                }
+                e.head.truncate();
+                if (not s.body.empty()) {
+                    e.head += token{"="};
+                    context{nestedness, e.body}
+                    .proceed(s.body);
+                }
+                body += e;
             }
-            if (s.kind == "type") {
-                str name = encoded(s.names[0]->text);
+        }
+        void add (const definition & s)
+        {
+            if (s.kind == "singleton")
+            {
+                str name = print(s.names[0]->text);
+                body += entity{"struct type_"+name};
+                body.back().kind = "class";
+                context{nestedness + name, body.back().body}.proceed(s.body);
+                body += entity{"type_"+name + " " + name};
+            }
+            if (s.kind == "type")
+            {
+                str name = print(s.names[0]->text);
                 body += entity{"struct " + name};
                 body.back().kind = "class";
-                context{nestedness + name, global, body,
-                    body.back().body}.proceed(s.body);
-            }
-            if (s.kind == "variable") {
-                body += entity{};
-                body.back().head += token{encoded_type(s.type)};
-                for (auto & name : s.names) {
-                    body.back().head += *name;
-                    body.back().head += token{","};
-                }
-                body.back().head.truncate();
-                if (not s.body.empty()) {
-                    body.back().head += token{"="};
-                    context{nestedness, global, outer,
-                        body.back().body}.proceed(s.body);
-                }
+                context{nestedness + name, body.back().body}.proceed(s.body);
             }
         }
         void add (const subroutine & s)
         {
-            auto & scope =
-                s.kind.starts_with("operator ") or
-                s.kind.ends_with(" operator") ?
-                global : body;
-
             str head, args;
             for (auto & p : s.parameters) {
-                str type = encoded(p.type);
-                str name = encoded(p.name->text);
+                str type = print(p.type);
+                str name = print(p.name->text);
                 if (type == "") {
-                    head += "class type_" + name + ", ";
-                    args += "type_" + name + " " + name + ", "; }
-                else args += encoded_type(p.type) + " " + name + ", ";
+                    head += "class type_"+name + ", ";
+                    args += "type_"+name + " " + name + ", "; }
+                else args += print_type(p.type) + " " + name + ", ";
             }
             head.truncate(); args.truncate(); // ","
             head.truncate(); args.truncate(); // " "
-            if (head != "")
-                head = "template<" + head + "> ";
+            if (head != "") head = "template<" + head + "> ";
 
-            // if (&body != &global)
-            //     head += "static ";
-
-            str type = encoded_type(s.type);
-            str name = encoded(s.name->text);
-            scope += entity{head + type + " " + name + "(" + args + ")"};
-            scope.back().kind = "function";
-            context{nestedness + name, global, outer,
-                scope.back().body}.proceed(s.body);
+            str type = print_type(s.type);
+            str name = print(s.name->text);
+            body += entity{head + type + " " + name + "(" + args + ")"};
+            body.back().kind = "function";
+            context{nestedness + name, body.back().body}.proceed(s.body);
         }
         void add (const pragma & s) {}
     };
@@ -238,24 +122,26 @@ namespace doc::ae::synthesis
         str module_name = data.source.stem().string();
         global.body += entity{"namespace " + module_name};
         auto & body = global.body.back().body;
-        context context { array<str>{}, global.body, global.body, body};
+        context context { array<str>{}, body};
 
         for (const auto & s : data.statements)
         {
             std::visit(aux::overloaded
             {
+                [&](noop        s) { main.add(s); },
                 [&](loop_for    s) { main.add(s); },
                 [&](loop_while  s) { main.add(s); },
                 [&](expression  s) { main.add(s); },
                 [&](conditional s) { main.add(s); },
-                [&](declaration s) { main.add(s); },
+                [&](declaration s) { context.add(s); },
+                [&](definition  s) { context.add(s); },
                 [&](subroutine  s) { context.add(s); },
                 [&](pragma      s) { context.add(s); },
             },
             s.variant);
         }
 
-        if (body.empty()) body += entity{};
+        if (body.empty()) global.body.truncate();
     }
 
     array<entity> proceed (syntax::analysis::data & data)
@@ -273,8 +159,8 @@ namespace doc::ae::synthesis
         entity cpp;
         entity main; main.head += token{"void main_()"};
 
-        context global { array<str>{}, ae, ae, ae};
-        context mainer { array<str>{}, ae, ae, main.body};
+        context global { array<str>{}, ae};
+        context mainer { array<str>{}, main.body};
 
         proceed(data, global, mainer, cpp);
 

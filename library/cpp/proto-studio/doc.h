@@ -69,6 +69,7 @@ namespace doc
 
         explicit entity() = default;
         explicit entity(str s) { head += token{s}; }
+        explicit entity(array<token> tt) : head(tt) {}
         explicit entity(str name, str kind) : name(name), kind(kind) {}
     };
 

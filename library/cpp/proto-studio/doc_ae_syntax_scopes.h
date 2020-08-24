@@ -26,11 +26,13 @@ namespace doc::ae::syntax
 
                 std::visit(aux::overloaded
                 {
+                    [this](noop        s) {},
                     [this](loop_for    s) { add(s); },
                     [this](loop_while  s) { add(s); },
                     [this](expression  s) {},
                     [this](conditional s) { add(s); },
                     [this](declaration s) { add(s); },
+                    [this](definition  s) { add(s); },
                     [this](subroutine  s) { add(s); },
                     [this](pragma      s) {},
                 },
@@ -66,6 +68,22 @@ namespace doc::ae::syntax
             unnamed.emplace_back(scope{.outer=this});
             unnamed.back().fill(s.else_body);
         }
+        void add (declaration & s)
+        {
+            for (auto name : s.names) {
+                members.emplace(name->text, member{.name = name, .type = s.type});
+                unnamed.emplace_back(scope{.outer=this});
+                unnamed.back().fill(s.body);
+            }
+        }
+        void add (definition & s)
+        {
+            for (auto name : s.names) {
+                members.emplace(name->text, member{.name = name, .type = s.type});
+                named.emplace(name->text, scope{.outer=this})
+                    .first->second.fill(s.body);
+            }
+        }
         void add (subroutine & s)
         {
             member m {.name = s.name, .type = s.type};
@@ -73,15 +91,6 @@ namespace doc::ae::syntax
             members.emplace(m.name->text, m);
             unnamed.emplace_back(scope{.outer=this})
                 .fill(s.body);
-        }
-        void add (declaration & s)
-        {
-            for (auto name : s.names) {
-                members.emplace(name->text, member{.name = name, .type = s.type});
-                if (s.kind == "singleton" || s.kind == "class" || s.kind == "union")
-                    named.emplace(name->text, scope{.outer=this})
-                        .first->second.fill(s.body);
-            }
         }
 
         void check ()

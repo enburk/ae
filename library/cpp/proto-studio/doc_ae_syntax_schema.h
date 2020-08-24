@@ -83,11 +83,15 @@ namespace doc::ae::syntax
 
         statement read_statement ()
         {
-            str schema; array<token*> names;
+            str schema, source; array<token*> names;
 
             for (auto & e : elements)
             {
                 schema += " ";
+                source += " " + (
+                    e.kind == "()" or
+                    e.kind == "{}" ?
+                    e.kind : e.opening->text);
 
                 if (e.name == "{}") schema += "{}"; else
                 if (e.kind == "()") schema += "()"; else
@@ -111,6 +115,7 @@ namespace doc::ae::syntax
                 }
             }
             if (schema != "") schema.erase(0); // leading " "
+            if (source != "") source.erase(0); // leading " "
 
             if (schema.starts_with("using "))
             {
@@ -163,7 +168,7 @@ namespace doc::ae::syntax
 
             if (schema == "name {}")
             {
-                declaration s;
+                definition s;
                 s.kind = "singleton";
                 s.names = read_list_of_names();
                 s.body = read_statement_or_body();
@@ -172,12 +177,12 @@ namespace doc::ae::syntax
 
             if (schema.starts_with("name : type ="))
             {
-                declaration s;
+                definition s;
                 s.kind = "type";
                 s.names = read_list_of_names();
                 read(":"); read("type"); read("=");
                 s.body = read_statement_or_body();
-                return statement{std::move(s), schema};
+                return statement{std::move(s), schema, source};
             }
 
             if (schema.starts_with("name :")
@@ -190,7 +195,7 @@ namespace doc::ae::syntax
                 if (not elements.empty()) { read("=");
                     s.body = read_statement_or_body();
                 }
-                return statement{std::move(s), schema};
+                return statement{std::move(s), schema, source};
             }
 
             if (schema.starts_with("function ")
@@ -209,7 +214,7 @@ namespace doc::ae::syntax
                 }
                 read("=");
                 s.body = read_statement_or_body();
-                return statement{std::move(s), schema};
+                return statement{std::move(s), schema, source};
             }
 
             if (schema.starts_with("operator "))
@@ -221,7 +226,7 @@ namespace doc::ae::syntax
 
                 if (schema == "operator () =")
                 {
-                    s.kind = "operator ()";
+                    s.kind = "call operator";
                     s.parameters = read_parameters(); read("=");
                     s.body = read_statement_or_body();
                     return statement{std::move(s)};
@@ -256,7 +261,7 @@ namespace doc::ae::syntax
                 throw error ("expected '='");
             }
 
-            return statement{read_expression(), schema};
+            return statement{read_expression(), schema, source};
         }
 
         str next () { return
@@ -419,7 +424,7 @@ namespace doc::ae::syntax
             else body += statement{read_expression()};
 
             if (body.empty())
-                body += statement{};
+                body += statement{noop{}};
             else
             if (body.size() == 1 and
                 aux::got<expression>(body[0].variant) and aux::got<symbol>(
