@@ -119,8 +119,8 @@ sys::glyph::glyph (str text, sys::glyph_style_index style_index) : text(text), s
         GDI_CONTEXT context(style.font);
 
         SIZE Size;
-        auto ss = winstr(text); size_t len = winstrlen(ss);
-        auto rc = ::GetTextExtentPoint32W (context.dc, ss.c_str(), (int)len, &Size);
+        auto ss = winstr(text);
+        auto rc = ::GetTextExtentPoint32W (context.dc, ss.c_str(), (int) ss.size(), &Size);
         if (!rc) throw std::runtime_error("sys::font::render : GetTextExtentPoint32W fail");
 
         advance = Size.cx;
@@ -249,7 +249,7 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
     if    (!bmp) throw std::runtime_error ( "sys::font::render : CreateDIBSection fail" );
     HGDIOBJ old = ::SelectObject (context.dc, bmp);
 
-    auto ss = winstr(text); size_t len = winstrlen(ss);
+    auto ss = winstr(text);
 
     if (!solid_color_background)
     ::SetBkMode    (context.dc, TRANSPARENT); else
@@ -264,7 +264,7 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
     for (int y=0; y<h; y++)
     for (int x=0; x<w; x++) view(x,y).a = 255;
 
-    ::TextOutW (context.dc, 0, 0, ss.c_str(), (int)len);
+    ::TextOutW (context.dc, 0, 0, ss.c_str(), (int) ss.size());
     ::GdiFlush ();
 
     for (int y=0; y<h; y++)

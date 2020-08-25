@@ -1,4 +1,7 @@
 #pragma once
+#ifndef UNICODE
+#define UNICODE
+#endif
 #include <memory>
 #include <string>
 #include <system_error>

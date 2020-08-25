@@ -85,9 +85,10 @@ namespace ide::compiler
         if (analysis.log() != "") console << analysis.log();
         if (analysis.log.errors.size() > 0) return false;
 
-        path cpp = src; cpp.replace_extension(src.extension().string() + ".cpp");
-        path obj = src; obj.replace_extension(src.extension().string() + ".obj");
-        path exe = src; exe.replace_extension(src.extension().string() + ".exe");
+        str  ext = src.extension().string();
+        path cpp = src; cpp.replace_extension(ext + ".cpp");
+        path obj = src; obj.replace_extension(ext + ".obj");
+        path exe = src; exe.replace_extension(ext + ".exe");
 
         using namespace std::literals::chrono_literals;
         if (std::filesystem::exists(exe) and
@@ -159,15 +160,19 @@ namespace ide::compiler
             flags += " /I\"" + (vc/"include").string() + "\"";
             flags += " /I\"" + (sdk_include/"um").string() + "\"";
             flags += " /I\"" + (sdk_include/"ucrt").string() + "\"";
+            flags += " /I\"" + (sdk_include/"shared").string() + "\"";
             flags += " /TP"; // treat all sources as c++
             //flags += " /O2";
             str links = "/link"; links += 
             src.extension() == ".ae!"  ? " /SUBSYSTEM:CONSOLE" :
-            src.extension() == ".ae!!" ? " /SUBSYSTEM:WINDOWS /entry:mainCRTStartup" : "";
+            src.extension() == ".ae!!" ? " /SUBSYSTEM:WINDOWS /entry:mainCRTStartup" : ""; // " /entry:mainCRTStartup"
             links += " /LIBPATH:\"" + (vc/"lib/x64").string() + "\"";
             links += " /LIBPATH:\"" + (sdk_lib/"um/x64").string() + "\"";
             links += " /LIBPATH:\"" + (sdk_lib/"ucrt/x64").string() + "\"";
             links += " /OUT:\"" + exe.string() + "\"";
+            links += " /ManifestFile:\".astudio/app.exe.intermediate.manifest\"";
+            links += " kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib";
+            links += " shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib";// odbccp32.lib";
 
             str sources = "\"" + cpp.string() + "\"";
             sys::process compile(cl, flags + " " + sources + " " + links,
@@ -208,18 +213,20 @@ namespace ide::compiler
 
             if (not compile(src, console)) return;
 
-            path cpp = src; cpp.replace_extension(".ae!.cpp");
-            path obj = src; obj.replace_extension(".ae!.obj");
-            path exe = src; exe.replace_extension(".ae!.exe");
+            str  ext = src.extension().string();
+            path cpp = src; cpp.replace_extension(ext + ".cpp");
+            path obj = src; obj.replace_extension(ext + ".obj");
+            path exe = src; exe.replace_extension(ext + ".exe");
 
             console << "Run...";
-          //sys::process run("cmd.exe", "/k \"" + exe.string() + "\"",
             sys::process run(exe, "",
             sys::process::options{});
             console << "Done.";
         }
         catch (const std::exception & e) {
-            console << e.what();
+            console << "<font color=#B00020>"
+            + doc::html::lexica::encoded(e.what())
+            + "</font>";
             return;
         }
     }

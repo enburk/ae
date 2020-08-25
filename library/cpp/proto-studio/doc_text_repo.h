@@ -67,6 +67,7 @@ namespace doc
                     std::istreambuf_iterator<char>(stream)),
                     std::istreambuf_iterator<char>()};
                 }
+                s.erase_if([](auto c){ return c == '\r'; });
                 if (s.starts_with("\xEF" "\xBB" "\xBF"))
                     s.upto(3).erase(); // UTF-8 BOM
 
