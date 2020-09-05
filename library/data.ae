@@ -1,11 +1,135 @@
 using "math";
+using math::min;
+using math::max;
+using math::abs;
 
 operator (x) >>> (f) = f(x);
 operator (f) <<< (x) = f(x);
 
+type pointer(x) : ordered =
+{
+    address : meta::address;
+    constructor(x) = address ← meta::address.of(x);
+    function value = meta::value.of(x)::at(address);
+}
+
+type contiguous.iterator(x) : random.access.iterator(x) =
+{
+    address : meta::address;
+    function value = meta::value.of(x)::at(address);
+    operator += (integer n) = { address += n × meta::size.of(x) }
+    operator -= (integer n) = { address -= n × meta::size.of(x) }
+    operator +  (integer n) = { i := this; i += n; return i }
+    operator -  (integer n) = { i := this; i -= n; return i }
+    operator ++ = { this += 1 }
+    operator -- = { this -= 1 }
+}
+
+type container(x) =
+{
+    function size → integer = {...}
+    mutation size ← integer = {...}
+}
+
+type contiguous.container(x) : container(x) =
+{
+    function begin → contiguous.iterator(x) = {...}
+    function end   → contiguous.iterator(x) = {...}
+}
+
+type contiguous.range(x) = ;; : random.access.range(x) =
+{
+    begin, end : contiguous.iterator(x);
+    function from (n: integer) = { r := this; r.begin += n; return r }
+    function upto (n: integer) = { r := this; r.end = r.begin + n; return r }
+    operator [b: integer, e: integer] = {...}
+    operator [b: integer, e: integer) = {...}
+}
+
+type contiguous.range(x) = ;; : random.access.range(x) =
+{
+    begin, end : contiguous.iterator(x);
+    function from (n: integer) = { r := this; r.begin += n; return r }
+    function upto (n: integer) = { r := this; r.end = r.begin + n; return r }
+    operator [b: integer, e: integer] = {...}
+    operator [b: integer, e: integer) = {...}
+}
 
 
+type array(x) = ;; : contiguous.range(x) =
+{
+    assert array is random.access.range(value.type);
 
+    detail { size: integer; data: array.on.heap(value.type) }
+
+    operator [i: integer] = detail::data[i];
+    operator (i: integer) = detail::data[i];
+
+    function size () = detail::size;
+    mutation size (n: integer) =
+    {
+    }
+    function capacity () = detail::data::size;
+    mutation capacity (n: integer) =
+    {
+        if n < 0 or size < n then return;
+        if n = capacity then return;
+    ;;  new.data := memory::request(n*meta::size.of(value.type));
+        new.data := value.type[n];
+        copy(data, new.data);
+        swap(data, new.data);
+    }
+}
+
+type array.on.heap(x) : contiguous.range(x) = ;; of fixed capacity
+{
+    type iterator = contiguous.iterator;
+
+    data: contiguous.range(byte); ;;x[];
+
+    function begin () = {...}
+    function end   () = {...}
+    operator [i: integer] = detail::data[i];
+
+    constructor (size: integer = 0) = {
+        data = system::memory::request(n*meta::size.of(x));
+    }
+    destructor = {
+        system::memory::release(data);
+    }
+}
+
+cow.array.on.heap(x) : type = ;; of fixed capacity
+{
+}
+
+
+rectangle (x: integer, y: integer, w: integer, h: integer);
+
+rectangle (x, y, w, h: integer);
+
+function swap (a, b) = { c := a; a ← b; b ← c }
+
+function bubble.sort (in.order: binary.predicate = <) =
+{
+    function (range : bidirectional.range) =
+    {
+        f := range::begin;
+        l := range::end;
+        while f ≠ l do {
+            i := f;
+            j := f; j++;
+            while j ≠ l do {
+                if not in.order(i::value, j::value)
+                      then swap(i::value, j::value);
+                i++;
+                j++;
+            }
+            l--;
+        }
+        return range;
+    }
+}
 
 
 

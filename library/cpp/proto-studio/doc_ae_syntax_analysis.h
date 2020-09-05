@@ -101,10 +101,20 @@ namespace doc::ae::syntax::analysis
                 auto & that = std::get<pragma>(s.variant);
                 if (that.title->text == "using")
                 {
-                    std::string s = that.param->text;
-                    s.pop_back(); s.erase(0,1); // quots
-                    if (not s.ends_with(".c++")) s += ".ae";
-                    auto path = source.parent_path() / s;
+                    std::string fn;
+                    if (aux::got<literal>(that.arg.variant)) { fn =
+                        std::get<literal>(that.arg.variant).token->text;
+                        fn.pop_back(); fn.erase(0,1); // quots
+                    }
+                    else
+                    if (aux::got<named_pack>(that.arg.variant)) { auto units =
+                        std::get<named_pack>(that.arg.variant).units;
+                        if (units.size() != 1) continue;
+                        if (units[0].arguments.size() != 0) continue;
+                        fn = units[0].identifier->text;
+                    }
+                    if (not fn.ends_with(".c++")) fn += ".ae";
+                    auto path = source.parent_path() / fn;
                     if (record.dependencies.contains(path)) continue;
 
                     record.dependencies.try_emplace(path);
@@ -227,6 +237,10 @@ namespace doc::ae::syntax::analysis
             [&](expression_for &v)
             {
                 for (auto & e : v.range) pass2(record, e);
+            },
+            [&](lambda &v)
+            {
+                pass2(record, v.body);
             },
         },
         e.variant);

@@ -78,17 +78,15 @@ namespace doc::ae::syntax
         }
         void add (definition & s)
         {
-            for (auto name : s.names) {
-                members.emplace(name->text, member{.name = name, .type = s.type});
-                named.emplace(name->text, scope{.outer=this})
-                    .first->second.fill(s.body);
-            }
+            members.emplace(s.name->text, member{.name = s.name, .type = s.type});
+            named.emplace(s.name->text, scope{.outer=this})
+                .first->second.fill(s.body);
         }
         void add (subroutine & s)
         {
             member m {.name = s.name, .type = s.type};
-            for (auto & p : s.parameters) m.args += p.type;
-            members.emplace(m.name->text, m);
+            for (auto & p : s.parameters.list) m.args += p.type;
+            if (m.name) members.emplace(m.name->text, m);
             unnamed.emplace_back(scope{.outer=this})
                 .fill(s.body);
         }

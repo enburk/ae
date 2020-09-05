@@ -43,12 +43,14 @@ namespace doc::ae::synthesis
         void add (const conditional & s) {}
         void add (const declaration & s)
         {
-            if (s.kind == "variable")
+            if (s.kind == "variable"
+            or  s.kind == "constant")
             {
                 entity e;
-                e.head += token{print_type(s.type)};
+                str prefix = s.kind == "constant" ? "constexpr " : "";
+                e.head += token{prefix + print_type(s.type)};
                 for (auto & name : s.names) {
-                    e.head += *name;
+                    e.head += token{print(name->text)};
                     e.head += token{","};
                 }
                 e.head.truncate();
@@ -64,7 +66,7 @@ namespace doc::ae::synthesis
         {
             if (s.kind == "singleton")
             {
-                str name = print(s.names[0]->text);
+                str name = print(s.name->text);
                 body += entity{"struct type_"+name};
                 body.back().kind = "class";
                 context{nestedness + name, body.back().body}.proceed(s.body);
@@ -72,8 +74,19 @@ namespace doc::ae::synthesis
             }
             if (s.kind == "type")
             {
-                str name = print(s.names[0]->text);
-                body += entity{"struct " + name};
+                str templ;
+                for (auto & p : s.parameters) {
+                    str type = print(p.type);
+                    str name = print(p.name->text);
+                    if (type == "type" or type == "") type = "typename";
+                    templ += type + " " + name + ", ";
+                }
+                templ.truncate(); // ","
+                templ.truncate(); // " "
+                if (templ != "") templ = "template<" + templ + "> ";
+
+                str name = print(s.name->text);
+                body += entity{templ + "struct " + name};
                 body.back().kind = "class";
                 context{nestedness + name, body.back().body}.proceed(s.body);
             }
@@ -81,7 +94,7 @@ namespace doc::ae::synthesis
         void add (const subroutine & s)
         {
             str head, args;
-            for (auto & p : s.parameters) {
+            for (auto & p : s.parameters.list) {
                 str type = print(p.type);
                 str name = print(p.name->text);
                 if (type == "") {

@@ -14,6 +14,7 @@ namespace doc::ae::syntax
     struct statement;
     struct expression;
     struct conditional;
+    struct parameter;
     struct loop;
 
     struct noop    {};
@@ -61,6 +62,14 @@ namespace doc::ae::syntax
     /// array prevents infinite recursion
     };
 
+    struct lambda
+    {
+        token* title = nullptr;
+        named_pack type;
+        array<parameter> parameters;
+        array<statement> body;
+    };
+
     struct expression
     {
         std::variant
@@ -72,7 +81,8 @@ namespace doc::ae::syntax
             operation,
             brackets,
             expression_if,
-            expression_for
+            expression_for,
+            lambda
         >
         variant;
     };
@@ -103,7 +113,7 @@ namespace doc::ae::syntax
     struct pragma
     {
         token* title = nullptr;
-        token* param = nullptr;
+        expression arg;
     };
 
     struct parameter
@@ -113,21 +123,30 @@ namespace doc::ae::syntax
         expression value;
     };
 
+    struct parameters
+    {
+        token* opening = nullptr;
+        token* closing = nullptr;
+        array<parameter> list;
+    };
+
     struct subroutine
     {
         str kind;
         token* title = nullptr;
         token* name = nullptr;
         named_pack type;
-        array<parameter> parameters;
+        parameters parameters;
         array<statement> body;
     };
 
     struct definition
     {
         str kind;
+        token* name = nullptr;
         named_pack type;
-        array<token*> names;
+        array<named_pack> classes;
+        array<parameter> parameters;
         array<statement> body;
     };
 

@@ -217,6 +217,13 @@ namespace doc
                     base_insert((char*)(u8"→"));
                     return true;
                 }
+                if (c == "<" && s == "-") {
+                    base_insert("-");
+                    selections[0].from.offset--;
+                    selections[0].from.offset--;
+                    base_insert((char*)(u8"←"));
+                    return true;
+                }
                 if (c == "!" && s == "=") {
                     base_insert("=");
                     selections[0].from.offset--;

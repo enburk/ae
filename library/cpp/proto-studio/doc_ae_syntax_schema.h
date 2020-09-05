@@ -17,8 +17,8 @@ namespace doc::ae::syntax
 
         "true", "false", "and", "or", "xor", "not", "bitwise", 
 
-        "operator", "class",
-        "function", "union",
+        "operator", "class", "constructor",
+        "function", "union", "destructor",
         "mutation", "type",
         "variable", "this",
         "constant",
@@ -51,9 +51,9 @@ namespace doc::ae::syntax
         array<element> && input; report & log; statementor(
         array<element> && input, report & log) : input(std::move(input)), log(log)
         {
-            try
+            for (auto && element : input)
             {
-                for (auto && element : input)
+                try
                 {
                     elements = deque(std::move(element.elements));
 
@@ -73,12 +73,12 @@ namespace doc::ae::syntax
                         continue;
                     }
 
-                    if (log.errors.size() > 0) break;
+                    // if (log.errors.size() > 0) break;
 
                     output += std::move(s);
                 }
+                catch (const std::exception & e) { log.error(last_token, e.what()); }
             }
-            catch (const std::exception & e) { log.error(last_token, e.what()); }
         }
 
         statement read_statement ()
@@ -91,7 +91,7 @@ namespace doc::ae::syntax
                 source += " " + (
                     e.kind == "()" or
                     e.kind == "{}" ?
-                    e.kind : e.opening->text);
+                    e.name : e.opening->text);
 
                 if (e.name == "{}") schema += "{}"; else
                 if (e.kind == "()") schema += "()"; else
@@ -100,13 +100,18 @@ namespace doc::ae::syntax
                 if (e.opening->text == ":" ) schema += ":";  else
                 if (e.opening->text == "::") schema += "::"; else
                 if (e.opening->text == ":=") schema += ":="; else
+                if (e.opening->text == (char*)(u8"←")) schema += "<-"; else
                 if (e.opening->text == (char*)(u8"→")) schema += "->"; else
                 if (e.opening->kind == "name" and keywords.contains(e.opening->text)) {
                     schema += e.opening->text; e.opening->kind = "keyword"; } else
                     schema += e.opening->kind;
             
-                if (schema.ends_with(" =" )) break;
-                if (schema.ends_with(" :=")) break;
+                if (e.kind == "()")
+                    for (auto & ee : e.elements)
+                    for (auto & eee : ee.elements)
+                    if (eee.opening and keywords.contains(eee.opening->text))
+                        eee.opening->kind = "keyword";
+                        // what if nested twice ?..
 
                 if (schema.ends_with(" name")) names += e.opening;
                 if (schema.ends_with(" names , name")) schema.truncate(schema.size() - 7);
@@ -117,15 +122,21 @@ namespace doc::ae::syntax
             if (schema != "") schema.erase(0); // leading " "
             if (source != "") source.erase(0); // leading " "
 
-            if (schema.starts_with("using "))
+            auto schema_starts_with = [&schema](str s) { return
+                 schema.starts_with(s) and (
+                 schema.size() == s.size() or
+                 schema[s.size()] == ' ');
+            };
+
+            if (schema_starts_with("using"))
             {
                 pragma s;
                 s.title = read_token();
-                s.param = read_literal();
+                s.arg = read_expression();
                 return statement{std::move(s)};
             }
 
-            if (schema.starts_with("if "))
+            if (schema_starts_with("if"))
             {
                 conditional s;
                 s.title = read_token();
@@ -133,14 +144,14 @@ namespace doc::ae::syntax
                 s.then_body = read_statement_or_body();
                 return statement{std::move(s)};
             }
-            if (schema.starts_with("else "))
+            if (schema_starts_with("else"))
             {
                 conditional s;
                 s.title = read_token();
                 s.else_body = read_statement_or_body();
                 return statement{std::move(s)};
             }
-            if (schema.starts_with("for "))
+            if (schema_starts_with("for"))
             {
                 loop_for s;
                 s.title = read_token();
@@ -149,7 +160,7 @@ namespace doc::ae::syntax
                 read("do"); s.body = read_statement_or_body();
                 return statement{std::move(s)};
             }
-            if (schema.starts_with("while "))
+            if (schema_starts_with("while"))
             {
                 loop_while s;
                 s.title = read_token();
@@ -157,7 +168,7 @@ namespace doc::ae::syntax
                 s.body = read_statement_or_body();
                 return statement{std::move(s)};
             }
-            if (schema.starts_with("until "))
+            if (schema_starts_with("until"))
             {
                 loop_while s;
                 s.title = read_token();
@@ -170,23 +181,87 @@ namespace doc::ae::syntax
             {
                 definition s;
                 s.kind = "singleton";
+                s.name = read_name();
+                s.body = read_statement_or_body();
+                return statement{std::move(s)};
+            }
+
+            if (schema_starts_with("name ="))
+            {
+                declaration s;
+                s.kind = "constant";
                 s.names = read_list_of_names();
                 s.body = read_statement_or_body();
                 return statement{std::move(s)};
             }
 
-            if (schema.starts_with("name : type ="))
+            if (schema_starts_with("type name ="))
+            {
+                definition s;
+                s.kind = "type"; read("type");
+                s.name = read_name(); read("=");
+                s.body = read_statement_or_body();
+                return statement{std::move(s), schema, source};
+            }
+            if (schema_starts_with("type name :"))
+            {
+                definition s;
+                s.kind = "type"; read("type");
+                s.name = read_name(); read(":");
+                s.classes = read_list_of_named_packs(); read("=");
+                s.body = read_statement_or_body();
+                return statement{std::move(s), schema, source};
+            }
+            if (schema_starts_with("type name () ="))
+            {
+                definition s;
+                s.kind = "type"; read("type");
+                s.name = read_name();
+                s.parameters = read_parameters().list; read("=");
+                s.body = read_statement_or_body();
+                return statement{std::move(s), schema, source};
+            }
+            if (schema_starts_with("type name () :"))
+            {
+                definition s;
+                s.kind = "type"; read("type");
+                s.name = read_name();
+                s.parameters = read_parameters().list; read(":");
+                s.classes = read_list_of_named_packs(); read("=");
+                s.body = read_statement_or_body();
+                return statement{std::move(s), schema, source};
+            }
+            if (schema_starts_with("name : type ="))
             {
                 definition s;
                 s.kind = "type";
-                s.names = read_list_of_names();
+                s.name = read_name();
+                read(":"); read("type"); read("=");
+                s.body = read_statement_or_body();
+                return statement{std::move(s), schema, source};
+            }
+            if (schema_starts_with("name () : type ="))
+            {
+                definition s;
+                s.kind = "type";
+                s.name = read_name();
+                s.parameters = read_parameters().list;
                 read(":"); read("type"); read("=");
                 s.body = read_statement_or_body();
                 return statement{std::move(s), schema, source};
             }
 
-            if (schema.starts_with("name :")
-            or  schema.starts_with("names :"))
+            if (schema_starts_with("name :="))
+            {
+                declaration s;
+                s.kind = "variable";
+                s.names = read_list_of_names(); read(":=");
+                s.body = read_statement_or_body();
+                return statement{std::move(s), schema, source};
+            }
+
+            if (schema_starts_with("name :")
+            or  schema_starts_with("names :"))
             {
                 declaration s;
                 s.kind = "variable";
@@ -198,60 +273,105 @@ namespace doc::ae::syntax
                 return statement{std::move(s), schema, source};
             }
 
-            if (schema.starts_with("function ")
-            or  schema.starts_with("mutation "))
+            if (schema_starts_with("function name =")
+            or  schema_starts_with("function name ->"))
+            {
+                subroutine s;
+                s.title = read_token();
+                s.kind = s.title->text;
+                s.name = read_name();
+                s.type = read_optional_type(); read("=");
+                s.body = read_statement_or_body();
+                return statement{std::move(s), schema, source};
+            }
+            if (schema_starts_with("mutation name <-"))
+            {
+                subroutine s;
+                s.title = read_token();
+                s.kind = s.title->text;
+                s.name = read_name(); read((char*)(u8"←"));
+                s.parameters.list += parameter{s.name, read_named_pack()}; read("=");
+                s.body = read_statement_or_body();
+                return statement{std::move(s), schema, source};
+            }
+            if (schema_starts_with("function name")
+            or  schema_starts_with("mutation name"))
             {
                 subroutine s;
                 s.title = read_token();
                 s.kind = s.title->text;
                 s.name = read_name();
                 s.parameters = read_parameters();
-
-                if (schema.starts_with("function name () ->")
-                or  schema.starts_with("mutation name () ->")) {
-                    read((char*)(u8"→"));
-                    s.type = read_named_pack();
-                }
-                read("=");
+                s.type = read_optional_type(); read("=");
+                s.body = read_statement_or_body();
+                return statement{std::move(s), schema, source};
+            }
+            if (schema_starts_with("constructor"))
+            {
+                subroutine s;
+                s.title = read_token();
+                s.kind = s.title->text;
+                s.parameters = read_parameters(); read("=");
+                s.body = read_statement_or_body();
+                return statement{std::move(s), schema, source};
+            }
+            if (schema_starts_with("destructor"))
+            {
+                subroutine s;
+                s.title = read_token();
+                s.kind = s.title->text; read("=");
                 s.body = read_statement_or_body();
                 return statement{std::move(s), schema, source};
             }
 
-            if (schema.starts_with("operator "))
+            if (schema_starts_with("operator"))
             {
                 schema.replace_all(" name "  , " x ");
                 schema.replace_all(" symbol ", " x ");
 
                 subroutine s; s.title = read("operator");
 
-                if (schema == "operator () =")
+                if (schema_starts_with("operator () x ()"))
                 {
-                    s.kind = "call operator";
-                    s.parameters = read_parameters(); read("=");
-                    s.body = read_statement_or_body();
-                    return statement{std::move(s)};
-                }
-                if (schema == "operator x () =")
-                {
-                    s.kind = "prefix operator";
+                    s.kind = "binary operator";
+                    s.parameters = read_one_parameter();
                     s.name = read_token();
-                    s.parameters = read_one_parameter(); read("=");
+                    s.parameters.list += read_one_parameter().list;
+                    s.type = read_optional_type(); read("=");
                     s.body = read_statement_or_body();
                     return statement{std::move(s)};
                 }
-                if (schema == "operator () x =")
+                if (schema_starts_with("operator () x"))
                 {
                     s.kind = "postfix operator";
                     s.parameters = read_one_parameter();
-                    s.name = read_token(); read("=");
+                    s.name = read_token();
+                    s.type = read_optional_type(); read("=");
                     s.body = read_statement_or_body();
                     return statement{std::move(s)};
                 }
-                if (schema == "operator () x () =")
+                if (schema_starts_with("operator ()"))
                 {
-                    s.kind = "binary operator";
-                    s.parameters = read_one_parameter(); s.name = read_token();
-                    s.parameters += read_one_parameter(); read("=");
+                    s.kind = "call operator";
+                    s.parameters = read_parameters();
+                    s.type = read_optional_type(); read("=");
+                    s.body = read_statement_or_body();
+                    return statement{std::move(s)};
+                }
+                if (schema_starts_with("operator x ()"))
+                {
+                    s.kind = "prefix operator";
+                    s.name = read_token();
+                    s.parameters = read_one_parameter();
+                    s.type = read_optional_type(); read("=");
+                    s.body = read_statement_or_body();
+                    return statement{std::move(s)};
+                }
+                if (schema_starts_with("operator x"))
+                {
+                    s.kind = "operator";
+                    s.name = read_token();
+                    s.type = read_optional_type(); read("=");
                     s.body = read_statement_or_body();
                     return statement{std::move(s)};
                 }
@@ -373,22 +493,55 @@ namespace doc::ae::syntax
             return pack;
         }
 
+        array<named_pack> read_list_of_named_packs ()
+        {
+            array<named_pack> names;
+            names += read_named_pack();
+            while (not elements.empty()) {
+                if (next() != ",") break; read(",");
+                names += read_named_pack();
+            }
+            return names;
+        }
+
+        named_pack read_optional_type ()
+        {
+            named_pack type;
+            if (next() == (char*)(u8"→")) {
+                read((char*)(u8"→"));
+                type = read_named_pack();
+            }
+            return type;
+        }
+
         parameter read_parameter ()
         {
-            parameter p; p.name = read_name();
-            if (next() == ":") { read(":"); p.type  = read_named_pack(); }
-            if (next() == "=") { read("="); p.value = read_expression(); }
-            if (not elements.empty()) { read_token(); throw error("unexpected token"); }
+            parameter p;
+            if (elements.size() == 2)
+            {
+                p.type = read_named_pack();
+                p.name = read_name();
+            }
+            else
+            {
+                p.name = read_name();
+                if (next() == ":") { read(":"); p.type  = read_named_pack(); }
+                if (next() == "=") { read("="); p.value = read_expression(); }
+                if (not elements.empty()) { read_token(); throw error("unexpected token"); }
+            }
             return p;
         }
 
-        array<parameter> read_parameters ()
+        parameters read_parameters ()
         {
-            array<parameter> parameters;
+            parameters parameters;
 
             if (elements.empty() ||
-                elements.front().name != "()")
+                elements.front().kind != "()")
                 throw error("expected parameters");
+
+            parameters.opening = elements.front().opening;
+            parameters.closing = elements.front().closing;
 
             auto eee =
             elements.front().elements;
@@ -396,16 +549,16 @@ namespace doc::ae::syntax
             
             for (auto & ee : eee) {
                 auto eedeque = deque(ee.elements);
-                std::swap(elements, eedeque); parameters += read_parameter();
+                std::swap(elements, eedeque); parameters.list += read_parameter();
                 std::swap(elements, eedeque);
             }
             return parameters;
         }
 
-        array<parameter> read_one_parameter ()
+        parameters read_one_parameter ()
         {
-            array<parameter> parameters = read_parameters();
-            if (parameters.size() != 1) throw error
+            parameters parameters = read_parameters();
+            if (parameters.list.size() != 1) throw error
             ("expected exactly one parameter");
             return parameters;
         }
@@ -455,6 +608,16 @@ namespace doc::ae::syntax
 
                 if (elements.front().kind == "()")
                     o.operands += expression{read_brackets()};
+                else
+                if (next() == "function")
+                {
+                    lambda e;
+                    e.title = read("function");
+                    e.parameters = read_parameters().list;
+                    e.type = read_optional_type(); if (next() == "=") { read("=");
+                    e.body += read_statement_or_body(); }
+                    o.operands += expression{e};
+                }
                 else
                 if (next() == "if")
                 {

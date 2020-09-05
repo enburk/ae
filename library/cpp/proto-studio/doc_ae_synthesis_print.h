@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <span>
 #include "doc_ae_syntax.h"
 #include "doc_html_lexica.h"
@@ -32,8 +32,9 @@ namespace doc::ae::synthesis
         name = html::lexica::encoded(name);
         name.replace_all("&", "_");
         name.replace_all(";", "_");
-        if (name.contains("_")) name = "name_" + name;
-        name.replace_all("__", "_");
+        name.replace_all(".", "_");
+        name.replace_all((char*)(u8"√"), "_sqrt_");
+        if (name.starts_with("_") or name.contains("__")) name = "ae_" + name;
         return name;
     }
     str print (named_unit name)
@@ -92,6 +93,9 @@ namespace doc::ae::synthesis
                 tokens += token{")"};
             },
             [&](expression_for v)
+            {
+            },
+            [&](lambda v)
             {
             },
         },

@@ -6,3 +6,18 @@ using "data";
 ;;     x, y : integer;
 ;; }
 
+
+size : type = math::vector(2, integer);
+
+colors
+{
+    RGBA : type =
+    {
+    }
+}
+
+image(color) : type =
+{
+    size : size;
+}
+

@@ -120,7 +120,6 @@ void ae::gui::window::create ()
     ::ShowWindow(handle, SW_MAXIMIZE);
 }
 
-//int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR pCmdLine, int nCmdShow)
 int main (int argc, char *argv[])
 {
     ::SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
@@ -139,9 +138,8 @@ int main (int argc, char *argv[])
         ::TranslateMessage(&msg);
         ::DispatchMessage(&msg);
     }
-
-    return 0;
 }
+
 
 
 

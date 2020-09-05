@@ -1,1 +1,28 @@
-using "data";
+;; using "data";
+using "math.c++";
+
+operator √ (x: real) → real = {...}
+
+golden.ratio = (1 + √5) / 2;
+
+
+
+
+type predicate (args...) = function (args...) → boolean;
+type unary.predicate (x) = function (x) → boolean;
+type binary.predicate (x, y) = function (x, y) → boolean;
+
+
+;; unittest.min.max.must.be.stable
+;; 
+;;     x = { n: real; s: text }; operator (a: x) < (b: x) = a.n < b.n
+;;     
+;;     assert true
+;;     and min(x(1, "first"), x(1, "second")) = x(1, "first")
+;;     and max(x(1, "first"), x(1, "second")) = x(1, "second")
+;;     and min(real.64.nan, 1.0) = real.64.nan
+;;     and max(real.64.nan, 1.0) = 1.0
+;;     and min(1.0, real.64.nan) = 1.0
+;;     and max(1.0, real.64.nan) = real.64.nan
+
+
