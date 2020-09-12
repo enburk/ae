@@ -19,9 +19,9 @@ namespace doc::ae::syntax
 
         "operator", "class", "constructor",
         "function", "union", "destructor",
-        "mutation", "type",
+        "mutation", "type",  "extension",
         "variable", "this",
-        "constant",
+        "constant", "same",
         "requires",
 
         "byte",
@@ -132,7 +132,8 @@ namespace doc::ae::syntax
             {
                 pragma s;
                 s.title = read_token();
-                s.arg = read_expression();
+                s.arg = read_expression(); if (not elements.empty())
+                s.body = read_statement_or_body();
                 return statement{std::move(s)};
             }
 
@@ -228,6 +229,15 @@ namespace doc::ae::syntax
                 s.name = read_name();
                 s.parameters = read_parameters().list; read(":");
                 s.classes = read_list_of_named_packs(); read("=");
+                s.body = read_statement_or_body();
+                return statement{std::move(s), schema, source};
+            }
+            if (schema_starts_with("type name () extension ="))
+            {
+                definition s;
+                s.kind = "type extension"; read("type");
+                s.name = read_name();
+                s.parameters = read_parameters().list; read("extension"); read("=");
                 s.body = read_statement_or_body();
                 return statement{std::move(s), schema, source};
             }
@@ -517,7 +527,17 @@ namespace doc::ae::syntax
         parameter read_parameter ()
         {
             parameter p;
-            if (elements.size() == 2)
+
+            if (elements.size() >= 3 and
+                elements[0].opening->kind == "name" and
+                elements[1].opening->text == ":")
+            {
+                p.name = read_name();
+                if (next() == ":") { read(":"); p.type  = read_named_pack(); }
+                if (next() == "=") { read("="); p.value = read_expression(); }
+            }
+            else
+            if (elements.size() >= 2)
             {
                 p.type = read_named_pack();
                 p.name = read_name();
@@ -525,10 +545,10 @@ namespace doc::ae::syntax
             else
             {
                 p.name = read_name();
-                if (next() == ":") { read(":"); p.type  = read_named_pack(); }
-                if (next() == "=") { read("="); p.value = read_expression(); }
-                if (not elements.empty()) { read_token(); throw error("unexpected token"); }
             }
+
+            if (not elements.empty()) { read_token(); throw error("unexpected token"); }
+
             return p;
         }
 
@@ -595,6 +615,9 @@ namespace doc::ae::syntax
 
             while (not elements.empty())
             {
+                if (elements.front().kind == "{}")
+                    break;
+
                 if (next() == until) {
                     read_token();
                     until = "";

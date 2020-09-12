@@ -13,60 +13,141 @@ type pointer(x) : ordered =
     function value = meta::value.of(x)::at(address);
 }
 
-type contiguous.iterator(x) : random.access.iterator(x) =
+type forward.iterator(x) =
+{
+    function value → x = {...}
+    operator ++ = {...}
+}
+type bidirectional.iterator(x) : forward.iterator(x) =
+{
+    function value → x = {...}
+    operator ++ = {...}
+    operator -- = {...}
+}
+type random.access.iterator(x) : bidirectional.iterator(x) =
+{
+    operator ++ = { this += 1 }
+    operator -- = { this -= 1 }
+    operator += (integer n) = {...}
+    operator -= (integer n) = {...}
+    operator +  (integer n) = { i := this; i += n; return i }
+    operator -  (integer n) = { i := this; i -= n; return i }
+    operator -  (same i) → integer = {...}
+}
+type contiguous.iterator(x) : random.access.iterator(x), ordered =
 {
     address : meta::address;
     function value = meta::value.of(x)::at(address);
     operator += (integer n) = { address += n × meta::size.of(x) }
     operator -= (integer n) = { address -= n × meta::size.of(x) }
-    operator +  (integer n) = { i := this; i += n; return i }
-    operator -  (integer n) = { i := this; i -= n; return i }
-    operator ++ = { this += 1 }
-    operator -- = { this -= 1 }
+    operator -  (same i) = (address - i.address) / meta::size.of(x);
 }
 
-type container(x) =
+type range(x) =
+{
+    type iterator = forward.iterator(x);
+    type sentinel = {...}
+
+    function begin → iterator = {...}
+    function end   → sentinel = {...}
+}
+
+type random.access.range(x) : range(x) =
+{
+    type iterator = random.access.iterator;
+    type sentinel = {...}
+
+    function from (iterator i) → same = {...}
+    function upto (iterator i) → same = {...}
+    operator [iterator i, iterator j] = from(i).upto(j+1);
+    operator [iterator i, iterator j) = from(i).upto(j);
+
+    function from (integer n) = from(begin+n);
+    function upto (integer n) = upto(begin+n);
+    operator [integer b, integer e] = from(b).upto(e-b+1);
+    operator [integer b, integer e) = from(b).upto(e-b);
+
+    operator [integer i] = (begin+i)::value;
+    operator (integer i) = (begin+i)::value;
+}
+
+type contiguous.range(x) : random.access.range(x) =
+{
+    type iterator = contiguous.iterator;
+    type sentinel = contiguous.iterator;
+
+    detail { begin, end : iterator }
+    function begin = detail::begin;
+    function end   = detail::end;
+    function size  = end - begin;
+
+    function from (iterator i) = same(i, end);
+    function upto (iterator i) = same(begin, i);
+}
+
+type collection(x) : range(x) =
+{
+    function size → integer = {...}
+    operator ~= (x element) = {...}
+    operator ~= (range(x) r) = {
+        for each e in r do
+            this ~= e
+    }
+}
+
+using R = range(x), C = collection(x)
+{
+    operator (C left) ~ (x right) = { C c; c ~= left; c ~= right; return c }
+    operator (C left) ~ (R right) = { C c; c ~= left; c ~= right; return c }
+    operator (C left) ~ (C right) = { C c; c ~= left; c ~= right; return c }
+    operator (R left) ~ (C right) = { C c; c ~= left; c ~= right; return c }
+    operator (x left) ~ (C right) = { C c; c ~= left; c ~= right; return c }
+}
+
+type random.access.collection(x) : collection(x), random.access.range(x) =
 {
     function size → integer = {...}
     mutation size ← integer = {...}
+    
+    function first = this[0];
+    function last  = this[size-1];
+
+    operator ~= (c: collection(x)) =
+    {
+        i := end;
+        size += c.size;
+        for each e in c do {
+            i::value ← e;
+            i++;
+        }
+    }
+    operator ~= (e: x) =
+    {
+        size++; last = e;
+    }
 }
 
-type contiguous.container(x) : container(x) =
+type contiguous.collection.range(x) : contiguous.range(x) =
 {
-    function begin → contiguous.iterator(x) = {...}
-    function end   → contiguous.iterator(x) = {...}
-}
+    collection: pointer(contiguous.collection(x));
 
-type contiguous.range(x) = ;; : random.access.range(x) =
-{
-    begin, end : contiguous.iterator(x);
+    function collection → pointer(contiguous.collection(x)) = {...}
+
     function from (n: integer) = { r := this; r.begin += n; return r }
     function upto (n: integer) = { r := this; r.end = r.begin + n; return r }
     operator [b: integer, e: integer] = {...}
     operator [b: integer, e: integer) = {...}
 }
 
-type contiguous.range(x) = ;; : random.access.range(x) =
+type array(x) : random.access.range(x) =
 {
-    begin, end : contiguous.iterator(x);
-    function from (n: integer) = { r := this; r.begin += n; return r }
-    function upto (n: integer) = { r := this; r.end = r.begin + n; return r }
-    operator [b: integer, e: integer] = {...}
-    operator [b: integer, e: integer) = {...}
-}
-
-
-type array(x) = ;; : contiguous.range(x) =
-{
-    assert array is random.access.range(value.type);
-
-    detail { size: integer; data: array.on.heap(value.type) }
+    detail { integer size; data: array.on.heap(value.type) }
 
     operator [i: integer] = detail::data[i];
     operator (i: integer) = detail::data[i];
 
-    function size () = detail::size;
-    mutation size (n: integer) =
+    function size → integer = detail::size;
+    mutation size ← integer =
     {
     }
     function capacity () = detail::data::size;
@@ -104,32 +185,6 @@ cow.array.on.heap(x) : type = ;; of fixed capacity
 }
 
 
-rectangle (x: integer, y: integer, w: integer, h: integer);
-
-rectangle (x, y, w, h: integer);
-
-function swap (a, b) = { c := a; a ← b; b ← c }
-
-function bubble.sort (in.order: binary.predicate = <) =
-{
-    function (range : bidirectional.range) =
-    {
-        f := range::begin;
-        l := range::end;
-        while f ≠ l do {
-            i := f;
-            j := f; j++;
-            while j ≠ l do {
-                if not in.order(i::value, j::value)
-                      then swap(i::value, j::value);
-                i++;
-                j++;
-            }
-            l--;
-        }
-        return range;
-    }
-}
 
 
 

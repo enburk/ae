@@ -114,6 +114,7 @@ namespace doc::ae::syntax
     {
         token* title = nullptr;
         expression arg;
+        array<statement> body;
     };
 
     struct parameter

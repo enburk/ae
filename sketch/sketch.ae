@@ -712,3 +712,15 @@ common.range(value.type) : type input.range(value.type) =
 bidirectional.range(value.type) : type range(value.type) =
 {
 }
+
+replace.all("no").by("yes");
+
+type window =
+{
+    function size > XY = {...}
+    mutation size < XY = {...} ;; implicit operator size +=, *=, /=
+}
+size.x ?= 1.5;
+size.x = size.x ? 1.5;
+XY xy = size; xy.x ?= 1.5; size = xy;
+
