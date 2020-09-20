@@ -13,79 +13,6 @@ type pointer(x) : ordered =
     function value = meta::value.of(x)::at(address);
 }
 
-type forward.iterator(x) =
-{
-    function value → x = {...}
-    operator ++ = {...}
-}
-type bidirectional.iterator(x) : forward.iterator(x) =
-{
-    function value → x = {...}
-    operator ++ = {...}
-    operator -- = {...}
-}
-type random.access.iterator(x) : bidirectional.iterator(x) =
-{
-    operator ++ = { this += 1 }
-    operator -- = { this -= 1 }
-    operator += (integer n) = {...}
-    operator -= (integer n) = {...}
-    operator +  (integer n) = { i := this; i += n; return i }
-    operator -  (integer n) = { i := this; i -= n; return i }
-    operator -  (same i) → integer = {...}
-}
-type contiguous.iterator(x) : random.access.iterator(x), ordered =
-{
-    address : meta::address;
-    function value = meta::value.of(x)::at(address);
-    operator += (integer n) = { address += n × meta::size.of(x) }
-    operator -= (integer n) = { address -= n × meta::size.of(x) }
-    operator -  (same i) = (address - i.address) / meta::size.of(x);
-}
-
-type range(x) =
-{
-    type iterator = forward.iterator(x);
-    type sentinel = {...}
-
-    function begin → iterator = {...}
-    function end   → sentinel = {...}
-}
-
-type random.access.range(x) : range(x) =
-{
-    type iterator = random.access.iterator;
-    type sentinel = {...}
-
-    function from (iterator i) → same = {...}
-    function upto (iterator i) → same = {...}
-    operator [iterator i, iterator j] = from(i).upto(j+1);
-    operator [iterator i, iterator j) = from(i).upto(j);
-
-    function from (integer n) = from(begin+n);
-    function upto (integer n) = upto(begin+n);
-    operator [integer b, integer e] = from(b).upto(e-b+1);
-    operator [integer b, integer e) = from(b).upto(e-b);
-
-    operator [integer i] = (begin+i)::value;
-    operator (integer i) = (begin+i)::value;
-}
-
-type contiguous.range(x) : random.access.range(x) =
-{
-    type iterator = contiguous.iterator;
-    type sentinel = contiguous.iterator;
-
-    detail { begin, end : iterator }
-    function begin = detail::begin;
-    function end   = detail::end;
-    function size  = end - begin;
-
-    function clip (iterator i) = min(max(begin,i),end);
-    function from (iterator i) = same(clip(i), end);
-    function upto (iterator i) = same(begin, clip(i));
-}
-
 type collection(x) : range(x) =
 {
     function size → integer = {...}
@@ -109,7 +36,7 @@ type contiguous.collection(x) : collection(x), random.access.range(x) =
 {
     type iterator = contiguous.iterator;
     type sentinel = contiguous.iterator;
-    
+
     function size → integer = {...}
     mutation size ← integer = {...}
 
@@ -129,17 +56,17 @@ type contiguous.collection(x) : collection(x), random.access.range(x) =
     {
         size++; last = e;
     }
-    
-    ;; mutation erase = 
+
+    ;; mutation erase =
 }
 
 type contiguous.collection.range(x) : contiguous.range(x) =
 {
     collection: pointer(contiguous.collection(x));
-    
-    ;; mutation erase = 
-    ;; mutation replace.by (range x) = 
-    ;; mutation replace.by (random.access.range x) = 
+
+    ;; mutation erase =
+    ;; mutation replace.by (range x) =
+    ;; mutation replace.by (random.access.range x) =
 }
 
 system
@@ -148,7 +75,7 @@ system
     {
         function request (integer bytes) → contiguous.range(byte) = {...}
         function release (range : contiguous.range(byte)) = {...}
-        
+
         type chunk : contiguous.range(byte) =
         {
             mutation size ← integer = {...}
@@ -160,20 +87,31 @@ system
 type array(x) : contiguous.collection(x) =
 {
     detail { integer size; data: contiguous.range(byte) }
-    
+
     destructor = {
     for each e in this do e::destructor;
     system:memory::release(data); }
 
     function begin = contiguous.iterator(x)(detail::data::address);
     function end = begin + size;
-    
+
     function from (iterator i) = contiguous.collection.range(x)(clip(i), end);
     function upto (iterator i) = contiguous.collection.range(x)(begin, clip(i));
-    
+
     function size → integer = detail::size;
-    mutation size ← integer =
+    mutation size (integer n) = ;; ← integer n ;; ← natural n
     {
+        n = max(n,0);
+        if n < size then
+            for each e in from(n) do
+                e::destructor;
+        else
+        if n > capacity then capacity =
+            if n = 0 then 1 else
+            if n = 1 then n × 2 else
+            integer(n × math::golden.ratio);
+
+        detail::size ← n;
     }
     function capacity → integer = detail::data::size / meta::size.of(x);
     mutation capacity (integer n) = ;;  ← integer n =
@@ -187,6 +125,12 @@ type array(x) : contiguous.collection(x) =
         swap(data, new.data);
     }
 }
+
+;; type array(byte)
+;; {
+;; }
+
+
 
 
 

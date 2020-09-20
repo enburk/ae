@@ -29,14 +29,15 @@ namespace doc::ae::lexica
 
                 bool same = false;
 
-                if (t.kind == "comment") same = true; else
-                if (t.kind == "space"  ) same = space(c); else
-                if (t.kind == "name"   ) same = alpha(c) || digit(c) || c == "."; else
-                if (t.kind == "number" ) same = alpha(c) || digit(c) || c == "."; else
-                if (t.kind == "symbol" ) same =
+                if (t.kind == "comment"  ) same = true; else
+                if (t.kind == "space"    ) same = space(c); else
+                if (t.kind == "name"     ) same = alpha(c) || digit(c) || c == "."; else
+                if (t.kind == "number"   ) same = alpha(c) || digit(c) || c == "."; else
+                if (t.kind == "semicolon") same = c == ";"; else
+                if (t.kind == "symbol"   ) same =
                     not alpha(c) && not brace(c) &&
                     not digit(c) && not brace(t.text) &&
-                    not space(c);
+                    not space(c) && not (c == ";");
                 else
                 if (t.kind == "literal") same =
                     t.text == "\"" || not
@@ -60,11 +61,12 @@ namespace doc::ae::lexica
                         {n, offset}}
                     };
                     t.kind =
-                        alpha (c) ? "name"    :
-                        digit (c) ? "number"  :
-                        space (c) ? "space"   : 
+                        alpha (c) ? "name" :
+                        digit (c) ? "number" :
+                        space (c) ? "space" : 
                         c == "\"" ? "literal" : 
-                                    "symbol"  ;
+                        c == ";"  ? "semicolon" : 
+                                    "symbol";
                 }
             }
 

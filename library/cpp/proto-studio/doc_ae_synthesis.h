@@ -27,6 +27,7 @@ namespace doc::ae::synthesis
                     [&](declaration s) { add(s); },
                     [&](definition  s) { add(s); },
                     [&](subroutine  s) { add(s); },
+                    [&](directive   s) { add(s); },
                     [&](pragma      s) { add(s); },
                 },
                 s.variant);
@@ -112,6 +113,7 @@ namespace doc::ae::synthesis
             body.back().kind = "function";
             context{nestedness + name, body.back().body}.proceed(s.body);
         }
+        void add (const directive & s) {}
         void add (const pragma & s) {}
     };
 
@@ -146,6 +148,7 @@ namespace doc::ae::synthesis
                 [&](loop_while  s) { main.add(s); },
                 [&](expression  s) { main.add(s); },
                 [&](conditional s) { main.add(s); },
+                [&](directive   s) { main.add(s); },
                 [&](declaration s) { context.add(s); },
                 [&](definition  s) { context.add(s); },
                 [&](subroutine  s) { context.add(s); },

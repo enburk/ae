@@ -1,0 +1,67 @@
+type forward.range(x) =
+{
+    type iterator = forward.iterator(x);
+    type sentinel = {...}
+
+    function begin → iterator = {...}
+    function end   → sentinel = {...}
+}
+
+type random.access.range(x) : forward.range(x) =
+{
+    type iterator = random.access.iterator;
+    type sentinel = {...}
+
+    function from (iterator i) → same = {...}
+    function upto (iterator i) → same = {...}
+    operator [iterator i, iterator j] = from(i).upto(j+1);
+    operator [iterator i, iterator j) = from(i).upto(j);
+
+    function from (integer n) = from(begin+n);
+    function upto (integer n) = upto(begin+n);
+    operator [integer b, integer e] = from(b).upto(e-b+1);
+    operator [integer b, integer e) = from(b).upto(e-b);
+
+    operator [integer i] = (begin+i)::value;
+    operator (integer i) = (begin+i)::value;
+}
+
+type contiguous.range(x) : random.access.range(x) =
+{
+    type iterator = contiguous.iterator; iterator begin;
+    type sentinel = contiguous.iterator; iterator end;
+
+    function size = end - begin;
+    function clip (iterator i) = min(max(begin,i),end);
+    function from (iterator i) = same(clip(i), end);
+    function upto (iterator i) = same(begin, clip(i));
+}
+
+type integer.range =
+{
+    type iterator = integer.iterator; iterator begin;
+    type sentinel = integer.iterator; iterator end;
+
+    function size = end - begin;
+    function clip (iterator i) = min(max(begin,i),end);
+    function from (iterator i) = same(clip(i), end);
+    function upto (iterator i) = same(begin, clip(i));
+}
+
+type type extension =
+{
+    operator () = range(same);
+    operator [] = random.access.range(same);
+    operator [same a, same b) = random.access.range(same)[a, b);
+    operator [same a, same b] = random.access.range(same)[a, b];
+    operator [integer a, integer b) = random.access.range(same)[a, b);
+    operator [integer a, integer b] = random.access.range(same)[a, b];
+}
+
+type integer extension =
+{
+    operator [integer a, integer b) = integer.range[a, b);
+    operator [integer a, integer b] = integer.range[a, b];
+}
+
+

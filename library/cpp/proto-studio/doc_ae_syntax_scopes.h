@@ -34,6 +34,7 @@ namespace doc::ae::syntax
                     [this](declaration s) { add(s); },
                     [this](definition  s) { add(s); },
                     [this](subroutine  s) { add(s); },
+                    [this](directive   s) {},
                     [this](pragma      s) {},
                 },
                 statement.variant);

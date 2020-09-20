@@ -4,9 +4,19 @@ using "system.c++";
 function out (data: byte[]) → void = {...}
 function err (data: byte[]) → void = {...}
 
+function out (data: range(byte)) → void = {...}
+function err (data: range(byte)) → void = {...}
+
+function out (data: contiguous.range(byte)) → void = {...}
+function err (data: contiguous.range(byte)) → void = {...}
+
+function out (data: contiguous.range<byte>) → void = {...}
+function err (data: contiguous.range<byte>) → void = {...}
+
 window  : gui::window;
 screen  : gui::screen;
 screens : gui::screen[];
+
 
 
 

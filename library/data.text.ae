@@ -1,0 +1,17 @@
+type symbol =
+{
+}
+
+type string : array(byte) =
+{
+}
+
+type text =
+{
+    type line : string = {}
+}
+
+type doc =
+{
+}
+

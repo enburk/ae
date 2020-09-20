@@ -5,6 +5,7 @@
 #include "doc_text_repo.h"
 #include "doc_ae_syntax_parser.h"
 #include "doc_ae_syntax_schema.h"
+#include "doc_ae_syntax_scheme.h"
 #include "doc_ae_syntax_scopes.h"
 namespace doc::ae::syntax::analysis
 {
@@ -258,6 +259,9 @@ namespace doc::ae::syntax::analysis
     {
         pass2(record, s.body);
     }
+    void pass2 (data & record, directive & s)
+    {
+    }
     void pass2 (data & record, pragma & s)
     {
     }
@@ -275,6 +279,7 @@ namespace doc::ae::syntax::analysis
                 [&](declaration &s) { pass2(record, s); },
                 [&](definition  &s) { pass2(record, s); },
                 [&](subroutine  &s) { pass2(record, s); },
+                [&](directive   &s) { pass2(record, s); },
                 [&](pragma      &s) { pass2(record, s); },
             },
             s.variant);

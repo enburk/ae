@@ -175,6 +175,7 @@ struct Editor : gui::widget<Editor>
             auto s = editor.page.style.now;
             s.color = pix::black;   editor.styles["name"   ] = sys::glyph_style_index(s);
             s.color = pix::blue;    editor.styles["keyword"] = sys::glyph_style_index(s);
+            s.color = pix::teal;    editor.styles["keyname"] = sys::glyph_style_index(s);
             s.color = pix::blue;    editor.styles["pragma" ] = sys::glyph_style_index(s);
             s.color = pix::purple;  editor.styles["macros" ] = sys::glyph_style_index(s);
             s.color = pix::navy;    editor.styles["number" ] = sys::glyph_style_index(s);

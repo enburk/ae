@@ -1,0 +1,59 @@
+using "math";
+using math::min;
+using math::max;
+using math::abs;
+
+type forward.iterator(x) =
+{
+    function value → x = {…}
+    mutation value ← x = {…}
+    operator ++ = {…}
+}
+
+type bidirectional.iterator(x) : forward.iterator(x) =
+{
+    function value → x = {…}
+    mutation value ← x = {…}
+    operator ++ = {…}
+    operator -- = {…}
+}
+
+type random.access.iterator(x) : bidirectional.iterator(x), ordered =
+{
+    operator ++ = { this += 1 }
+    operator -- = { this -= 1 }
+    operator +  (integer n) = { i := this; i += n; return i }
+    operator -  (integer n) = { i := this; i -= n; return i }
+    operator += (integer n) = {…}
+    operator -= (integer n) = {…}
+    operator -  (same i) → integer = {…}
+}
+
+type contiguous.iterator(x) : random.access.iterator(x) =
+{
+    address : meta::address;
+    function value = meta::value.of(x)::at(address);
+    mutation value = meta::value.of(x)::at(address) ← value;
+    operator += (integer n) = address += n × meta::size.of(x);
+    operator -= (integer n) = address -= n × meta::size.of(x);
+    operator -  (same i) = (address - i.address) / meta::size.of(x);
+}
+
+type integer.iterator : random.access.iterator(x) =
+{
+    integer value;
+    operator ++ = value++;
+    operator -- = value--;
+    operator += (integer n) = value += n;
+    operator -= (integer n) = value -= n;
+    operator -  (same i) = value - i.value;
+}
+
+
+
+
+
+
+
+
+

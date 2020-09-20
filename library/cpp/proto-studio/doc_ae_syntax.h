@@ -136,6 +136,7 @@ namespace doc::ae::syntax
         str kind;
         token* title = nullptr;
         token* name = nullptr;
+        token* coname = nullptr;
         named_pack type;
         parameters parameters;
         array<statement> body;
@@ -159,6 +160,13 @@ namespace doc::ae::syntax
         array<statement> body;
     };
 
+    struct directive
+    {
+        token* title = nullptr;
+        expression arg;
+    };
+
+
     struct statement
     {
         std::variant
@@ -171,6 +179,7 @@ namespace doc::ae::syntax
             declaration,
             definition,
             subroutine,
+            directive,
             pragma
         >
         variant;
