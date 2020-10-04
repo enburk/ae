@@ -33,7 +33,18 @@ namespace doc::ae::synthesis
         name.replace_all("&", "_");
         name.replace_all(";", "_");
         name.replace_all(".", "_");
+        name.replace_all("~", "_tilda_");
         name.replace_all((char*)(u8"√"), "_sqrt_");
+        if (name.contains("_"))
+        {
+            name.replace_all("=", "_equal_");
+            name.replace_all("+", "_add_");
+            name.replace_all("-", "_sub_");
+            name.replace_all("/", "_div_");
+            name.replace_all("*", "_mul_");
+            name.replace_all("&", "_and_");
+            name.replace_all("|", "_or_");
+        }
         if (name.starts_with("_") or name.contains("__")) name = "ae_" + name;
         return name;
     }
@@ -58,7 +69,12 @@ namespace doc::ae::synthesis
         std::visit(aux::overloaded
         {
             [&](number  v) { tokens += token{v.token->text}; },
-            [&](symbol  v) { tokens += token{v.token->text}; },
+            [&](symbol  v)
+            {
+                if (v.token->text == (char*)(u8"×")) v.token->text = "*";
+                if (v.token->text == (char*)(u8"←")) v.token->text = "=";
+                tokens += token{print(v.token->text)};
+            },
             [&](literal v) { tokens += token{str()
 
                 + "std::span<uint8_t>((uint8_t*)(" + v.token->text + "), "

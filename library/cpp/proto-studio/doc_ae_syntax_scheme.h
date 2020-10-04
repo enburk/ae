@@ -80,9 +80,10 @@ namespace doc::ae::syntax
         if (schema_starts_with("if"))
         {
             conditional s;
-            s.title = read_token();
+            s.title = read("if");
             s.condition = read_expression_until("then");
-            s.then_body = read_statement_or_body();
+            s.then_body = read_statement_or_body(); // if (not elements.empty()) { read("else");
+         // s.else_body = read_statement_or_body(); }
             return statement{std::move(s)};
         }
         if (schema_starts_with("else"))

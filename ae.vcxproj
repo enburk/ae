@@ -76,6 +76,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)\.vstudio\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>.vstudio\$(Platform)\$(Configuration)\</IntDir>
+    <EnableMicrosoftCodeAnalysis>false</EnableMicrosoftCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)\.vstudio\$(Platform)\$(Configuration)\</OutDir>
@@ -160,6 +161,8 @@
     <ClInclude Include="library\cpp\proto-studio\doc_ae_lexica.h" />
     <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax.h" />
     <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_analysis.h" />
+    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_analysis_1.h" />
+    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_analysis_2.h" />
     <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_parser.h" />
     <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_schema.h" />
     <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_scheme.h" />
@@ -203,6 +206,16 @@
     <ClInclude Include="library\cpp\proto-studio\test_fonts.h" />
     <ClInclude Include="library\cpp\proto-studio\test_pix.h" />
     <ClInclude Include="library\cpp\sys.h" />
+    <ClInclude Include="library\proto\data.h" />
+    <ClInclude Include="library\proto\data_aux.h" />
+    <ClInclude Include="library\proto\data_collections.h" />
+    <ClInclude Include="library\proto\data_collections_array.h" />
+    <ClInclude Include="library\proto\data_iterators.h" />
+    <ClInclude Include="library\proto\data_ranges.h" />
+    <ClInclude Include="library\proto\data_ranges_forward.h" />
+    <ClInclude Include="library\proto\data_ranges_random.h" />
+    <ClInclude Include="library\proto\data_text_string.h" />
+    <ClInclude Include="library\proto\test_data.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="library\cpp\proto-studio\proto-studio.cpp" />

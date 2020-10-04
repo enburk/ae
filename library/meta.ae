@@ -5,11 +5,13 @@ using data::text;
 type size = {…};
 type address = {…};
 
-function size.of (x) → size = {...}
-function type.of (x) → type = {...}
-function name.of (x) → text = {...}
+;; function size.of (x) → size = {…}
+;; function type.of (x) → type = {…}
+;; function name.of (x) → text = {…}
 
-type value.of(x) = { function at (a: address) → x = {...} }
+type value.of(x) = { function at (a: address) → x = {…} }
+
+
 
 
 

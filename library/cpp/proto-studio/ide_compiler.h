@@ -4,6 +4,8 @@
 #include "doc_ae_lexica.h"
 #include "doc_html_lexica.h"
 #include "doc_ae_syntax_analysis.h"
+#include "doc_ae_syntax_analysis_1.h"
+#include "doc_ae_syntax_analysis_2.h"
 #include "doc_ae_synthesis.h"
 #include "ide_console.h"
 namespace ide::compiler
@@ -27,6 +29,11 @@ namespace ide::compiler
         if (line != "") line = str(' ', indent) + line;
         
         if (line != "") lines += line;
+
+        if (e.debug.size() > 0)
+            for (auto s : e.debug)
+                lines += str(' ', indent)
+                    + "// " + s;
 
         if (not e.body.empty())
         {

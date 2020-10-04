@@ -113,7 +113,8 @@ namespace doc::ae::syntax
         {
             token* token = read_token("expected name");
             if (token->kind != "name") throw error("expected name, not " + token->kind);
-            if (keynames.contains(token->text)) token->kind = "keyname";
+            if (keynames.contains(token->text))
+                token->kind = "keyname";
             return token;
         }
 
@@ -186,7 +187,7 @@ namespace doc::ae::syntax
                 {
                     if (pack.units.empty()) pack.units += named_unit{};
                     if (pack.units.back().identifier != nullptr) break;
-                    pack.units.back().identifier = read_token();
+                    pack.units.back().identifier = read_name();
                     continue;
                 }
                 if (elements.front().kind == "()")
@@ -201,7 +202,7 @@ namespace doc::ae::syntax
 
             if (pack.units.empty() or
                 pack.units.back().identifier == nullptr)
-                read("expected name or named pack");
+                read("name or named pack");
                 // will throw on reading next token
                 // and highlight it
 

@@ -3,20 +3,17 @@ using math::min;
 using math::max;
 using math::abs;
 
-operator (x) >>> (f) = f(x);
-operator (f) <<< (x) = f(x);
-
 type pointer(x) : ordered =
 {
     address : meta::address;
-    constructor(x) = address ← meta::address.of(x);
+;;  constructor(x) = address ← meta::address.of(x);
     function value = meta::value.of(x)::at(address);
 }
 
 type collection(x) : range(x) =
 {
-    function size → integer = {...}
-    operator ~= (x element) = {...}
+    function size → integer = {…}
+    operator ~= (x element) = {…}
     operator ~= (range(x) r) = {
         for each e in r do
             this ~= e
@@ -37,8 +34,8 @@ type contiguous.collection(x) : collection(x), random.access.range(x) =
     type iterator = contiguous.iterator;
     type sentinel = contiguous.iterator;
 
-    function size → integer = {...}
-    mutation size ← integer = {...}
+    function size → integer = {…}
+    mutation size ← integer = {…}
 
     function first = this[0];
     function last  = this[size-1];
@@ -73,14 +70,14 @@ system
 {
     memory
     {
-        function request (integer bytes) → contiguous.range(byte) = {...}
-        function release (range : contiguous.range(byte)) = {...}
+        function request (integer bytes) → contiguous.range(byte) = {…}
+        function release (range : contiguous.range(byte)) = {…}
 
-        type chunk : contiguous.range(byte) =
-        {
-            mutation size ← integer = {...}
-            destructor = {...}
-        }
+        ;; type chunk : contiguous.range(byte) =
+        ;; {
+        ;;     mutation size ← integer = {…}
+        ;;     destructor = {…}
+        ;; }
     }
 }
 
@@ -129,6 +126,10 @@ type array(x) : contiguous.collection(x) =
 ;; type array(byte)
 ;; {
 ;; }
+
+
+
+
 
 
 

@@ -66,6 +66,7 @@ namespace doc
         array<token> head;
         array<entity> body;
         array<token> tail;
+        array<str> debug;
 
         explicit entity() = default;
         explicit entity(str s) { head += token{s}; }

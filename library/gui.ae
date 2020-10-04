@@ -11,8 +11,9 @@ screen : type =
 
 window : type =
 {
-    function create () → void = {...}
+    function create () = {…}
 }
+
 
 
 

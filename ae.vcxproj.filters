@@ -16,6 +16,9 @@
     <Filter Include="doc">
       <UniqueIdentifier>{765ef79c-b72a-4dd0-86dd-5928e70e6197}</UniqueIdentifier>
     </Filter>
+    <Filter Include="proto">
+      <UniqueIdentifier>{7f2c9289-c202-441a-9c5b-ea34500b3352}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="library\cpp\platforms\microsoft_windows.h">
@@ -197,6 +200,42 @@
     </ClInclude>
     <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_scheme.h">
       <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_analysis_1.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_analysis_2.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="library\proto\data.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="library\proto\data_aux.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="library\proto\data_collections.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="library\proto\data_collections_array.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="library\proto\data_iterators.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="library\proto\data_ranges.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="library\proto\data_ranges_forward.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="library\proto\data_ranges_random.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="library\proto\data_text_string.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="library\proto\test_data.h">
+      <Filter>proto</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

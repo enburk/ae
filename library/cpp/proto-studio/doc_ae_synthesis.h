@@ -15,34 +15,34 @@ namespace doc::ae::synthesis
 
         void proceed (const array<statement> & input)
         {
-            for (auto & s : input)
+            for (auto & st : input)
             {
                 std::visit(aux::overloaded
                 {
-                    [&](noop        s) { add(s); },
-                    [&](loop_for    s) { add(s); },
-                    [&](loop_while  s) { add(s); },
-                    [&](expression  s) { add(s); },
-                    [&](conditional s) { add(s); },
-                    [&](declaration s) { add(s); },
-                    [&](definition  s) { add(s); },
-                    [&](subroutine  s) { add(s); },
-                    [&](directive   s) { add(s); },
-                    [&](pragma      s) { add(s); },
+                    [&](noop        s) { add(s, st.scope); },
+                    [&](loop_for    s) { add(s, st.scope); },
+                    [&](loop_while  s) { add(s, st.scope); },
+                    [&](expression  s) { add(s, st.scope); },
+                    [&](conditional s) { add(s, st.scope); },
+                    [&](declaration s) { add(s, st.scope); },
+                    [&](definition  s) { add(s, st.scope); },
+                    [&](subroutine  s) { add(s, st.scope); },
+                    [&](directive   s) { add(s, st.scope); },
+                    [&](pragma      s) { add(s, st.scope); },
                 },
-                s.variant);
+                st.variant);
             }
         }
 
-        void add (const noop        & s) { body += entity{}; }
-        void add (const loop_for    & s) {}
-        void add (const loop_while  & s) {}
-        void add (const expression  & s)
+        void add (const noop        & s, scope* scope) { body += entity{}; }
+        void add (const loop_for    & s, scope* scope) {}
+        void add (const loop_while  & s, scope* scope) {}
+        void add (const expression  & s, scope* scope)
         {
             body += entity{print(s)}; 
         }
-        void add (const conditional & s) {}
-        void add (const declaration & s)
+        void add (const conditional & s, scope* scope) {}
+        void add (const declaration & s, scope* scope)
         {
             if (s.kind == "variable"
             or  s.kind == "constant")
@@ -63,7 +63,7 @@ namespace doc::ae::synthesis
                 body += e;
             }
         }
-        void add (const definition & s)
+        void add (const definition & s, scope* scope)
         {
             if (s.kind == "singleton")
             {
@@ -84,22 +84,33 @@ namespace doc::ae::synthesis
                 }
                 templ.truncate(); // ","
                 templ.truncate(); // " "
-                if (templ != "") templ = "template<" + templ + "> ";
+                if (templ != "")
+                    templ = "template<" + templ + "> ";
 
                 str name = print(s.name->text);
                 body += entity{templ + "struct " + name};
                 body.back().kind = "class";
+
+                str in_scope;
+                if (true) if (scope && scope->named.size() > 0)
+                    for (auto & [name, value] : scope->named)
+                        in_scope += name + ", ";
+                in_scope.truncate();
+                in_scope.truncate();
+                if (in_scope != "") body.back().debug +=
+                  "[in scope: " + in_scope + "]";
+
                 context{nestedness + name, body.back().body}.proceed(s.body);
             }
         }
-        void add (const subroutine & s)
+        void add (const subroutine & s, scope* scope)
         {
             str head, args;
             for (auto & p : s.parameters.list) {
                 str type = print(p.type);
                 str name = print(p.name->text);
                 if (type == "") {
-                    head += "class type_"+name + ", ";
+                    head += "typename type_"+name + ", ";
                     args += "type_"+name + " " + name + ", "; }
                 else args += print_type(p.type) + " " + name + ", ";
             }
@@ -108,13 +119,19 @@ namespace doc::ae::synthesis
             if (head != "") head = "template<" + head + "> ";
 
             str type = print_type(s.type);
-            str name = print(s.name->text);
+            str name = s.name ? print(s.name->text) :
+                s.kind == "call operator" ? "operator ()" :
+                "#noname#";
+
+            // if (name == "constructor")
+            // if (name == "destructor")
+
             body += entity{head + type + " " + name + "(" + args + ")"};
             body.back().kind = "function";
             context{nestedness + name, body.back().body}.proceed(s.body);
         }
-        void add (const directive & s) {}
-        void add (const pragma & s) {}
+        void add (const directive & s, scope* scope) {}
+        void add (const pragma & s, scope* scope) {}
     };
 
     void proceed (syntax::analysis::data & data,
@@ -139,22 +156,22 @@ namespace doc::ae::synthesis
         auto & body = global.body.back().body;
         context context { array<str>{}, body};
 
-        for (const auto & s : data.statements)
+        for (const auto & st : data.statements)
         {
             std::visit(aux::overloaded
             {
-                [&](noop        s) { main.add(s); },
-                [&](loop_for    s) { main.add(s); },
-                [&](loop_while  s) { main.add(s); },
-                [&](expression  s) { main.add(s); },
-                [&](conditional s) { main.add(s); },
-                [&](directive   s) { main.add(s); },
-                [&](declaration s) { context.add(s); },
-                [&](definition  s) { context.add(s); },
-                [&](subroutine  s) { context.add(s); },
-                [&](pragma      s) { context.add(s); },
+                [&](noop        s) { main.add(s, st.scope); },
+                [&](loop_for    s) { main.add(s, st.scope); },
+                [&](loop_while  s) { main.add(s, st.scope); },
+                [&](expression  s) { main.add(s, st.scope); },
+                [&](conditional s) { main.add(s, st.scope); },
+                [&](directive   s) { main.add(s, st.scope); },
+                [&](declaration s) { context.add(s, st.scope); },
+                [&](definition  s) { context.add(s, st.scope); },
+                [&](subroutine  s) { context.add(s, st.scope); },
+                [&](pragma      s) { context.add(s, st.scope); },
             },
-            s.variant);
+            st.variant);
         }
 
         if (body.empty()) global.body.truncate();

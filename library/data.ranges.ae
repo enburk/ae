@@ -1,19 +1,19 @@
-type forward.range(x) =
+type range(x) =
 {
     type iterator = forward.iterator(x);
-    type sentinel = {...}
+    type sentinel = {…}
 
-    function begin → iterator = {...}
-    function end   → sentinel = {...}
+    function begin → iterator = {…}
+    function end   → sentinel = {…}
 }
 
-type random.access.range(x) : forward.range(x) =
+type random.access.range(x) : range(x) =
 {
     type iterator = random.access.iterator;
-    type sentinel = {...}
+    type sentinel = {…}
 
-    function from (iterator i) → same = {...}
-    function upto (iterator i) → same = {...}
+    function from (iterator i) → same = {…}
+    function upto (iterator i) → same = {…}
     operator [iterator i, iterator j] = from(i).upto(j+1);
     operator [iterator i, iterator j) = from(i).upto(j);
 
@@ -37,7 +37,7 @@ type contiguous.range(x) : random.access.range(x) =
     function upto (iterator i) = same(begin, clip(i));
 }
 
-type integer.range =
+type integer.range : random.access.range(x) = ;; immutable
 {
     type iterator = integer.iterator; iterator begin;
     type sentinel = integer.iterator; iterator end;
@@ -48,20 +48,51 @@ type integer.range =
     function upto (iterator i) = same(begin, clip(i));
 }
 
-type type extension =
-{
-    operator () = range(same);
-    operator [] = random.access.range(same);
-    operator [same a, same b) = random.access.range(same)[a, b);
-    operator [same a, same b] = random.access.range(same)[a, b];
-    operator [integer a, integer b) = random.access.range(same)[a, b);
-    operator [integer a, integer b] = random.access.range(same)[a, b];
-}
+;; type type extension =
+;; {
+;;     operator … = range(same);
+;;     operator [] = random.access.range(same);
+;;     operator [same a, same b) = random.access.range(same)[a, b);
+;;     operator [same a, same b] = random.access.range(same)[a, b];
+;;     operator [integer a, integer b) = random.access.range(same)[a, b);
+;;     operator [integer a, integer b] = random.access.range(same)[a, b];
+;; }
+;;
+;; operator (x) … = range(x);
+;; operator (x) [] = random.access.range(x);
 
 type integer extension =
 {
     operator [integer a, integer b) = integer.range[a, b);
     operator [integer a, integer b] = integer.range[a, b];
 }
+
+statement for each (x) in (some.type[] r) do {…} =
+{
+    i := r.begin;
+    while i ≠ r.end do
+        using x = i.value
+            {…}
+}
+
+operator (f(x)) for each (x) in (some.type[] r) =
+{
+    i := r.begin;
+    while i ≠ r.end do
+        using x = i.value
+            yield f(x)
+}
+
+operator (f) while (x) = { while x yield f; }
+operator (f) until (x) = { yield f; while x yield f; }
+
+
+
+
+
+
+
+
+
 
 

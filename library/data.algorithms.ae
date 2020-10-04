@@ -1,7 +1,9 @@
-using "math";
-using math::min;
-using math::max;
-using math::abs;
+using "data.ranges";
+
+;; using "math";
+;; using math::min;
+;; using math::max;
+;; using math::abs;
 
 type predicate (args...)     = function (args...) → boolean;
 type binary.predicate (x, y) = function (x, y) → boolean;
@@ -43,36 +45,41 @@ type bidirectional.range(x) extension =
         }
     }
 }
-    
+
 type random.access.range(x) extension =
 {
     mutation rotate.by.reverse (middle: iterator) =
     {
-        reverse(begin,  middle);
-        reverse(middle, end);
-        reverse(begin,  end);
+        b := begin;
+        m := middle;
+        e := end;
+        
+        reverse(b, m);
+        reverse(m, e);
+        reverse(b, e);
 
-        middle = begin + (end - middle);
+        m = b + (e - m);
 
-        return middle;
+        return m;
     }
-    
-    mutation stable.partition (match: unary.predicate(x)) =
+
+    mutation stable.partition (match: unary.predicate(x)) → iterator =
     {
-        n := end - begin;
-        if n = 0 then return begin;
-        if n = 1 then return begin + integer(match(begin.value));
-        
-        middle := begin + n/2;
-        
+        if size = 0 then return begin;
+        if size = 1 then return begin + integer(match(begin.value));
+
+        b := begin;
+        m := b + size/2;
+        e := end;
+
         return random.access.range
         (
-            this[begin, middle)::stable.partition(match),
-            this[middle,   end)::stable.partition(match)
+            this[b, m)::stable.partition(match),
+            this[m, e)::stable.partition(match)
         )
-        ::rotate(middle);
-    } 
-    
+        ::rotate(m);
+    }
+
     mutation gather (place: iterator, match: unary.predicate(x)) =
     {
         return random.access.range
@@ -82,6 +89,7 @@ type random.access.range(x) extension =
         )
     }
 }
+
 
 
 

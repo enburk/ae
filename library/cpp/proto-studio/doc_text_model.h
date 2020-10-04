@@ -204,7 +204,8 @@ namespace doc
 
             if (selections.size() == 1 &&
                 selections[0].from == selections[0].upto &&
-                selections[0].from.offset > 1)
+                selections[0].from.offset > 1 &&
+                selections[0].from.offset <= lines [selections[0].from.line].size())
             {
                 glyph c1 = lines
                 [selections[0].from.line]
@@ -224,7 +225,8 @@ namespace doc
             }
             if (selections.size() == 1 &&
                 selections[0].from == selections[0].upto &&
-                selections[0].from.offset > 0)
+                selections[0].from.offset > 0 &&
+                selections[0].from.offset <= lines [selections[0].from.line].size())
             {
                 glyph c = lines
                 [selections[0].from.line]
@@ -270,6 +272,13 @@ namespace doc
                     selections[0].from.offset--;
                     selections[0].from.offset--;
                     base_insert((char*)(u8"≈"));
+                    return true;
+                }
+                if (c == "*" && s == "*") {
+                    base_insert("*");
+                    selections[0].from.offset--;
+                    selections[0].from.offset--;
+                    base_insert((char*)(u8"×"));
                     return true;
                 }
             }

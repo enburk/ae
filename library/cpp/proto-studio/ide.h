@@ -1,4 +1,5 @@
 #pragma once
+#include "../../proto/test_data.h"
 #include <experimental/coroutine>
 #include "gui_window.h"
 #include "gui_widget_image.h"
@@ -54,6 +55,10 @@ struct IDE : gui::widget<IDE>
         test.hide();
 
         console.object.activate(&console.object.compiler);
+
+        for (auto s : test_data())
+            console.object.compiler <<
+                "test_data: " + s;
 
         finished = false;
 
@@ -207,7 +212,8 @@ struct IDE : gui::widget<IDE>
             if (str log = editor.object.log(); log != "") {
                 console.object.activate(&console.object.editor);
                 console.object.editor << log;
-                syntax_ok = false;
+                if (editor.object.log.errors.size() > 0)
+                    syntax_ok = false;
             }
             last_compile_time = gui::time::now;
         }
