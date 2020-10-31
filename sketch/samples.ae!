@@ -158,4 +158,9 @@ Writing Qlock
                     g];a,g=b,h};sleep(61-Time.now.sec);;;}).gsub(
                          /^(.{26}):.{32}/){$1}.split*"")##))
                          
+
+
+
+https://en.wikipedia.org/wiki/Collatz_conjecture
+
                          

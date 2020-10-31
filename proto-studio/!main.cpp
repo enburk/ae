@@ -7,6 +7,10 @@
 
 #else
 
-#include "../../../proto-studio/!main.h"
+#include "app_ide.h"
+#include "windows_fonts.h"
+#include "windows_images.h"
+#include "windows_system.h"
+#include "windows_windows.h"
 
 #endif

@@ -35,31 +35,44 @@ struct random_access_iterator : bidirectional_iterator<x> // , ordered
     random_access_iterator_impl;
 };
 
+//template<class I>
+//  concept random_access_iterator =
+//    std::bidirectional_iterator<I> &&
+//    std::derived_from</*ITER_CONCEPT*/<I>, std::random_access_iterator_tag> &&
+//    std::totally_ordered<I> &&
+//    std::sized_sentinel_for<I, I> &&
+//    requires(I i, const I j, const std::iter_difference_t<I> n) {
+//      { i += n } -> std::same_as<I&>;
+//      { j +  n } -> std::same_as<I>;
+//      { n +  j } -> std::same_as<I>;
+//      { i -= n } -> std::same_as<I&>;
+//      { j -  n } -> std::same_as<I>;
+//      {  j[n]  } -> std::same_as<std::iter_reference_t<I>>;
+//    };
+
 template<class x>
 struct contiguous_iterator : random_access_iterator<x>
 {
     x* pointer = nullptr;
     random_access_iterator_impl;
-    auto operator *  () tsnoc&  { return *pointer; }
-    auto operator *  () tsnoc&& { return *pointer; }
-    auto operator *  () const&  { return *pointer; }
-    auto operator *  () const&& { return *pointer; }
     void operator += (int n) { pointer += n; }
     void operator -= (int n) { pointer -= n; }
+    auto operator *  () tsnoc&  -> x tsnoc&  { return *pointer; }
+    auto operator *  () tsnoc&& -> x tsnoc&& { return *pointer; }
+    auto operator *  () const&  -> x const&  { return *pointer; }
+    auto operator *  () const&& -> x const&& { return *pointer; }
     auto operator -  (contiguous_iterator i) { return (pointer - i.pointer); }
     auto operator != (contiguous_iterator i) { return (pointer != i.pointer); }
-    auto operator <=> (contiguous_iterator i) { return (pointer <=> i.pointer); }
+    auto operator <=>(contiguous_iterator i) { return (pointer <=> i.pointer); }
 };
 
 struct integer_iterator : random_access_iterator<int>
 {
     int value;
     random_access_iterator_impl;
-    auto operator *  () tsnoc&  { return value; }
-    auto operator *  () tsnoc&& { return value; }
-    auto operator *  () const&  { return value; }
-    auto operator *  () const&& { return value; }
     void operator += (int n) { value += n; }
     void operator -= (int n) { value -= n; }
+    auto operator *  () tsnoc& -> int tsnoc& { return value; }
+    auto operator *  () const& -> int const& { return value; }
     auto operator -  (integer_iterator i) { return value - i.value; }
 };

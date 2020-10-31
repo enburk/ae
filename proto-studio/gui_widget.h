@@ -1,22 +1,14 @@
 #pragma once
-#include <any>
 #include <set>
-#include "../aux_utils.h"
-#include "../pix_image.h"
-#include "../pix_sampling.h"
+#include "sys_ui.h"
+#include "pix_image.h"
 #include "gui_effect.h"
 namespace gui::base
 {
     struct widget : polymorphic
     {
         widget* parent = nullptr;
-        array  <widget*> children;
-        widget (widget &&) = delete;
-        widget (widget const&) = delete;
-        widget (widget* p) : parent(p) { if (parent) parent->children += this; }
-       ~widget () { update(); if (parent) parent->children.try_erase(this); }
-
-        ////////////////////////////////////////////////////////////////////////
+        array <widget*> children;
 
         property<XYWH> coord;
         property<uint8_t> alpha = 255;
@@ -183,10 +175,6 @@ namespace gui::base
 
         ////////////////////////////////////////////////////////////////////////
 
-        virtual void on_close () {}
-
-        ////////////////////////////////////////////////////////////////////////
-
         size_t size_in_bytes;
         bool inholds (void* p) {
             std::byte* begin = (std::byte*) this;
@@ -218,8 +206,7 @@ namespace gui
 
     template<class T> struct widget : base::widget
     {
-        //widget (base::widget* p = nullptr) : base::widget(p)
-        widget () : base::widget(nullptr)
+        widget ()
         {
             base::widget* p = nullptr;
             p = inholder(this); size_in_bytes = sizeof(T);
@@ -227,7 +214,12 @@ namespace gui
             if (p && !parent) { parent = p; parent->children += this; skin = parent->skin; }
             if (!p) widgets.emplace(this);
         }
-        ~widget () {
+        widget (widget &&) = delete;
+        widget (widget const&) = delete;
+       ~widget () {
+            update();
+            if (parent) parent->children.
+                try_erase(this);
             auto it = widgets.lower_bound(this);
             if (it != widgets.end() && *it == this) widgets.erase(it);
         }

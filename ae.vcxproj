@@ -135,7 +135,6 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -206,19 +205,39 @@
     <ClInclude Include="library\cpp\proto-studio\test_fonts.h" />
     <ClInclude Include="library\cpp\proto-studio\test_pix.h" />
     <ClInclude Include="library\cpp\sys.h" />
-    <ClInclude Include="library\proto\data.h" />
-    <ClInclude Include="library\proto\data_aux.h" />
-    <ClInclude Include="library\proto\data_collections.h" />
-    <ClInclude Include="library\proto\data_collections_array.h" />
-    <ClInclude Include="library\proto\data_iterators.h" />
-    <ClInclude Include="library\proto\data_ranges.h" />
-    <ClInclude Include="library\proto\data_ranges_forward.h" />
-    <ClInclude Include="library\proto\data_ranges_random.h" />
-    <ClInclude Include="library\proto\data_text_string.h" />
-    <ClInclude Include="library\proto\test_data.h" />
+    <ClInclude Include="proto-studio\app_ide.h" />
+    <ClInclude Include="proto-studio\aux_abc.h" />
+    <ClInclude Include="proto-studio\aux_array.h" />
+    <ClInclude Include="proto-studio\aux_string.h" />
+    <ClInclude Include="proto-studio\aux_utils.h" />
+    <ClInclude Include="proto-studio\data.h" />
+    <ClInclude Include="proto-studio\data_aux.h" />
+    <ClInclude Include="proto-studio\data_collections.h" />
+    <ClInclude Include="proto-studio\data_collections_array.h" />
+    <ClInclude Include="proto-studio\data_iterators.h" />
+    <ClInclude Include="proto-studio\data_ranges.h" />
+    <ClInclude Include="proto-studio\data_ranges_forward.h" />
+    <ClInclude Include="proto-studio\data_ranges_random.h" />
+    <ClInclude Include="proto-studio\data_text_string.h" />
+    <ClInclude Include="proto-studio\gui_colors.h" />
+    <ClInclude Include="proto-studio\gui_effect.h" />
+    <ClInclude Include="proto-studio\gui_widget.h" />
+    <ClInclude Include="proto-studio\gui_widget_canvas.h" />
+    <ClInclude Include="proto-studio\pix_color.h" />
+    <ClInclude Include="proto-studio\pix_coord.h" />
+    <ClInclude Include="proto-studio\pix_image.h" />
+    <ClInclude Include="proto-studio\pix_text.h" />
+    <ClInclude Include="proto-studio\sys_aux.h" />
+    <ClInclude Include="proto-studio\sys_ui.h" />
+    <ClInclude Include="proto-studio\test_data.h" />
+    <ClInclude Include="proto-studio\windows_aux.h" />
+    <ClInclude Include="proto-studio\windows_fonts.h" />
+    <ClInclude Include="proto-studio\windows_images.h" />
+    <ClInclude Include="proto-studio\windows_system.h" />
+    <ClInclude Include="proto-studio\windows_windows.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="library\cpp\proto-studio\proto-studio.cpp" />
+    <ClCompile Include="proto-studio\!main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

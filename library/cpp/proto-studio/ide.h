@@ -1,6 +1,4 @@
 #pragma once
-#include "../../proto/test_data.h"
-#include <experimental/coroutine>
 #include "gui_window.h"
 #include "gui_widget_image.h"
 #include "gui_widget_canvas.h"
@@ -56,9 +54,9 @@ struct IDE : gui::widget<IDE>
 
         console.object.activate(&console.object.compiler);
 
-        for (auto s : test_data())
-            console.object.compiler <<
-                "test_data: " + s;
+        // for (auto s : test_data())
+        //     console.object.compiler <<
+        //         "test_data: " + s;
 
         finished = false;
 

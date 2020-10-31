@@ -15,8 +15,13 @@ array<str> test_data()
     for (auto x : a)
         b += x;
 
+    a = b;
+    b = b + b;
+
+    b.remove_if([](auto i){ return (i%2) == 0; });
+
     str s;
-    for (auto x : a)
+    for (auto x : b)
         s += std::to_string(x);
 
     out += s;
