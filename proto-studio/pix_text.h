@@ -1,156 +1,14 @@
 #pragma once
-#include <atomic>
-#include <thread>
-#include <filesystem>
 #include "aux_string.h"
-#include "aux_utils.h"
 #include "pix_color.h"
 #include "pix_image.h"
-namespace sys
+namespace pix
 {
-    using pix::XY;
-    using pix::XYWH;
-    using pix::XYXY;
-    using pix::RGBA;
-    using pix::MONO;
     using namespace aux;
-
-    namespace screen
-    {
-        inline XY size;
-    }
-
-    namespace window
-    {
-        inline pix::image<RGBA> image;
-        void update ();
-        void timing ();
-        namespace on
-        {
-            void start   ();
-            void finish  ();
-            void turn_on ();
-            void turn_off();
-            void pause   ();
-            void resume  ();
-            void timing  ();
-            void resize  ();
-        }
-    }
-
-    namespace mouse
-    {
-        void cursor(str);
-        namespace on
-        {
-            void move  (XY);
-            void wheel (XY, int);
-            void press (XY, char, bool);
-            void leave ();
-        }
-    }
-
-    namespace keyboard
-    {
-        inline bool alt = false;
-        inline bool ctrl = false;
-        inline bool shift = false;
-        namespace on
-        {
-            void focus (bool);
-            void press (str, bool);
-            void input (str);
-        }
-    }
-
-    namespace clipboard
-    {
-        void set (str);
-        void set (pix::frame<RGBA>);
-        namespace get {
-            pix::image<RGBA> image ();
-            str string ();
-        }
-    }
-
-    namespace settings
-    {
-        str  load (str name, str default_value);
-        int  load (str name, int default_value);
-        void save (str name, str value);
-        void save (str name, int value);
-    }
-
-    struct app_base : polymorphic
-    {
-        str title;
-        virtual void constructor() = 0;
-        virtual void destructor () = 0;
-    };
-    struct app_instance
-    {
-        static void init();
-        static void done();
-        static app_base * app;
-        app_instance () { init(); if (app) app->constructor(); }
-       ~app_instance () { if (app) app->destructor();  done(); }
-    };
-    template<class APP> struct app : app_base
-    {
-        APP * apptr = nullptr;;
-        app (str s) { app_instance::app = this; title = s; }
-        void constructor() override { apptr = new APP; }
-        void destructor () override { delete apptr; }
-    };
-    inline app_base * app_instance::app = nullptr;
-
-    struct process
-    {
-        size_t handle = 0;
-        struct options
-        {
-            bool hidden = false;
-            std::filesystem::path out;
-            int ms_wait_for_input_idle = 0;
-        };
-        process () noexcept = default;
-        process (const process&) = delete;
-        process (process&& p) noexcept { handle = p.handle; }
-        process (std::filesystem::path, str args, options=options{});
-       ~process ();
-
-        bool wait (int ms = max<int>());
-    };
-
-    enum class choice
-    {
-        ok,               
-        ok_cancel,
-        yes_no,
-        yes_no_cancel,
-        abort_retry_ignore,
-        cancel_try_continue,
-        retry_cancel
-    };
-
-    str dialog (str title, str text, choice);
-
-    struct directory_watcher
-    {
-        using path = std::filesystem::path; path dir;
-        std::function<void(path, str)> action = [](path, str){};
-        std::function<void(aux::error)> error = [](aux::error){};
-        std::thread thread; void watch(); void cancel();
-        std::atomic<bool> stop = false;
-        ~directory_watcher(){cancel();}
-    };
 
     struct font
     {
         str face; int size; bool bold; bool italic;
-
-        font(str face = "", int size = 0, bool b=false, bool i=false)
-            : face(face), size(size), bold(b), italic(i) {}
 
         bool operator != (const font & f) const { return ! (*this == f); }
         bool operator == (const font & f) const { return
@@ -208,7 +66,7 @@ namespace sys
         bool operator == (glyph_style_index i) const { return value == i.value; }
         bool operator <  (glyph_style_index i) const { return value <  i.value; }
 
-        static inline array<sys::glyph_style> glyph_styles = {sys::glyph_style{}};
+        static inline array<glyph_style> glyph_styles = {glyph_style{}};
 
         const glyph_style & style () const { return glyph_styles[value]; }
         /***/ glyph_style & style () /***/ { return glyph_styles[value]; }
@@ -252,24 +110,4 @@ namespace sys
 
         void render (pix::frame<RGBA>, XY offset=XY(), uint8_t alpha=255, int x=0);
     };
-
-    using byte = unsigned char;
-}
-namespace pix
-{
-    using byte = sys::byte;
-
-    expected<image<RGBA>> read   (std::filesystem::path);
-    expected<nothing>     write  (frame<RGBA>, std::filesystem::path, int quality = -1);
-    expected<array<byte>> pack   (frame<RGBA>, str format, int quality = -1);
-    expected<image<RGBA>> unpack (byte* buffer, int size);
-    expected<image<RGBA>> unpack (array<byte>::range);
-    expected<XY>          size   (array<byte>::range);
-}
-namespace aux
-{
-    using byte = sys::byte;
-
-    expected<array<byte>> zip    (array<byte>::range bytes);
-    expected<array<byte>> unzip  (array<byte>::range bytes, int uncompressed_size);
 }

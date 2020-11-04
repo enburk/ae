@@ -1,5 +1,5 @@
 #pragma once
-#include "gui_colors.h"
+//#include "gui_colors.h"
 #include "gui_widget.h"
 namespace gui
 {
@@ -52,41 +52,83 @@ namespace gui
 
     template<class Object> struct area : widget<area<Object>>
     {
-        canvas canvas;
         frame  frame1;
         frame  frame2;
+        frame  frame3;
         Object object;
 
         using widget<area<Object>>::skin;
         using widget<area<Object>>::coord;
         using widget<area<Object>>::notify;
 
-        area () { on_change(&skin); }
-
         void on_change (void* what) override
         {
+            if (what == &skin)
+            {
+                auto & style = gui::skins[skin.now];
+                frame1.color = style.light.first;
+                frame2.color = style.heavy.first;
+                frame3.color = style.light.first;
+            }
             if (what == &coord && coord.was.size != coord.now.size)
             {
                 auto r = coord.now.local();
                 frame1.coord = r; r.deflate(frame1.thickness.now);
                 frame2.coord = r; r.deflate(frame2.thickness.now);
-                canvas.coord = r; r.deflate(frame2.thickness.now);
+                frame3.coord = r; r.deflate(frame3.thickness.now);
                 object.coord = r;
-            }
-            if (what == &skin)
-            {
-                frame1.color = gui::skins[skin.now].light.back_color;
-                frame2.color = gui::skins[skin.now].heavy.back_color;
-                canvas.color = gui::skins[skin.now].light.back_color;
             }
         }
 
         void on_focus (bool on) override { object.on_focus(on); }
         void on_keyboard_input (str symbol) override { object.on_keyboard_input(symbol); }
         void on_key_pressed (str key, bool down) override { object.on_key_pressed(key,down); }
-
-        void on_notify (gui::base::widget* w) override { notify(w == &object ? this : w); }
-        void on_notify (gui::base::widget* w, int n) override { notify(w == &object ? this : w, n); }
+        void on_notify (void* what) override { notify(what); }
     };
 
+    struct splitter : widget<splitter>
+    {
+        property<int> lower;
+        property<int> upper;
+        bool touched = false;
+        XY touch_point;
+        int middle = 0;
+
+        void on_change (void* what) override
+        {
+            if (what == &coord && coord.was.size != coord.now.size )
+                mouse_image = coord.now.size.x > coord.now.size.y ?
+                    "horizontal splitter" : "vertical splitter";
+        }
+
+        bool mouse_sensible (XY p) override { return true; }
+
+        void on_mouse_press (XY p, char button, bool down) override
+        {
+            if (button != 'L') return;
+            if (down && !touched) touch_point = p;
+            touched = down;
+        }
+        void on_mouse_hover (XY p) override
+        {
+            if (!touched) return;
+
+            if (coord.now.size.x > coord.now.size.y)
+            {
+                int y = coord.now.origin.y + p.y - touch_point.y;
+                y = max (y, lower.now);
+                y = min (y, upper.now);
+                middle = y + coord.now.h/2;
+                notify();
+            }
+            else
+            {
+                int x = coord.now.origin.x + p.x - touch_point.x;
+                x = max (x, lower.now);
+                x = min (x, upper.now);
+                middle = x + coord.now.w/2;
+                notify();
+            }
+        }
+    };
 }

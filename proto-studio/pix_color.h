@@ -36,6 +36,15 @@ namespace pix
                aux::random<int>(l, u),
                aux::random<int>(l, u),
                aux::random<int>(l, u)); }
+
+        static const RGBA
+        black,  silver, gray,   white,
+        maroon, red,    purple, fuchsia,
+        green,  lime,   olive,  yellow,
+        navy,   blue,   teal,   aqua,
+            
+        error,
+        amber;
     };
 
     inline RGBA ARGB (uint32_t value)
@@ -47,12 +56,28 @@ namespace pix
         c.b = (value      ) & 0xFF;
         return c;
     }
+    inline RGBA XRGB (uint32_t value)
+    {
+        RGBA c;
+        c.a = 0xFF;
+        c.r = (value >> 16) & 0xFF;
+        c.g = (value >>  8) & 0xFF;
+        c.b = (value      ) & 0xFF;
+        return c;
+    }
 
-    const RGBA
-    black  = ARGB(0xFF000000), silver = ARGB(0xFFC0C0C0), gray    = ARGB(0xFF808080), white   = ARGB(0xFFFFFFFF),
-    maroon = ARGB(0xFF800000), red    = ARGB(0xFFFF0000), purple  = ARGB(0xFF800080), fuchsia = ARGB(0xFFFF00FF),
-    green  = ARGB(0xFF008000), lime   = ARGB(0xFF00FF00), olive   = ARGB(0xFF808000), yellow  = ARGB(0xFFFFFF00),
-    navy   = ARGB(0xFF000080), blue   = ARGB(0xFF0000FF), teal    = ARGB(0xFF008080), aqua    = ARGB(0xFF00FFFF);
+    inline const RGBA
+    RGBA::black  = XRGB(0x000000), RGBA::silver  = XRGB(0xC0C0C0),
+    RGBA::maroon = XRGB(0x800000), RGBA::red     = XRGB(0xFF0000),
+    RGBA::green  = XRGB(0x008000), RGBA::lime    = XRGB(0x00FF00),
+    RGBA::navy   = XRGB(0x000080), RGBA::blue    = XRGB(0x0000FF),
+    RGBA::purple = XRGB(0x800080), RGBA::fuchsia = XRGB(0xFF00FF),
+    RGBA::olive  = XRGB(0x808000), RGBA::yellow  = XRGB(0xFFFF00),
+    RGBA::teal   = XRGB(0x008080), RGBA::aqua    = XRGB(0x00FFFF),
+    RGBA::gray   = XRGB(0x808080), RGBA::white   = XRGB(0xFFFFFF),
+
+    RGBA::amber  = XRGB(0xFFBF00),
+    RGBA::error  = XRGB(0xB00020);
 
     struct  MONO
     {
@@ -60,7 +85,11 @@ namespace pix
 
         MONO () : value (0) {}
         MONO (int value) : value(value) {}
-        MONO (RGBA c) { value = aux::clamp<uint8_t>(255 * (0.212671*c.r + 0.715160*c.g + 0.072169*c.b)); }
+        MONO (RGBA c) { value = aux::clamp
+            <uint8_t>(255* (
+            0.212671 * c.r +
+            0.715160 * c.g +
+            0.072169 * c.b)); }
 
         bool operator == (const MONO & c) const { return value == c.value; }
         bool operator != (const MONO & c) const { return value != c.value; }

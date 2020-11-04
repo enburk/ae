@@ -12,7 +12,7 @@ namespace gui::base
 
         property<XYWH> coord;
         property<uint8_t> alpha = 255;
-        binary_property<str> skin;
+        unary_property<str> skin;
 
         void hide    (bool off, time t=time()) { alpha.go(off? 0 : 255, t); }
         void show    (bool on , time t=time()) { alpha.go(on ? 255 : 0, t); }
@@ -165,13 +165,8 @@ namespace gui::base
         ////////////////////////////////////////////////////////////////////////
 
         void notify () { if (parent) parent->on_notify(this); }
-        void notify (int i) { if (parent) parent->on_notify(this, i); }
-
         void notify (widget* w) { if (parent) parent->on_notify(w); }
-        void notify (widget* w, int i) { if (parent) parent->on_notify(w, i); }
-
-        virtual void on_notify (widget*) {}
-        virtual void on_notify (widget*, int) {}
+        virtual void on_notify (void*) {}
 
         ////////////////////////////////////////////////////////////////////////
 
@@ -216,12 +211,14 @@ namespace gui
         }
         widget (widget &&) = delete;
         widget (widget const&) = delete;
-       ~widget () {
+       ~widget ()
+       {
             update();
-            if (parent) parent->children.
-                try_erase(this);
+            if (parent)
+                parent->children.try_erase(this);
             auto it = widgets.lower_bound(this);
-            if (it != widgets.end() && *it == this) widgets.erase(it);
+            if (it != widgets.end() && *it == this)
+                widgets.erase(it);
         }
     };
 }

@@ -5,16 +5,12 @@
 #include "aux_utils.h"
 #include "pix_color.h"
 #include "pix_image.h"
-//#include "gui_colors.h"
+#include "gui_colors.h"
 #include "gui_effect.h"
 namespace sys
 {
-    using pix::XY;
-    using pix::XYWH;
-    using pix::XYXY;
-    using pix::RGBA;
-    using pix::MONO;
     using namespace aux;
+    using namespace pix;
 
     namespace screen
     {
@@ -164,15 +160,15 @@ namespace sys
     };
     struct app_instance
     {
-        static void init() {}// gui::done(); }
-        static void done() {}// gui::init(); }
+        static void init() { gui::init(); }
+        static void done() { gui::done(); }
         static inline app_base * app = nullptr;
         app_instance () { init(); if (app) app->constructor(); }
        ~app_instance () { if (app) app->destructor();  done(); }
     };
     template<class Widget> struct app : app_base
     {
-        glxwindow<Widget> * winptr = nullptr;
+        pixwindow<Widget> * winptr = nullptr;
         app (str s) { app_instance::app = this; title = s; }
         void destructor () override { delete winptr; }
         void constructor() override { winptr = new

@@ -206,6 +206,9 @@
     <ClInclude Include="library\cpp\proto-studio\test_pix.h" />
     <ClInclude Include="library\cpp\sys.h" />
     <ClInclude Include="proto-studio\app_ide.h" />
+    <ClInclude Include="proto-studio\app_ide_console.h" />
+    <ClInclude Include="proto-studio\app_ide_editor.h" />
+    <ClInclude Include="proto-studio\app_ide_flist.h" />
     <ClInclude Include="proto-studio\aux_abc.h" />
     <ClInclude Include="proto-studio\aux_array.h" />
     <ClInclude Include="proto-studio\aux_string.h" />
@@ -222,10 +225,14 @@
     <ClInclude Include="proto-studio\gui_colors.h" />
     <ClInclude Include="proto-studio\gui_effect.h" />
     <ClInclude Include="proto-studio\gui_widget.h" />
+    <ClInclude Include="proto-studio\gui_widget_button.h" />
     <ClInclude Include="proto-studio\gui_widget_canvas.h" />
+    <ClInclude Include="proto-studio\gui_widget_scroller.h" />
     <ClInclude Include="proto-studio\pix_color.h" />
     <ClInclude Include="proto-studio\pix_coord.h" />
     <ClInclude Include="proto-studio\pix_image.h" />
+    <ClInclude Include="proto-studio\pix_process.h" />
+    <ClInclude Include="proto-studio\pix_sampling.h" />
     <ClInclude Include="proto-studio\pix_text.h" />
     <ClInclude Include="proto-studio\sys_aux.h" />
     <ClInclude Include="proto-studio\sys_ui.h" />

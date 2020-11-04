@@ -10,8 +10,6 @@ name='Microsoft.Windows.Common-Controls' version='6.0.0.0'  \
 processorArchitecture='*' publicKeyToken='6595b64144ccf1df' \
 language='*'\"")
 
-using pix::XY;
-
 aux::str sys::dialog (str title, str text, sys::choice choice, void* handle)
 {
     UINT type = MB_OK;

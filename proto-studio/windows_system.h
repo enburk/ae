@@ -3,13 +3,6 @@
 #include "sys_aux.h"
 #include "windows_aux.h"
 
-using pix::XY;
-using pix::XYWH;
-using pix::XYXY;
-using pix::RGBA;
-using pix::MONO;
-using namespace aux;
-
 sys::process::process (std::filesystem::path path, str args, options opt)
 {
     HANDLE out = 0; if (opt.out != std::filesystem::path{})
