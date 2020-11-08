@@ -1,28 +1,25 @@
 #pragma once
-#include "gui_widget.h"
 #include "gui_widget_canvas.h"
-#include "sys_ui.h"
-using namespace aux;
 using namespace pix;
 
-struct IDE : gui::widget<IDE>
+struct Flist : gui::widget<Flist>
 {
     gui::canvas canvas;
-    
-    IDE()
-    {
-        canvas.color = RGBA::red;
-    }
 
     void on_change (void* what) override
     {
-        if (what == &coord)
+        if (what == &skin)
         {
-            canvas.coord = coord.now.local();
+            canvas.color = gui::skins[skin.now].light.first;
+        }
+        if (what == &coord && coord.was.size != coord.now.size)
+        {
+            int W = coord.now.w; if (W <= 0) return;
+            int H = coord.now.h; if (H <= 0) return;
+            int h = gui::metrics::text::height * 12/7;
+            int w = 5*h;
+
+            canvas.coord = XYWH(0, 0, W, h);
         }
     }
 };
-sys::app<IDE> app("AE proto-studio");//, {0,0}, {100, 100});
-
-
-

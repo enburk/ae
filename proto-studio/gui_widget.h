@@ -23,7 +23,7 @@ namespace gui::base
         void shift   (XY    d,  time t=time()) { coord.go(XYWH(coord.to.x+d.x, coord.to.y+d.y, coord.to.w, coord.to.h), t); }
         void resize  (XY size,  time t=time()) { coord.go(XYWH(coord.to.x, coord.to.y, size.x, size.y), t); }
 
-        virtual void on_render (pix::frame<RGBA> frame, XY offset, uint8_t alpha) {}
+        virtual void on_render (sys::frame frame, XY offset, uint8_t alpha) {}
         virtual void on_change (void* what) { on_change(); }
         virtual void on_change () {}
 
@@ -46,11 +46,16 @@ namespace gui::base
             on_change(what);
         }
 
-        void render (pix::frame<RGBA> frame, XY offset, uint8_t combined_alpha = 255)
+        void render (sys::frame frame, XY offset, uint8_t combined_alpha = 255)
         {
-            // this widget origin is shifted by 'offset' from the frame origin (frame.offset)
-            combined_alpha = ((combined_alpha+1) * alpha.now) >> 8; if (combined_alpha == 0) return;
+            combined_alpha =
+            ((combined_alpha+1) * alpha.now) >> 8;
+            if (combined_alpha == 0) return;
+
+            // this widget origin is shifted by 'offset'
+            // relative to the frame's origin (frame.offset)
             on_render (frame, offset, combined_alpha);
+
             for (auto child : children) {
                 XYWH  child_global = child->coord.now + frame.offset - offset;
                 auto  child_frame = frame.crop(child_global - frame.offset);
@@ -165,7 +170,7 @@ namespace gui::base
         ////////////////////////////////////////////////////////////////////////
 
         void notify () { if (parent) parent->on_notify(this); }
-        void notify (widget* w) { if (parent) parent->on_notify(w); }
+        void notify (void* w) { if (parent) parent->on_notify(w); }
         virtual void on_notify (void*) {}
 
         ////////////////////////////////////////////////////////////////////////

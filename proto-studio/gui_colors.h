@@ -55,6 +55,10 @@ namespace gui
             i++;
         }
 
+        for (int i=0; i<10; i++)
+            palettes[""][i] = std::pair{
+                RGBA::random(), RGBA::random()};
+
         for (auto [name, palette] : palettes) {
             auto & skin = skins[name];
 
@@ -74,8 +78,6 @@ namespace gui
             skin.selection  = palette[4];
             skin.error      = std::pair{RGBA::error, RGBA::white};
         }
-
-        skins[""] = skins["gray"];
     }
     void done () {}
 }

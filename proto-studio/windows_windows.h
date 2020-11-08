@@ -186,21 +186,17 @@ LRESULT CALLBACK WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     if (win->image.size.x > 0 // not yet on first WM_SETFOCUS
     &&  win->image.size.y > 0)
         win->update();
-    
-    if (win->image.size.x > 0 // not yet on first WM_SETFOCUS
-    &&  win->image.size.y > 0)
-        win->update();
 
     return 0;
 }
 
 LRESULT CALLBACK WindowProcGL (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-    auto rc = WindowProc(hwnd, msg, wparam, lparam);
+    auto rc = msg == WM_PAINT ? 0 : WindowProc(hwnd, msg, wparam, lparam);
 
-    sys::window* w = (sys::window*)(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
+    sys::window* win = (sys::window*)(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
     
-    HGLRC handle = w ? (HGLRC)(w->native_handle2) : NULL;
+    HGLRC handle = win ? (HGLRC)(win->native_handle2) : NULL;
 
     switch (msg) {
     case WM_CREATE : 
@@ -239,7 +235,7 @@ LRESULT CALLBACK WindowProcGL (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
         ::wglMakeCurrent      (hdc, handle);
         ::ReleaseDC     (hwnd, hdc);
 
-        w->native_handle2 = handle;
+        win->native_handle2 = handle;
         break;
     }
     case WM_DESTROY:
@@ -253,21 +249,57 @@ LRESULT CALLBACK WindowProcGL (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
         HDC hdc = ::GetDC(hwnd);
         ::wglMakeCurrent (hdc, handle);
         ::ReleaseDC(hwnd, hdc);
-        ::glViewport (0, 0, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
-        w->on_resize(XY(LOWORD(lparam), HIWORD(lparam)));
+
+        int w = GET_X_LPARAM(lparam);
+        int h = GET_Y_LPARAM(lparam);
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(0.0, w, 0.0, h, -1.0, 1.0);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        glViewport (0, 0, w, h);
+        win->on_resize(XY(w,h));
         break;
     }
     case WM_PAINT:
     {
-        HDC hdc = ::GetDC(hwnd);
+        PAINTSTRUCT ps;
+        HDC hdc = ::BeginPaint(hwnd, &ps);
+        int x = ps.rcPaint.left;
+        int y = ps.rcPaint.top;
+        int w = ps.rcPaint.right - x;
+        int h = ps.rcPaint.bottom - y;
         ::wglMakeCurrent (hdc, handle);
 
-        glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        ::glFinish();
+        GLint xywh[4];
+        glGetIntegerv(GL_VIEWPORT, xywh);
+        int W = xywh[2]; // win->image.size.x;
+        int H = xywh[3]; // win->image.size.y;
 
+//      sys::frame f {XY(x,y),XY(w,h)};
+        sys::frame f {XY(0,0),XY(W,H)};
+        f.blend = [handle, H](sys::frame f, RGBA c, uint8_t alpha)
+        {
+            auto x = (float)f.offset.x;
+            auto y = (float)f.offset.y; y = H - y;
+            auto w = (float)f.size.x;
+            auto h = (float)f.size.y; h = -h;
+
+            glBegin(GL_QUADS);
+            glColor4f(c.r/255.0f, c.g/255.0f, c.b/255.0f, c.a/255.0f);
+            glVertex3f(x,y,0);
+            glVertex3f(x+w,y,0);
+            glVertex3f(x+w,y+h,0);
+            glVertex3f(x,y+h,0);
+            glEnd();
+        };
+
+        win->render(f);
+
+        ::glFinish();
         ::SwapBuffers(hdc);
-        ::ReleaseDC(hwnd, hdc);
+        ::EndPaint(hwnd, &ps);
+        return 0;
     }
     }
 
@@ -322,8 +354,7 @@ void sys::window::update()
 }
 void sys::window::timing()
 {
-    auto hwnd = (HWND)(native_handle1);
-    ::PostMessage(hwnd, WM_COMMAND, 11111, 0);
+    ::PostMessage((HWND)(native_handle1), WM_COMMAND, 11111, 0);
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR pCmdLine, int nCmdShow)

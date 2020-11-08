@@ -3,18 +3,24 @@
 #include "gui_widget_canvas.h"
 #include "sys_aux.h"
 #include "sys_ui.h"
+#include "app_ide_console.h"
+#include "app_ide_editor.h"
+#include "app_ide_flist.h"
 using namespace aux;
 using namespace pix;
 
 struct IDE : gui::widget<IDE>
 {
     gui::canvas canvas;
-
+    gui::area<Flist> flist_area; Flist& flist = flist_area.object;
+    gui::area<Editor> editor_area; Editor& editor = editor_area.object;
+    gui::area<Console> console_area; Console& console = console_area.object;
     gui::splitter splitter_editor_l;
     gui::splitter splitter_editor_r;
     
     IDE()
     {
+        skin = "gray";
         canvas.color = RGBA::red;
     }
 
@@ -22,6 +28,26 @@ struct IDE : gui::widget<IDE>
     {
         if (what == &coord)
         {
+            int W = coord.now.w; if (W <= 0) return;
+            int H = coord.now.h; if (H <= 0) return;
+            int w = gui::metrics::text::height*10;
+            int h = gui::metrics::text::height*12/7;
+            
+            int d = gui::metrics::line::width * 6;
+            int l = sys::settings::load("splitter.editor.l.permyriad", 18'00) * W / 100'00;
+            int r = sys::settings::load("splitter.editor.r.permyriad", 70'00) * W / 100'00;
+
+            splitter_editor_l.coord = XYXY(l-d, h, l+d, H);
+            splitter_editor_r.coord = XYXY(r-d, h, r+d, H);
+            splitter_editor_l.lower = 1'000 * W / 10'000;
+            splitter_editor_l.upper = 3'500 * W / 10'000;
+            splitter_editor_r.lower = 6'500 * W / 10'000;
+            splitter_editor_r.upper = 9'000 * W / 10'000;
+
+            flist_area.coord = XYWH(0, h, l-0, H-h);
+            editor_area.coord = XYWH(l, h, r-l, H-h);
+            console_area.coord = XYWH(r, h, W-r, H-h);
+
             canvas.coord = coord.now.local();
         }
     }

@@ -15,7 +15,7 @@ namespace sys
     namespace clipboard
     {
         void set (str);
-        void set (frame<RGBA>);
+        void set (pix::frame<RGBA>);
         namespace get {
             pix::image<RGBA> image ();
             str string ();

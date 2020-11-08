@@ -39,6 +39,22 @@ namespace sys
     };
     str dialog (str title, str text, choice, void* handle = nullptr);
 
+    struct frame
+    {
+        XY offset, size;
+        explicit operator XYWH () const { return
+            XYWH (offset.x, offset.y, size.x, size.y); }
+
+        frame crop (XYWH r) const {
+            r = XYWH(*this) & (r + offset);
+            frame f = *this;
+            f.offset = XY(r.x, r.y);
+            f.size   = XY(r.w, r.h);
+            return f;
+        }
+        std::function<void(frame, RGBA, uint8_t alpha)> blend;
+    };
+
     struct window : polymorphic
     {
         pix::image<RGBA> image;
@@ -63,6 +79,7 @@ namespace sys
         virtual void mouse_on_wheel (XY p, int delta) = 0;
         virtual void mouse_on_move  (XY p) = 0;
         virtual void mouse_on_leave () = 0;
+        virtual void render (frame) {}
 
         std::thread timer;
         std::atomic<bool> timer_stop = true;
@@ -129,7 +146,12 @@ namespace sys
              gui::time::set();
              gui::active_properties.for_each([](auto p){ p->tick(); });
              for (auto rect : widget.updates)
-             widget.render(image.crop(rect), rect.origin);
+             {
+                  frame f {rect.origin, rect.size};
+                  f.blend = [this](frame f, RGBA c, uint8_t alpha)
+                  { image.crop(XYWH(f)).blend(c, alpha); };
+                  widget.render(f, rect.origin);
+             }
              widget.updates.clear();
         }
     };
@@ -138,17 +160,27 @@ namespace sys
     {
         using pixwindow<Widget>::opengl;
         using pixwindow<Widget>::widget;
+        using pixwindow<Widget>::update;
+        using pixwindow<Widget>::image;
 
         glxwindow() { opengl = true; }
 
         void on_resize (XY size) override {
              widget.resize(size);
+             widget.update();
              on_timing();
         }
         void on_timing() override
         {
              gui::time::set();
              gui::active_properties.for_each([](auto p){ p->tick(); });
+             image.updates = widget.updates;
+             widget.updates.clear();
+             update();
+        }
+        void render (frame f) override
+        {
+            widget.render(f, f.offset);
         }
     };
 
@@ -168,7 +200,7 @@ namespace sys
     };
     template<class Widget> struct app : app_base
     {
-        pixwindow<Widget> * winptr = nullptr;
+        glxwindow<Widget> * winptr = nullptr;
         app (str s) { app_instance::app = this; title = s; }
         void destructor () override { delete winptr; }
         void constructor() override { winptr = new

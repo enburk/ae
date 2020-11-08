@@ -62,14 +62,14 @@ namespace pix
     {
         int value = 0;
 
-        bool operator != (glyph_style_index i) const { return value != i.value; }
-        bool operator == (glyph_style_index i) const { return value == i.value; }
-        bool operator <  (glyph_style_index i) const { return value <  i.value; }
-
         static inline array<glyph_style> glyph_styles = {glyph_style{}};
 
         const glyph_style & style () const { return glyph_styles[value]; }
         /***/ glyph_style & style () /***/ { return glyph_styles[value]; }
+
+        bool operator != (glyph_style_index i) const { return value != i.value; }
+        bool operator == (glyph_style_index i) const { return value == i.value; }
+        bool operator <  (glyph_style_index i) const { return value <  i.value; }
 
         explicit glyph_style_index () = default;
         explicit glyph_style_index (const glyph_style & style) :
@@ -102,11 +102,11 @@ namespace pix
         explicit glyph (str text, glyph_style style):
             glyph (text, glyph_style_index(style)) {}
 
+        glyph_style style () const { return style_index.style(); }
+
         bool operator != (const glyph & g) const { return ! (*this == g); }
         bool operator == (const glyph & g) const { return text == g.text &&
             style_index == g.style_index; }
-
-        glyph_style style () const { return style_index.style(); }
 
         void render (pix::frame<RGBA>, XY offset=XY(), uint8_t alpha=255, int x=0);
     };

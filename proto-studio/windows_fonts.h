@@ -2,11 +2,10 @@
 #include "windows_aux.h"
 #include <tchar.h>
 
-MAKE_HASHABLE(pix::font, t.face, t.size, t.bold, t.italic);
-
 struct GDI_FONT
 {
     HFONT handle;
+    
     pix::font::metrics metrics;
 
     GDI_FONT(pix::font font)
@@ -16,10 +15,13 @@ struct GDI_FONT
         if (font.face == "") font.face = "Segoe UI";
         if (font.size ==  0) font.size = gui::metrics::text::height;
 
+        LONG height = font.size >= 0 ? -font.size :
+            MulDiv (font.size, ::GetDeviceCaps(dc,LOGPIXELSY), 72);
+
         LOGFONT lf;
         _tcscpy_s (
         lf.lfFaceName       , 32, str(font.face.upto(31)).c_str());
-        lf.lfHeight         = font.size >= 0 ? -font.size : MulDiv (font.size, ::GetDeviceCaps (dc,LOGPIXELSY), 72);
+        lf.lfHeight         = height;
         lf.lfWidth          = 0;
         lf.lfEscapement     = 0;
         lf.lfOrientation    = 0;
@@ -41,8 +43,8 @@ struct GDI_FONT
 
         metrics.height   = tm.tmHeight;  // ascent + descent
         metrics.ascent   = tm.tmAscent;  // units above the base line
-        metrics.descent  = tm.tmDescent; // units below the base line (positive value)
-        metrics.linegap  = tm.tmExternalLeading; // baseline-to-baseline distance = ascent + descent + linegap
+        metrics.descent  = tm.tmDescent; // units below the base line
+        metrics.linegap  = tm.tmExternalLeading;
         metrics.average_char_width = tm.tmAveCharWidth;
         metrics.maximum_char_width = tm.tmMaxCharWidth;
         metrics.minimum_char_width = 0;
@@ -51,8 +53,10 @@ struct GDI_FONT
 
         ::DeleteDC (dc);
     }
-    ~GDI_FONT() {} // { if (handle) ::DeleteObject (handle); }
+    // ~GDI_FONT() { if (handle) ::DeleteObject (handle); }
 };
+
+MAKE_HASHABLE(pix::font, t.face, t.size, t.bold, t.italic);
 
 static GDI_FONT cache (pix::font font) {
     static std::unordered_map<pix::font, GDI_FONT> fonts;
@@ -63,10 +67,9 @@ static GDI_FONT cache (pix::font font) {
 
 pix::font::metrics pix::metrics (pix::font font)
 {
-    return
-        cache(
+    return cache(
         font != pix::font{} ?
-        font :  pix::font{"Arial",-8})
+        font :  pix::font{"Arial", -8})
         .metrics;
 }
 
@@ -92,7 +95,7 @@ struct GDI_CONTEXT
 
 struct cache_metrics_key
 {
-    aux::str text; pix::font font; 
+    str text; pix::font font; 
 
     bool operator == (const cache_metrics_key & k) const { return
         text == k.text &&
@@ -104,9 +107,7 @@ MAKE_HASHABLE(cache_metrics_key, t.text, t.font);
 
 static std::unordered_map<cache_metrics_key, sys::glyph_metrics> cache_metrics;
 
-static array<std::unordered_map<str, sys::glyph_metrics>> cache_metrics2;
-
-sys::glyph::glyph (str text, sys::glyph_style_index style_index) : text(text), style_index(style_index)
+sys::glyph::glyph (str text, sys::glyph_style_index i) : text(text), style_index(i)
 {
     if (text == "") return;
     const auto & style = this->style();
@@ -119,7 +120,7 @@ sys::glyph::glyph (str text, sys::glyph_style_index style_index) : text(text), s
         SIZE Size;
         auto ss = winstr(text);
         auto rc = ::GetTextExtentPoint32W (context.dc, ss.c_str(), (int) ss.size(), &Size);
-        if (!rc) throw std::runtime_error("pix::font::render : GetTextExtentPoint32W fail");
+        if (!rc) throw std::runtime_error("pix::font::render: GetTextExtentPoint32W fail");
 
         advance = Size.cx;
         ascent  = context.font.metrics.ascent;
@@ -149,8 +150,6 @@ sys::glyph::glyph (str text, sys::glyph_style_index style_index) : text(text), s
 
         advance -= width; // the pen position increment = width + advance
 
-        if (text == "\n") width = max(1, (ascent+descent)/16); // for text editor
-
         cache_metrics.emplace (key, *this);
     }
 
@@ -163,7 +162,8 @@ struct cache_glyphs_key
 {
     aux::str  text;
     pix::font font;
-    pix::RGBA fore, back;
+    pix::RGBA fore;
+    pix::RGBA back;
 
     bool operator == (const cache_glyphs_key & k) const { return
         text == k.text &&
