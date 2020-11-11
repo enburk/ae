@@ -105,15 +105,15 @@ struct cache_metrics_key
 
 MAKE_HASHABLE(cache_metrics_key, t.text, t.font);
 
-static std::unordered_map<cache_metrics_key, sys::glyph_metrics> cache_metrics;
+static std::unordered_map<cache_metrics_key, text::metrics> cache_metrics;
 
-sys::glyph::glyph (str text, sys::glyph_style_index i) : text(text), style_index(i)
+pix::glyph::glyph (str text, text::style_index i) : text(text), style_index(i)
 {
     if (text == "") return;
     const auto & style = this->style();
     cache_metrics_key key {text, style.font};
     auto it = cache_metrics.find(key);
-    if (it != cache_metrics.end()) glyph_metrics::operator = (it->second); else
+    if (it != cache_metrics.end()) text::metrics::operator = (it->second); else
     {
         GDI_CONTEXT context(style.font);
 
@@ -131,18 +131,17 @@ sys::glyph::glyph (str text, sys::glyph_style_index i) : text(text), style_index
         image.resize(XY(width, ascent+descent));
         image.fill(RGBA::white);
 
-        sys::glyph_style simple_style;
+        text::style simple_style;
         simple_style.font = style.font;
         simple_style.color = RGBA::black;
-        simple_style.background = RGBA::white;
 
         sys::glyph simple_glyph = *this;
-        simple_glyph.style_index = sys::glyph_style_index(simple_style);
+        simple_glyph.style_index = text::style_index(simple_style);
         simple_glyph.render(image);
 
         for (bool stop = false; !stop && width > 0; width--)
             for (int y = 0; y < image.size.y; y++)
-                if (image(width-1, y) != simple_style.background)
+                if (image(width-1, y) != RGBA::white)
                     { stop = true; break; }
 
         if (width < advance) // could be 0 for spaces
@@ -150,7 +149,7 @@ sys::glyph::glyph (str text, sys::glyph_style_index i) : text(text), style_index
 
         advance -= width; // the pen position increment = width + advance
 
-        cache_metrics.emplace (key, *this);
+        cache_metrics.emplace(key, *this);
     }
 
     // adapt metrics for style.outline/undeline/shadow here
@@ -182,11 +181,11 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
     if (text == "") return;
     if (text.contains_only(str::one_of(" \t\r\n"))
     &&  style.underline.color.a == 0
-    &&  style.strikeout.color.a == 0
-    &&  style.background     .a == 0) return;
+    &&  style.strikeout.color.a == 0)
+        return;
 
     RGBA fore = style.color;
-    RGBA back = style.background;
+    RGBA back;
 
     int w = width;
     int h = ascent + descent;
@@ -209,10 +208,9 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
 
     static std::unordered_map<cache_glyphs_key, pix::image<RGBA>> cache;
 
-    sys::glyph_style cacheable_style;
+    text::style cacheable_style;
     cacheable_style.font = style.font;
     cacheable_style.color = style.color;
-    cacheable_style.background = style.background;
 
     bool cacheable =
         text.size() <= 4 &&

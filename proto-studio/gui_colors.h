@@ -19,7 +19,7 @@ namespace gui
     {
         pix::font font;
         std::pair<RGBA,RGBA>
-        ultralight, light, normal, middle, heavy,
+        ultralight, light, normal, middle, heavy, dark,
         active, hovered, touched, focused, disabled,
         highlight, selection, error;
     };
@@ -67,6 +67,7 @@ namespace gui
             skin.normal     = palette[3];
             skin.middle     = palette[4];
             skin.heavy      = palette[5];
+            skin.dark       = palette[9];
 
             skin.hovered    = palette[6];
             skin.active     = palette[7];
@@ -78,6 +79,8 @@ namespace gui
             skin.selection  = palette[4];
             skin.error      = std::pair{RGBA::error, RGBA::white};
         }
+
+        skins[""] = skins["gray"];
     }
     void done () {}
 }

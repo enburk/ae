@@ -293,6 +293,31 @@ LRESULT CALLBACK WindowProcGL (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
             glVertex3f(x,y+h,0);
             glEnd();
         };
+        f.glyph = [handle, H](sys::frame f, glyph g, XY offset, uint8_t alpha, int xx)
+        {
+            auto x = f.offset.x;
+            auto y = f.offset.y; y = H - y;
+            auto w = f.size.x;
+            auto h = f.size.y; h = -h;
+
+            int gw = g.width;
+            int gh = g.ascent + g.descent;
+            if (gw <= 0 or gh <= 0) return;
+
+            glDisable(GL_SCISSOR_TEST);
+
+            static pix::image<RGBA> image;
+            image.resize(XY(gw,gh));
+            image.fill(RGBA{});
+
+            //glReadPixels(x,y, gw,gh, GL_BGRA_EXT, GL_UNSIGNED_BYTE, image.data.data());
+            // flip
+            g.render(image.crop());
+            // flip
+            glRasterPos2i(x,y);
+            glDrawPixels(gw,gh, GL_BGRA_EXT, GL_UNSIGNED_BYTE, image.data.data());
+
+        };
 
         win->render(f);
 

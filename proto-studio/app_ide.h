@@ -12,15 +12,25 @@ using namespace pix;
 struct IDE : gui::widget<IDE>
 {
     gui::canvas canvas;
-    gui::area<Flist> flist_area; Flist& flist = flist_area.object;
-    gui::area<Editor> editor_area; Editor& editor = editor_area.object;
-    gui::area<Console> console_area; Console& console = console_area.object;
+
+    gui::canvas toolbar;
+
+    gui::area<Flist> flist_area;
+    gui::area<Editor> editor_area;
+    gui::area<Console> console_area;
     gui::splitter splitter_editor_l;
     gui::splitter splitter_editor_r;
-    
+
+    Flist& flist = flist_area.object;
+    Editor& editor = editor_area.object;
+    Console& console = console_area.object;
+
     IDE()
     {
         skin = "gray";
+        gui::skins[skin.now].font =
+        sys::font{"Segoe UI", gui::metrics::text::height};
+        toolbar.color = gui::skins[skin.now].light.first;
         canvas.color = RGBA::red;
     }
 
@@ -43,6 +53,8 @@ struct IDE : gui::widget<IDE>
             splitter_editor_l.upper = 3'500 * W / 10'000;
             splitter_editor_r.lower = 6'500 * W / 10'000;
             splitter_editor_r.upper = 9'000 * W / 10'000;
+
+            toolbar.coord = XYWH(0, 0, W, h);
 
             flist_area.coord = XYWH(0, h, l-0, H-h);
             editor_area.coord = XYWH(l, h, r-l, H-h);

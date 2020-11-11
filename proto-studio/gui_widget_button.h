@@ -1,7 +1,7 @@
 #pragma once
 #include "gui_colors.h"
 #include "gui_widget_canvas.h"
-#include "gui_widget_image.h"
+//#include "gui_widget_image.h"
 #include "gui_widget_text_view.h"
 namespace gui
 {
@@ -23,13 +23,14 @@ namespace gui
         time repeat_notch;
         property<time> timer;
 
-        frame frame; image image; text::view text;
+//        frame frame; image image; text::view text;
+        frame frame; text::view text;
 
         std::function<void(void)> on_change_state = [this]()
         {
             const auto & style = skins[skin.now];
 
-            frame.color = style.focus.back_color;
+            frame.color = style.focused.first;
             frame.alpha.go (focused ? 255 : 0);
 
             auto colors = style.normal;
@@ -41,13 +42,14 @@ namespace gui
             if (on           .now) colors = style.active; else
             if (mouse_hover  .now) colors = style.hovered;
 
-            text.ground.color.go(colors.back_color);
-            text.color.go(colors.fore_color);
+            text.ground.color.go(colors.first);
+            text.color.go(colors.second);
 
             auto r = coord.now.local();
             frame.thickness = metrics::line::width;
             frame.coord = r; r.deflate(frame.thickness.now);
-            image.coord = r; r.deflate(frame.thickness.now);
+        //    image.coord = r; r.deflate(frame.thickness.now);
+            r.deflate(frame.thickness.now);
             text .coord = r;
         };
 
@@ -131,7 +133,7 @@ namespace gui
 
         struct group : widgetarium<button>
         {
-            void on_notify (gui::base::widget* w) override
+            void on_notify (void* w) override
             {
                 int n = -1;
                 
@@ -149,7 +151,7 @@ namespace gui
                     if (i != n)
                         (*this)(i).on = false;
 
-                notify(n);
+                // notify(n);
             }
         };
     };

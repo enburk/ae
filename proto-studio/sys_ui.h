@@ -53,6 +53,7 @@ namespace sys
             return f;
         }
         std::function<void(frame, RGBA, uint8_t alpha)> blend;
+        std::function<void(frame, glyph, XY, uint8_t alpha, int)> glyph;
     };
 
     struct window : polymorphic
@@ -150,6 +151,8 @@ namespace sys
                   frame f {rect.origin, rect.size};
                   f.blend = [this](frame f, RGBA c, uint8_t alpha)
                   { image.crop(XYWH(f)).blend(c, alpha); };
+                  f.glyph = [this](frame f, glyph g, XY offset, uint8_t alpha, int x)
+                  { g.render(image.crop(XYWH(f)), offset, alpha, x); };
                   widget.render(f, rect.origin);
              }
              widget.updates.clear();
@@ -200,7 +203,7 @@ namespace sys
     };
     template<class Widget> struct app : app_base
     {
-        glxwindow<Widget> * winptr = nullptr;
+        pixwindow<Widget> * winptr = nullptr;
         app (str s) { app_instance::app = this; title = s; }
         void destructor () override { delete winptr; }
         void constructor() override { winptr = new

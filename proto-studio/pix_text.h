@@ -31,78 +31,79 @@ namespace pix
 
     font::metrics metrics (font);
 
-    struct glyph_style
+    namespace text
     {
-        struct line { str style; int width = 0; RGBA color;
-        bool operator != (const line & l) const { return ! (*this == l); }
-        bool operator == (const line & l) const { return
-             style == l.style &&
-             width == l.width &&
-             color == l.color; }
+        struct style
+        {
+            struct line { str style; int width = 0; RGBA color;
+            bool operator != (const line & l) const { return ! (*this == l); }
+            bool operator == (const line & l) const { return
+                 style == l.style &&
+                 width == l.width &&
+                 color == l.color; }
+            };
+
+            font font;
+            RGBA color;
+            line underline;  // "solid", "double", "dahsed", "dotted", "wavy"
+            line strikeout;
+            line outline;
+
+            bool operator != (const style & s) const { return ! (*this == s); }
+            bool operator == (const style & s) const { return
+                 font       == s.font       &&
+                 color      == s.color      &&
+                 underline  == s.underline  &&
+                 strikeout  == s.strikeout  &&
+                 outline    == s.outline; }
         };
 
-        font font;
-        RGBA color;
-        RGBA background;
-        line underline;  // "solid", "double", "dahsed", "dotted", "wavy"
-        line strikeout;
-        line outline;
+        struct style_index
+        {
+            int value = 0;
 
-        bool operator != (const glyph_style & s) const { return ! (*this == s); }
-        bool operator == (const glyph_style & s) const { return
-             font       == s.font       &&
-             color      == s.color      &&
-             background == s.background &&
-             underline  == s.underline  &&
-             strikeout  == s.strikeout  &&
-             outline    == s.outline; }
-    };
+            static inline array<style> styles = {style{}};
 
-    struct glyph_style_index
+            const text::style & style () const { return styles[value]; }
+            /***/ text::style & style () /***/ { return styles[value]; }
+
+            bool operator != (style_index i) const { return value != i.value; }
+            bool operator == (style_index i) const { return value == i.value; }
+            bool operator <  (style_index i) const { return value <  i.value; }
+
+            explicit style_index () = default;
+            explicit style_index (const text::style & style) :
+                value ((int)(styles.find_or_emplace(style) -
+                             styles.begin())) {}
+        };
+
+        struct metrics
+        {
+            int  width   = 0; // units
+            int  ascent  = 0; // units above the base line
+            int  descent = 0; // units below the base line (positive value)
+            int  advance = 0; // the pen position increment = width + advance
+            XYWH outlines;    // boundaries of the actual image
+
+            bool operator != (const metrics & m) const { return ! (*this == m); }
+            bool operator == (const metrics & m) const { return
+                 width   == m.width   &&
+                 ascent  == m.ascent  &&
+                 descent == m.descent &&
+                 advance == m.advance; }
+        };
+    }
+
+    struct glyph : text::metrics
     {
-        int value = 0;
-
-        static inline array<glyph_style> glyph_styles = {glyph_style{}};
-
-        const glyph_style & style () const { return glyph_styles[value]; }
-        /***/ glyph_style & style () /***/ { return glyph_styles[value]; }
-
-        bool operator != (glyph_style_index i) const { return value != i.value; }
-        bool operator == (glyph_style_index i) const { return value == i.value; }
-        bool operator <  (glyph_style_index i) const { return value <  i.value; }
-
-        explicit glyph_style_index () = default;
-        explicit glyph_style_index (const glyph_style & style) :
-            value ((int)(glyph_styles.find_or_emplace(style) -
-                         glyph_styles.begin())) {}
-    };
-
-    struct glyph_metrics
-    {
-        int  width   = 0; // units
-        int  ascent  = 0; // units above the base line
-        int  descent = 0; // units below the base line (positive value)
-        int  advance = 0; // the pen position increment = width + advance
-        XYWH outlines;    // boundaries of the actual image
-
-        bool operator != (const glyph_metrics & m) const { return ! (*this == m); }
-        bool operator == (const glyph_metrics & m) const { return
-             width   == m.width   &&
-             ascent  == m.ascent  &&
-             descent == m.descent &&
-             advance == m.advance; }
-    };
-
-    struct glyph : glyph_metrics
-    {
-        str text; glyph_style_index style_index;
+        str text; text::style_index style_index;
 
         explicit glyph () = default;
-        explicit glyph (str text, glyph_style_index);
-        explicit glyph (str text, glyph_style style):
-            glyph (text, glyph_style_index(style)) {}
+        explicit glyph (str text, text::style_index);
+        explicit glyph (str text, text::style style):
+            glyph (text, text::style_index(style)) {}
 
-        glyph_style style () const { return style_index.style(); }
+        text::style style () const { return style_index.style(); }
 
         bool operator != (const glyph & g) const { return ! (*this == g); }
         bool operator == (const glyph & g) const { return text == g.text &&

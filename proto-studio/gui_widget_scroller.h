@@ -32,7 +32,7 @@ namespace gui
         canvas canvas;
         Runner runner;
         button up, down, page_up, page_down;
-        property<double> ratio = 1;//.6180339887498948482;
+        property<double> ratio = 1;
         property<int> span = 0, top = 0, step = 1;
         bool touch = false;
         int  touch_point;
@@ -66,7 +66,7 @@ namespace gui
             }
             if (what == &skin)
             {
-                canvas.color = gui::skins[skin.now].light.back_color;
+                canvas.color = gui::skins[skin.now].light.first;
             }
             if (what == &span)
             {
@@ -82,7 +82,7 @@ namespace gui
                 top.now = max (0, min (top.now, span.now - coord.now.h));
                 if (top.now != top.was) {
                     refresh();
-                    notify(top.now);
+                    notify();
                 }
             }
         }
@@ -158,7 +158,7 @@ namespace gui
         canvas canvas;
         Runner runner;
         button left, right, page_left, page_right;
-        property<double> ratio = 1;//.6180339887498948482;
+        property<double> ratio = 1;
         property<int> span = 0, top = 0, step = 1;
         bool touch = false;
         int  touch_point;
@@ -192,7 +192,7 @@ namespace gui
             }
             if (what == &skin)
             {
-                canvas.color = gui::skins[skin.now].light.back_color;
+                canvas.color = gui::skins[skin.now].light.first;
             }
             if (what == &span)
             {
@@ -208,7 +208,7 @@ namespace gui
                 top.now = max (0, min (top.now, span.now - coord.now.w));
                 if (top.now != top.was) {
                     refresh();
-                    notify(top.now);
+                    notify();
                 }
             }
         }
