@@ -55,7 +55,7 @@ struct Flist : gui::widget<Flist>
     {
         if (what == &skin)
         {
-            canvas.color = gui::skins[skin.now].light.first;
+            canvas.color = gui::skins[skin].light.first;
         }
 
         if (what == &coord && coord.was.size != coord.now.size)
@@ -72,7 +72,7 @@ struct Flist : gui::widget<Flist>
         {
             dir.text = root.now.string();
             flist.list.clear();
-            fill(root.now);
+            fill(root);
             refresh();
         }
 
@@ -102,7 +102,7 @@ struct Flist : gui::widget<Flist>
                 if (name.starts_with(".")
                 ||  name.starts_with("_")
                 ||  name == "packages") continue;
-                dirs[p.filename().string()] = relative(p, root.now);
+                dirs[p.filename().string()] = relative(p, root);
             }
             if (is_regular_file (p)) {
                 auto ext = p.extension();
@@ -110,7 +110,7 @@ struct Flist : gui::widget<Flist>
                 &&  ext != ".cpp" && ext != ".hpp"
                 &&  ext != ".cxx" && ext != ".hxx"
                 &&  ext != ".c++" && ext != ".h++" && ext != ".h") continue;
-                files[p.filename().string()] = relative(p, root.now);
+                files[p.filename().string()] = relative(p, root);
             }
         }
 
@@ -134,18 +134,18 @@ struct Flist : gui::widget<Flist>
     {
         if (w == &flist)
         {
-            selected = root.now / std::string(flist.list(flist.selected).text.text.now);
+            selected = root / std::string(flist.list(flist.selected).text.text);
         }
         if (w == &scroller) {
             XYWH r =
-            flist.list.coord.now; r.y = -scroller.top.now;
+            flist.list.coord; r.y = -scroller.top;
             flist.list.coord = r;
         }
     }
 
     void on_mouse_wheel (XY p, int delta) override
     {
-        int h = scroller.step.now; if (h <= 0) h = gui::metrics::text::height;
+        int h = scroller.step; if (h <= 0) h = gui::metrics::text::height;
         delta = delta/120 * h; if (delta == 0) delta = delta < 0 ? -h : h;
         if (sys::keyboard::shift) delta *= coord.now.size.y;
         if (sys::keyboard::ctrl) delta *= 5;

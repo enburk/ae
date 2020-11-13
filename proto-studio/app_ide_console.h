@@ -10,7 +10,7 @@ struct Console : gui::widget<Console>
     {
         if (what == &skin)
         {
-            canvas.color = gui::skins[skin.now].light.first;
+            canvas.color = gui::skins[skin].light.first;
         }
         if (what == &coord && coord.was.size != coord.now.size)
         {

@@ -8,6 +8,7 @@
 #else
 
 #include "app_ide.h"
+#include "test_data.h"
 #include "windows_fonts.h"
 #include "windows_images.h"
 #include "windows_system.h"

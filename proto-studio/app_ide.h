@@ -1,4 +1,5 @@
 #pragma once
+#include "data_ranges.h"
 #include "gui_widget.h"
 #include "gui_widget_canvas.h"
 #include "sys_aux.h"
@@ -28,9 +29,9 @@ struct IDE : gui::widget<IDE>
     IDE()
     {
         skin = "gray";
-        gui::skins[skin.now].font =
+        gui::skins[skin].font =
         sys::font{"Segoe UI", gui::metrics::text::height};
-        toolbar.color = gui::skins[skin.now].light.first;
+        toolbar.color = gui::skins[skin].light.first;
         canvas.color = RGBA::red;
     }
 

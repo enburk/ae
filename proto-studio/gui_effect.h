@@ -18,18 +18,15 @@ namespace gui
         (std::chrono::duration<R, P> duration) {
             ms = std::chrono::duration_cast<
                  std::chrono::milliseconds>
-                 (duration).count();
-        }
+                 (duration).count(); }
 
-        void operator += (time t) { ms += t.ms; }; friend time operator + (time a, time b) { a += b; return a; }
-        void operator -= (time t) { ms -= t.ms; }; friend time operator - (time a, time b) { a -= b; return a; }
+        void operator += (time t) { ms += t.ms; }
+        void operator -= (time t) { ms -= t.ms; }
 
-        friend bool operator == (time l, time r) { return l.ms == r.ms; }
-        friend bool operator != (time l, time r) { return l.ms != r.ms; }
-        friend bool operator <= (time l, time r) { return l.ms <= r.ms; }
-        friend bool operator <  (time l, time r) { return l.ms <  r.ms; }
-        friend bool operator >= (time l, time r) { return l.ms >= r.ms; }
-        friend bool operator >  (time l, time r) { return l.ms >  r.ms; }
+        friend time operator + (time a, time b) { a += b; return a; }
+        friend time operator - (time a, time b) { a -= b; return a; }
+
+        auto operator <=> (time const&) const = default;
 
         static time was;
         static time now;
@@ -102,7 +99,7 @@ namespace gui
         property (type value = type()) : from(value), to(value), was(value), now(value) {}
        ~property () { if (receipt) active_properties.erase(*receipt); }
 
-        explicit operator type () { return now; }
+        operator type const& () { return now; }
 
         void operator = (type value) { go (value, time(0)); }
 
@@ -136,7 +133,7 @@ namespace gui
 
         binary_property (type value = type()) : was(value), now(value) {}
 
-        explicit operator type () { return now; }
+        operator type const& () { return now; }
 
         void operator = (type value) {
             was = now;
@@ -155,7 +152,7 @@ namespace gui
 
         unary_property (type value = type()) : now(value) {}
 
-        explicit operator type () { return now; }
+        operator type const& () { return now; }
 
         void operator = (type value) {
             if (now != value) {

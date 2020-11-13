@@ -10,12 +10,7 @@ namespace pix
     {
         str face; int size; bool bold; bool italic;
 
-        bool operator != (const font & f) const { return ! (*this == f); }
-        bool operator == (const font & f) const { return
-             face   == f.face &&
-             size   == f.size &&
-             bold   == f.bold &&
-             italic == f.italic; }
+        bool operator == (font const&) const = default;
 
         struct metrics
         {
@@ -36,12 +31,7 @@ namespace pix
         struct style
         {
             struct line { str style; int width = 0; RGBA color;
-            bool operator != (const line & l) const { return ! (*this == l); }
-            bool operator == (const line & l) const { return
-                 style == l.style &&
-                 width == l.width &&
-                 color == l.color; }
-            };
+            bool operator == (line const&) const = default; };
 
             font font;
             RGBA color;
@@ -49,13 +39,7 @@ namespace pix
             line strikeout;
             line outline;
 
-            bool operator != (const style & s) const { return ! (*this == s); }
-            bool operator == (const style & s) const { return
-                 font       == s.font       &&
-                 color      == s.color      &&
-                 underline  == s.underline  &&
-                 strikeout  == s.strikeout  &&
-                 outline    == s.outline; }
+            bool operator == (style const&) const = default;
         };
 
         struct style_index
@@ -64,15 +48,13 @@ namespace pix
 
             static inline array<style> styles = {style{}};
 
-            const text::style & style () const { return styles[value]; }
-            /***/ text::style & style () /***/ { return styles[value]; }
+            text::style const& style () const { return styles[value]; }
+            text::style /***/& style () /***/ { return styles[value]; }
 
-            bool operator != (style_index i) const { return value != i.value; }
-            bool operator == (style_index i) const { return value == i.value; }
-            bool operator <  (style_index i) const { return value <  i.value; }
+            auto operator <=> (style_index const&) const = default;
 
             explicit style_index () = default;
-            explicit style_index (const text::style & style) :
+            explicit style_index (text::style const& style) :
                 value ((int)(styles.find_or_emplace(style) -
                              styles.begin())) {}
         };
@@ -85,12 +67,7 @@ namespace pix
             int  advance = 0; // the pen position increment = width + advance
             XYWH outlines;    // boundaries of the actual image
 
-            bool operator != (const metrics & m) const { return ! (*this == m); }
-            bool operator == (const metrics & m) const { return
-                 width   == m.width   &&
-                 ascent  == m.ascent  &&
-                 descent == m.descent &&
-                 advance == m.advance; }
+            bool operator == (metrics const&) const = default;
         };
     }
 
@@ -105,9 +82,7 @@ namespace pix
 
         text::style style () const { return style_index.style(); }
 
-        bool operator != (const glyph & g) const { return ! (*this == g); }
-        bool operator == (const glyph & g) const { return text == g.text &&
-            style_index == g.style_index; }
+        bool operator == (glyph const&) const = default;
 
         void render (pix::frame<RGBA>, XY offset=XY(), uint8_t alpha=255, int x=0);
     };

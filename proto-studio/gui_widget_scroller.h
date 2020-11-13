@@ -66,7 +66,7 @@ namespace gui
             }
             if (what == &skin)
             {
-                canvas.color = gui::skins[skin.now].light.first;
+                canvas.color = gui::skins[skin].light.first;
             }
             if (what == &span)
             {

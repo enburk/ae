@@ -318,6 +318,15 @@
     <ClInclude Include="proto-studio\data_text_string.h">
       <Filter>data</Filter>
     </ClInclude>
+    <ClInclude Include="proto-studio\doc_text.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\gui_widget_image.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\data_experimental.h">
+      <Filter>data</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="proto-studio\!main.cpp">
