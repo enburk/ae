@@ -131,7 +131,6 @@ namespace gui
             int real_page = coord.now.h; if (real_page <= 0) return;
             int fake_span = coord.now.h - 2*up.coord.now.h;
             int fake_page = fake_span * real_page / max(1, span.now);
-            int fake_top  = fake_span * top.now   / max(1, span.now);
             fake_page = min(fake_span, fake_page); if (fake_page <= 0) return;
             top = touch_top + (p.y - touch_point) * real_page/fake_page;
         }
@@ -257,7 +256,6 @@ namespace gui
             int real_page = coord.now.w; if (real_page <= 0) return;
             int fake_span = coord.now.w - 2*left.coord.now.w;
             int fake_page = fake_span * real_page / max(1, span.now);
-            int fake_top  = fake_span * top.now   / max(1, span.now);
             fake_page = min(fake_span, fake_page); if (fake_page <= 0) return;
             top = (touch_top * fake_page + (p.x - touch_point) * real_page)/fake_page;
         }

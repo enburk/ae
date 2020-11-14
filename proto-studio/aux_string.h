@@ -243,9 +243,12 @@ namespace aux
 
         bool ascii_isalnum () const {
             for (char c : *this)
-                if (c < '0' || '9' < c &&
-                    c < 'A' || 'Z' < c &&
-                    c < 'a' || 'z' < c) return false; return true; }
+                if((c < '0') || ('9' < c &&
+                    c < 'A') || ('Z' < c &&
+                    c < 'a') || ('z' < c))
+                    return false;
+            return true;
+        }
 
         static char ascii_tolower (char c) { return 'A' <= c && c <= 'Z' ? c - 'A' + 'a' : c; }
         static char ascii_toupper (char c) { return 'a' <= c && c <= 'z' ? c - 'a' + 'A' : c; }

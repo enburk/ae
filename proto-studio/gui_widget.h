@@ -136,10 +136,10 @@ namespace gui::base
                 mouse_hover_child != hover)
                 mouse_hover_child->mouse_leave();
 
-                mouse_hover_child = hover;
+            mouse_hover_child = hover;
             if (mouse_hover_child) return;
-            
             on_mouse_hover(p); // every mouse_move
+
             sys::mouse::cursor(mouse_image.now);
         }
 

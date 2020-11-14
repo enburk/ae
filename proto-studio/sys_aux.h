@@ -42,7 +42,8 @@ namespace sys
         process () noexcept = default;
         process (const process&) = delete;
         process (process&& p) noexcept { handle = p.handle; }
-        process (std::filesystem::path, str args, options=options{});
+        process (std::filesystem::path, str args, options);
+        process (std::filesystem::path, str args);
        ~process ();
 
         bool wait (int ms = max<int>());

@@ -51,8 +51,8 @@ namespace gui
         if (div == 0) return to; auto add = to - from;
         if (mul == div) return clamp<type>(from + add);
         if (add == div) return clamp<type>(from + mul);
-        if (add > max<int32_t>() && mul > max<int32_t>()
-        ||  add < min<int32_t>() && mul > max<int32_t>())
+        if((add > max<int32_t>() && mul > max<int32_t>())
+        or (add < min<int32_t>() && mul > max<int32_t>()))
         throw std::out_of_range("transition_state: overflow");
         return clamp<type>(from + add*mul/div);
     }
@@ -96,7 +96,7 @@ namespace gui
         time notch, lapse, transition_time = default_transition_time;
         base::widget* widget = nullptr; std::optional<size_t> receipt;
 
-        property (type value = type()) : from(value), to(value), was(value), now(value) {}
+        property (type value = type()) : now(value), was(value), from(value), to(value){}
        ~property () { if (receipt) active_properties.erase(*receipt); }
 
         operator type const& () { return now; }
@@ -131,7 +131,7 @@ namespace gui
     {
         type now, was; base::widget* widget = nullptr;
 
-        binary_property (type value = type()) : was(value), now(value) {}
+        binary_property (type value = type()) : now(value), was(value) {}
 
         operator type const& () { return now; }
 

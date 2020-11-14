@@ -103,7 +103,7 @@ namespace gui::text
 
             outlines.x = format.margin_left.x;
 
-            if (align == left || align == justify_left && the_last_row) {
+            if (align == left || (align == justify_left && the_last_row)) {
                 return;
             }
 
@@ -112,7 +112,7 @@ namespace gui::text
                 return;
             }
 
-            if (align == right || align == justify_right && the_last_row) {
+            if (align == right || (align == justify_right && the_last_row)) {
                 outlines.x += Width - width;
                 return;
             }

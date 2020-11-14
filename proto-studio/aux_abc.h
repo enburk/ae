@@ -16,11 +16,11 @@ namespace aux
     template<class T> inline T max (T a, T b, T c, T d) { return max(a, max(b, max(c, d))); }
 
     template<class T, class U>
-    T clamp (U value, T min = min<T>(), T max = max<T>()) {
+    T clamp (U value, T Min = min<T>(), T Max = max<T>()) {
         return
-            value <= min ? min :
-            value >= max ? max :
-            std::clamp(T(value), min, max);
+            value <= Min ? Min :
+            value >= Max ? Max :
+            std::clamp(T(value), Min, Max);
     }
 
     template <typename Int = int>

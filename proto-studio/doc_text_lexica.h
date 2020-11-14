@@ -2,10 +2,10 @@
 #include "doc.h"
 namespace doc::lexica::txt
 {
-    inline constexpr auto ascii (char c) { return c >= ' ' && c <= '~'; };
-    inline constexpr auto space (char c) { return c == ' ' || c =='\t'; };
-    inline constexpr auto digit (char c) { return c >= '0' && c <= '9'; };
-    inline constexpr auto alpha (char c) { return c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z'; };
+    inline constexpr auto ascii (char c) { return (c >= ' ' && c <= '~'); };
+    inline constexpr auto space (char c) { return (c == ' ' || c =='\t'); };
+    inline constexpr auto digit (char c) { return (c >= '0' && c <= '9'); };
+    inline constexpr auto alpha (char c) { return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'); };
 
     inline array<str> symbols
     {
@@ -27,8 +27,8 @@ namespace doc::lexica::txt
         {
             for (auto [glyph, offset] : line.whole())
             {
-                if (glyph.size() == 1 && !digit(glyph[0]) && !alpha(glyph[0])
-                ||  glyph.size() >= 2 && symbols.contains(glyph))
+                if((glyph.size() == 1 && !digit(glyph[0]) && !alpha(glyph[0]))
+                || (glyph.size() >= 2 && symbols.contains(glyph)))
                 {
                     if (t.text != "") tokens += t;
 

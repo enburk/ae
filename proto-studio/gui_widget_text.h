@@ -54,7 +54,7 @@ namespace gui::text
                 skins[skin.now].dark.first:
                 skins[skin.now].heavy.first;
             }
-            if (what == &coord && coord.now.size != coord.was.size
+            if((what == &coord and coord.now.size != coord.was.size)
             or  what == &insert_mode
             or  what == &breadth)
             {
@@ -103,12 +103,12 @@ namespace gui::text
     struct place
     {
         int line = 0, offset = 0; // bool operator <=> (place p) const = default;
-        bool operator == (place p) const { return line == p.line && offset == p.offset; }
-        bool operator != (place p) const { return line != p.line || offset != p.offset; }
-        bool operator <= (place p) const { return line <  p.line || offset <= p.offset && line == p.line; }
-        bool operator <  (place p) const { return line <  p.line || offset <  p.offset && line == p.line; }
-        bool operator >= (place p) const { return line >  p.line || offset >= p.offset && line == p.line; }
-        bool operator >  (place p) const { return line >  p.line || offset >  p.offset && line == p.line; }
+        bool operator == (place p) const { return line == p.line && (offset == p.offset); }
+        bool operator != (place p) const { return line != p.line || (offset != p.offset); }
+        bool operator <= (place p) const { return line <  p.line || (offset <= p.offset && line == p.line); }
+        bool operator <  (place p) const { return line <  p.line || (offset <  p.offset && line == p.line); }
+        bool operator >= (place p) const { return line >  p.line || (offset >= p.offset && line == p.line); }
+        bool operator >  (place p) const { return line >  p.line || (offset >  p.offset && line == p.line); }
     };
 
     struct range

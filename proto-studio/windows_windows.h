@@ -5,10 +5,12 @@
 #include <gl\glu.h>
 #pragma comment(lib, "glu32.lib")
 #pragma comment(lib, "opengl32.lib")
+#ifndef __llvm__
 #pragma comment(linker,"\"/manifestdependency:type='win32'  \
 name='Microsoft.Windows.Common-Controls' version='6.0.0.0'  \
 processorArchitecture='*' publicKeyToken='6595b64144ccf1df' \
 language='*'\"")
+#endif
 
 aux::str sys::dialog (str title, str text, sys::choice choice, void* handle)
 {
@@ -108,14 +110,14 @@ LRESULT CALLBACK WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     sys::window* win = (sys::window*)(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
-    int LW=(short)LOWORD(wparam); int LL=(short)LOWORD(lparam); int LX=GET_X_LPARAM(lparam);
-    int HW=(short)HIWORD(wparam); int HL=(short)HIWORD(lparam); int LY=GET_Y_LPARAM(lparam);
+    int LX = GET_X_LPARAM(lparam);
+    int LY = GET_Y_LPARAM(lparam);
 
     switch (msg) {
     case WM_COMMAND: if (wparam == 11111) win->on_timing(); break;
     
     case WM_MOUSEMOVE     : win->mouse_on_move  (XY(LX,LY)); break;
-    case WM_MOUSEWHEEL    : win->mouse_on_wheel (XY(LX,LY), HW); break;
+    case WM_MOUSEWHEEL    : win->mouse_on_wheel (XY(LX,LY), (short)HIWORD(wparam)); break;
     case WM_LBUTTONDOWN   : win->mouse_on_press (XY(LX,LY), 'L', true ); SetCapture(hwnd); break;
     case WM_LBUTTONUP     : win->mouse_on_press (XY(LX,LY), 'L', false); ReleaseCapture(); break;
     case WM_MBUTTONDOWN   : win->mouse_on_press (XY(LX,LY), 'M', true ); break;
@@ -141,9 +143,7 @@ LRESULT CALLBACK WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         int y = ps.rcPaint.top;
         int w = ps.rcPaint.right - x;
         int h = ps.rcPaint.bottom - y;
-    
         int W = win->image.size.x;
-        int H = win->image.size.y;
     
         BITMAPINFO bi;
         ZeroMemory(&bi,              sizeof(bi));
@@ -265,10 +265,10 @@ LRESULT CALLBACK WindowProcGL (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
     {
         PAINTSTRUCT ps;
         HDC hdc = ::BeginPaint(hwnd, &ps);
-        int x = ps.rcPaint.left;
-        int y = ps.rcPaint.top;
-        int w = ps.rcPaint.right - x;
-        int h = ps.rcPaint.bottom - y;
+        //int x = ps.rcPaint.left;
+        //int y = ps.rcPaint.top;
+        //int w = ps.rcPaint.right - x;
+        //int h = ps.rcPaint.bottom - y;
         ::wglMakeCurrent (hdc, handle);
 
         GLint xywh[4];
@@ -278,7 +278,7 @@ LRESULT CALLBACK WindowProcGL (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 
 //      sys::frame f {XY(x,y),XY(w,h)};
         sys::frame f {XY(0,0),XY(W,H)};
-        f.blend = [handle, H](sys::frame f, RGBA c, uint8_t alpha)
+        f.blend = [H](sys::frame f, RGBA c, uint8_t alpha)
         {
             auto x = (float)f.offset.x;
             auto y = (float)f.offset.y; y = H - y;
@@ -293,12 +293,12 @@ LRESULT CALLBACK WindowProcGL (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
             glVertex3f(x,y+h,0);
             glEnd();
         };
-        f.glyph = [handle, H](sys::frame f, glyph g, XY offset, uint8_t alpha, int xx)
+        f.glyph = [H](sys::frame f, glyph g, XY offset, uint8_t alpha, int xx)
         {
             auto x = f.offset.x;
             auto y = f.offset.y; y = H - y;
-            auto w = f.size.x;
-            auto h = f.size.y; h = -h;
+            //auto w = f.size.x;
+            //auto h = f.size.y; h = -h;
 
             int gw = g.width;
             int gh = g.ascent + g.descent;

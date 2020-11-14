@@ -92,9 +92,10 @@ namespace doc::html::syntax
 
             if (e.kind == "text") output += e; else
             {
-                if (e.info == "closing")
-                    if (e.name == closing) break;
-                    else e.name = "error: /" + e.name;
+                if (e.info == "closing") {
+                    if (e.name == closing) break; else
+                        e.name = "error: /" + e.name;
+                }
 
                 if (e.name != "br" &&
                     e.info != "closed")
