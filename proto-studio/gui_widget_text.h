@@ -20,8 +20,8 @@ namespace gui::text
                  update();
              }
         }
-        void on_render (sys::frame frame, XY offset, uint8_t alpha) override {
-             frame.glyph(frame, value.now, offset, alpha, coord.now.x);
+        void on_render (sys::window& window, XYWH r, XY offset, uint8_t alpha) override {
+             window.render(r, alpha, value.now, offset, coord.now.x);
         }
     };
 

@@ -1,4 +1,3 @@
-#pragma once
 #include <map>
 #include "sys_aux.h"
 #include "windows_aux.h"

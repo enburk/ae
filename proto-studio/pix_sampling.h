@@ -30,7 +30,7 @@ namespace pix::sampling
     template<class color> inline
     color cubic (frame<color> frame, double x, double y)
     {
-        color co = pix::black;
+        color co {};
 
         int xx = (int) x; double dx = x - xx;
         int yy = (int) y; double dy = y - yy;

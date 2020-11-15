@@ -59,4 +59,6 @@ struct integer_iterator : random_access_iterator<int>
     auto operator *  () /***/& -> int /***/& { return value; }
     auto operator *  () const& -> int const& { return value; }
     auto operator -  (integer_iterator i) { return value - i.value; }
+    auto operator != (integer_iterator i) { return value != i.value; }
+    auto operator <=>(integer_iterator i) { return value <=> i.value; }
 };

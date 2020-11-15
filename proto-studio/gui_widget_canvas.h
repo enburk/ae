@@ -13,9 +13,9 @@ namespace gui
             color.now.a == 0 ? transparent :
                              semitransparent; }
 
-        void on_render (sys::frame frame, XY offset, uint8_t alpha) override
+        void on_render (sys::window& window, XYWH r, XY offset, uint8_t alpha) override
         {
-            frame.blend(frame, color.now, alpha);
+            window.render(r, alpha, color.now);
         }
 
         void on_change (void* what) override

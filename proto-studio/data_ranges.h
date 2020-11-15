@@ -1,4 +1,5 @@
 #pragma once
+#include "data_aux.h"
 #include "data_iterators.h"
 #include <concepts>
 
@@ -30,12 +31,14 @@ concept random_access_range = range<X> && requires (X x, int i, int j)
     auto operator () (int i) { return *(begin()+i); }
 };
 
-template<class x> // requires random_access_range<contiguous_range<x>>
-struct contiguous_range
+template<class x>
+struct contiguous_range // random_access_range
 {
     using same = contiguous_range;
-    using iterator = contiguous_iterator<x>; iterator begin;
-    using sentinel = contiguous_iterator<x>; iterator end;
+    using iterator = contiguous_iterator<x>;
+    using sentinel = contiguous_iterator<x>;
+    iterator begin_; auto begin () { return begin_; }
+    sentinel end_;   auto end   () { return end_;   }
 
     auto size () { return end() - begin(); }
     auto clip (iterator i) { return min(max(begin(),i),end()); }
@@ -46,13 +49,17 @@ struct contiguous_range
     #include "data_ranges_random.h"
 };
 
-//type integer.range : random.access.range(x) = ;; immutable
-//{
-//    type iterator = integer.iterator; iterator begin;
-//    type sentinel = integer.iterator; iterator end;
-//
-//    function size = end - begin;
-//    function clip (iterator i) = min(max(begin,i),end);
-//    function from (iterator i) = same(clip(i), end);
-//    function upto (iterator i) = same(begin, clip(i));
-//};
+struct integer_range // random_access_range // immutable
+{
+    using same = integer_range;
+    using iterator = integer_iterator;
+    using sentinel = integer_iterator;
+    iterator begin_; auto begin () { return begin_; }
+    sentinel end_;   auto end   () { return end_;   }
+
+    auto size () { return end() - begin(); }
+    auto clip (iterator i) { return min(max(begin(),i),end()); }
+    auto from (iterator i) { return same{clip(i), end()}; }
+    auto upto (iterator i) { return same{begin(), clip(i)}; }
+    random_access_range_impl
+};

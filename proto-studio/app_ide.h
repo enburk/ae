@@ -7,6 +7,7 @@
 #include "app_ide_console.h"
 #include "app_ide_editor.h"
 #include "app_ide_flist.h"
+#include "app_ide_test.h"
 using namespace aux;
 using namespace pix;
 
@@ -15,6 +16,8 @@ struct IDE : gui::widget<IDE>
     gui::canvas canvas;
 
     gui::canvas toolbar;
+    gui::button button_run;
+    gui::button button_test;
 
     gui::area<Flist> flist_area;
     gui::area<Editor> editor_area;
@@ -25,6 +28,7 @@ struct IDE : gui::widget<IDE>
     Flist& flist = flist_area.object;
     Editor& editor = editor_area.object;
     Console& console = console_area.object;
+    gui::area<Test> test_area; // very last
 
     IDE()
     {
@@ -32,6 +36,9 @@ struct IDE : gui::widget<IDE>
         gui::skins[skin].font =
         sys::font{"Segoe UI", gui::metrics::text::height};
         toolbar.color = gui::skins[skin].light.first;
+        button_run .text.text = "run";
+        button_test.text.text = "test";
+        test_area.hide();
         canvas.color = RGBA::red;
     }
 
@@ -41,7 +48,7 @@ struct IDE : gui::widget<IDE>
         {
             int W = coord.now.w; if (W <= 0) return;
             int H = coord.now.h; if (H <= 0) return;
-            //int w = gui::metrics::text::height*10;
+            int w = gui::metrics::text::height*10;
             int h = gui::metrics::text::height*12/7;
             
             int d = gui::metrics::line::width * 6;
@@ -56,10 +63,15 @@ struct IDE : gui::widget<IDE>
             splitter_editor_r.upper = 9'000 * W / 10'000;
 
             toolbar.coord = XYWH(0, 0, W, h);
+            button_run .coord = XYWH(0, 0, w, h);
+            button_test.coord = XYWH(W-w, 0, w, h);
 
             flist_area.coord = XYWH(0, h, l-0, H-h);
             editor_area.coord = XYWH(l, h, r-l, H-h);
             console_area.coord = XYWH(r, h, W-r, H-h);
+
+            if (test_area.alpha.now != 0)
+                test_area.coord = XYXY(0, h, W, H);
 
             canvas.coord = coord.now.local();
         }
@@ -80,6 +92,15 @@ struct IDE : gui::widget<IDE>
                  splitter_editor_r.middle
                 * 10'000 / coord.now.w);
             on_change(&coord);
+        }
+        if (what == &button_test)
+        {
+            bool on = test_area.alpha.to != 0;
+            bool turn_on = not on;
+            test_area.show(turn_on);
+            test_area.coord = turn_on ?
+                XYXY(0, toolbar.coord.now.h, coord.now.w, coord.now.h):
+                XYXY{};
         }
     }
 };

@@ -1,6 +1,6 @@
 #pragma once
 #include <fstream>
-#include "gui_widget.h"
+#include "pix_sampling.h"
 #include "gui_widget_canvas.h"
 #include "gui_widgetarium.h"
 namespace gui
@@ -15,27 +15,27 @@ namespace gui
         pix::frame<RGBA> resized_frame;
         XY shift;
 
-        void on_render (pix::frame<RGBA> frame, XY offset, uint8_t alpha) override
+        void on_render (sys::window& window, XYWH r, XY offset, uint8_t alpha) override
         {
-            frame.blend_from(
-                resized_frame.crop(
-                    XYWH(offset.x + shift.x, offset.y + shift.y,
-                        frame.size.x, frame.size.y)),
-                            alpha);
+            window.render(r, alpha,
+                resized_frame.crop(XYWH(
+                    offset.x + shift.x,
+                    offset.y + shift.y,
+                    r.size.x, r.size.y)));
         }
 
         void on_change (void* what) override
         {
-            if (what == &coord && coord.was.size != coord.now.size
+            if((what == &coord && coord.was.size != coord.now.size)
             ||  what == &source
             ||  what == &fit)
             {
                 if (source.now.size.x == 0
                 ||  source.now.size.y == 0
                 ||  source.now.size == coord.now.size
-                ||  fit.now == none || fit.now == scale_down
+                ||  fit.now == none || (fit.now == scale_down
                 &&  source.now.size.x <= coord.now.size.x
-                &&  source.now.size.y <= coord.now.size.y)
+                &&  source.now.size.y <= coord.now.size.y))
                 {
                     resized_image.resize(XY());
                     resized_frame = source.now;

@@ -23,7 +23,7 @@ namespace gui::base
         void shift   (XY    d,  time t=time()) { coord.go(XYWH(coord.to.x+d.x, coord.to.y+d.y, coord.to.w, coord.to.h), t); }
         void resize  (XY size,  time t=time()) { coord.go(XYWH(coord.to.x, coord.to.y, size.x, size.y), t); }
 
-        virtual void on_render (sys::frame frame, XY offset, uint8_t alpha) {}
+        virtual void on_render (sys::window& window, XYWH r, XY offset, uint8_t alpha) {}
         virtual void on_change (void* what) { on_change(); }
         virtual void on_change () {}
 
@@ -46,24 +46,25 @@ namespace gui::base
             on_change(what);
         }
 
-        void render (sys::frame frame, XY offset, uint8_t combined_alpha = 255)
+        void render (sys::window& window, XYWH r, XY offset, uint8_t combined_alpha = 255)
         {
             combined_alpha =
             ((combined_alpha+1) * alpha.now) >> 8;
             if (combined_alpha == 0) return;
 
             // this widget origin is shifted by 'offset'
-            // relative to the frame's origin (frame.offset)
-            on_render (frame, offset, combined_alpha);
+            // relative to the window frame origin (r.origin)
+            on_render (window, r, offset, combined_alpha);
 
-            for (auto child : children) {
-                XYWH  child_global = child->coord.now + frame.offset - offset;
-                auto  child_frame = frame.crop(child_global - frame.offset);
-                if   (child_frame.size.x <= 0) continue;
-                if   (child_frame.size.y <= 0) continue;
-                child->render(
+            for(auto child : children) {
+                XYWH child_global = child->coord.now + r.origin - offset;
+                XYWH child_frame = r & child_global;
+                if  (child_frame.size.x <= 0) continue;
+                if  (child_frame.size.y <= 0) continue;
+                child->render(window,
                     child_frame,
-                    child_frame.offset - child_global.origin,
+                    child_frame.origin -
+                    child_global.origin,
                     combined_alpha);
             }
         }

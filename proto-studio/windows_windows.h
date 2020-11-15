@@ -1,4 +1,3 @@
-#pragma once
 #include "sys_ui.h"
 #include "windows_aux.h"
 #include <gl\gl.h>
@@ -135,6 +134,39 @@ LRESULT CALLBACK WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_KEYUP         : win->keyboard_on_press (wm_key(wparam, lparam, false), false); break;
     case WM_CHAR          : win->keyboard_on_input (wm_char(wparam, lparam)); break;
     
+    case WM_SIZE:
+    {
+        static bool minimized = false;
+        if(wparam == SIZE_MINIMIZED) { if (!minimized) win->on_pause (); minimized = true; break; }
+        if(wparam != SIZE_MINIMIZED) { if (!minimized) win->on_resume(); minimized = false; }
+        win->on_resize(XY(LOWORD(lparam), HIWORD(lparam)));
+        break;
+    }
+    case WM_CREATE : 
+        win = (sys::window*)((CREATESTRUCT*)lparam)->lpCreateParams;
+        ::SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)(win));
+        win->native_handle1 = hwnd;
+        win->on_start();
+        return 0;
+
+    case WM_DESTROY:
+        win->on_finish();
+        PostQuitMessage(0);
+        return 0;
+
+    default: return DefWindowProc(hwnd, msg, wparam, lparam);
+    }
+
+    return 0;
+}
+
+LRESULT CALLBACK PixWindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+    auto rc = msg == WM_PAINT ? 0 : WindowProc(hwnd, msg, wparam, lparam);
+
+    sys::window* win = (sys::window*)(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
+
+    switch (msg) {
     case WM_PAINT:
     {
         PAINTSTRUCT ps;
@@ -160,37 +192,16 @@ LRESULT CALLBACK WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         EndPaint(hwnd, &ps);
         return 0;
     }
-    case WM_SIZE:
-    {
-        static bool minimized = false;
-        if(wparam == SIZE_MINIMIZED) { if (!minimized) win->on_pause (); minimized = true; break; }
-        if(wparam != SIZE_MINIMIZED) { if (!minimized) win->on_resume(); minimized = false; }
-        win->on_resize(XY(LOWORD(lparam), HIWORD(lparam)));
-        break;
-    }
-    case WM_CREATE : 
-        win = (sys::window*)((CREATESTRUCT*)lparam)->lpCreateParams;
-        ::SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)(win));
-        win->native_handle1 = hwnd;
-        win->on_start();
-        return 0;
-
-    case WM_DESTROY:
-        win->on_finish();
-        PostQuitMessage(0);
-        return 0;
-
-    default: return DefWindowProc(hwnd, msg, wparam, lparam);
     }
 
-    if (win->image.size.x > 0 // not yet on first WM_SETFOCUS
+    if (win // not yet before WM_CREATE
+    &&  win->image.size.x > 0 // not yet on first WM_SETFOCUS
     &&  win->image.size.y > 0)
         win->update();
 
-    return 0;
-}
-
-LRESULT CALLBACK WindowProcGL (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+    return rc;
+}    
+LRESULT CALLBACK GpuWindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     auto rc = msg == WM_PAINT ? 0 : WindowProc(hwnd, msg, wparam, lparam);
 
@@ -271,55 +282,7 @@ LRESULT CALLBACK WindowProcGL (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
         //int h = ps.rcPaint.bottom - y;
         ::wglMakeCurrent (hdc, handle);
 
-        GLint xywh[4];
-        glGetIntegerv(GL_VIEWPORT, xywh);
-        int W = xywh[2]; // win->image.size.x;
-        int H = xywh[3]; // win->image.size.y;
-
-//      sys::frame f {XY(x,y),XY(w,h)};
-        sys::frame f {XY(0,0),XY(W,H)};
-        f.blend = [H](sys::frame f, RGBA c, uint8_t alpha)
-        {
-            auto x = (float)f.offset.x;
-            auto y = (float)f.offset.y; y = H - y;
-            auto w = (float)f.size.x;
-            auto h = (float)f.size.y; h = -h;
-
-            glBegin(GL_QUADS);
-            glColor4f(c.r/255.0f, c.g/255.0f, c.b/255.0f, c.a/255.0f);
-            glVertex3f(x,y,0);
-            glVertex3f(x+w,y,0);
-            glVertex3f(x+w,y+h,0);
-            glVertex3f(x,y+h,0);
-            glEnd();
-        };
-        f.glyph = [H](sys::frame f, glyph g, XY offset, uint8_t alpha, int xx)
-        {
-            auto x = f.offset.x;
-            auto y = f.offset.y; y = H - y;
-            //auto w = f.size.x;
-            //auto h = f.size.y; h = -h;
-
-            int gw = g.width;
-            int gh = g.ascent + g.descent;
-            if (gw <= 0 or gh <= 0) return;
-
-            glDisable(GL_SCISSOR_TEST);
-
-            static pix::image<RGBA> image;
-            image.resize(XY(gw,gh));
-            image.fill(RGBA{});
-
-            //glReadPixels(x,y, gw,gh, GL_BGRA_EXT, GL_UNSIGNED_BYTE, image.data.data());
-            // flip
-            g.render(image.crop());
-            // flip
-            glRasterPos2i(x,y);
-            glDrawPixels(gw,gh, GL_BGRA_EXT, GL_UNSIGNED_BYTE, image.data.data());
-
-        };
-
-        win->render(f);
+        win->renderr();
 
         ::glFinish();
         ::SwapBuffers(hdc);
@@ -330,13 +293,38 @@ LRESULT CALLBACK WindowProcGL (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 
     return rc;
 }
+void sys::window::render (XYWH r, uint8_t alpha, RGBA c)
+{
+    GLint xywh[4];
+    glGetIntegerv(GL_VIEWPORT, xywh);
+    int H = xywh[3];
+
+    auto x = (float)r.x;
+    auto y = (float)r.y; y = H - y;
+    auto w = (float)r.w;
+    auto h = (float)r.h; h = -h;
+
+    glBegin(GL_QUADS);
+    glColor4f(c.r/255.0f, c.g/255.0f, c.b/255.0f, c.a/255.0f);
+    glVertex3f(x,y,0);
+    glVertex3f(x+w,y,0);
+    glVertex3f(x+w,y+h,0);
+    glVertex3f(x,y+h,0);
+    glEnd();
+}
+void sys::window::render (XYWH r, uint8_t alpha, frame<RGBA> frame)
+{
+}
+void sys::window::render (XYWH r, uint8_t alpha, glyph g, XY offset, int x)
+{
+}
 
 void sys::window::create (str title)
 {
     WNDCLASS wc = {};
     wc.hInstance = ::GetModuleHandle(NULL);
     wc.lpszClassName = TEXT("AE window class name");
-    wc.lpfnWndProc = opengl ? WindowProcGL : WindowProc;
+    wc.lpfnWndProc = gpu ? GpuWindowProc : PixWindowProc;
     ::RegisterClass(&wc);
 
     int x = CW_USEDEFAULT;

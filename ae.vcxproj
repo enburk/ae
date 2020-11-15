@@ -199,6 +199,7 @@
     <ClInclude Include="proto-studio\app_ide_console.h" />
     <ClInclude Include="proto-studio\app_ide_editor.h" />
     <ClInclude Include="proto-studio\app_ide_flist.h" />
+    <ClInclude Include="proto-studio\app_ide_test.h" />
     <ClInclude Include="proto-studio\aux_abc.h" />
     <ClInclude Include="proto-studio\aux_array.h" />
     <ClInclude Include="proto-studio\aux_string.h" />
@@ -207,7 +208,6 @@
     <ClInclude Include="proto-studio\data_aux.h" />
     <ClInclude Include="proto-studio\data_collections.h" />
     <ClInclude Include="proto-studio\data_collections_array.h" />
-    <ClInclude Include="proto-studio\data_experimental.h" />
     <ClInclude Include="proto-studio\data_iterators.h" />
     <ClInclude Include="proto-studio\data_ranges.h" />
     <ClInclude Include="proto-studio\data_ranges_forward.h" />

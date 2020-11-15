@@ -39,29 +39,12 @@ namespace sys
     };
     str dialog (str title, str text, choice, void* handle = nullptr);
 
-    struct frame
-    {
-        XY offset, size;
-        explicit operator XYWH () const { return
-            XYWH (offset.x, offset.y, size.x, size.y); }
-
-        frame crop (XYWH r) const {
-            r = XYWH(*this) & (r + offset);
-            frame f = *this;
-            f.offset = XY(r.x, r.y);
-            f.size   = XY(r.w, r.h);
-            return f;
-        }
-        std::function<void(frame, RGBA, uint8_t alpha)> blend;
-        std::function<void(frame, glyph, XY, uint8_t alpha, int)> glyph;
-    };
-
     struct window : polymorphic
     {
         pix::image<RGBA> image;
         void*native_handle1 = nullptr;
         void*native_handle2 = nullptr;
-        bool opengl = false;
+        bool gpu = false;
 
         void create (str title);
         void update ();
@@ -80,7 +63,10 @@ namespace sys
         virtual void mouse_on_wheel (XY p, int delta) = 0;
         virtual void mouse_on_move  (XY p) = 0;
         virtual void mouse_on_leave () = 0;
-        virtual void render (frame) {}
+        virtual void render (XYWH, uint8_t alpha, RGBA);
+        virtual void render (XYWH, uint8_t alpha, frame<RGBA>);
+        virtual void render (XYWH, uint8_t alpha, glyph, XY, int);
+        virtual void renderr () {}
 
         std::thread timer;
         std::atomic<bool> timer_stop = true;
@@ -105,7 +91,7 @@ namespace sys
         }
     };
 
-    template<class Widget> struct pixwindow : window
+    template<class Widget> struct the_window : window
     {
         Widget widget;
 
@@ -137,6 +123,13 @@ namespace sys
              widget.mouse_leave();
              on_timing();
         }
+    };
+
+    template<class Widget> struct pix_window : the_window<Widget>
+    {
+        using the_window<Widget>::widget;
+        using the_window<Widget>::image;
+
         void on_resize (XY size) override {
              image .resize(size);
              widget.resize(size);
@@ -146,27 +139,31 @@ namespace sys
         {
              gui::time::set();
              gui::active_properties.for_each([](auto p){ p->tick(); });
-             for (auto rect : widget.updates)
-             {
-                  frame f {rect.origin, rect.size};
-                  f.blend = [this](frame f, RGBA c, uint8_t alpha)
-                  { image.crop(XYWH(f)).blend(c, alpha); };
-                  f.glyph = [this](frame f, glyph g, XY offset, uint8_t alpha, int x)
-                  { g.render(image.crop(XYWH(f)), offset, alpha, x); };
-                  widget.render(f, rect.origin);
-             }
+             for (XYWH r : widget.updates) widget.render(*this, r, r.origin);
              widget.updates.clear();
+        }
+        void render (XYWH r, uint8_t alpha, RGBA color) override
+        {
+            image.crop(r).blend(color, alpha);
+        }
+        void render (XYWH r, uint8_t alpha, frame<RGBA> frame) override
+        {
+            image.crop(r).blend_from(frame, alpha);
+        }
+        void render (XYWH r, uint8_t alpha, glyph g, XY offset, int x) override
+        {
+            g.render(image.crop(r), offset, alpha, x);
         }
     };
 
-    template<class Widget> struct glxwindow : pixwindow<Widget>
+    template<class Widget> struct gpu_window : the_window<Widget>
     {
-        using pixwindow<Widget>::opengl;
-        using pixwindow<Widget>::widget;
-        using pixwindow<Widget>::update;
-        using pixwindow<Widget>::image;
+        using the_window<Widget>::gpu;
+        using the_window<Widget>::widget;
+        using the_window<Widget>::update;
+        using the_window<Widget>::image;
 
-        glxwindow() { opengl = true; }
+        gpu_window() { gpu = true; }
 
         void on_resize (XY size) override {
              widget.resize(size);
@@ -181,9 +178,9 @@ namespace sys
              widget.updates.clear();
              update();
         }
-        void render (frame f) override
-        {
-            widget.render(f, f.offset);
+        void renderr () override {
+            widget.render(*this,
+            widget.coord, XY{});
         }
     };
 
@@ -203,7 +200,7 @@ namespace sys
     };
     template<class Widget> struct app : app_base
     {
-        pixwindow<Widget> * winptr = nullptr;
+        pix_window<Widget> * winptr = nullptr;
         app (str s) { app_instance::app = this; title = s; }
         void destructor () override { delete winptr; }
         void constructor() override { winptr = new

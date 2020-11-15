@@ -324,8 +324,8 @@
     <ClInclude Include="proto-studio\gui_widget_image.h">
       <Filter>proto</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\data_experimental.h">
-      <Filter>data</Filter>
+    <ClInclude Include="proto-studio\app_ide_test.h">
+      <Filter>proto</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

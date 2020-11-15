@@ -32,14 +32,9 @@ struct array //: contiguous_collection<x>
     auto from (iterator i) { return contiguous_range<x>{clip(i), end()}; }
     auto upto (iterator i) { return contiguous_range<x>{begin(), clip(i)}; }
 
-    template<typename X> requires range<X>
-    void operator += (X r) { for (const auto & e : r) (*this) += e; }
-
-    //void operator += (x const&  element) { data.push_back(element); }
-    //void operator += (x /***/&& element) { data.push_back(std::move(element)); }
-
-//    void operator += (range<x> auto   r) { for (const auto & e : r) (*this) += e; }
-//    template<range X> void operator += (X r) { for (const auto & e : r) (*this) += e; }
+    void operator += (x const&  element) { data.push_back(element); }
+    void operator += (x /***/&& element) { data.push_back(std::move(element)); }
+    void operator += (range auto r) { for (const auto & e : r) (*this) += e; }
 
 //     //collection_impl;
 //     friend same operator + (same  l, x     r) { same c; c += l; c += r; return c; }
