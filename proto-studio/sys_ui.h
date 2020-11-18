@@ -200,7 +200,7 @@ namespace sys
     };
     template<class Widget> struct app : app_base
     {
-        pix_window<Widget> * winptr = nullptr;
+        gpu_window<Widget> * winptr = nullptr;
         app (str s) { app_instance::app = this; title = s; }
         void destructor () override { delete winptr; }
         void constructor() override { winptr = new

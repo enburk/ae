@@ -17,11 +17,15 @@ namespace gui
 
         void on_render (sys::window& window, XYWH r, XY offset, uint8_t alpha) override
         {
-            window.render(r, alpha,
-                resized_frame.crop(XYWH(
-                    offset.x + shift.x,
-                    offset.y + shift.y,
-                    r.size.x, r.size.y)));
+            auto frame = resized_frame
+                .crop(XYWH(
+                offset.x + shift.x,
+                offset.y + shift.y,
+                r.size.x, r.size.y));
+
+            if (frame.size.x > 0
+            &&  frame.size.y > 0)
+                window.render(r, alpha, frame);
         }
 
         void on_change (void* what) override

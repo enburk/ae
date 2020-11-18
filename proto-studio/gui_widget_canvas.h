@@ -50,7 +50,9 @@ namespace gui
         }
     };
 
-    template<class Object> struct area : widget<area<Object>>
+    template
+    <class Object>
+    struct area : widget<area<Object>>
     {
         frame  frame1;
         frame  frame2;
@@ -86,7 +88,8 @@ namespace gui
         void on_notify (void* what) override { notify(what); }
     };
 
-    struct splitter : widget<splitter>
+    struct splitter:
+    widget<splitter>
     {
         property<int> lower;
         property<int> upper;

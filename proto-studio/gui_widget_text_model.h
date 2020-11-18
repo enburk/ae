@@ -2,7 +2,7 @@
 #include "doc.h"
 #include "doc_html_syntax.h"
 #include "gui_widget.h"
-#include "gui_widget_text.h"
+#include "gui_widget_text_aux.h"
 namespace gui::text
 {
     struct model : polymorphic

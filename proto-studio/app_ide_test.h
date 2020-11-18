@@ -1,5 +1,6 @@
 #pragma once
 #include "gui_widget_canvas.h"
+#include "gui_widget_console.h"
 using namespace pix;
 
 struct TestFirst : gui::widget<TestFirst>
@@ -7,7 +8,7 @@ struct TestFirst : gui::widget<TestFirst>
     gui::canvas canvas;
     void on_change (void* what) override
     {
-        if (what == &skin) canvas.color = RGBA::white;
+        if (what == &skin) canvas.color = gui::skins[skin].ultralight.first;
         if (what == &coord && coord.was.size != coord.now.size)
         {
             int W = coord.now.w; if (W <= 0) return;
@@ -17,7 +18,7 @@ struct TestFirst : gui::widget<TestFirst>
     }
 };
 
-struct TestFont1 : gui::widget<TestFont1>
+struct TestFonts : gui::widget<TestFonts>
 {
     gui::image gui_image;
     pix::image<RGBA> image;
@@ -71,19 +72,75 @@ struct TestFont1 : gui::widget<TestFont1>
     }
 };
 
+struct TestTexts : gui::widget<TestTexts>
+{
+    gui::button doubling;
+    gui::area<gui::console> console1;
+    gui::area<gui::console> console2;
+    gui::splitter splitter; int x = 40'00; int xx = 80;
+    TestTexts () { on_notify(&doubling); }
+    str text = "<b>Lorem ipsum</b> dolor sit amet, consectetur adipiscing <i>elit</i>, "
+    "sed do eiusmod tempor incididunt ut labore et dolore <b>magna <i>aliqua.</i></b> "
+    "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip "
+    "ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit "
+    "esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non "
+    "proident, sunt in culpa qui officia deserunt mollit anim id est "
+    "<b><font color=#008000>laborum.</font></b><br><br>";
+    void on_change (void* what) override
+    {
+        if (what == &skin)
+        {
+            console1.object.page.view.ground.color = RGBA::white;
+            console2.object.page.view.ground.color = RGBA::white;
+        }
+        if (what == &coord && coord.was.size != coord.now.size)
+        {
+            int W = coord.now.w; if (W <= 0) return;
+            int H = coord.now.h; if (H <= 0) return;
+            int w = gui::metrics::text::height*xx;
+            int h = gui::metrics::text::height*12/7;
+            int d = gui::metrics::line::width * 6;
+            int m = w * x / 100'00;
+            doubling.coord = XYWH(w-0, 0, w/9, h);
+            console1.coord = XYXY(0-0, 0, m+0, H);
+            console2.coord = XYXY(m-0, 0, w+0, H);
+            splitter.coord = XYXY(m-d, 0, m+d, H);
+            splitter.lower = 20'00 * w / 100'00;
+            splitter.upper = 80'00 * w / 100'00;
+        }
+    }
+    void on_notify (void* what) override
+    {
+        if (what == &doubling)
+        {
+            doubling.text.text = "double text";
+            console1.object.page.view.html = text;
+            console2.object.page.view.html = text;
+            text = text + text;
+        }
+        if (what == &splitter)
+        {
+            int w = gui::metrics::text::height*xx;
+            x = 100'00 * splitter.middle / w;
+            on_change(&coord);
+        }
+    }
+};
+
 struct Test : gui::widget<Test>
 {
     gui::canvas canvas;
     gui::radio::group buttons;
     array<gui::base::widget*> tests;
-
     TestFirst test_first;
-    TestFont1 test_font1;
+    TestFonts test_fonts;
+    TestTexts test_texts;
 
     Test ()
     {
+        tests += &test_texts; buttons.emplace_back().text.text = "test texts";
         tests += &test_first; buttons.emplace_back().text.text = "unit test";
-        tests += &test_font1; buttons.emplace_back().text.text = "test fonts 1";
+        tests += &test_fonts; buttons.emplace_back().text.text = "test fonts";
 
         buttons(0).on = true;
         for (int i=1; i<tests.size(); i++)

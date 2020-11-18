@@ -61,7 +61,7 @@ MAKE_HASHABLE(pix::font, t.face, t.size, t.bold, t.italic);
 static GDI_FONT cache (pix::font font) {
     static std::unordered_map<pix::font, GDI_FONT> fonts;
     auto it = fonts.find(font); if (it == fonts.end())
-    it = fonts.emplace (font, GDI_FONT(font)).first;
+    it = fonts.emplace(font, GDI_FONT(font)).first;
     return it->second;
 }
 
@@ -97,10 +97,7 @@ struct cache_metrics_key
 {
     str text; pix::font font; 
 
-    bool operator == (const cache_metrics_key & k) const { return
-        text == k.text &&
-        font == k.font;
-    }
+    bool operator == (const cache_metrics_key & k) const = default;
 };
 
 MAKE_HASHABLE(cache_metrics_key, t.text, t.font);
@@ -164,15 +161,12 @@ struct cache_glyphs_key
     pix::RGBA fore;
     pix::RGBA back;
 
-    bool operator == (const cache_glyphs_key & k) const { return
-        text == k.text &&
-        font == k.font &&
-        fore == k.fore &&
-        back == k.back;
-    }
+    bool operator == (const cache_glyphs_key & k) const = default;
 };
 
 MAKE_HASHABLE(cache_glyphs_key, t.text, t.font, t.fore, t.back);
+
+static std::unordered_map<cache_glyphs_key, pix::image<RGBA>> cache_glyphs;
 
 void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x)
 {
@@ -206,8 +200,6 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
         if (ok) { solid_color_background = true; c.blend(back, alpha); back = c; }
     }
 
-    static std::unordered_map<cache_glyphs_key, pix::image<RGBA>> cache;
-
     text::style cacheable_style;
     cacheable_style.font = style.font;
     cacheable_style.color = style.color;
@@ -219,8 +211,8 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
 
     if (cacheable)
     {
-        auto it = cache.find(cache_glyphs_key{text, style.font, fore, back});
-        if (it != cache.end())
+        auto it = cache_glyphs.find(cache_glyphs_key{text, style.font, fore, back});
+        if (it != cache_glyphs.end())
         {
             frame.blend_from(it->second.crop()
                 .from(offset.x, offset.y), alpha);
@@ -277,7 +269,9 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
     {
         pix::image<RGBA> image (XY(w,h));
         image.crop().copy_from(view);
-        cache.emplace(cache_glyphs_key{text, style.font, fore, back}, image);
+        cache_glyphs.emplace(
+            cache_glyphs_key{text, style.font, fore, back},
+            image);
     }
 
     ::SelectObject (context.dc, old);

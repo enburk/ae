@@ -252,9 +252,6 @@
     <ClInclude Include="proto-studio\gui_widget_scroller.h">
       <Filter>proto</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\gui_widget_text.h">
-      <Filter>proto</Filter>
-    </ClInclude>
     <ClInclude Include="proto-studio\gui_widget_text_column.h">
       <Filter>proto</Filter>
     </ClInclude>
@@ -325,6 +322,15 @@
       <Filter>proto</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\app_ide_test.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\gui_widget_console.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\gui_widget_text_aux.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\gui_widget_text_page.h">
       <Filter>proto</Filter>
     </ClInclude>
   </ItemGroup>

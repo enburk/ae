@@ -57,10 +57,10 @@ struct IDE : gui::widget<IDE>
 
             splitter_editor_l.coord = XYXY(l-d, h, l+d, H);
             splitter_editor_r.coord = XYXY(r-d, h, r+d, H);
-            splitter_editor_l.lower = 1'000 * W / 10'000;
-            splitter_editor_l.upper = 3'500 * W / 10'000;
-            splitter_editor_r.lower = 6'500 * W / 10'000;
-            splitter_editor_r.upper = 9'000 * W / 10'000;
+            splitter_editor_l.lower = 10'00 * W / 100'00;
+            splitter_editor_l.upper = 35'00 * W / 100'00;
+            splitter_editor_r.lower = 65'00 * W / 100'00;
+            splitter_editor_r.upper = 90'00 * W / 100'00;
 
             toolbar.coord = XYWH(0, 0, W, h);
             button_run .coord = XYWH(0, 0, w, h);
@@ -83,14 +83,14 @@ struct IDE : gui::widget<IDE>
             sys::settings::save(
                 "splitter.editor.l.permyriad",
                  splitter_editor_l.middle
-                * 10'000 / coord.now.w);
+                * 100'00 / coord.now.w);
             on_change(&coord);
         }
         if (what == &splitter_editor_r) {
             sys::settings::save(
                 "splitter.editor.r.permyriad",
                  splitter_editor_r.middle
-                * 10'000 / coord.now.w);
+                * 100'00 / coord.now.w);
             on_change(&coord);
         }
         if (what == &button_test)

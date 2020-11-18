@@ -48,7 +48,6 @@ namespace gui
             frame.thickness = metrics::line::width;
             frame.coord = r; r.deflate(frame.thickness.now);
             image.coord = r; r.deflate(frame.thickness.now);
-            r.deflate(frame.thickness.now);
             text .coord = r;
         };
 

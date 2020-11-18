@@ -1,6 +1,6 @@
 #pragma once
 #include "gui_widgetarium.h"
-#include "gui_widget_text.h"
+#include "gui_widget_text_aux.h"
 namespace gui::text
 {
     struct token final : widgetarium<glyph>, metrics

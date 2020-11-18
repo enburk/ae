@@ -224,11 +224,13 @@
     <ClInclude Include="proto-studio\gui_widgetarium.h" />
     <ClInclude Include="proto-studio\gui_widget_button.h" />
     <ClInclude Include="proto-studio\gui_widget_canvas.h" />
+    <ClInclude Include="proto-studio\gui_widget_console.h" />
     <ClInclude Include="proto-studio\gui_widget_image.h" />
     <ClInclude Include="proto-studio\gui_widget_scroller.h" />
-    <ClInclude Include="proto-studio\gui_widget_text.h" />
+    <ClInclude Include="proto-studio\gui_widget_text_aux.h" />
     <ClInclude Include="proto-studio\gui_widget_text_column.h" />
     <ClInclude Include="proto-studio\gui_widget_text_model.h" />
+    <ClInclude Include="proto-studio\gui_widget_text_page.h" />
     <ClInclude Include="proto-studio\gui_widget_text_view.h" />
     <ClInclude Include="proto-studio\pix_color.h" />
     <ClInclude Include="proto-studio\pix_coord.h" />
