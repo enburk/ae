@@ -287,7 +287,7 @@ LRESULT CALLBACK GpuWindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
         glOrtho(0.0, w, 0.0, h, -1.0, 1.0);
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-        glViewport (0, 0, w, h);
+        glViewport(0, 0, w, h);
         win->on_resize(XY(w,h));
         break;
     }
@@ -299,6 +299,9 @@ LRESULT CALLBACK GpuWindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
         //int y = ps.rcPaint.top;
         //int w = ps.rcPaint.right - x;
         //int h = ps.rcPaint.bottom - y;
+        //::glScissor(x, y, w, h);
+        //::glEnable(GL_SCISSOR_TEST);
+
         ::wglMakeCurrent (hdc, handle);
 
         win->renderr();

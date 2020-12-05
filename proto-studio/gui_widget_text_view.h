@@ -7,9 +7,9 @@ namespace gui::text
     struct view:
     widget<view>
     {
-        canvas ground;
-        widgetarium<canvas> highlight_bars;
-        widgetarium<canvas> selection_bars;
+        canvas canvas;
+        widgetarium<gui::canvas> highlight_bars;
+        widgetarium<gui::canvas> selection_bars;
         column column;
 
         unary_property<str> text;
@@ -87,7 +87,7 @@ namespace gui::text
             }
         }
 
-        void highlight (array<range> ranges, widgetarium<canvas> & bars, RGBA color)
+        void highlight (array<range> ranges, widgetarium<gui::canvas> & bars, RGBA color)
         {
             int n = 0;
 
@@ -146,10 +146,10 @@ namespace gui::text
         {
             if (what == &coord && coord.was.size != coord.now.size)
             {
-                ground.coord = coord.now.local();
+                carets.coord = coord.now.local();
+                canvas.coord = coord.now.local();
                 highlight_bars.coord = coord.now.local();
                 selection_bars.coord = coord.now.local();
-                carets.coord = coord.now.local();
                 refresh();
             }
             if (what == &text)

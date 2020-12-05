@@ -143,10 +143,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="library\cpp\platforms\microsoft_windows.h" />
-    <ClInclude Include="library\cpp\platforms\microsoft_windows_fonts.h" />
-    <ClInclude Include="library\cpp\platforms\microsoft_windows_images.h" />
-    <ClInclude Include="library\cpp\platforms\microsoft_windows_windows.h" />
     <ClInclude Include="library\cpp\proto-studio\doc.h" />
     <ClInclude Include="library\cpp\proto-studio\doc_ae_lexica.h" />
     <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax.h" />
@@ -205,23 +201,31 @@
     <ClInclude Include="proto-studio\aux_string.h" />
     <ClInclude Include="proto-studio\aux_utils.h" />
     <ClInclude Include="proto-studio\data.h" />
-    <ClInclude Include="proto-studio\data_aux.h" />
+    <ClInclude Include="proto-studio\data_algo_forward.h" />
+    <ClInclude Include="proto-studio\data_algo_random.h" />
+    <ClInclude Include="proto-studio\data_algo_resizing.h" />
+    <ClInclude Include="proto-studio\data_algo_textual.h" />
     <ClInclude Include="proto-studio\data_collections.h" />
-    <ClInclude Include="proto-studio\data_collections_array.h" />
     <ClInclude Include="proto-studio\data_iterators.h" />
     <ClInclude Include="proto-studio\data_ranges.h" />
-    <ClInclude Include="proto-studio\data_ranges_forward.h" />
-    <ClInclude Include="proto-studio\data_ranges_random.h" />
-    <ClInclude Include="proto-studio\data_text_string.h" />
+    <ClInclude Include="proto-studio\data_struct_array.h" />
+    <ClInclude Include="proto-studio\data_struct_string.h" />
+    <ClInclude Include="proto-studio\data_unittest.h" />
     <ClInclude Include="proto-studio\doc.h" />
+    <ClInclude Include="proto-studio\doc_html_layout.h" />
     <ClInclude Include="proto-studio\doc_html_lexica.h" />
     <ClInclude Include="proto-studio\doc_html_syntax.h" />
-    <ClInclude Include="proto-studio\doc_text.h" />
+    <ClInclude Include="proto-studio\doc_text_layout.h" />
     <ClInclude Include="proto-studio\doc_text_lexica.h" />
+    <ClInclude Include="proto-studio\doc_text_model_a.h" />
+    <ClInclude Include="proto-studio\doc_text_model_b.h" />
+    <ClInclude Include="proto-studio\doc_text_model_e.h" />
+    <ClInclude Include="proto-studio\doc_unittest.h" />
     <ClInclude Include="proto-studio\gui_colors.h" />
     <ClInclude Include="proto-studio\gui_effect.h" />
     <ClInclude Include="proto-studio\gui_widget.h" />
     <ClInclude Include="proto-studio\gui_widgetarium.h" />
+    <ClInclude Include="proto-studio\gui_widgettest.h" />
     <ClInclude Include="proto-studio\gui_widget_button.h" />
     <ClInclude Include="proto-studio\gui_widget_canvas.h" />
     <ClInclude Include="proto-studio\gui_widget_console.h" />
@@ -240,7 +244,6 @@
     <ClInclude Include="proto-studio\pix_text.h" />
     <ClInclude Include="proto-studio\sys_aux.h" />
     <ClInclude Include="proto-studio\sys_ui.h" />
-    <ClInclude Include="proto-studio\test_data.h" />
     <ClInclude Include="proto-studio\windows_aux.h" />
     <ClInclude Include="proto-studio\windows_fonts.h" />
     <ClInclude Include="proto-studio\windows_images.h" />

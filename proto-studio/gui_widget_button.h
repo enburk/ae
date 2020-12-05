@@ -41,7 +41,7 @@ namespace gui
             if (on           .now) colors = style.active; else
             if (mouse_hover  .now) colors = style.hovered;
 
-            text.ground.color.go(colors.first);
+            text.canvas.color.go(colors.first);
             text.color.go(colors.second);
 
             auto r = coord.now.local();

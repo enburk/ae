@@ -4,6 +4,7 @@
 #include <string>
 #include <variant>
 #include <optional>
+#include <coroutine>
 #include <algorithm>
 #include <shared_mutex>
 namespace aux
@@ -195,4 +196,3 @@ namespace aux
         }
     }
 }
-

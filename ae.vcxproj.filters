@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="platforms">
-      <UniqueIdentifier>{d5bb69b5-336f-4f06-abac-a77bd894f396}</UniqueIdentifier>
-    </Filter>
     <Filter Include="aux">
       <UniqueIdentifier>{0a920311-d0b0-4bf9-864e-de8da0a390ad}</UniqueIdentifier>
     </Filter>
@@ -22,17 +19,14 @@
     <Filter Include="data">
       <UniqueIdentifier>{22297187-e464-404d-ad0c-e099a2db51ff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="sys">
+      <UniqueIdentifier>{d5bb69b5-336f-4f06-abac-a77bd894f396}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pix">
+      <UniqueIdentifier>{04c4633d-4b48-49f2-a455-316385b7786a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="library\cpp\platforms\microsoft_windows.h">
-      <Filter>platforms</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\platforms\microsoft_windows_fonts.h">
-      <Filter>platforms</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\platforms\microsoft_windows_windows.h">
-      <Filter>platforms</Filter>
-    </ClInclude>
     <ClInclude Include="library\cpp\proto-studio\ide.h">
       <Filter>proto-studio</Filter>
     </ClInclude>
@@ -53,9 +47,6 @@
     </ClInclude>
     <ClInclude Include="library\cpp\proto-studio\test_pix.h">
       <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\platforms\microsoft_windows_images.h">
-      <Filter>platforms</Filter>
     </ClInclude>
     <ClInclude Include="library\cpp\proto-studio\gui_colors.h">
       <Filter>gui</Filter>
@@ -180,42 +171,6 @@
     <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_analysis_2.h">
       <Filter>doc</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\test_data.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\windows_aux.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\windows_fonts.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\windows_images.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\windows_system.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\windows_windows.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\pix_color.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\pix_coord.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\pix_image.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\pix_text.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\sys_aux.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\sys_ui.h">
-      <Filter>proto</Filter>
-    </ClInclude>
     <ClInclude Include="proto-studio\app_ide.h">
       <Filter>proto</Filter>
     </ClInclude>
@@ -229,12 +184,6 @@
       <Filter>proto</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\gui_effect.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\pix_process.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\pix_sampling.h">
       <Filter>proto</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\app_ide_console.h">
@@ -291,13 +240,7 @@
     <ClInclude Include="proto-studio\data.h">
       <Filter>data</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\data_aux.h">
-      <Filter>data</Filter>
-    </ClInclude>
     <ClInclude Include="proto-studio\data_collections.h">
-      <Filter>data</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\data_collections_array.h">
       <Filter>data</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\data_iterators.h">
@@ -305,18 +248,6 @@
     </ClInclude>
     <ClInclude Include="proto-studio\data_ranges.h">
       <Filter>data</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\data_ranges_forward.h">
-      <Filter>data</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\data_ranges_random.h">
-      <Filter>data</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\data_text_string.h">
-      <Filter>data</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc_text.h">
-      <Filter>proto</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\gui_widget_image.h">
       <Filter>proto</Filter>
@@ -332,6 +263,87 @@
     </ClInclude>
     <ClInclude Include="proto-studio\gui_widget_text_page.h">
       <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\sys_aux.h">
+      <Filter>sys</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\sys_ui.h">
+      <Filter>sys</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\windows_aux.h">
+      <Filter>sys</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\windows_fonts.h">
+      <Filter>sys</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\windows_images.h">
+      <Filter>sys</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\windows_system.h">
+      <Filter>sys</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\windows_windows.h">
+      <Filter>sys</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\pix_color.h">
+      <Filter>pix</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\pix_coord.h">
+      <Filter>pix</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\pix_image.h">
+      <Filter>pix</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\pix_process.h">
+      <Filter>pix</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\pix_sampling.h">
+      <Filter>pix</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\pix_text.h">
+      <Filter>pix</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\data_unittest.h">
+      <Filter>data</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\data_struct_array.h">
+      <Filter>data</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\data_struct_string.h">
+      <Filter>data</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_html_layout.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_text_layout.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_text_model_a.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_text_model_b.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_text_model_e.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_unittest.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\gui_widgettest.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\data_algo_forward.h">
+      <Filter>data</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\data_algo_random.h">
+      <Filter>data</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\data_algo_resizing.h">
+      <Filter>data</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\data_algo_textual.h">
+      <Filter>data</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

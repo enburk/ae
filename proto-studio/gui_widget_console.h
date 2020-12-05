@@ -38,7 +38,7 @@ namespace gui
             }
             if (what == &skin)
             {
-                page.view.ground.color = gui::skins[skin].ultralight.first;
+                page.view.canvas.color = gui::skins[skin].ultralight.first;
                 page.alignment = XY{gui::text::left, gui::text::top};
             }
             if (what == &timer)

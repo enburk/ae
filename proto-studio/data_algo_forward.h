@@ -5,9 +5,11 @@ auto remove_if (unary_predicate match)
     auto j = begin();
     while (j != end())
     {
-        std::swap(*i, *j);
+        using std::swap; swap(*i, *j);
         if (not match(*i)) i++;
         j++;
     }
-    return i;
+    return range(i, end());
 }
+
+

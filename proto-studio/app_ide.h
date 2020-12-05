@@ -14,7 +14,6 @@ using namespace pix;
 struct IDE : gui::widget<IDE>
 {
     gui::canvas canvas;
-
     gui::canvas toolbar;
     gui::button button_run;
     gui::button button_test;
@@ -38,8 +37,8 @@ struct IDE : gui::widget<IDE>
         toolbar.color = gui::skins[skin].light.first;
         button_run .text.text = "run";
         button_test.text.text = "test";
-        test_area.hide();
         canvas.color = RGBA::red;
+        test_area.hide();
     }
 
     void on_change (void* what) override
@@ -62,19 +61,18 @@ struct IDE : gui::widget<IDE>
             splitter_editor_r.lower = 65'00 * W / 100'00;
             splitter_editor_r.upper = 90'00 * W / 100'00;
 
+            canvas.coord = coord.now.local();
             toolbar.coord = XYWH(0, 0, W, h);
             button_run .coord = XYWH(0, 0, w, h);
             button_test.coord = XYWH(W-w, 0, w, h);
 
+            test_area.coord = XYXY(0, h, W, H);
             flist_area.coord = XYWH(0, h, l-0, H-h);
             editor_area.coord = XYWH(l, h, r-l, H-h);
             console_area.coord = XYWH(r, h, W-r, H-h);
-
-            if (test_area.alpha.now != 0)
-                test_area.coord = XYXY(0, h, W, H);
-
-            canvas.coord = coord.now.local();
         }
+        if (test_area.object.test_first.done) button_test.text.color = 
+            test_area.object.test_first.ok ? RGBA::green : RGBA::error;
     }
 
     void on_notify (void* what) override
@@ -103,6 +101,10 @@ struct IDE : gui::widget<IDE>
                 XYXY{};
         }
     }
+
+    void on_focus (bool on) override { editor.on_focus(on); }
+    void on_key_pressed (str key, bool down) override { editor.on_key_pressed(key,down); }
+    void on_keyboard_input (str symbol) override { editor.on_keyboard_input(symbol); }
 };
 sys::app<IDE> app("AE proto-studio");//, {0,0}, {100, 100});
 

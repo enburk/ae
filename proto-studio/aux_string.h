@@ -28,6 +28,12 @@ namespace aux
                 *this += delimiter; }
             if (size() > 0) truncate(size() - delimiter.size());
         }
+        explicit str (array<std::string> lines, str delimiter = "\n") {
+            for (auto line : lines) {
+                *this += line;
+                *this += delimiter; }
+            if (size() > 0) resize(size() - delimiter.size());
+        }
 
         void operator += (      char   c) { std::string::operator+=(c); }
         void operator += (const char * s) { std::string::operator+=(s); }

@@ -1,3 +1,42 @@
+python:
+for i, color in enumerate(colors) :
+    print i, '--->', color
+--- print sorted(colors, cmp=compare_len)
++++ print sorted(colors, key=len)
+### for-else
+for value in sequence
+    if value == target:
+        break
+else: return -1;
+### updating multiple state variables:
+### eliminates: out-of-order updates, invalid immediate states
+### (ae: could be done with vectors)
+x, y = y, x+y
+### caching decorator
+def cache(func):
+    saved = {}
+    @wraps(func)
+    def newfunc(*args):
+        if args in saved:
+            return newfunc(*args)
+        result = func(*args)
+        saved[args] = result
+        return result
+    return newfunc
+    
+
+#pragma clang diagnostic ignored "-Wmissing-braces"
+// https://bugs.llvm.org/show_bug.cgi?id=21629
+
+function remove (unary.predicate match)
+    i := begin;
+    j := begin;
+    while j != end
+        swap(i::value, j::value)
+        i++ if not match i::value
+        j++
+    return range(i, end)
+
 canvas : type widget
 {
 }

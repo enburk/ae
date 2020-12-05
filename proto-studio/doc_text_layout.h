@@ -1,5 +1,4 @@
 #pragma once
-#include "aux_string.h"
 #include "aux_utils.h"
 namespace doc::text
 {
@@ -11,8 +10,8 @@ namespace doc::text
     {
         array<array<glyph>> lines;
 
-        bool operator == (const text & t) const { return lines == t.lines; }
-        bool operator != (const text & t) const { return lines != t.lines; }
+        bool operator == (const text & t) const = default;
+        bool operator != (const text & t) const = default;
 
         text () = default;
         explicit text (str s) {
@@ -39,20 +38,16 @@ namespace doc::text
     {
         place from, upto;
         bool empty () const { return from == upto; }
-        bool operator == (range r) const { return from == r.from && upto == r.upto; }
-        bool operator != (range r) const { return from != r.from || upto != r.upto; }
+        bool operator == (const range & r) const = default;
+        bool operator != (const range & r) const = default;
     };
 
     struct token
     {
         str text, kind; range range;
         void operator += (const glyph & g) { text += g; range.upto.offset++; }
-        bool operator != (const token & t) const { return !(*this == t); }
-        bool operator == (const token & t) const { return
-            text  == t.text &&
-            kind  == t.kind &&
-            range == t.range;
-        }
+        bool operator != (const token & t) const = default;
+        bool operator == (const token & t) const = default;
     };
 }
 

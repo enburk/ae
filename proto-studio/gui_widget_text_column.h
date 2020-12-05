@@ -6,14 +6,8 @@ namespace gui::text
     struct token final : widgetarium<glyph>, metrics
     {
         struct data { str text; style_index style;
-            bool operator != (const data & d) const { return !(*this == d); }
-            bool operator == (const data & d) const { return true
-                && text  == d.text
-                && style == d.style;
-            }
-        };
-
-        static inline std::unordered_map<int, int> spaces;
+        bool operator != (const data & d) const = default;
+        bool operator == (const data & d) const = default; };
 
         str text; style_index style; void fill (
         str text, style_index style)

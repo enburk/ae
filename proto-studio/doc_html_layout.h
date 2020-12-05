@@ -76,8 +76,6 @@ namespace gui::text
             else
             if (entity.name == "br")
             {
-                if (lines.size() == 0)
-                lines += line::data{formats.back()};
                 lines.back().tokens += token::data{"\n", styles.back()};
                 lines += line::data{formats.back()};
             }

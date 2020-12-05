@@ -1,19 +1,46 @@
 #pragma once
+#include "data_struct_array.h"
+#include "data_struct_string.h"
 #include "gui_widget_canvas.h"
 #include "gui_widget_console.h"
 using namespace pix;
 
 struct TestFirst : gui::widget<TestFirst>
 {
+    bool ok = true;
+    bool done = false;
     gui::canvas canvas;
+    gui::area<gui::console> console1;
+    gui::area<gui::console> console2;
     void on_change (void* what) override
     {
-        if (what == &skin) canvas.color = gui::skins[skin].ultralight.first;
         if (what == &coord && coord.was.size != coord.now.size)
         {
-            int W = coord.now.w; if (W <= 0) return;
+            int W = coord.now.w; if (W <= 0) return; int w = W/2;
             int H = coord.now.h; if (H <= 0) return;
-            canvas.coord = XYWH(0, 0, W, H);
+            console1.coord = XYWH(0, 0, w, H);
+            console2.coord = XYWH(w, 0, w, H);
+
+            if (done) return; done = true;
+
+            auto style = pix::text::style{
+                sys::font{"Consolas", gui::metrics::text::height},
+                RGBA::black};
+            console1.object.page.style = style;
+            console2.object.page.style = style;
+
+            data::unittest::test_array();
+            console1.object.page.view.html = 
+            data::unittest::results; ok &= 
+            data::unittest::all_ok;
+
+            data::unittest::test_string();
+            console2.object.page.view.html = 
+            data::unittest::results; ok &= 
+            data::unittest::all_ok;
+
+            console1.object.page.scroll.y.top = max<int>();
+            console2.object.page.scroll.y.top = max<int>();
         }
     }
 };
@@ -82,7 +109,8 @@ struct TestTexts : gui::widget<TestTexts>
     str text = "<b>Lorem ipsum</b> dolor sit amet, consectetur adipiscing <i>elit</i>, "
     "sed do eiusmod tempor incididunt ut labore et dolore <b>magna <i>aliqua.</i></b> "
     "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip "
-    "ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit "
+    "<font color=#008000><i>ex ea commodo</i></font> consequat. Duis aute irure dolor "
+    "in reprehenderit <b><i><u>in</u></i></b> voluptate <font color=#000080>velit</font> "
     "esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non "
     "proident, sunt in culpa qui officia deserunt mollit anim id est "
     "<b><font color=#008000>laborum.</font></b><br><br>";
@@ -90,8 +118,8 @@ struct TestTexts : gui::widget<TestTexts>
     {
         if (what == &skin)
         {
-            console1.object.page.view.ground.color = RGBA::white;
-            console2.object.page.view.ground.color = RGBA::white;
+            console1.object.page.view.canvas.color = RGBA::white;
+            console2.object.page.view.canvas.color = RGBA::white;
         }
         if (what == &coord && coord.was.size != coord.now.size)
         {
@@ -138,9 +166,9 @@ struct Test : gui::widget<Test>
 
     Test ()
     {
-        tests += &test_texts; buttons.emplace_back().text.text = "test texts";
         tests += &test_first; buttons.emplace_back().text.text = "unit test";
         tests += &test_fonts; buttons.emplace_back().text.text = "test fonts";
+        tests += &test_texts; buttons.emplace_back().text.text = "test texts";
 
         buttons(0).on = true;
         for (int i=1; i<tests.size(); i++)

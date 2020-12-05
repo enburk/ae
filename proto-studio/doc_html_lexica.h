@@ -3,13 +3,13 @@
 #include "doc_text_lexica.h"
 namespace doc::html::lexica
 {
-    inline deque<token> parse (const text & text)
+    inline deque<token> parse (const text::text & text)
     {
         deque<token> output;
         
         str kind = "text";
 
-        for (token t : doc::lexica::txt::parse(text))
+        for (token t : doc::text::parse(text))
         {
             if (output.size() > 0
             &&  output.back().kind == "text"
@@ -60,7 +60,7 @@ namespace doc::html::lexica
     {
         str output;
 
-        for (token t : parse(doc::text(text)))
+        for (token t : html::lexica::parse(doc::text::text(text)))
         {
             if (t.text == "<br>") output += "\n"; else
             if (t.kind != "tag" ) output += t.text;
