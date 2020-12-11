@@ -7,13 +7,24 @@ namespace data
 {
     template<class x> struct array
     {
-        std::vector<x> data;
+        using
+        container = std::vector<x>;
+        container data;
 
         using value_type = x;
-        using iterator = contiguous_iterator<x>;
-        using sentinel = contiguous_iterator<x>;
-        using range_type = contiguous_collection_range<array>;
-        auto range (iterator i, iterator j) { return range_type{*this, i, j}; }
+        using iterator_= typename container::const_iterator;
+        using iterator = typename container::iterator;
+        using sentinel_= typename container::const_iterator;
+        using sentinel = typename container::iterator;
+        using range_type_= contiguous_collection_range_<array>;
+        using range_type = contiguous_collection_range <array>;
+        auto range (iterator_ i, iterator_ j) const { return range_type_{*this, i, j}; }
+        auto range (iterator  i, iterator  j) /***/ { return range_type {*this, i, j}; }
+        auto begin () /***/ { return data.begin(); }
+        auto end   () /***/ { return data.end  (); }
+        auto begin () const { return data.begin(); }
+        auto end   () const { return data.end  (); }
+        contiguous_range_impl(value_type);
 
         array () = default;
         array (std::initializer_list<x> list) : data(list) {}
@@ -21,12 +32,10 @@ namespace data
         void resize  (int n) { data.resize (n); }
         void reserve (int n) { data.reserve(n); }
 
-        auto begin () { return iterator{data.data()}; }
-        auto end   () { return sentinel{begin() + (int)(data.size())}; }
-        contiguous_range_impl(value_type);
-
         auto from (int n) { return from(begin()+n); }
         auto upto (int n) { return upto(begin()+n); }
+        auto from (int n) const { return from(begin()+n); }
+        auto upto (int n) const { return upto(begin()+n); }
 
         void operator += (x e) { data.push_back(std::move(e)); }
         void operator += (array a) { data.insert(data.end(),
@@ -39,7 +48,6 @@ namespace data
         friend array operator + (array a, x b) { array r     = std::move(a); r += std::move(b); return r; }
         friend array operator + (x a, array b) { array r; r += std::move(a); r += std::move(b); return r; }
 
-
         void erase (iterator f, iterator l)
         {
             data.erase(
@@ -51,8 +59,14 @@ namespace data
         {
             data.insert(
             data.begin() + (i - begin()),
-            r.begin().pointer,
-            r.end().pointer);
+                r.begin(),
+                r.end());
+        }
+        void insert (iterator i, value_type e)
+        {
+            data.insert(
+            data.begin() + (i - begin()),
+                std::move(e));
         }
 
         #include "data_algo_random.h"
@@ -63,7 +77,7 @@ namespace data
 #include "data_unittest.h"
 namespace data::unittest
 {
-    void test_array ()
+    void test_array () try
     {
         test("array.append");
         {
@@ -113,25 +127,21 @@ namespace data::unittest
         test("array.insert");
         {
             array<int> a = {};
-            array<int> b = {1, 2};
-            array<int> c = {3, 4};
-            oops( a.insert(a.begin()+0, b.upto(0)); out(a) ) { "" };
-            oops( a.insert(a.begin()+0, b.upto(1)); out(a) ) { "1" };
-            oops( a.insert(a.begin()+1, c.from(1)); out(a) ) { "1, 4" };
-            oops( a.insert(a.begin()+1, b.from(1)); out(a) ) { "1, 2, 4" };
-            oops( a.insert(a.begin()+2, c.upto(1)); out(a) ) { "1, 2, 3, 4" };
+            oops( a.insert(a.begin()+0, 2); out(a) ) { "2" };
+            oops( a.insert(a.begin()+1, 3); out(a) ) { "2, 3" };
+            oops( a.insert(a.begin()+0, 1); out(a) ) { "1, 2, 3" };
         }
         test("array.replace");
         {
             array<int> a = {1, 2, 3};
             array<int> b = {4, 5, 6};
-            oops( a.upto(3).replace_by(b.from(3)); out(a) ) { "1, 2, 3" };
+            oops( a.upto(0).replace_by(b.from(3)); out(a) ) { "1, 2, 3" };
             oops( a.upto(1).replace_by(b.upto(1)); out(a) ) { "4, 2, 3" };
             oops( a.upto(1).replace_by(b.from(1)); out(a) ) { "5, 6, 2, 3" };
             oops( a.upto(2).replace_by(b.from(2)); out(a) ) { "6, 2, 3" };
             oops( a.upto(3).replace_by(b.upto(3)); out(a) ) { "4, 5, 6" };
             oops( a.upto(0).replace_by(b.from(0)); out(a) ) { "4, 5, 6, 4, 5, 6" };
         }
-        test("");
     }
+    catch(assertion_failed){}
 }

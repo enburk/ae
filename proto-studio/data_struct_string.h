@@ -8,13 +8,24 @@ namespace data
 {
     struct str
     {
-        std::string data;
+        using
+        container = std::string;
+        container data;
 
         using value_type = char;
-        using iterator = contiguous_iterator<char>;
-        using sentinel = contiguous_iterator<char>;
-        using range_type = contiguous_collection_range<str>;
-        auto range (iterator i, iterator j) { return range_type{*this, i, j}; }
+        using iterator_= typename container::const_iterator;
+        using iterator = typename container::iterator;
+        using sentinel_= typename container::const_iterator;
+        using sentinel = typename container::iterator;
+        using range_type_= contiguous_collection_range_<str>;
+        using range_type = contiguous_collection_range <str>;
+        auto range (iterator_ i, iterator_ j) const { return range_type_{*this, i, j}; }
+        auto range (iterator  i, iterator  j) /***/ { return range_type {*this, i, j}; }
+        auto begin () /***/ { return data.begin(); }
+        auto end   () /***/ { return data.end  (); }
+        auto begin () const { return data.begin(); }
+        auto end   () const { return data.end  (); }
+        contiguous_range_impl(value_type);
 
         str () = default;
         str (const char    *  s) : data(s) {}
@@ -34,10 +45,6 @@ namespace data
 
         void resize  (int n) { data.resize (n); }
         void reserve (int n) { data.reserve(n); }
-
-        auto begin () { return iterator{data.data()}; }
-        auto end   () { return sentinel{begin() + (int)(data.size())}; }
-        contiguous_range_impl(value_type);
 
         auto from (int n) { return from(begin()+n); }
         auto upto (int n) { return upto(begin()+n); }
@@ -62,9 +69,13 @@ namespace data
         {
             data.insert(
             data.begin() + (i - begin()),
-            r.begin().pointer,
-            r.end().pointer);
+            r.begin(),
+            r.end());
         }
+        void insert (iterator i, char c) { data.insert(i-begin(), 1, c); }
+        void insert (int i, range_type r) { insert(begin()+i, r); }
+        void insert (int i, char const* s) { data.insert(i, s); }
+        void insert (int i, char c) { insert(begin()+i, c); }
 
         #include "data_algo_random.h"
         #include "data_algo_resizing.h"
@@ -74,56 +85,124 @@ namespace data
 #include "data_unittest.h"
 namespace data::unittest
 {
-    void test_string ()
+    void test_string () try
     {
-        test("array.append");
+        test("string.substr");
         {
-            array<int> a, b, c;
-            oops( a += 1;            out(a) ) { "1" };
-            oops( b += a;            out(b) ) { "1" };
-            oops( b += b;            out(b) ) { "1, 1" };
-            oops( c += std::move(b); out(c) ) { "1, 1" };
-            oops( b += 2;            out(b) ) { "2" };
+            ouch( out(str("").from(0).span(0)) ) { "" };
+            ouch( out(str("").from(0).span(1)) ) { "" };
+            ouch( out(str("").from(1).span(1)) ) { "" };
+
+            oops( out(str("abc").from(1).span(0)) ) { "" };
+            oops( out(str("abc").from(1).span(1)) ) { "b" };
+            oops( out(str("abc").from(1).span(2)) ) { "bc" };
+            oops( out(str("abc").from(1).span(3)) ) { "bc" };
+            oops( out(str("abc").from(2)) ) { "c" };
+            oops( out(str("abc").upto(2)) ) { "ab" };
         }
-        test("array.ranges");
+        test("string.insert");
         {
-            array<int> a = {1, 2, 3};
-            oops( out(a.from(0)) ) { "1, 2, 3" };
-            oops( out(a.from(1)) ) { "2, 3" };
-            oops( out(a.from(2)) ) { "3" };
-            oops( out(a.from(3)) ) { "" };
-            oops( out(a.from(0).upto(0)) ) { "" };
-            oops( out(a.from(0).upto(1)) ) { "1" };
-            oops( out(a.from(0).upto(2)) ) { "1, 2" };
-            oops( out(a.from(0).upto(3)) ) { "1, 2, 3" };
-            oops( out(a.from(1).upto(1)) ) { "" };
-            oops( out(a.from(1).upto(2)) ) { "2" };
-            oops( out(a.from(1).upto(3)) ) { "2, 3" };
-            oops( out(a.from(2).upto(2)) ) { "" };
-            oops( out(a.from(2).upto(3)) ) { "3" };
-            oops( out(a.from(3).upto(3)) ) { "" };
-            oops( out(a(0, 0)) ) { "" };
-            oops( out(a(0, 1)) ) { "1" };
-            oops( out(a(0, 2)) ) { "1, 2" };
-            oops( out(a(0, 3)) ) { "1, 2, 3" };
-            oops( out(a(1, 1)) ) { "" };
-            oops( out(a(1, 2)) ) { "2" };
-            oops( out(a(1, 3)) ) { "2, 3" };
-            oops( out(a(2, 2)) ) { "" };
-            oops( out(a(2, 3)) ) { "3" };
-            oops( out(a(3, 3)) ) { "" };
+            oops( str s = "abc"; s.insert(0, "_"); out(s) ) { "_abc" };
+            oops( str s = "abc"; s.insert(1, "_"); out(s) ) { "a_bc" };
+            oops( str s = "abc"; s.insert(2, "_"); out(s) ) { "ab_c" };
+            oops( str s = "abc"; s.insert(3, "_"); out(s) ) { "abc_" };
         }
-        test("array.replace");
-        {
-            array<int> a = {1, 2, 3};
-            array<int> b = {4, 5, 6};
-            oops( a.upto(0).replace_by(b.from(0)); out(a) ) { "1, 2, 3" };
-            oops( a.upto(3).replace_by(b.from(3)); out(a) ) { "1, 2, 3" };
-            oops( a.upto(1).replace_by(b.upto(1)); out(a) ) { "4, 2, 3" };
-            oops( a.upto(1).replace_by(b.from(1)); out(a) ) { "5, 6, 2, 3" };
-            oops( a.upto(2).replace_by(b.from(2)); out(a) ) { "6, 2, 3" };
-            oops( a.upto(3).replace_by(b.upto(3)); out(a) ) { "4, 5, 6" };
-        }
-        test("");
+//        test("string.search");
+//        {
+//            ASSERT_ANY_THROW(str("").find(""));
+//            ASSERT_ANY_THROW(str("").find(str::one_of("")));
+//            ASSERT_ANY_THROW(str("").find(str::one_not_of{ "" }));
+//
+//            ASSERT_ANY_THROW(str("abc").find(""));
+//            ASSERT_ANY_THROW(str("abc").find(str::one_of("")));
+//            ASSERT_ANY_THROW(str("abc").find(str::one_not_of{ "" }));
+//
+//            oops( out(str("").find("b").length, 0);
+//            oops( out(str("").find(str::one_of("b")).length, 0);
+//            oops( out(str("").find(str::one_not_of("b")).length, 0);
+//
+//            oops( out(str("b").find("b").length, 1);
+//            oops( out(str("b").find(str::one_of{ "b" }).length, 1);
+//            oops( out(str("b").find(str::one_not_of{ "b" }).length, 0);
+//
+//            oops( out(str("abccba").find("b").offset, 1);
+//            oops( out(str("abccba").find("b").length, 1);
+//            oops( out(str("abccba").find("d").length, 0);
+//            oops( out(str("abccba").find("cc").offset, 2);
+//            oops( out(str("abccba").find("cc").length, 2);
+//
+//            oops( out(str("abccba").find("b", str::start_from(1)).offset, 1);
+//            oops( out(str("abccba").find("b", str::start_from(2)).offset, 4);
+//            oops( out(str("abccba").find("b", str::start_from(5)).length, 0);
+//            oops( out(str("abccba").find("b", str::start_from_end()).offset, 4);
+//            oops( out(str("abccba").find("b", str::start_from_end(1)).offset, 4);
+//            oops( out(str("abccba").find("b", str::start_from_end(2)).offset, 1);
+//            oops( out(str("abccba").find("b", str::start_from_end(5)).length, 0);
+//        }
+//        test("string.split");
+//        {
+//            ASSERT_ANY_THROW(str("").split_by(""));
+//            ASSERT_ANY_THROW(str("|").split_by(""));
+//            ASSERT_EQ(str("").split_by("|").size(), 1);
+//            ASSERT_EQ(str("a").split_by("|").size(), 1);
+//            ASSERT_EQ(str("|").split_by("|").size(), 2);
+//            ASSERT_EQ(str("a|").split_by("|").size(), 2);
+//            ASSERT_EQ(str("|b").split_by("|").size(), 2);
+//            ASSERT_EQ(str("a|b").split_by("|").size(), 2);
+//
+//            oops( out(str("").split_by("|")[0], "");
+//            oops( out(str("a").split_by("|")[0], "a");
+//            oops( out(str("|").split_by("|")[0], "");
+//            oops( out(str("|").split_by("|")[1], "");
+//            oops( out(str("a|").split_by("|")[0], "a");
+//            oops( out(str("a|").split_by("|")[1], "");
+//            oops( out(str("|b").split_by("|")[0], "");
+//            oops( out(str("|b").split_by("|")[1], "b");
+//            oops( out(str("a|b").split_by("|")[0], "a");
+//            oops( out(str("a|b").split_by("|")[1], "b");
+//
+//            str  a,b;
+//            str("a|b").split_by("|", a, b, str::delimiter::to_the_left);  oops( out(a, "a|") << "split 1";
+//            str("a|b").split_by("|", a, b, str::delimiter::to_the_left);  oops( out(b, "b" ) << "split 2";
+//            str("a|b").split_by("|", a, b, str::delimiter::to_the_right); oops( out(a, "a" ) << "split 3";
+//            str("a|b").split_by("|", a, b, str::delimiter::to_the_right); oops( out(b, "|b") << "split 4";
+//        }
+//        test("string.fragment");
+//        {
+//            EXPECT_TRUE(str("abc").starts_with(""));
+//            EXPECT_TRUE(str("abc").starts_with("a"));
+//            EXPECT_TRUE(str("abc").starts_with("ab"));
+//            EXPECT_TRUE(str("abc").starts_with("abc"));
+//            EXPECT_FALSE(str("abc").starts_with("abcd"));
+//            EXPECT_FALSE(str("abc").starts_with("abd"));
+//            EXPECT_FALSE(str("abc").starts_with("ad"));
+//            EXPECT_FALSE(str("abc").starts_with("d"));
+//
+//            EXPECT_TRUE(str("abc").ends_with(""));
+//            EXPECT_TRUE(str("abc").ends_with("c"));
+//            EXPECT_TRUE(str("abc").ends_with("bc"));
+//            EXPECT_TRUE(str("abc").ends_with("abc"));
+//            EXPECT_FALSE(str("abc").ends_with("aabc"));
+//            EXPECT_FALSE(str("abc").ends_with("aab"));
+//            EXPECT_FALSE(str("abc").ends_with("aa"));
+//            EXPECT_FALSE(str("abc").ends_with("a"));
+//
+//            EXPECT_TRUE(str("abccba").contains("cc"));
+//            EXPECT_TRUE(str("abccba").contains(str::one_of("acc")));
+//            EXPECT_TRUE(str("abccba").contains(str::one_not_of("acc")));
+//
+//            EXPECT_FALSE(str("abccba").contains_only("cc"));
+//            EXPECT_FALSE(str("abccba").contains_only(str::one_of("acc")));
+//            EXPECT_FALSE(str("abccba").contains_only(str::one_not_of("acc")));
+//
+//            EXPECT_TRUE(str("abccba").contains_only("abccba"));
+//            EXPECT_TRUE(str("abccba").contains_only(str::one_of("abc")));
+//            EXPECT_TRUE(str("abccba").contains_only(str::one_not_of("def")));
+//
+//            EXPECT_FALSE(str("").contains_only("abccba"));
+//            EXPECT_TRUE(str("").contains_only(str::one_of("abc")));
+//            EXPECT_TRUE(str("").contains_only(str::one_not_of("def")));
+//        }
     }
+    catch(assertion_failed){}
 }

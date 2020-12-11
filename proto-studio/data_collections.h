@@ -2,24 +2,60 @@
 #include "data_ranges.h"
 
 template<class X> struct
+contiguous_collection_range_
+{
+    const X& host;
+    using x = typename X::value_type;
+    using iterator = typename X::iterator_;
+    using sentinel = typename X::sentinel_;
+    using iterator_ = typename X::iterator_;
+    using sentinel_ = typename X::sentinel_;
+    using range_type = contiguous_collection_range_;
+    auto range (iterator i, iterator j) { return range_type{host, i, j}; }
+
+    iterator  begin_;
+    sentinel  end_;
+    iterator  begin () { return begin_; }
+    sentinel  end   () { return end_;   }
+    iterator_ begin () const { return begin_; }
+    sentinel_ end   () const { return end_;   }
+    contiguous_range_impl(x);
+
+    auto upto (int n) { return range(begin(), host.clip(host.begin() + n)); }
+    auto span (int n) { return range(begin(), host.clip(     begin() + n)); }
+
+    #include "data_algo_random.h"
+};
+
+template<class X> struct
 contiguous_collection_range
 {
     X& host;
     using x = typename X::value_type;
-    using iterator = contiguous_iterator<x>;
-    using sentinel = contiguous_iterator<x>;
-    auto range (iterator i, iterator j) { return contiguous_collection_range{host, i, j}; }
-    iterator begin_; auto begin () { return begin_; } auto begin () const { return begin_; }
-    sentinel end_;   auto end   () { return end_;   } auto end   () const { return end_;   }
+    using iterator = typename X::iterator;
+    using sentinel = typename X::sentinel;
+    using iterator_ = typename X::iterator_;
+    using sentinel_ = typename X::sentinel_;
+    using range_type = contiguous_collection_range;
+    auto range (iterator  i, iterator  j) { return range_type {host, i, j}; }
+
+    iterator  begin_;
+    sentinel  end_;
+    iterator  begin () { return begin_; }
+    sentinel  end   () { return end_;   }
+    iterator_ begin () const { return begin_; }
+    sentinel_ end   () const { return end_;   }
     contiguous_range_impl(x);
-    #include "data_algo_random.h"
-    #include "data_algo_resizing.h"
-
-    void erase () { host.erase(begin(), end()); end_ = begin_; }
-
-    void insert (iterator i, contiguous_collection_range r) { host.insert(i, r); }
 
     auto upto (int n) { return range(begin(), host.clip(host.begin() + n)); }
+    auto span (int n) { return range(begin(), host.clip(     begin() + n)); }
+
+    void insert (iterator i, range_type r) { host.insert(i, r); }
+    void insert (iterator i, x e) { host.insert(i, std::move(e)); }
+    void erase  () { host.erase(begin(), end()); end_ = begin_; }
+
+    #include "data_algo_random.h"
+    #include "data_algo_resizing.h"
 };
 
 

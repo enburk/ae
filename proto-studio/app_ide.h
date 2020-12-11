@@ -1,5 +1,4 @@
 #pragma once
-#include "data_ranges.h"
 #include "gui_widget.h"
 #include "gui_widget_canvas.h"
 #include "sys_aux.h"

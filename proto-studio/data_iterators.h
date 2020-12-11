@@ -1,10 +1,8 @@
 ﻿template<class x>
 struct forward_iterator
 {
-    auto operator *  () /***/&  -> x /***/& ;
-    auto operator *  () /***/&& -> x /***/&&;
-    auto operator *  () const&  -> x const& ;
-    auto operator *  () const&& -> x const&&;
+    auto operator *  () /***/ -> x /***/&;
+    auto operator *  () const -> x const&;
     void operator ++ (int); // postfix
     void operator ++ ();    // prefix
 };
@@ -33,14 +31,27 @@ struct random_access_iterator : bidirectional_iterator<x> // , ordered
 };
 
 template<class x>
-struct contiguous_iterator : random_access_iterator<x>
+struct contiguous_iterator_: random_access_iterator<x>
+{
+    x* pointer;
+    contiguous_iterator_(const x* p) : pointer(p) {}
+    void operator += (int n) { pointer += n; }
+    void operator -= (int n) { pointer -= n; }
+    auto operator *  () const -> x const&  { return (*pointer); }
+    auto operator -  (contiguous_iterator_ i) { return (pointer - i.pointer); }
+    auto operator != (contiguous_iterator_ i) { return (pointer != i.pointer); }
+    auto operator <=>(contiguous_iterator_ i) { return (pointer <=> i.pointer); }
+    random_access_iterator_impl;
+};
+template<class x>
+struct contiguous_iterator : contiguous_iterator_<x>
 {
     x* pointer;
     contiguous_iterator(x* p) : pointer(p) {}
     void operator += (int n) { pointer += n; }
     void operator -= (int n) { pointer -= n; }
-    auto operator *  () /***/  -> x /***/&  { return /*******/(*pointer); }
-    auto operator *  () const  -> x const&  { return /*******/(*pointer); }
+    auto operator *  () /***/ -> x /***/&  { return (*pointer); }
+    auto operator *  () const -> x const&  { return (*pointer); }
     auto operator -  (contiguous_iterator i) { return (pointer - i.pointer); }
     auto operator != (contiguous_iterator i) { return (pointer != i.pointer); }
     auto operator <=>(contiguous_iterator i) { return (pointer <=> i.pointer); }

@@ -18,6 +18,20 @@ namespace data::unittest
     auto to_string (string s) { return s; }
 
     void out (string s) { log.push_back(s); }
+    template<class X>
+    void out (contiguous_collection_range<X> r)
+    requires std::same_as<typename X::value_type, char>
+    {
+        out(string(r.begin(), r.end()));
+    }
+    template<class X>
+    void out (X r)
+    requires input_range<X> && std::same_as<typename X::value_type, char>
+    {
+        string s;
+        for (auto x : r) s += x;
+        out(s);
+    }
     void out (input_range auto r, string delimiter = ", ")
     {
         string s;
@@ -94,7 +108,10 @@ namespace data::unittest
         string title; bool throws;
         void operator == (vector<string> true_log) {
             if (! check(title, std::move(true_log))
-                && throws) throw assertion_failed {};
+                && throws) { out("<br>" +
+                red ("ASSERTION FAILED"));
+                throw assertion_failed {};
+            }
         }
     };
     auto expect_(string title) { return assertion{title, false}; }

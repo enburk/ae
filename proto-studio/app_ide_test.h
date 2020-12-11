@@ -30,11 +30,13 @@ struct TestFirst : gui::widget<TestFirst>
             console2.object.page.style = style;
 
             data::unittest::test_array();
+            data::unittest::test("");
             console1.object.page.view.html = 
             data::unittest::results; ok &= 
             data::unittest::all_ok;
 
             data::unittest::test_string();
+            data::unittest::test("");
             console2.object.page.view.html = 
             data::unittest::results; ok &= 
             data::unittest::all_ok;
