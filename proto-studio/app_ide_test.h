@@ -31,13 +31,13 @@ struct TestFirst : gui::widget<TestFirst>
 
             data::unittest::test_array();
             data::unittest::test("");
-            console1.object.page.view.html = 
+            console1.object.page.html = 
             data::unittest::results; ok &= 
             data::unittest::all_ok;
 
             data::unittest::test_string();
             data::unittest::test("");
-            console2.object.page.view.html = 
+            console2.object.page.html = 
             data::unittest::results; ok &= 
             data::unittest::all_ok;
 
@@ -144,8 +144,8 @@ struct TestTexts : gui::widget<TestTexts>
         if (what == &doubling)
         {
             doubling.text.text = "double text";
-            console1.object.page.view.html = text;
-            console2.object.page.view.html = text;
+            console1.object.page.html = text;
+            console2.object.page.html = text;
             text = text + text;
         }
         if (what == &splitter)

@@ -17,7 +17,7 @@ namespace data::unittest
     using std::to_string;
     auto to_string (string s) { return s; }
 
-    void out (string s) { log.push_back(s); }
+    void out (auto x) { log.push_back(to_string(x)); }
     template<class X>
     void out (contiguous_collection_range<X> r)
     requires std::same_as<typename X::value_type, char>
@@ -91,10 +91,10 @@ namespace data::unittest
         
         string ss;
         if (log.size() > 1) ss += "<br>";
-        for (auto s : log) ss += s + "<br>";
+        for (auto s : log) ss += doc::html::lexica::encoded(s) + "<br>";
         log.clear();
 
-        results += title + gray(" >>> ");
+        results += doc::html::lexica::encoded(title) + gray(" >>> ");
         results += ok ? green(ss) : red(ss);
         
         if (ok) return ok;

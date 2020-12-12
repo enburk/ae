@@ -116,6 +116,21 @@ namespace data::unittest
             oops( out(a(2, 3)) ) { "3" };
             oops( out(a(3, 3)) ) { "" };
         }
+        test("array.compare");
+        {
+            array<int> a = {1, 2, 3};
+            array<int> b = {2, 3, 4};
+            oops( out(a == a) ) { "1" };
+            oops( out(a != b) ) { "1" };
+            oops( out(a <= b) ) { "1" };
+            oops( out(a != b.upto(3)) ) { "1" };
+            oops( out(a <= b.upto(3)) ) { "1" };
+            oops( out(a.from(0) != b) ) { "1" };
+            oops( out(a.from(0) <= b) ) { "1" };
+            oops( out(a.from(0) != b.upto(3)) ) { "1" };
+            oops( out(a.from(0) <= b.upto(3)) ) { "1" };
+            oops( out(a.from(1) == b.upto(2)) ) { "1" };
+        }
         test("array.erase");
         {
             array<int> a = {1, 2, 3};

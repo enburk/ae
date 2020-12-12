@@ -58,6 +58,14 @@ namespace data
                 (*this) += e;
         }
 
+        friend bool operator ==  (str const& l, str const& r) { return l.data == r.data; }
+        friend auto operator <=> (str const& l, str const& r) {
+            auto i = l.data.compare(r.data); return
+                 i < 0 ? std::strong_ordering::less:
+                 i > 0 ? std::strong_ordering::greater:
+                         std::strong_ordering::equal;
+        }
+
         void erase (iterator f, iterator l)
         {
             data.erase(
@@ -100,6 +108,24 @@ namespace data::unittest
             oops( out(str("abc").from(2)) ) { "c" };
             oops( out(str("abc").upto(2)) ) { "ab" };
         }
+        test("string.compare");
+        {
+            oops( out(str("abc") == str("abc")) ) { "1" };
+            oops( out(str("abc") ==     "abc" ) ) { "1" };
+            oops( out(    "abc"  == str("abc")) ) { "1" };
+            oops( out(str("abc") !=     "abz" ) ) { "1" };
+            oops( out(    "abz"  != str("abc")) ) { "1" };
+            oops( out(str("abc") <=     "abz" ) ) { "1" };
+            oops( out(    "abz"  >= str("abc")) ) { "1" };
+
+            oops( out(str("abc") != str("bcd").upto(3)) ) { "1" };
+            oops( out(str("abc") <= str("bcd").upto(3)) ) { "1" };
+            oops( out(str("abc").from(0) != str("bcd")) ) { "1" };
+            oops( out(str("abc").from(0) <= str("bcd")) ) { "1" };
+            oops( out(str("abc").from(0) != str("bcd").upto(3)) ) { "1" };
+            oops( out(str("abc").from(0) <= str("bcd").upto(3)) ) { "1" };
+            oops( out(str("abc").from(1) == str("bcd").upto(2)) ) { "1" };
+        }
         test("string.insert");
         {
             oops( str s = "abc"; s.insert(0, "_"); out(s) ) { "_abc" };
@@ -107,8 +133,8 @@ namespace data::unittest
             oops( str s = "abc"; s.insert(2, "_"); out(s) ) { "ab_c" };
             oops( str s = "abc"; s.insert(3, "_"); out(s) ) { "abc_" };
         }
-//        test("string.search");
-//        {
+        test("string.search");
+        {
 //            ASSERT_ANY_THROW(str("").find(""));
 //            ASSERT_ANY_THROW(str("").find(str::one_of("")));
 //            ASSERT_ANY_THROW(str("").find(str::one_not_of{ "" }));
@@ -125,7 +151,7 @@ namespace data::unittest
 //            oops( out(str("b").find(str::one_of{ "b" }).length, 1);
 //            oops( out(str("b").find(str::one_not_of{ "b" }).length, 0);
 //
-//            oops( out(str("abccba").find("b").offset, 1);
+///            oops( out(str("abccba").find(first("b")).offset()) ) { "1" };
 //            oops( out(str("abccba").find("b").length, 1);
 //            oops( out(str("abccba").find("d").length, 0);
 //            oops( out(str("abccba").find("cc").offset, 2);
@@ -138,7 +164,7 @@ namespace data::unittest
 //            oops( out(str("abccba").find("b", str::start_from_end(1)).offset, 4);
 //            oops( out(str("abccba").find("b", str::start_from_end(2)).offset, 1);
 //            oops( out(str("abccba").find("b", str::start_from_end(5)).length, 0);
-//        }
+        }
 //        test("string.split");
 //        {
 //            ASSERT_ANY_THROW(str("").split_by(""));

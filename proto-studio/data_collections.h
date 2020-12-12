@@ -5,11 +5,11 @@ template<class X> struct
 contiguous_collection_range_
 {
     const X& host;
-    using x = typename X::value_type;
     using iterator = typename X::iterator_;
     using sentinel = typename X::sentinel_;
     using iterator_ = typename X::iterator_;
     using sentinel_ = typename X::sentinel_;
+    using value_type = typename X::value_type;
     using range_type = contiguous_collection_range_;
     auto range (iterator i, iterator j) { return range_type{host, i, j}; }
 
@@ -19,10 +19,12 @@ contiguous_collection_range_
     sentinel  end   () { return end_;   }
     iterator_ begin () const { return begin_; }
     sentinel_ end   () const { return end_;   }
-    contiguous_range_impl(x);
+    contiguous_range_impl(value_type);
 
     auto upto (int n) { return range(begin(), host.clip(host.begin() + n)); }
     auto span (int n) { return range(begin(), host.clip(     begin() + n)); }
+
+    auto offset () { return begin() - host.begin(); }
 
     #include "data_algo_random.h"
 };
@@ -31,11 +33,11 @@ template<class X> struct
 contiguous_collection_range
 {
     X& host;
-    using x = typename X::value_type;
     using iterator = typename X::iterator;
     using sentinel = typename X::sentinel;
     using iterator_ = typename X::iterator_;
     using sentinel_ = typename X::sentinel_;
+    using value_type = typename X::value_type;
     using range_type = contiguous_collection_range;
     auto range (iterator  i, iterator  j) { return range_type {host, i, j}; }
 
@@ -45,13 +47,15 @@ contiguous_collection_range
     sentinel  end   () { return end_;   }
     iterator_ begin () const { return begin_; }
     sentinel_ end   () const { return end_;   }
-    contiguous_range_impl(x);
+    contiguous_range_impl(value_type);
 
     auto upto (int n) { return range(begin(), host.clip(host.begin() + n)); }
     auto span (int n) { return range(begin(), host.clip(     begin() + n)); }
 
+    auto offset () { return begin() - host.begin(); }
+
     void insert (iterator i, range_type r) { host.insert(i, r); }
-    void insert (iterator i, x e) { host.insert(i, std::move(e)); }
+    void insert (iterator i, value_type e) { host.insert(i, std::move(e)); }
     void erase  () { host.erase(begin(), end()); end_ = begin_; }
 
     #include "data_algo_random.h"

@@ -21,8 +21,8 @@ random_access_range = bidirectional_range<X> && requires (X x)
 {
     typename X::value_type;
     typename X::range_type;
-    { x.from (X::iterator) };
-    { x.upto (X::iterator) };
+    //{ x.from (X::iterator) };
+    //{ x.upto (X::iterator) };
     #define random_access_range_impl(x) \
     auto operator () (iterator i, iterator j) const { return from(i).upto(j); } \
     auto operator () (iterator i, iterator j) /***/ { return from(i).upto(j); } \
@@ -47,6 +47,22 @@ contiguous_range = random_access_range<X> && requires (X x)
     auto upto (iterator  i) /***/ { return range(begin(), clip(i)); } \
     random_access_range_impl(x);
 };
+
+bool operator == (
+    random_access_range auto const& l,
+    random_access_range auto const& r) {
+    return std::equal(
+        l.begin(), l.end(),
+        r.begin(), r.end());
+}
+auto operator <=> (
+    random_access_range auto const& l,
+    random_access_range auto const& r) {
+    return std::lexicographical_compare_three_way(
+        l.begin(), l.end(),
+        r.begin(), r.end());
+}
+
 
 //template<class x> struct
 //memory_range // contiguous_range
