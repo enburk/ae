@@ -3,8 +3,7 @@
 #include <cassert>
 #include <compare>
 #include <variant>
-#include "aux_string.h"
-#include "aux_utils.h"
+#include "data_struct_string.h"
 #include "doc_text_layout.h"
 namespace doc
 {

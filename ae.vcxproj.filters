@@ -225,18 +225,6 @@
     <ClInclude Include="proto-studio\doc_text_lexica.h">
       <Filter>proto</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\aux_abc.h">
-      <Filter>aux</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\aux_array.h">
-      <Filter>aux</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\aux_string.h">
-      <Filter>aux</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\aux_utils.h">
-      <Filter>aux</Filter>
-    </ClInclude>
     <ClInclude Include="proto-studio\data.h">
       <Filter>data</Filter>
     </ClInclude>
@@ -343,6 +331,12 @@
       <Filter>data</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\data_algo_textual.h">
+      <Filter>data</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\data_struct_registry.h">
+      <Filter>data</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\data_struct_vector.h">
       <Filter>data</Filter>
     </ClInclude>
   </ItemGroup>

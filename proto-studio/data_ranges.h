@@ -38,7 +38,7 @@ contiguous_range = random_access_range<X> && requires (X x)
 {
     { x.range (X::iterator, X::iterator) };
     #define contiguous_range_impl(x) \
-    auto size () const { return end() - begin(); } \
+    auto size () const { return (int)(end() - begin()); } \
     auto clip (iterator_ i) const { return std::min(std::max(begin(),i), end()); } \
     auto clip (iterator  i) /***/ { return std::min(std::max(begin(),i), end()); } \
     auto from (iterator_ i) const { return range(clip(i), end  ()); } \
@@ -49,15 +49,15 @@ contiguous_range = random_access_range<X> && requires (X x)
 };
 
 bool operator == (
-    random_access_range auto const& l,
-    random_access_range auto const& r) {
+    input_range auto const& l,
+    input_range auto const& r) {
     return std::equal(
         l.begin(), l.end(),
         r.begin(), r.end());
 }
 auto operator <=> (
-    random_access_range auto const& l,
-    random_access_range auto const& r) {
+    input_range auto const& l,
+    input_range auto const& r) {
     return std::lexicographical_compare_three_way(
         l.begin(), l.end(),
         r.begin(), r.end());

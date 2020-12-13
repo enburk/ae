@@ -5,3 +5,9 @@ void replace_by (input_range auto r)
     if (size() > r.size()) from(begin()+n).erase();
     else insert(end(), r.from(r.begin()+n));
 }
+
+template<class unary_predicate>
+void erase_if (unary_predicate match)
+{
+    from(remove_if(match)).erase();
+}

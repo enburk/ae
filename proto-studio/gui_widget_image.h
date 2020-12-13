@@ -113,7 +113,7 @@ namespace gui
             state = media::state::finished;
             frame_ready = true;
         }
-        void load (array<sys::byte>::range range)
+        void load (array<sys::byte>::range_type range)
         {
             reset();
             state = media::state::loading;
@@ -121,8 +121,8 @@ namespace gui
             {
                 try
                 {
-                    data.resize(range.length);
-                    std::copy(range.begin().current, range.end().current, data.begin());
+                    data.resize(range.size());
+                    std::copy(range.begin(), range.end(), data.begin());
                     play();
                 }
                 catch (std::exception & e) {
@@ -150,7 +150,7 @@ namespace gui
                     ifstream.seekg(offset, std::ios::beg);
 
                     data.resize(size);
-                    ifstream.read((char*)(data.data()), size);
+                    ifstream.read((char*)(data.data.data()), size);
 
                     play();
                 }
@@ -214,7 +214,7 @@ namespace gui
             else
             {
                 int next = (current_frame + 1) % 2;
-                sources[next] = pix::unpack(data.whole()).value();
+                sources[next] = pix::unpack(data.from(0)).value();
                 resolution = sources[next].size;
                 state = media::state::finished;
                 frame_ready = true;

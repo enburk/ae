@@ -6,11 +6,9 @@
 #include "data_unittest.h"
 namespace data
 {
-    struct str
+    struct str : std::string
     {
-        using
-        container = std::string;
-        container data;
+        using container = std::string;
 
         using value_type = char;
         using iterator_= typename container::const_iterator;
@@ -21,72 +19,174 @@ namespace data
         using range_type = contiguous_collection_range <str>;
         auto range (iterator_ i, iterator_ j) const { return range_type_{*this, i, j}; }
         auto range (iterator  i, iterator  j) /***/ { return range_type {*this, i, j}; }
-        auto begin () /***/ { return data.begin(); }
-        auto end   () /***/ { return data.end  (); }
-        auto begin () const { return data.begin(); }
-        auto end   () const { return data.end  (); }
         contiguous_range_impl(value_type);
 
         str () = default;
-        str (const char    *  s) : data(s) {}
-        str (const char8_t *  s) : data((char*)s) {}
-        str (char c, int n =  1) { if (n > 0) data = std::string(n,c); }
-        str (std::string_view s) { data = std::string(s); }
+        str (const char    *  s) : container(s) {}
+        str (const char8_t *  s) : container((char*)s) {}
+        str (char c, int n =  1) { if (n > 0) *this = std::string(n,c); }
+        str (std::string_view s) : container(s) {}
+        str (std::string      s) : container(std::move(s)) {}
+        str (range_type_      r) : container(r.begin(), r.end()) {}
+        str (range_type       r) : container(r.begin(), r.end()) {}
 
-        str (const char * f, const char * l) { data = std::string(f, l); }
+        str (const_iterator f, const_iterator l) { *this = std::string (f, l); }
+        str (const char *   f, const char *   l) { *this = std::string (f, l); }
 
-        explicit str (array<char> text) { data = std::string(
+        explicit str (array<char> text) { *this = std::string(
             text.data.data(), text.data.data() + text.size()); }
 
         explicit str (array<str> lines, str delimiter = "\n") {
             for (auto line : lines) { *this += line; *this += delimiter; }
-            if (data.size() > 0) resize(data.size() - delimiter.data.size());
+            if (size() > 0) resize(size() - delimiter.size());
         }
 
-        void resize  (int n) { data.resize (n); }
-        void reserve (int n) { data.reserve(n); }
+        auto from (int n) /***/ { return from(begin()+n); }
+        auto upto (int n) /***/ { return upto(begin()+n); }
+        auto from (int n) const { return from(begin()+n); }
+        auto upto (int n) const { return upto(begin()+n); }
 
-        auto from (int n) { return from(begin()+n); }
-        auto upto (int n) { return upto(begin()+n); }
-
-        void operator += (char        c) { data += c; }
-        void operator += (char const* s) { data += s; }
-        void operator += (str  const& s) { data += s.data; }
-        void operator += (str      && s) { data += std::move(s.data); }
+        void operator += (char        c) { container::operator+=(c); }
+        void operator += (char const* s) { container::operator+=(s); }
+        void operator += (str  const& s) { container::operator+=(s); }
+        void operator += (str      && s) { container::operator+=(std::move(s)); }
         void operator += (input_range auto r) {
             for (const auto & e : r)
                 (*this) += e;
         }
 
-        friend bool operator ==  (str const& l, str const& r) { return l.data == r.data; }
-        friend auto operator <=> (str const& l, str const& r) {
-            auto i = l.data.compare(r.data); return
-                 i < 0 ? std::strong_ordering::less:
-                 i > 0 ? std::strong_ordering::greater:
-                         std::strong_ordering::equal;
-        }
-
-        void erase (iterator f, iterator l)
-        {
-            data.erase(
-            data.begin() + (f - begin()),
-            data.begin() + (l - begin()));
-        }
-
-        void insert (iterator i, range_type r)
-        {
-            data.insert(
-            data.begin() + (i - begin()),
+        void insert (iterator i, range_type r) {
+            container::insert(i,
             r.begin(),
             r.end());
         }
-        void insert (iterator i, char c) { data.insert(i-begin(), 1, c); }
+        void insert (iterator i, char c) { container::insert(i-begin(), 1, c); }
         void insert (int i, range_type r) { insert(begin()+i, r); }
-        void insert (int i, char const* s) { data.insert(i, s); }
+        void insert (int i, char const* s) { container::insert(i, s); }
         void insert (int i, char c) { insert(begin()+i, c); }
 
         #include "data_algo_random.h"
         #include "data_algo_resizing.h"
+
+        enum class delimiter { exclude, to_the_left, to_the_right };
+
+
+        bool split_by (str pattern, str& str1, str& str2, delimiter delimiter = delimiter::exclude) const
+        {
+            auto range = container::find (pattern); int n = range; int m = pattern.size();
+            str1 = m > 0 ? str(upto (n     + (delimiter == delimiter::to_the_left  ? m : 0))) : *this;
+            str2 = m > 0 ? str(from (n + m - (delimiter == delimiter::to_the_right ? m : 0))) : str{};
+            return m > 0;
+        }
+        array<str> split_by (str pattern) const
+        {
+            array<str> result;
+            if (size() == 0) return result;
+            int start = 0; while (true) {
+                auto range = container::find(pattern, start);
+                bool found = range != std::string::npos;
+                result += from(start).span(found ? range - start : size() - start);
+                if (!found) range = size();
+                start = range + pattern.size();
+                if (start >= size()) { if (found) result += ""; break; }
+            }
+            return result;
+        }
+        bool contains (str pattern) const {
+            return container::find(pattern) != std::string::npos;
+        }
+        int replace_all (str ffrom, str to) {
+            int pos = 0, nn = 0;
+            while (true) {
+                auto range = container::find(ffrom, pos);
+                if (range == std::string::npos) break;
+                pos = range; from(range).span(ffrom.size()).replace_by(to);
+                pos += to.size ();
+                nn++;
+            };
+            return nn;
+        }
+        void truncate () { if (size() > 0) resize(size()-1); }
+        void triml (const str & chars = " "){
+            auto r = find_first_not_of(chars);
+            bool found = r != std::string::npos;
+            if (!found) clear(); else upto(r).erase();
+        }
+        void trimr (const str & chars = " "){
+            auto r = find_last_not_of(chars);
+            bool found = r != std::string::npos;
+            if (!found) clear(); else from(r+1).erase();
+        }
+        void strip (const str & chars = " "){
+             trimr(chars);
+             triml(chars);
+        }
+        bool ascii_isalnum () const {
+            for (char c : *this)
+                if((c < '0') || ('9' < c &&
+                    c < 'A') || ('Z' < c &&
+                    c < 'a') || ('z' < c))
+                    return false;
+            return true;
+        }
+
+        static char ascii_tolower (char c) { return 'A' <= c && c <= 'Z' ? c - 'A' + 'a' : c; }
+        static char ascii_toupper (char c) { return 'a' <= c && c <= 'z' ? c - 'a' + 'A' : c; }
+
+        str ascii_lowercased () const { str s = *this; std::transform(s.begin(), s.end(), s.begin(), ascii_tolower); return s; }
+        str ascii_uppercased () const { str s = *this; std::transform(s.begin(), s.end(), s.begin(), ascii_toupper); return s; }
+    };
+
+    namespace unicode
+    {
+        array<str> glyphs (str s)
+        {
+            array<str> glyphs;
+            glyphs.reserve(s.size());
+
+            auto check = [&s](auto i){ if (i == s.end())
+            throw std::runtime_error("unicode: broken UTF-8"); };
+
+            for (auto i = s.begin(); i != s.end(); )
+            {
+                char c = *i++; str g = c;
+                uint8_t u = static_cast<uint8_t>(c);
+                if ((u & 0b11000000) == 0b11000000) { check(i); g += *i++; // 110xxxxx 10xxxxxx
+                if ((u & 0b11100000) == 0b11100000) { check(i); g += *i++; // 1110xxxx 10xxxxxx 10xxxxxx
+                if ((u & 0b11110000) == 0b11110000) { check(i); g += *i++; // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+                }}}
+                glyphs += g;
+            }
+            return glyphs;
+        }
+
+        int length (str s)
+        {
+            int n = 0;
+            for (auto i = s.begin(); i != s.end(); )
+            {
+                char c = *i++; n++;
+                uint8_t u = static_cast<uint8_t>(c);
+                if ((u & 0b11000000) == 0b11000000) { if (i == s.end()) break; n++; i++;
+                if ((u & 0b11100000) == 0b11100000) { if (i == s.end()) break; n++; i++;
+                if ((u & 0b11110000) == 0b11110000) { if (i == s.end()) break; n++; i++;
+                }}}
+            }
+            return n;
+        }
+    }
+}
+namespace std
+{
+    template <> struct hash<data::str>
+    {
+        std::size_t operator()(const data::str & s) const
+        {
+            using std::size_t;
+            using std::hash;
+            using std::string;
+            return hash<string>()(s);
+        }
     };
 }
 

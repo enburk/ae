@@ -158,8 +158,10 @@ namespace gui::text
 
             array<token*> unbreakable;
 
-            for(auto [lexeme, n] : tokens.whole())
+            int n = -1;
+            for(auto lexeme : tokens)
             {
+                n++;
                 token & token = (*this)(n);
                 token.fill(lexeme.text, lexeme.style);
 

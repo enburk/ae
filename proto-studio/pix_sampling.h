@@ -1,8 +1,11 @@
 #pragma once
+#include "data_struct_vector.h"
 #include "pix_color.h"
 #include "pix_image.h"
 namespace pix::sampling
 {
+    using data::vector;
+
     template<class color> inline
     color linear (frame<color> frame, double x, double y)
     {
@@ -40,8 +43,8 @@ namespace pix::sampling
 
         auto source = [frame](int x, int y)
         {
-            x = aux::clamp(x, 0, frame.size.x-1);
-            y = aux::clamp(y, 0, frame.size.y-1);
+            x = data::clamp(x, 0, frame.size.x-1);
+            y = data::clamp(y, 0, frame.size.y-1);
             
             return frame(x,y);
         };
@@ -80,7 +83,7 @@ namespace pix::sampling
 
             c = a0 + a1*dy + a2*dy2 + a3*dy3;
 
-            co.channels[channel] = aux::clamp<uint8_t>(c);
+            co.channels[channel] = data::clamp<uint8_t>(c);
         }
 
         return co;

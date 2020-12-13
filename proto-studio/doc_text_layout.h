@@ -1,8 +1,9 @@
 #pragma once
-#include "aux_utils.h"
+#include "data_struct_array.h"
+#include "data_struct_string.h"
 namespace doc::text
 {
-    using namespace aux;
+    using namespace data;
 
     using glyph = str;
 

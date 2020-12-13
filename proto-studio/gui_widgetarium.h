@@ -59,14 +59,14 @@ namespace gui
         {
             if (holes.empty()) { auto & t =
                 deque.emplace_back(std::in_place, std::forward<Args>(args)...);
-                indices.emplace_back(size());
+                indices.data.emplace_back(size());
                 children += &t.value();
                 t.value().parent = this;
                 return t.value();
             } else {
                 int index = holes.back(); holes.pop_back(); auto & t =
                 deque[index].emplace(std::forward<Args>(args)...);
-                indices.emplace_back(index);
+                indices += index;
                 children += &t;
                 t.parent = this;
                 return t;
@@ -90,7 +90,7 @@ namespace gui
         void erase (int pos)
         {
             deque[indices[pos]].reset();
-            holes.push_back(indices[pos]);
+            holes += indices[pos];
             indices.erase(indices.begin()+pos);
         }
         void truncate (int pos) { while (size() > pos) erase(size()-1); }

@@ -1,15 +1,14 @@
 #pragma once
 #include <thread>
 #include <atomic>
-#include "aux_string.h"
-#include "aux_utils.h"
+#include "data_struct_string.h"
 #include "pix_color.h"
 #include "pix_image.h"
 #include "gui_colors.h"
 #include "gui_effect.h"
 namespace sys
 {
-    using namespace aux;
+    using namespace data;
     using namespace pix;
 
     namespace screen

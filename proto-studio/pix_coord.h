@@ -1,8 +1,8 @@
 #pragma once
-#include "aux_array.h"
+#include "data.h"
 namespace pix
 {
-    using namespace aux;
+    using namespace data;
     using real = double;
     using std::abs;
     struct XYWH;

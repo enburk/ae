@@ -9,7 +9,14 @@ auto remove_if (unary_predicate match)
         if (not match(*i)) i++;
         j++;
     }
-    return range(i, end());
+    return i;
 }
 
+auto find (value_type const& element) const {
+    return std::find(begin(), end(), element);
+}
+
+bool contains (value_type const& element) const {
+    return find(element) != end();
+}
 

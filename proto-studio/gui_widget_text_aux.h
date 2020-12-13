@@ -44,7 +44,7 @@ namespace gui::text
                 const int MS = 1024;
                 int ms = time::now.ms % MS;
                 if (ms > MS/2) ms = MS-ms;
-                image.alpha = aux::clamp<uint8_t>
+                image.alpha = data::clamp<uint8_t>
                     (256 * ms/(MS/2) + 00 - 1);
             }
             if (what == &skin

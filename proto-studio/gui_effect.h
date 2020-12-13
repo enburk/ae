@@ -4,6 +4,7 @@
 #include <chrono>
 #include <cassert>
 #include <algorithm>
+#include "data_struct_registry.h"
 namespace gui
 {
     using namespace pix;
@@ -83,7 +84,7 @@ namespace gui
     }
 
     struct base_property : polymorphic { virtual void tick () = 0; };
-    inline registry<base_property*> active_properties;
+    inline data::registry<base_property*> active_properties;
 
     namespace base { struct widget; }
     extern std::set<base::widget*> widgets;

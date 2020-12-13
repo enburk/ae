@@ -1,4 +1,5 @@
 #pragma once
+#include <deque>
 #include <vector>
 #include "data_ranges.h"
 #include "data_collections.h"
@@ -20,13 +21,14 @@ namespace data
         using range_type = contiguous_collection_range <array>;
         auto range (iterator_ i, iterator_ j) const { return range_type_{*this, i, j}; }
         auto range (iterator  i, iterator  j) /***/ { return range_type {*this, i, j}; }
-        auto begin () /***/ { return data.begin(); }
-        auto end   () /***/ { return data.end  (); }
-        auto begin () const { return data.begin(); }
-        auto end   () const { return data.end  (); }
+        auto begin () /***/ { return data.begin (); }
+        auto end   () /***/ { return data.end   (); }
+        auto begin () const { return data.begin (); }
+        auto end   () const { return data.end   (); }
         contiguous_range_impl(value_type);
 
         array () = default;
+        array (range_type r) : data(r.begin(), r.end()) {}
         array (std::initializer_list<x> list) : data(list) {}
 
         void resize  (int n) { data.resize (n); }
@@ -41,36 +43,82 @@ namespace data
         void operator += (array a) { data.insert(data.end(),
             std::make_move_iterator(a.data.begin()),
             std::make_move_iterator(a.data.end()));}
-        void operator += (input_range auto r) {
+        template<class X>
+        void operator += (X r)
+            requires input_range<X> &&
+            std::same_as<typename X::value_type, value_type> {
+            for (const auto & e : r)
+                (*this) += e;
+        }
+        template<class X>
+        void operator += (X r)
+            requires random_access_range<X> &&
+            std::same_as<typename X::value_type, value_type> {
+            reserve(size() + r.size());
             for (const auto & e : r)
                 (*this) += e;
         }
         friend array operator + (array a, x b) { array r     = std::move(a); r += std::move(b); return r; }
         friend array operator + (x a, array b) { array r; r += std::move(a); r += std::move(b); return r; }
 
-        void erase (iterator f, iterator l)
+        void clear () { data.clear(); }
+        bool empty () { return data.empty(); }
+        void erase (iterator_ f) { data.erase(f); }
+        void erase (iterator_ f, iterator_ l) { data.erase(f, l); }
+        void insert(iterator_ i, range_type r)
         {
-            data.erase(
-            data.begin() + (f - begin()),
-            data.begin() + (l - begin()));
+            data.insert(i, r.begin(), r.end());
+        }
+        void insert(iterator_ i, value_type e)
+        {
+            data.insert(i, std::move(e));
         }
 
-        void insert (iterator i, range_type r)
+        auto rbegin() /***/ { return data.rbegin(); }
+        auto rend  () /***/ { return data.rend  (); }
+        void pop_back() { data.pop_back(); }
+        auto& back() { return data.back(); }
+        const auto& back() const { return data.back(); }
+        void try_erase       (value_type e) { auto it = find(e); if (it != end()) erase(it); }
+        void try_emplace     (value_type e) { auto it = find(e); if (it == end()) *this += e; }
+        auto find_or_emplace (value_type e)
         {
-            data.insert(
-            data.begin() + (i - begin()),
-                r.begin(),
-                r.end());
-        }
-        void insert (iterator i, value_type e)
-        {
-            data.insert(
-            data.begin() + (i - begin()),
-                std::move(e));
+            auto it = find(e); if (it != end()) return it;
+            *this += e; it = end()-1; return it;
         }
 
         #include "data_algo_random.h"
         #include "data_algo_resizing.h"
+
+    };
+
+    template<class type> struct deque : public std::deque<type>
+    {
+        using base = std::deque<type>;
+
+        int size () const { return (int) base::size(); }
+
+        deque (              ) = default;
+        deque (const deque  &) = default;
+        deque (      deque &&) = default;
+        deque (const base  &c) : base(c) {}
+        deque (      base &&c) : base(std::move(c)) {}
+
+        explicit deque (const array<type>  &a) : base(a.begin(), a.end()) {}
+        explicit deque (      array<type> &&a) : base(
+            std::make_move_iterator(a.begin()),
+            std::make_move_iterator(a.end  ())) {}
+
+        auto& operator =  (const deque  & a) { base::operator = (a); return *this; }
+        auto& operator =  (      deque && a) { base::operator = (std::move(a)); return *this; }
+
+        void  operator += (const type   & e) { base::push_back(e); }
+        void  operator += (      type  && e) { base::push_back(std::move(e)); }
+
+        void  operator += (const deque  & a) { base::insert(base::end(), a.begin(), a.end()); }
+        void  operator += (      deque && a) { base::insert(base::end(),
+            std::make_move_iterator(a.begin()),
+            std::make_move_iterator(a.end())); }
     };
 }
 

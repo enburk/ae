@@ -1,8 +1,10 @@
 #pragma once
 #include <vector>
-#include "aux_abc.h"
+#include "data.h"
 namespace aux
 {
+    using namespace data;
+
     template<class T, class C = std::vector<T>> struct array : C
     {
         typedef T type; typedef C base;

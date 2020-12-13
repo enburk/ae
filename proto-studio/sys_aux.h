@@ -2,13 +2,12 @@
 #include <atomic>
 #include <thread>
 #include <filesystem>
-#include "aux_string.h"
-#include "aux_utils.h"
+#include "data_struct_string.h"
 #include "pix_color.h"
 #include "pix_image.h"
 namespace sys
 {
-    using namespace aux;
+    using namespace data;
     using namespace pix;
     using byte = uint8_t;
 
@@ -53,7 +52,7 @@ namespace sys
     {
         using path = std::filesystem::path; path dir;
         std::function<void(path, str)> action = [](path, str){};
-        std::function<void(aux::error)> error = [](aux::error){};
+        std::function<void(data::error)> error = [](data::error){};
         std::thread thread; void watch(); void cancel();
         std::atomic<bool> stop = false;
         ~directory_watcher(){cancel();}
@@ -68,6 +67,6 @@ namespace pix
     expected<nothing>     write  (frame<RGBA>, std::filesystem::path, int quality = -1);
     expected<array<byte>> pack   (frame<RGBA>, str format, int quality = -1);
     expected<image<RGBA>> unpack (byte* buffer, int size);
-    expected<image<RGBA>> unpack (array<byte>::range);
-    expected<XY>          size   (array<byte>::range);
+    expected<image<RGBA>> unpack (array<byte>::range_type);
+    expected<XY>          size   (array<byte>::range_type);
 }

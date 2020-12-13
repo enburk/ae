@@ -1,4 +1,5 @@
 #pragma once
+#include <mutex>
 #include "gui_widget_text_page.h"
 namespace gui
 {

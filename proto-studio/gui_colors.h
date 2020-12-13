@@ -1,12 +1,12 @@
 #pragma once
 #include <map>
 #include <variant>
-#include "aux_string.h"
+#include "data_struct_string.h"
 #include "pix_color.h"
 #include "pix_text.h"
 namespace gui
 {
-    using namespace aux;
+    using namespace data;
     using namespace pix;
 
     namespace metrics

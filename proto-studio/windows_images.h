@@ -14,16 +14,16 @@ static expected<image<RGBA>> FromImage (Image*);
 static Image* MakeImage (frame<RGBA>);
 
 
-expected<XY> pix::size (array<sys::byte>::range r)
+expected<XY> pix::size (array<sys::byte>::range_type r)
 {
     auto result = unpack(r);
     if (!result.ok()) return result.error();
     return result.value().size;
 }
 
-expected<image<RGBA>> pix::unpack (array<sys::byte>::range r)
+expected<image<RGBA>> pix::unpack (array<sys::byte>::range_type r)
 {
-    return unpack (r.arr->data() + r.offset, r.length);
+    return unpack (r.host.data.data() + r.offset(), r.size());
 }
 
 expected<image<RGBA>> pix::unpack (sys::byte* buffer, int size) try
@@ -147,7 +147,7 @@ expected<array<sys::byte>> pix::pack (frame<RGBA> frame, str format, int quality
                     if (stg.cbSize.QuadPart == stg.cbSize.LowPart) {
                         result.resize(stg.cbSize.LowPart);
                         ULONG bytesRead = 0;
-                        if (pStream->Read(result.data(), stg.cbSize.LowPart, &bytesRead) == S_OK) {
+                        if (pStream->Read(result.data.data(), stg.cbSize.LowPart, &bytesRead) == S_OK) {
                             if (bytesRead == stg.cbSize.LowPart) {
                                 /* OK */
                             } else rc = "not all bytes read";

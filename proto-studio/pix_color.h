@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <functional>
-#include "aux_abc.h"
+#include "data.h"
 namespace pix
 {
     struct RGBA
@@ -33,9 +33,9 @@ namespace pix
         }
 
         static RGBA random(uint8_t l = 64, uint8_t u = 255) { return RGBA(
-               aux::random<int>(l, u),
-               aux::random<int>(l, u),
-               aux::random<int>(l, u)); }
+               data::random<int>(l, u),
+               data::random<int>(l, u),
+               data::random<int>(l, u)); }
 
         static const RGBA
         black,  silver, gray,   white,
@@ -85,7 +85,7 @@ namespace pix
 
         MONO () : value (0) {}
         MONO (int value) : value(value) {}
-        MONO (RGBA c) { value = aux::clamp
+        MONO (RGBA c) { value = data::clamp
             <uint8_t>(255* (
             0.212671 * c.r +
             0.715160 * c.g +

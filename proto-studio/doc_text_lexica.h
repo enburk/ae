@@ -1,10 +1,9 @@
 #pragma once
-#include "aux_utils.h"
-#include "aux_string.h"
+#include "data_struct_string.h"
 #include "doc_text_layout.h"
 namespace doc::text
 {
-    using namespace aux;
+    using namespace data;
 
     /*
     struct glyph
@@ -68,10 +67,16 @@ namespace doc::text
     {
         array<token> tokens; token t;
 
-        for (auto [line, n] : text.lines.whole())
+//        for (auto [line, n] : text.lines.whole())
+        int n = -1;
+        for (auto line : text.lines)
         {
-            for (auto [glyph, offset] : line.whole())
+            n++;
+//            for (auto [glyph, offset] : line.whole())
+            int offset = -1;
+            for (auto glyph : line)
             {
+                offset++;
                 if((glyph.size() == 1 && !digit(glyph[0]) && !alpha(glyph[0]))
                 || (glyph.size() >= 2 && symbols.contains(glyph)))
                 {

@@ -7,7 +7,7 @@
 #include "app_ide_editor.h"
 #include "app_ide_flist.h"
 #include "app_ide_test.h"
-using namespace aux;
+using namespace data;
 using namespace pix;
 
 struct IDE : gui::widget<IDE>
