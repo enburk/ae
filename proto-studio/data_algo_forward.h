@@ -12,11 +12,12 @@ auto remove_if (unary_predicate match)
     return i;
 }
 
-auto find (value_type const& element) const {
+auto find (value_type const& element) const
+{
     return std::find(begin(), end(), element);
 }
-
-bool contains (value_type const& element) const {
+bool contains (value_type const& element) const
+{
     return find(element) != end();
 }
 

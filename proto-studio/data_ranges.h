@@ -2,12 +2,17 @@
 #include "data.h"
 #include "data_iterators.h"
 #include <concepts>
+#include <ranges>
 
 template<class X> concept
 input_range = requires (X x)
 {
-    typename X::iterator; { x.begin () };
-    typename X::sentinel; { x.end   () };
+    typename X::iterator;
+    typename X::sentinel;
+    { x.begin () };
+    { x.end   () };
+    //{ std::ranges::begin (x) };
+    //{ std::ranges::end   (x) };
 };
 
 template<class X> concept
@@ -62,7 +67,11 @@ auto operator <=> (
         l.begin(), l.end(),
         r.begin(), r.end());
 }
-
+template<class x> requires input_range<x> struct one_of     : x { using x::x; };
+template<class x> requires input_range<x> struct one_not_of : x { using x::x; };
+template<class x> one_of     (x) -> one_of     <x>;
+template<class x> one_not_of (x) -> one_not_of <x>;
+enum class delimiter { exclude, to_the_left, to_the_right };
 
 //template<class x> struct
 //memory_range // contiguous_range

@@ -11,6 +11,7 @@ namespace data
         std::vector<
         std::pair<size_t,
         std::optional<T>>> pool;
+
         size_t size = 0, next_id = 0;
 
         auto append(T element) -> size_t {

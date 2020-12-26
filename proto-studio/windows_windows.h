@@ -395,10 +395,10 @@ void sys::window::render (XYWH r, uint8_t alpha, glyph g, XY offset, int x)
     const auto & style = g.style();
     if (alpha == 0) return;
     if (g.text == "") return;
-//    if (g.text.contains_only(str::one_of(" \t\r\n"))
-//    &&  style.underline.color.a == 0
-//    &&  style.strikeout.color.a == 0)
-//        return;
+    if (g.text.contains_only(one_of(" \t\r\n"))
+    &&  style.underline.color.a == 0
+    &&  style.strikeout.color.a == 0)
+        return;
 
     int w = g.width;
     int h = g.ascent + g.descent;

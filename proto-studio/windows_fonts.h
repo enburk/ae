@@ -174,10 +174,10 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
     const auto & style = this->style();
     if (alpha == 0) return;
     if (text == "") return;
-//    if (text.contains_only(str::one_of(" \t\r\n"))
-//    &&  style.underline.color.a == 0
-//    &&  style.strikeout.color.a == 0)
-//        return;
+    if (text.contains_only(one_of(" \t\r\n"))
+    &&  style.underline.color.a == 0
+    &&  style.strikeout.color.a == 0)
+        return;
 
     RGBA fore = style.color;
     RGBA back;

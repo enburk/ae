@@ -72,7 +72,7 @@ namespace doc::html::syntax
             for (token & t : e.head)
             {
                 t.text.replace_all("&#x27;", "'");
-                t.text.replace_all("&nbsp;", u8"\u00A0");
+                t.text.replace_all("&nbsp;", (char*)(u8"\u00A0"));
                 t.text.replace_all("&amp;" , "&");
                 t.text.replace_all("&lt;"  , "<");
                 t.text.replace_all("&gt;"  , ">");

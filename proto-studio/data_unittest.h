@@ -113,7 +113,7 @@ namespace data::unittest
         results += ok ? green(ss) : red(ss);
         
         if (ok) return ok;
-        failure += title + gray(" >>> ");
+        failure += encoded(title) + gray(" >>> ");
         failure += red(ss);
         return ok;
     }

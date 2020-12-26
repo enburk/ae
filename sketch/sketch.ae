@@ -25,6 +25,21 @@ def cache(func):
     return newfunc
     
 
+auto salariesByName = employees
+
+    | std::view::filter([](auto const& employee) {
+        return !employee.isManager();
+      })
+
+    | std::view::transform([](auto const& employee) {
+        return std::make_pair(
+          employee.uniqueName(),
+          employee.salary()
+        );
+      })
+
+    | to<std::map>;
+
 #pragma clang diagnostic ignored "-Wmissing-braces"
 // https://bugs.llvm.org/show_bug.cgi?id=21629
 

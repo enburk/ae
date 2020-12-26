@@ -150,7 +150,7 @@ namespace gui
                     ifstream.seekg(offset, std::ios::beg);
 
                     data.resize(size);
-                    ifstream.read((char*)(data.data.data()), size);
+                    ifstream.read((char*)(data.data()), size);
 
                     play();
                 }

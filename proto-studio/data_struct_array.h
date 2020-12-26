@@ -6,11 +6,9 @@
 #include "data_unittest.h"
 namespace data
 {
-    template<class x> struct array
+    template<class x> struct array : std::vector<x>
     {
-        using
-        container = std::vector<x>;
-        container data;
+        using container = std::vector<x>;
 
         using value_type = x;
         using iterator_= typename container::const_iterator;
@@ -21,28 +19,33 @@ namespace data
         using range_type = contiguous_collection_range <array>;
         auto range (iterator_ i, iterator_ j) const { return range_type_{*this, i, j}; }
         auto range (iterator  i, iterator  j) /***/ { return range_type {*this, i, j}; }
-        auto begin () /***/ { return data.begin (); }
-        auto end   () /***/ { return data.end   (); }
-        auto begin () const { return data.begin (); }
-        auto end   () const { return data.end   (); }
         contiguous_range_impl(value_type);
 
         array () = default;
-        array (range_type r) : data(r.begin(), r.end()) {}
-        array (std::initializer_list<x> list) : data(list) {}
+        array (array const&) = default;
+        array (array     &&) = default;
+        array (container const&c) : container(c) {}
+        array (container     &&c) : container(std::move(c)) {}
+        array (range_type r) : container(r.begin(), r.end()) {}
+        array (std::initializer_list<x> list) : container(list) {}
 
-        void resize  (int n) { data.resize (n); }
-        void reserve (int n) { data.reserve(n); }
+        using container::begin;
+        using container::end;
+        using container::rbegin;
+        using container::rend;
 
-        auto from (int n) { return from(begin()+n); }
-        auto upto (int n) { return upto(begin()+n); }
+        auto from (int n) /***/ { return from(begin()+n); }
+        auto upto (int n) /***/ { return upto(begin()+n); }
         auto from (int n) const { return from(begin()+n); }
         auto upto (int n) const { return upto(begin()+n); }
 
-        void operator += (x e) { data.push_back(std::move(e)); }
-        void operator += (array a) { data.insert(data.end(),
-            std::make_move_iterator(a.data.begin()),
-            std::make_move_iterator(a.data.end()));}
+        array& operator = (array const& a) = default;
+        array& operator = (array     && a) = default;
+
+        void operator += (x e) { container::push_back(std::move(e)); }
+        void operator += (array a) { container::insert(end(),
+            std::make_move_iterator(a.begin()),
+            std::make_move_iterator(a.end()));}
         template<class X>
         void operator += (X r)
             requires input_range<X> &&
@@ -61,25 +64,10 @@ namespace data
         friend array operator + (array a, x b) { array r     = std::move(a); r += std::move(b); return r; }
         friend array operator + (x a, array b) { array r; r += std::move(a); r += std::move(b); return r; }
 
-        void clear () { data.clear(); }
-        bool empty () { return data.empty(); }
-        void erase (iterator_ f) { data.erase(f); }
-        void erase (iterator_ f, iterator_ l) { data.erase(f, l); }
-        void insert(iterator_ i, range_type r)
-        {
-            data.insert(i, r.begin(), r.end());
-        }
-        void insert(iterator_ i, value_type e)
-        {
-            data.insert(i, std::move(e));
-        }
+        void insert(iterator_ i, range_type r) { container::insert(i, r.begin(), r.end()); }
+        void insert(iterator_ i, value_type e) { container::insert(i, std::move(e)); }
 
-        auto rbegin() /***/ { return data.rbegin(); }
-        auto rend  () /***/ { return data.rend  (); }
-        void pop_back() { data.pop_back(); }
-        auto& back() { return data.back(); }
-        const auto& back() const { return data.back(); }
-        void try_erase       (value_type e) { auto it = find(e); if (it != end()) erase(it); }
+        void try_erase       (value_type e) { auto it = find(e); if (it != end()) container::erase(it); }
         void try_emplace     (value_type e) { auto it = find(e); if (it == end()) *this += e; }
         auto find_or_emplace (value_type e)
         {
@@ -96,27 +84,27 @@ namespace data
     {
         using base = std::deque<type>;
 
-        int size () const { return (int) base::size(); }
+        int size () const { return (int)(base::size()); }
 
-        deque (              ) = default;
-        deque (const deque  &) = default;
-        deque (      deque &&) = default;
-        deque (const base  &c) : base(c) {}
-        deque (      base &&c) : base(std::move(c)) {}
+        deque (            ) = default;
+        deque (deque const&) = default;
+        deque (deque     &&) = default;
+        deque (base const&c) : base(c) {}
+        deque (base     &&c) : base(std::move(c)) {}
 
-        explicit deque (const array<type>  &a) : base(a.begin(), a.end()) {}
-        explicit deque (      array<type> &&a) : base(
+        explicit deque (array<type> const& a) : base(a.begin(), a.end()) {}
+        explicit deque (array<type>     && a) : base(
             std::make_move_iterator(a.begin()),
-            std::make_move_iterator(a.end  ())) {}
+            std::make_move_iterator(a.end())) {}
 
-        auto& operator =  (const deque  & a) { base::operator = (a); return *this; }
-        auto& operator =  (      deque && a) { base::operator = (std::move(a)); return *this; }
+        auto& operator =  (deque const& a) { base::operator = (a); return *this; }
+        auto& operator =  (deque     && a) { base::operator = (std::move(a)); return *this; }
 
-        void  operator += (const type   & e) { base::push_back(e); }
-        void  operator += (      type  && e) { base::push_back(std::move(e)); }
+        void  operator += (type  const& e) { base::push_back(e); }
+        void  operator += (type      && e) { base::push_back(std::move(e)); }
 
-        void  operator += (const deque  & a) { base::insert(base::end(), a.begin(), a.end()); }
-        void  operator += (      deque && a) { base::insert(base::end(),
+        void  operator += (deque const& a) { base::insert(base::end(), a.begin(), a.end()); }
+        void  operator += (deque     && a) { base::insert(base::end(),
             std::make_move_iterator(a.begin()),
             std::make_move_iterator(a.end())); }
     };
@@ -178,6 +166,10 @@ namespace data::unittest
             oops( out(a.from(0) != b.upto(3)) ) { "1" };
             oops( out(a.from(0) <= b.upto(3)) ) { "1" };
             oops( out(a.from(1) == b.upto(2)) ) { "1" };
+            oops( out(a.from(1).starts_with(b)) ) { "0" };
+            oops( out(a.from(1).starts_with(b.upto(2))) ) { "1" };
+            oops( out(a.from(0).ends_with(b.upto(3))) ) { "0" };
+            oops( out(a.from(0).ends_with(b.upto(2))) ) { "1" };
         }
         test("array.erase");
         {
@@ -204,6 +196,13 @@ namespace data::unittest
             oops( a.upto(2).replace_by(b.from(2)); out(a) ) { "6, 2, 3" };
             oops( a.upto(3).replace_by(b.upto(3)); out(a) ) { "4, 5, 6" };
             oops( a.upto(0).replace_by(b.from(0)); out(a) ) { "4, 5, 6, 4, 5, 6" };
+            a = {1, 2, 3};
+            oops( a.upto(0) = b.from(3); out(a) ) { "1, 2, 3" };
+            oops( a.upto(1) = b.upto(1); out(a) ) { "4, 2, 3" };
+            oops( a.upto(1) = b.from(1); out(a) ) { "5, 6, 2, 3" };
+            oops( a.upto(2) = b.from(2); out(a) ) { "6, 2, 3" };
+            oops( a.upto(3) = b.upto(3); out(a) ) { "4, 5, 6" };
+            oops( a.upto(0) = b.from(0); out(a) ) { "4, 5, 6, 4, 5, 6" };
         }
     }
     catch(assertion_failed){}

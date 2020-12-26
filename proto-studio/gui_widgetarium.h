@@ -59,7 +59,7 @@ namespace gui
         {
             if (holes.empty()) { auto & t =
                 deque.emplace_back(std::in_place, std::forward<Args>(args)...);
-                indices.data.emplace_back(size());
+                indices.emplace_back(size());
                 children += &t.value();
                 t.value().parent = this;
                 return t.value();

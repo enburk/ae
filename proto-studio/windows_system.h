@@ -42,7 +42,7 @@ sys::process::process (std::filesystem::path path, str args, options opt)
 
     BOOL rc = CreateProcessW(
         winstr(path.string()).c_str(),
-        buffer.data.data(),
+        buffer.data(),
         NULL, NULL, TRUE, flags,
         NULL, NULL, &si, &pi);
 
