@@ -200,7 +200,6 @@
     <ClInclude Include="proto-studio\data_algo_forward.h" />
     <ClInclude Include="proto-studio\data_algo_random.h" />
     <ClInclude Include="proto-studio\data_algo_resizing.h" />
-    <ClInclude Include="proto-studio\data_algo_textual.h" />
     <ClInclude Include="proto-studio\data_collections.h" />
     <ClInclude Include="proto-studio\data_iterators.h" />
     <ClInclude Include="proto-studio\data_ranges.h" />
@@ -210,14 +209,14 @@
     <ClInclude Include="proto-studio\data_struct_vector.h" />
     <ClInclude Include="proto-studio\data_unittest.h" />
     <ClInclude Include="proto-studio\doc.h" />
-    <ClInclude Include="proto-studio\doc_html_layout.h" />
+    <ClInclude Include="proto-studio\doc_html_entities.h" />
     <ClInclude Include="proto-studio\doc_html_lexica.h" />
     <ClInclude Include="proto-studio\doc_html_syntax.h" />
-    <ClInclude Include="proto-studio\doc_text_layout.h" />
-    <ClInclude Include="proto-studio\doc_text_lexica.h" />
+    <ClInclude Include="proto-studio\doc_text_glyph.h" />
     <ClInclude Include="proto-studio\doc_text_model_a.h" />
     <ClInclude Include="proto-studio\doc_text_model_b.h" />
     <ClInclude Include="proto-studio\doc_text_model_e.h" />
+    <ClInclude Include="proto-studio\doc_text_text.h" />
     <ClInclude Include="proto-studio\doc_unittest.h" />
     <ClInclude Include="proto-studio\gui_colors.h" />
     <ClInclude Include="proto-studio\gui_effect.h" />

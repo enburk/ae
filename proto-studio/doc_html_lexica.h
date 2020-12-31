@@ -1,15 +1,66 @@
 ﻿#pragma once
 #include <map>
-#include "doc_text_lexica.h"
+#include "doc_text_text.h"
 namespace doc::html::lexica
 {
+	using text::place;
+	using text::range;
+	using text::token;
+
+    inline array<token> tokenize (const text::text & text)
+    {
+        array<token> tokens; token t;
+
+        for (auto [n, line] : text.lines.enumerate())
+        {
+            for (auto [offset, glyph] : line.enumerate())
+            {
+				if (!glyph.letter() && !glyph.digit())
+                {
+                    if (t.text != "") tokens += t;
+
+                    tokens += token {glyph, "", range{
+                        {n, offset},
+                        {n, offset+1}}
+                    };
+
+                    t = token {"", "", range{
+                        {n, offset+1},
+                        {n, offset+1}}
+                    };
+                }
+                else
+                {
+                    t += glyph;
+                }
+            }
+
+            if (t.text != "") tokens += t;
+
+            if (n != text.lines.size()-1)
+            {
+                tokens += token {"\n", "", range{
+                    {n, line.size()},
+                    {n, line.size()}}
+                };
+
+                t = token {"", "", range{
+                    {n+1, 0},
+                    {n+1, 0}}
+                };
+            }
+        }
+
+        return tokens;
+    }
+
     inline deque<token> parse (const text::text & text)
     {
         deque<token> output;
         
         str kind = "text";
 
-        for (token t : doc::text::parse(text))
+        for (token t : tokenize(text))
         {
             if (output.size() > 0
             &&  output.back().kind == "text"
@@ -60,7 +111,7 @@ namespace doc::html::lexica
     {
         str output;
 
-        for (token t : html::lexica::parse(doc::text::text(text)))
+        for (token t : parse(text::text(text)))
         {
             if (t.text == "<br>") output += "\n"; else
             if (t.kind != "tag" ) output += t.text;

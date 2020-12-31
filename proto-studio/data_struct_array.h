@@ -77,7 +77,6 @@ namespace data
 
         #include "data_algo_random.h"
         #include "data_algo_resizing.h"
-
     };
 
     template<class type> struct deque : public std::deque<type>

@@ -12,14 +12,16 @@ struct TestFirst : gui::widget<TestFirst>
     gui::canvas canvas;
     gui::area<gui::console> console1;
     gui::area<gui::console> console2;
+    gui::area<gui::console> console3;
     void on_change (void* what) override
     {
         if (what == &coord && coord.was.size != coord.now.size)
         {
-            int W = coord.now.w; if (W <= 0) return; int w = W/2;
+            int W = coord.now.w; if (W <= 0) return; int w = W/3;
             int H = coord.now.h; if (H <= 0) return;
-            console1.coord = XYWH(0, 0, w, H);
-            console2.coord = XYWH(w, 0, w, H);
+            console1.coord = XYWH(w*0, 0, w, H);
+            console2.coord = XYWH(w*1, 0, w, H);
+            console3.coord = XYWH(w*2, 0, w, H);
 
             if (done) return; done = true;
 
@@ -28,6 +30,7 @@ struct TestFirst : gui::widget<TestFirst>
                 RGBA::black};
             console1.object.page.style = style;
             console2.object.page.style = style;
+            console3.object.page.style = style;
 
             data::unittest::test_array();
             data::unittest::test("");
@@ -41,8 +44,15 @@ struct TestFirst : gui::widget<TestFirst>
             data::unittest::results; ok &= 
             data::unittest::all_ok;
 
+            data::unittest::test_string();
+            data::unittest::test("");
+            console3.object.page.html = 
+            data::unittest::results; ok &= 
+            data::unittest::all_ok;
+
             console1.object.page.scroll.y.top = max<int>();
             console2.object.page.scroll.y.top = max<int>();
+            console3.object.page.scroll.y.top = max<int>();
         }
     }
 };

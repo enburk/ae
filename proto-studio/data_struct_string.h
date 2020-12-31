@@ -67,10 +67,9 @@ namespace data
 
         #include "data_algo_random.h"
         #include "data_algo_resizing.h"
-        #include "data_algo_textual.h"
+
 
         enum class delimiter { exclude, to_the_left, to_the_right };
-
 
         bool split_by (str pattern, str& str1, str& str2, delimiter delimiter = delimiter::exclude) const
         {

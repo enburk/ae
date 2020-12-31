@@ -86,16 +86,8 @@ namespace gui::text
         XY margin_left;
         XY margin_right;
 
-        bool operator != (const format & f) const { return !(*this == f); }
-        bool operator == (const format & f) const { return true
-            && width        == f.width       
-            && height       == f.height      
-            && alignment    == f.alignment   
-            && word_wrap    == f.word_wrap   
-            && ellipsis     == f.ellipsis    
-            && margin_left  == f.margin_left 
-            && margin_right == f.margin_right;
-        }
+        bool operator == (const format & f) const = default;
+        bool operator != (const format & f) const = default;
     };
 
     ///////////////////////////////////////////////////////////////////////

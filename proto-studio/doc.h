@@ -4,7 +4,7 @@
 #include <compare>
 #include <variant>
 #include "data_struct_string.h"
-#include "doc_text_layout.h"
+#include "doc_text_text.h"
 namespace doc
 {
     using text::token;

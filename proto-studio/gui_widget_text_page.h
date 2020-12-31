@@ -134,10 +134,13 @@ namespace gui::text
 
         void on_mouse_wheel (XY p, int delta) override
         {
-            if (sys::keyboard::shift) delta *= coord.now.size.y;
+            delta /= 20;
+            delta *= gui::metrics::text::height;
+            int sign = delta < 0 ? -1 : 1;
+            if (sys::keyboard::shift) delta = sign * coord.now.size.y;
             if (sys::keyboard::ctrl) delta *= 5;
             int d = view.coord.now.size.y - view.column.coord.now.size.y; // may be negative
-            int y = view.shift.now.y + gui::metrics::text::height * delta/120;
+            int y = view.shift.now.y + delta;
             if (y < d) y = d;
             if (y > 0) y = 0;
             scroll.y.top =-y;

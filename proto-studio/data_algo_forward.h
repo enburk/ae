@@ -16,8 +16,20 @@ auto find (value_type const& element) const
 {
     return std::find(begin(), end(), element);
 }
+
 bool contains (value_type const& element) const
 {
     return find(element) != end();
 }
 
+//generator<std::pair<int, element&>>
+auto enumerate() const
+{
+    std::vector<std::pair<int, value_type const&>> ee;
+
+    int n = size(); ee.reserve(n);
+
+    for (int i=0; i<n; i++) ee.emplace_back(i, *(begin()+i));
+
+    return ee;
+}

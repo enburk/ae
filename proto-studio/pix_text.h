@@ -11,6 +11,7 @@ namespace pix
         str face; int size; bool bold; bool italic;
 
         bool operator == (font const&) const = default;
+        bool operator != (font const&) const = default;
 
         struct metrics
         {
@@ -30,8 +31,11 @@ namespace pix
     {
         struct style
         {
-            struct line { str style; int width = 0; RGBA color;
-            bool operator == (line const&) const = default; };
+            struct line {
+            str style; int width = 0; RGBA color;
+            bool operator == (line const&) const = default;
+            bool operator != (line const&) const = default;
+            };
 
             font font;
             RGBA color;
@@ -40,6 +44,7 @@ namespace pix
             line outline;
 
             bool operator == (style const&) const = default;
+            bool operator != (style const&) const = default;
         };
 
         struct style_index
@@ -68,6 +73,7 @@ namespace pix
             XYWH outlines;    // boundaries of the actual image
 
             bool operator == (metrics const&) const = default;
+            bool operator != (metrics const&) const = default;
         };
     }
 
@@ -83,6 +89,7 @@ namespace pix
         text::style style () const { return style_index.style(); }
 
         bool operator == (glyph const&) const = default;
+        bool operator != (glyph const&) const = default;
 
         void render (pix::frame<RGBA>, XY offset=XY(), uint8_t alpha=255, int x=0);
     };

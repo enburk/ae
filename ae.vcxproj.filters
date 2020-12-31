@@ -222,9 +222,6 @@
     <ClInclude Include="proto-studio\doc_html_syntax.h">
       <Filter>proto</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\doc_text_lexica.h">
-      <Filter>proto</Filter>
-    </ClInclude>
     <ClInclude Include="proto-studio\data.h">
       <Filter>data</Filter>
     </ClInclude>
@@ -300,12 +297,6 @@
     <ClInclude Include="proto-studio\data_struct_string.h">
       <Filter>data</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\doc_html_layout.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc_text_layout.h">
-      <Filter>proto</Filter>
-    </ClInclude>
     <ClInclude Include="proto-studio\doc_text_model_a.h">
       <Filter>proto</Filter>
     </ClInclude>
@@ -330,14 +321,20 @@
     <ClInclude Include="proto-studio\data_algo_resizing.h">
       <Filter>data</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\data_algo_textual.h">
-      <Filter>data</Filter>
-    </ClInclude>
     <ClInclude Include="proto-studio\data_struct_registry.h">
       <Filter>data</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\data_struct_vector.h">
       <Filter>data</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_text_glyph.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_text_text.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_html_entities.h">
+      <Filter>proto</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
