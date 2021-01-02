@@ -1,64 +1,26 @@
 #pragma once
-#include <map>
-#include <cassert>
-#include <compare>
-#include <variant>
+#include "data_struct_array.h"
 #include "data_struct_string.h"
-#include "doc_text_text.h"
 namespace doc
 {
-    using text::token;
+    using pix::text::style;
+    using pix::text::style_index;
+    using pix::text::format;
 
-    struct entity
+    struct token
     {
-        str name, kind, info;
-        std::map<str,str> attr;
-        array<token> head;
-        array<entity> body;
-        array<token> tail;
-        array<str> debug;
+        str text; style_index style;
 
-        explicit entity() = default;
-        explicit entity(str s) { head += token{s}; }
-        explicit entity(array<token> tt) : head(tt) {}
-        explicit entity(str name, str kind) : name(name), kind(kind) {}
+        bool operator != (const token & d) const = default;
+        bool operator == (const token & d) const = default;
     };
 
-    struct report
+    struct line
     {
-        struct message { token* token = nullptr; str kind, what; };
-        array <message> messages;
-        array <message> errors;
+        format format; array<token> tokens;
 
-        void error (token* token, str what) {
-            messages += message{token, "error", what};
-            errors += message{token, "error", what};
-            if (token) token->kind = "error";
-        }
-
-        void info (token* token, str what) {
-            messages += message{token, "info", what};
-        }
-
-        str operator () () const
-        {
-            str s; for (auto [token, kind, what] : messages)
-            {
-                if (kind == "error") s += "<font color=#B00020>";
-
-                if (token)
-                    s += "("
-                    + std::to_string(token->range.from.line+1) + ":"
-                    + std::to_string(token->range.from.offset+1) + ") ";
-
-                s += what;
-
-                if (kind == "error") s += "</font>";
-
-                s += "<br>";
-            }
-            return s;
-        }
+        bool operator != (const line & d) const = default;
+        bool operator == (const line & d) const = default;
     };
 }
 

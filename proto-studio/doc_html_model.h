@@ -1,55 +1,35 @@
 #pragma once
-#include "doc.h"
-#include "doc_html_syntax.h"
-#include "gui_widget.h"
-#include "gui_widget_text_aux.h"
-namespace gui::text
+#include "doc_html_utils.h"
+namespace doc::html
 {
-    struct model : polymorphic
+    struct model
     {
-        array<line::data> lines;
-        virtual str text () { return ""; }
-        virtual str html () { return ""; }
-        virtual void set (str text, str format) {}
-        virtual void set (style_index, format) {}
-    };
+        str source;
+        array<line> lines;
+        array<entity> entities;
 
-    struct html_model : model
-    {
-        array<doc::entity> entities; str source;
+        str text () const { return untagged(source); }
+        str html () const { return source; }
 
-        str text () override { return doc::html::lexica::untagged(source); }
-        str html () override { return source; }
-
-        void set (str text, str format) override
+        void text (str text) { html(encoded(text)); }
+        void html (str text)
         {
-            if (format == "text")
-            {
-                text = doc::html::lexica::encoded(text);
-                text.replace_all("\n", "<br>");
-            }
-
-            source = text;
-            entities =
-                doc::html::syntax::combine(
-                    doc::html::syntax::parse(
-                        doc::html::lexica::parse(
-                            doc::text::text(text))));
-
+            source = std::move(text);
+            entities = html::entities(source);
             if (false) { // debug
-                auto tokens = doc::html::syntax::print(entities);
+                auto tokens = print(entities);
                 entities.clear();
-                entities += doc::entity{"", "text"};
+                entities += entity{"", "text"};
                 entities.back().head = tokens;
             }
         }
 
-        void set (style_index s, format f) override
+        void set (style s, format f)
         {
             lines.clear();
 
+            array<style>  styles  {s}; // stack
             array<format> formats {f}; // stack
-            array<style_index> styles {s}; // stack
 
             for (auto entity : entities)
                 proceed(entity, styles, formats);
@@ -57,8 +37,8 @@ namespace gui::text
 
         void proceed
         (
-            const doc::entity & entity,
-            array<style_index> styles,
+            entity const& entity,
+            array<style>  styles,
             array<format> formats
         )
         {
@@ -66,35 +46,35 @@ namespace gui::text
             {
                 if (lines.size() == 0 ||
                     lines.back().format != formats.back())
-                    lines += line::data{formats.back()};
+                    lines += line{formats.back()};
 
                 for (auto token : entity.head)
                     lines.back().tokens +=
-                        token::data{token.text,
-                            styles.back()};
+                        doc::token{token.text,
+                            style_index(styles.back())};
             }
             else
             if (entity.name == "br")
             {
                 if (lines.size() == 0)
-                lines += line::data{formats.back()};
-                lines.back().tokens += token::data{"\n", styles.back()};
-                lines += line::data{formats.back()};
+                lines += line{formats.back()};
+                lines.back().tokens += token{"\n", style_index(styles.back())};
+                lines += line{formats.back()};
             }
             else
             if (entity.name == "h4") {
-                auto style = styles.back().style(); style.font.bold = true;
-                styles += style_index(style);
+                styles += styles.back();
+                styles.back().font.bold = true;
             }
             else
             if (entity.name == "b") {
-                auto style = styles.back().style(); style.font.bold = true;
-                styles += style_index(style);
+                styles += styles.back();
+                styles.back().font.bold = true;
             }
             else
             if (entity.name == "i") {
-                auto style = styles.back().style(); style.font.italic = true;
-                styles += style_index(style);
+                styles += styles.back();
+                styles.back().font.italic = true;
             }
             else
             if (entity.name == "font")
@@ -105,7 +85,8 @@ namespace gui::text
                         value.starts_with("#") &&
                         value.size() == 1+6)
                     {
-                        auto style = styles.back().style();
+                        styles += styles.back();
+                        auto & style = styles.back();
                         str r = value.from(1).upto(3);
                         str g = value.from(3).upto(5);
                         str b = value.from(5).upto(7);
@@ -113,14 +94,13 @@ namespace gui::text
                         style.color.g = (uint8_t) std::strtoul(g.c_str(), nullptr, 16);
                         style.color.b = (uint8_t) std::strtoul(b.c_str(), nullptr, 16);
                         style.color.a = 255;
-                        styles += style_index(style);
                     }
                 }
             }
             else
             if (entity.name == "div")
             {
-                auto style = styles.back().style();
+                auto style = styles.back();
 
                 for (auto [attr, value] : entity.attr)
                 {
@@ -151,7 +131,7 @@ namespace gui::text
                                 val.truncate();
                                 int x = std::atoi(val.c_str());
                                 style.font.size = style.font.size * x/100;
-                                styles += style_index(style);
+                                styles += style;
                             }
                         }
                     }
@@ -164,8 +144,8 @@ namespace gui::text
             if (entity.name == "h4") {
                 if (lines.size() > 0 &&
                     lines.back().tokens.size() > 0) {
-                    lines.back().tokens += token::data{"\n", styles.back()};
-                    lines += line::data{formats.back()};
+                    lines.back().tokens += token{"\n", style_index(styles.back())};
+                    lines += line{formats.back()};
                 }
             }
 

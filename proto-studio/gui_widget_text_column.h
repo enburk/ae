@@ -43,7 +43,7 @@ namespace gui::text
 
     struct row : metrics
     {
-        format format;
+        pix::text::format format;
         array<int> offsets;
         array<int> indices;
         bool the_last_row = true;
@@ -97,16 +97,18 @@ namespace gui::text
 
             outlines.x = format.margin_left.x;
 
-            if (align == left || (align == justify_left && the_last_row)) {
+            if (align == pix::left ||
+               (align == pix::justify_left && the_last_row)) {
                 return;
             }
 
-            if (align == center && Width > width) {
+            if (align == pix::center && Width > width) {
                 outlines.x += Width/2 - width/2;
                 return;
             }
 
-            if (align == right || (align == justify_right && the_last_row)) {
+            if (align == pix::right ||
+               (align == pix::justify_right && the_last_row)) {
                 outlines.x += Width - width;
                 return;
             }
@@ -128,18 +130,10 @@ namespace gui::text
             
     struct line final : widgetarium<token>
     {
-        struct data { format format; array<token::data> tokens;
-            bool operator != (const data & d) const { return !(*this == d); }
-            bool operator == (const data & d) const { return true
-                && format == d.format
-                && tokens == d.tokens;
-            }
-        };
-
-        data data_copy;
+        doc::line data_copy;
         array<row> rows;
 
-        void fill (data data)
+        void fill (doc::line data)
         {
             data_copy = std::move(data);
             auto & format = data_copy.format;
@@ -239,7 +233,7 @@ namespace gui::text
             
     struct column : widgetarium<line>
     {
-        void fill (array<line::data> datae)
+        void fill (array<doc::line> datae)
         {
             int n = 0; int width = 0; int height = 0;
 

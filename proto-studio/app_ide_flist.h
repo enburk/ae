@@ -116,14 +116,14 @@ struct Flist : gui::widget<Flist>
 
         for (auto [filename, path] : files) {
             auto & it = flist.list(num++);
-            it.text.alignment = XY(gui::text::left, gui::text::center);
+            it.text.alignment = XY(pix::left, pix::center);
             it.text.text = path.string();
             it.enabled = true;
         }
 
         for (auto [filename, path] : dirs) {
             auto & it = flist.list(num++);
-            it.text.alignment = XY(gui::text::left, gui::text::center);
+            it.text.alignment = XY(pix::left, pix::center);
             it.text.text = path.string();
             it.enabled = false;
             fill(path, num);

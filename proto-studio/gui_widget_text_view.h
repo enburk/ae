@@ -1,6 +1,6 @@
 #pragma once
+#include "doc_html_model.h"
 #include "gui_widget_text_column.h"
-#include "gui_widget_text_model.h"
 #include "gui_widget_canvas.h"
 namespace gui::text
 {
@@ -33,13 +33,13 @@ namespace gui::text
         binary_property<bool> virtual_space = false;
         binary_property<bool> focused = false;
 
-        html_model html_model; model* model = &html_model;
+        doc::html::model model;
 
         view () { on_change(&skin); }
 
         void refresh ()
         {
-            format format;
+            pix::text::format format;
             format.width = coord.now.size.x;
             format.margin_right = margin_right.now;
             format.margin_left = margin_left.now;
@@ -48,8 +48,8 @@ namespace gui::text
             format.ellipsis = ellipsis.now; if (ellipsis.now)
             format.height = coord.now.size.y;
 
-            model->set(style_index(style.now), format);
-            column.fill(model->lines);
+            model.set(style.now, format);
+            column.fill(model.lines);
             align();
         }
 
@@ -156,16 +156,16 @@ namespace gui::text
             {
                 highlights = array<range>{};
                 selections = array<range>{};
-                model->set(text.now, "text");
-                html.now = model->html();
+                model.text(text.now);
+                html.now = model.html();
                 refresh();
             }
             if (what == &html)
             {
                 highlights = array<range>{};
                 selections = array<range>{};
-                model->set(html.now, "html");
-                text.now = model->text();
+                model.html(html.now);
+                text.now = model.text();
                 refresh();
             }
             if (what == &skin)

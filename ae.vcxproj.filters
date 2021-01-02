@@ -204,9 +204,6 @@
     <ClInclude Include="proto-studio\gui_widget_text_column.h">
       <Filter>proto</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\gui_widget_text_model.h">
-      <Filter>proto</Filter>
-    </ClInclude>
     <ClInclude Include="proto-studio\gui_widget_text_view.h">
       <Filter>proto</Filter>
     </ClInclude>
@@ -333,7 +330,13 @@
     <ClInclude Include="proto-studio\doc_text_text.h">
       <Filter>proto</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\doc_html_entities.h">
+    <ClInclude Include="proto-studio\doc_html_utils.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_html.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_html_model.h">
       <Filter>proto</Filter>
     </ClInclude>
   </ItemGroup>

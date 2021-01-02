@@ -40,7 +40,7 @@ namespace gui
             if (what == &skin)
             {
                 page.view.canvas.color = gui::skins[skin].ultralight.first;
-                page.alignment = XY{gui::text::left, gui::text::top};
+                page.alignment = XY{pix::left, pix::top};
             }
             if (what == &timer)
             {

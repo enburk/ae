@@ -1,8 +1,11 @@
 ﻿#pragma once
 #include <deque>
+#include "doc_html.h"
 #include "doc_html_lexica.h"
 namespace doc::html::syntax
 {
+    using text::token;
+
     inline deque<entity> parse (deque<token> tokens)
     {
         deque<entity> output;
@@ -110,47 +113,5 @@ namespace doc::html::syntax
     inline array<entity> combine (deque<entity> input)
     {
         return combine(input, "");
-    }
-
-    inline void print (const entity & e, array<token> & output, int indent = 0)
-    {
-        output += token{"\n"};
-        output += token{str(' ', indent)};
-
-        if (e.kind == "text")
-        {
-            for (token t : e.head)
-            {
-                if (t.text == "\n") t.text = " ";
-                if (t.text == " " &&
-                    output.size() > 0 &&
-                    output.back().text == " ") continue;
-
-                output += t;
-            }
-        }
-        else
-        {
-            output += token{"<"};
-            if (e.info == "closing") output += token{"/"};
-
-            output += token{e.name};
-            for (auto [attr, value] : e.attr)
-                output += token{" " + attr + "=" + value};
-
-            if (e.info == "closed") output += token{"/"};
-            output += token{">"};
-
-            for (const entity & nested : e.body)
-                print (nested, output, indent+4);
-        }
-    }
-    inline array<token> print (const array<entity> & entities)
-    {
-        array<token> output;
-
-        for (auto & e : entities) print (e, output);
-
-        return output;
     }
 }

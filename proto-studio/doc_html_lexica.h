@@ -99,27 +99,6 @@ namespace doc::html::lexica
         return output;
     }
 
-    inline str encoded (str text)
-    {
-        text.replace_all("&", "&amp;"); // before anything else
-        text.replace_all("<", "&lt;");
-        text.replace_all(">", "&gt;");
-        return text;
-    }
-
-    inline str untagged (str & text)
-    {
-        str output;
-
-        for (token t : parse(text::text(text)))
-        {
-            if (t.text == "<br>") output += "\n"; else
-            if (t.kind != "tag" ) output += t.text;
-        }
-
-        return output;
-    }
-
 	inline std::map<str, const char8_t*> symbols
 	{
 		{ "AElig", u8"Æ" },

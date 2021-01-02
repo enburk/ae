@@ -209,9 +209,11 @@
     <ClInclude Include="proto-studio\data_struct_vector.h" />
     <ClInclude Include="proto-studio\data_unittest.h" />
     <ClInclude Include="proto-studio\doc.h" />
-    <ClInclude Include="proto-studio\doc_html_entities.h" />
+    <ClInclude Include="proto-studio\doc_html.h" />
     <ClInclude Include="proto-studio\doc_html_lexica.h" />
+    <ClInclude Include="proto-studio\doc_html_model.h" />
     <ClInclude Include="proto-studio\doc_html_syntax.h" />
+    <ClInclude Include="proto-studio\doc_html_utils.h" />
     <ClInclude Include="proto-studio\doc_text_glyph.h" />
     <ClInclude Include="proto-studio\doc_text_model_a.h" />
     <ClInclude Include="proto-studio\doc_text_model_b.h" />
@@ -230,7 +232,6 @@
     <ClInclude Include="proto-studio\gui_widget_scroller.h" />
     <ClInclude Include="proto-studio\gui_widget_text_aux.h" />
     <ClInclude Include="proto-studio\gui_widget_text_column.h" />
-    <ClInclude Include="proto-studio\gui_widget_text_model.h" />
     <ClInclude Include="proto-studio\gui_widget_text_page.h" />
     <ClInclude Include="proto-studio\gui_widget_text_view.h" />
     <ClInclude Include="proto-studio\pix_color.h" />
