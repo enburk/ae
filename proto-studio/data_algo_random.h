@@ -1,5 +1,11 @@
 ﻿#include "data_algo_forward.h"
 
+template<class binary_predicate>
+void sort (binary_predicate order = std::less{})
+{
+    std::sort(begin(), end(), order);
+}
+
 bool starts_with (random_access_range auto r) const
 {
     if (size() < r.size()) return false;
@@ -53,7 +59,7 @@ auto last (T r)
     requires random_access_range<T> &&
     std::same_as<typename T::value_type, value_type> {
     auto it = std::find_end(begin(), end(), r.begin(), r.end());
-    return it == end() ? range(end(), end()) :
+    return it == end() ? range(begin(), begin()) :
         range(it, it + r.size());
 }
 template<class T>
@@ -61,8 +67,30 @@ auto last (T r) const
     requires random_access_range<T> &&
     std::same_as<typename T::value_type, value_type> {
     auto it = std::find_end(begin(), end(), r.begin(), r.end());
-    return it == end() ? range(end(), end()) :
+    return it == end() ? range(begin(), begin()) :
         range(it, it + r.size());
+}
+auto first (value_type const& e) const {
+    auto it = std::find(begin(), end(), e);
+    return it == end() ? range(end(), end()) :
+        range(it, it + 1);
+}
+auto first (value_type const& e) {
+    auto it = std::find(begin(), end(), e);
+    return it == end() ? range(end(), end()) :
+        range(it, it + 1);
+}
+auto last (value_type const& e) const {
+    auto it = std::find(rbegin(), rend(), e);
+    return it == rend() ? range(begin(), begin()) :
+        range(std::next(it).base(),
+            std::next(it).base() + 1);
+}
+auto last (value_type const& e) {
+    auto it = std::find(rbegin(), rend(), e);
+    return it == rend() ? range(begin(), begin()) :
+        range(std::next(it).base(),
+            std::next(it).base() + 1);
 }
 auto first (const char* s) const
     requires std::same_as<value_type, char> {
@@ -99,7 +127,7 @@ template<class T>
 auto last (one_of<T> r)
     requires std::same_as<typename T::value_type, value_type> {
     auto it = std::find_first_of(rbegin(), rend(), r.begin(), r.end());
-    return it == rend() ? range(end(), end()) :
+    return it == rend() ? range(begin(), begin()) :
         range(std::next(it).base(),
             std::next(it).base() + 1);
 }
@@ -107,7 +135,7 @@ template<class T>
 auto last (one_of<T> r) const
     requires std::same_as<typename T::value_type, value_type> {
     auto it = std::find_first_of(rbegin(), rend(), r.begin(), r.end());
-    return it == rend() ? range(end(), end()) :
+    return it == rend() ? range(begin(), begin()) :
         range(std::next(it).base(),
             std::next(it).base() + 1);
 }
@@ -133,7 +161,7 @@ auto last (one_not_of<T> r)
     requires std::same_as<typename T::value_type, value_type> {
     auto it = std::find_if_not(rbegin(), rend(), [r](auto e) {
         return std::find(r.begin(), r.end(), e) != r.end(); });
-    return it == rend() ? range(end(), end()) :
+    return it == rend() ? range(begin(), begin()) :
         range(std::next(it).base(),
             std::next(it).base() + 1);
 }
@@ -142,7 +170,7 @@ auto last (one_not_of<T> r) const
     requires std::same_as<typename T::value_type, value_type> {
     auto it = std::find_if_not(rbegin(), rend(), [r](auto e) {
         return std::find(r.begin(), r.end(), e) != r.end(); });
-    return it == rend() ? range(end(), end()) :
+    return it == rend() ? range(begin(), begin()) :
         range(std::next(it).base(),
             std::next(it).base() + 1);
 }

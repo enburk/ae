@@ -3,6 +3,7 @@
 #include "data_struct_string.h"
 #include "gui_widget_canvas.h"
 #include "gui_widget_console.h"
+#include "doc_text_model_a.h"
 using namespace pix;
 
 struct TestFirst : gui::widget<TestFirst>
@@ -44,7 +45,7 @@ struct TestFirst : gui::widget<TestFirst>
             data::unittest::results; ok &= 
             data::unittest::all_ok;
 
-            data::unittest::test_string();
+            data::unittest::text_model();
             data::unittest::test("");
             console3.object.page.html = 
             data::unittest::results; ok &= 

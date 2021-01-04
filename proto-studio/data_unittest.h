@@ -1,4 +1,6 @@
-#pragma once
+﻿#pragma once
+#include <string>
+#include <vector>
 #include <algorithm>
 namespace data::unittest
 {
@@ -80,16 +82,17 @@ namespace data::unittest
         test_name = name;
     }
 
+    void replace_all (string& text, string what, string with)
+    {
+        size_t pos = 0;
+        while((pos = text.find(what, pos)) != string::npos) {
+                text.replace(pos, what.length(), with);
+                pos += with.length();
+        }
+    };
+
     string encoded (string text)
     {
-        auto replace_all = [](string& text, string what, string with)
-        {
-            size_t pos = 0;
-            while((pos = text.find(what, pos)) != string::npos) {
-                 text.replace(pos, what.length(), with);
-                 pos += with.length();
-            }
-        };
         replace_all(text, "&", "&amp;"); // before anything else
         replace_all(text, "<", "&lt;");
         replace_all(text, ">", "&gt;");
@@ -107,6 +110,7 @@ namespace data::unittest
         string ss;
         if (log.size() > 1) ss += "<br>";
         for (auto s : log) ss += encoded(s) + "<br>";
+        replace_all(ss, " ", (char*)(u8"∙"));
         log.clear();
 
         results += encoded(title) + gray(" >>> ");

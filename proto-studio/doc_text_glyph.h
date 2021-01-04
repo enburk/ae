@@ -9,6 +9,20 @@ namespace doc::text
     {
         char cc[4] = {};
 
+        glyph () = default;
+
+        template<int N> glyph(const char(&CC)[N]) {
+            static_assert(0 <= N && N <= 4, "wrong glyph size");
+            int i = 0; for (auto C : CC) cc[i++] = C;
+        }
+        template<int N> glyph(const char8_t(&CC)[N]) {
+            static_assert(0 <= N && N <= 4, "wrong glyph size");
+            int i = 0; for (auto C : CC) cc[i++] = (char)(C);
+        }
+
+        bool operator == (glyph const&) const = default;
+        bool operator != (glyph const&) const = default;
+
         operator str () const { return string(); }
 
         int size () const

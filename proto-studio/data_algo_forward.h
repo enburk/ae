@@ -1,3 +1,5 @@
+bool empty () const { return begin() == end(); }
+
 template<class unary_predicate>
 auto remove_if (unary_predicate match)
 {

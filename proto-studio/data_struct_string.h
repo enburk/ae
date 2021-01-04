@@ -68,6 +68,23 @@ namespace data
         #include "data_algo_random.h"
         #include "data_algo_resizing.h"
 
+        void triml (const str & chars = " "){
+             upto(first(one_not_of(chars))
+                .begin()).erase();
+        }
+        void trimr (const str & chars = " "){
+             from(last(one_not_of(chars))
+                .end()).erase();
+        }
+        void strip (const str & chars = " "){
+             trimr(chars);
+             triml(chars);
+        }
+        void truncate () { if (size() > 0)
+             resize(size()-1);
+        }
+
+
 
         enum class delimiter { exclude, to_the_left, to_the_right };
 
@@ -92,21 +109,9 @@ namespace data
             }
             return result;
         }
-        void truncate () { if (size() > 0) resize(size()-1); }
-        void triml (const str & chars = " "){
-            auto r = find_first_not_of(chars);
-            bool found = r != std::string::npos;
-            if (!found) clear(); else upto(r).erase();
-        }
-        void trimr (const str & chars = " "){
-            auto r = find_last_not_of(chars);
-            bool found = r != std::string::npos;
-            if (!found) clear(); else from(r+1).erase();
-        }
-        void strip (const str & chars = " "){
-             trimr(chars);
-             triml(chars);
-        }
+
+
+
         bool ascii_isalnum () const {
             for (char c : *this)
                 if((c < '0') || ('9' < c &&
@@ -310,6 +315,18 @@ namespace data::unittest
             oops( str s = "abcab"; s.replace_all("ab", "d"); out(s) ) { "dcd" };
             oops( str s = "ababa"; s.replace_all("ab", "d"); out(s) ) { "dda" };
             oops( str s = "ababa"; s.replace_all("aba","d"); out(s) ) { "dba" };
+        }
+        test("string.strip");
+        {
+            oops( str s = "ababa"; s.triml("bc"); out(s) ) { "ababa" };
+            oops( str s = "ababa"; s.trimr("bc"); out(s) ) { "ababa" };
+            oops( str s = "ababa"; s.triml("ac"); out(s) ) { "baba" };
+            oops( str s = "ababa"; s.trimr("ca"); out(s) ) { "abab" };
+            oops( str s = "ababa"; s.triml("ba"); out(s) ) { "" };
+            oops( str s = "ababa"; s.trimr("ab"); out(s) ) { "" };
+            oops( str s = "abcba"; s.triml("ab"); out(s) ) { "cba" };
+            oops( str s = "abcba"; s.trimr("ba"); out(s) ) { "abc" };
+            oops( str s = "abcba"; s.strip("ba"); out(s) ) { "c" };
         }
 //        test("string.split");
 //        {

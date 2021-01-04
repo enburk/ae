@@ -67,12 +67,32 @@ namespace data
         void insert(iterator_ i, range_type r) { container::insert(i, r.begin(), r.end()); }
         void insert(iterator_ i, value_type e) { container::insert(i, std::move(e)); }
 
+        void insert(int i, range_type r) { container::insert(begin()+i, r.begin(), r.end()); }
+        void insert(int i, value_type e) { container::insert(begin()+i, std::move(e)); }
+
         void try_erase       (value_type e) { auto it = find(e); if (it != end()) container::erase(it); }
         void try_emplace     (value_type e) { auto it = find(e); if (it == end()) *this += e; }
         auto find_or_emplace (value_type e)
         {
             auto it = find(e); if (it != end()) return it;
             *this += e; it = end()-1; return it;
+        }
+
+        void triml (value_type const& e){
+             array ee; ee += e;
+             upto(first(one_not_of(ee))
+                .begin()).erase();
+        }
+        void trimr (value_type const& e){
+             array ee; ee += e;
+             from(last(one_not_of(ee))
+                .end()).erase();
+        }
+        void strip (value_type const& e){
+             trimr(e); triml(e);
+        }
+        void truncate () { if (size() > 0)
+             resize(size()-1);
         }
 
         #include "data_algo_random.h"
@@ -177,6 +197,15 @@ namespace data::unittest
             oops( a.from(0).upto(1).erase(); out(a) ) { "2, 3" };
             oops( a.from(0).upto(2).erase(); out(a) ) { "" };
             oops( a.from(0).upto(2).erase(); out(a) ) { "" };
+        }
+        test("array.strip");
+        {
+            array<int> a = {1, 2, 3, 3, 2, 1};
+            oops( a.strip(2); out(a) ) { "1, 2, 3, 3, 2, 1" };
+            oops( a.strip(1); out(a) ) { "2, 3, 3, 2" };
+            oops( a.triml(2); out(a) ) { "3, 3, 2" };
+            oops( a.trimr(2); out(a) ) { "3, 3" };
+            oops( a.trimr(3); out(a) ) { "" };
         }
         test("array.insert");
         {
