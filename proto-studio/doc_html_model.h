@@ -1,11 +1,13 @@
 #pragma once
+#include "doc.h"
 #include "doc_html_utils.h"
 namespace doc::html
 {
-    struct model
+    using namespace doc::view;
+    struct model : doc::view::model
     {
         str source;
-        array<line> lines;
+    //  array<line> lines;
         array<entity> entities;
 
         str text () const { return untagged(source); }
@@ -24,7 +26,7 @@ namespace doc::html
             }
         }
 
-        void set (style s, format f)
+        void set (style s, format f) override
         {
             lines.clear();
 
@@ -50,7 +52,7 @@ namespace doc::html
 
                 for (auto token : entity.head)
                     lines.back().tokens +=
-                        doc::token{token.text,
+                        doc::view::token{token.text,
                             style_index(styles.back())};
             }
             else

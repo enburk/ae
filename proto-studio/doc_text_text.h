@@ -2,8 +2,6 @@
 #include "doc_text_glyph.h"
 namespace doc::text
 {
-    using namespace data;
-
     struct text
     {
         array<array<glyph>> lines;
@@ -23,21 +21,6 @@ namespace doc::text
             if (s != "") s.pop_back();
             return s;
         }
-    };
-
-    struct place
-    {
-        int line = 0;
-        int offset = 0;
-        auto operator <=> (const place & p) const = default;
-    };
-
-    struct range
-    {
-        place from, upto;
-        bool empty () const { return from == upto; }
-        bool operator == (const range & r) const = default;
-        bool operator != (const range & r) const = default;
     };
 
     struct token

@@ -126,10 +126,10 @@ namespace gui::text
             
     struct line final : widgetarium<token>
     {
-        doc::line data_copy;
+        doc::view::line data_copy;
         array<row> rows;
 
-        void fill (doc::line data)
+        void fill (doc::view::line data)
         {
             data_copy = std::move(data);
             auto & format = data_copy.format;

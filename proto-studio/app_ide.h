@@ -76,6 +76,18 @@ struct IDE : gui::widget<IDE>
 
     void on_notify (void* what) override
     {
+        if (what == &flist)
+        {
+            editor.flist.selected = flist.selected.now;
+        }
+        if (what == &editor.flist)
+        {
+            flist.selected = editor.flist.selected.now;
+        }
+        if (what == &editor)
+        {
+        }
+
         if (what == &splitter_editor_l) {
             sys::settings::save(
                 "splitter.editor.l.permyriad",

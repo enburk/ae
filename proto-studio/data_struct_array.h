@@ -92,7 +92,7 @@ namespace data
              trimr(e); triml(e);
         }
         void truncate () { if (size() > 0)
-             resize(size()-1);
+             container::resize(size()-1);
         }
 
         #include "data_algo_random.h"

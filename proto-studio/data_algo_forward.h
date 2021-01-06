@@ -8,8 +8,20 @@ auto remove_if (unary_predicate match)
     while (j != end())
     {
         using std::swap; swap(*i, *j);
-        if (not match(*i)) i++;
-        j++;
+        if (not match(*i)) ++i;
+        ++j;
+    }
+    return i;
+}
+
+template<class unary_predicate>
+auto find_if (unary_predicate match)
+{
+    auto i = begin();
+    while (i != end())
+    {
+        if (match(*i)) return i;
+        ++i;
     }
     return i;
 }

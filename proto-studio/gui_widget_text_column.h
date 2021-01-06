@@ -4,7 +4,7 @@ namespace gui::text
 {
     struct column : widgetarium<line>
     {
-        void fill (array<doc::line> datae)
+        void fill (array<doc::view::line> datae)
         {
             int n = 0; int width = 0; int height = 0;
 

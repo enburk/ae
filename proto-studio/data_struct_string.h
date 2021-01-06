@@ -81,7 +81,7 @@ namespace data
              triml(chars);
         }
         void truncate () { if (size() > 0)
-             resize(size()-1);
+             container::resize(size()-1);
         }
 
 

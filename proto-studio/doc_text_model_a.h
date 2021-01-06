@@ -189,7 +189,7 @@ namespace data::unittest
     {
         using doc::text::model;
 
-        test("text.model.construct");
+        test("text.model.ctor");
         {
             oops( model m; out(m) ) { "" };
             oops( model m(" "); out(m) ) { "" };
@@ -203,6 +203,68 @@ namespace data::unittest
             oops( model m("a\nb"); out(m) ) { "a", "b", "-----" };
             oops( model m("a \nb"); out(m) ) { "a", "b", "-----" };
             oops( model m("a\n b"); out(m) ) { "a", " b", "-----" };
+        }
+        test("text.model.char");
+        {
+            model m;
+            oops( m.insert(" "); out(m) ) { " " };
+            oops( m.insert("a"); out(m) ) { " a" };
+            oops( m.insert(" "); out(m) ) { " a " };
+            oops( m.backspace(); out(m) ) { " a" };
+            oops( m.erase    (); out(m) ) { " a" };
+            oops( m.undo     (); out(m) ) { " a " };
+            oops( m.undo     (); out(m) ) { " a" };
+            oops( m.undo     (); out(m) ) { " " };
+            oops( m.undo     (); out(m) ) { "" };
+            oops( m.undo     (); out(m) ) { "" };
+            oops( m.redo     (); out(m) ) { " " };
+            oops( m.redo     (); out(m) ) { " a" };
+            oops( m.redo     (); out(m) ) { " a " };
+            oops( m.redo     (); out(m) ) { " a" };
+            oops( m.redo     (); out(m) ) { " a" };
+        }
+        test("text.model.line");
+        {
+            model m;
+            oops( m.insert("a"); out(m) ) { "a" };
+            oops( m.insert("b"); out(m) ) { "ab" };
+            oops( m.insert("c"); out(m) ) { "abc" };
+            m.selections[0].from.offset--;
+            m.selections[0].upto.offset--;
+            oops( m.insert("d"); out(m) ) { "abdc" };
+            oops( m.backspace(); out(m) ) { "abc" };
+            oops( m.erase    (); out(m) ) { "ab" };
+            oops( m.erase    (); out(m) ) { "ab" };
+            m.selections[0].from.offset--;
+            m.selections[0].upto.offset--;
+            oops( m.backspace(); out(m) ) { "b" };
+            oops( m.backspace(); out(m) ) { "b" };
+            oops( m.insert("a"); out(m) ) { "ab" };
+            oops( m.undo     (); out(m) ) { "b" };
+            oops( m.undo     (); out(m) ) { "ab" };
+            oops( m.undo     (); out(m) ) { "abc" };
+            oops( m.undo     (); out(m) ) { "abdc" };
+            oops( m.undo     (); out(m) ) { "abc" };
+            oops( m.undo     (); out(m) ) { "ab" };
+            oops( m.undo     (); out(m) ) { "a" };
+            oops( m.undo     (); out(m) ) { "" };
+            oops( m.undo     (); out(m) ) { "" };
+        }
+        test("text.model.redo");
+        {
+            model m;
+            oops( m.redo     (); out(m) ) { "" };
+            oops( m.undo     (); out(m) ) { "" };
+            oops( m.insert("a"); out(m) ) { "a" };
+            oops( m.redo     (); out(m) ) { "a" };
+            oops( m.undo     (); out(m) ) { "" };
+            oops( m.redo     (); out(m) ) { "a" };
+            oops( m.backspace(); out(m) ) { "" };
+            oops( m.redo     (); out(m) ) { "" };
+            oops( m.undo     (); out(m) ) { "a" };
+            oops( m.undo     (); out(m) ) { "" };
+            oops( m.erase    (); out(m) ) { "" };
+            oops( m.redo     (); out(m) ) { "" };
         }
     }
     catch(assertion_failed){}

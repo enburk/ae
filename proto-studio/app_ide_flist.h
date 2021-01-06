@@ -3,25 +3,28 @@
 #include "gui_widget_canvas.h"
 #include "gui_widget_button.h"
 #include "gui_widget_scroller.h"
+using path = std::filesystem::path;
 using namespace pix;
-
-struct flist : gui::widget<flist>
-{
-    gui::widgetarium<gui::button> list; int selected = 0;
-
-    void on_notify (void* w) override { selected = list.notifier_index; notify (); }
-
-    void on_mouse_wheel (XY p, int delta) override { parent->on_mouse_wheel(p, delta); }
-};
 
 struct Flist : gui::widget<Flist>
 {
+    struct flist : gui::widget<flist>
+    {
+        int selected = 0;
+        gui::radio::group list;
+
+        void on_notify (void* w) override {
+            selected = list.notifier_index; notify (); }
+
+        void on_mouse_wheel (XY p, int delta) override {
+            parent->on_mouse_wheel(p, delta); }
+    };
+
     gui::canvas canvas;
     gui::text::view dir; flist flist;
     gui::scroller<gui::vertical> scroller;
-    typedef std::filesystem::path path;
-    gui::binary_property<path> root;
     gui::binary_property<path> selected;
+    gui::binary_property<path> root;
 
     void refresh ()
     {
@@ -78,6 +81,11 @@ struct Flist : gui::widget<Flist>
 
         if (what == &selected)
         {
+            for (auto& button : flist.list)
+                button.on = root.now / std::string(
+                button.text.text.now) ==
+                selected.now;
+
             notify();
         }
     }
@@ -146,10 +154,10 @@ struct Flist : gui::widget<Flist>
     void on_mouse_wheel (XY p, int delta) override
     {
         int h = scroller.step; if (h <= 0) h = gui::metrics::text::height;
-        delta = delta/120 * h; if (delta == 0) delta = delta < 0 ? -h : h;
-        if (sys::keyboard::shift) delta *= coord.now.size.y;
+        delta = delta/20 * h; if (delta == 0) delta = delta < 0 ? -h : h;
+        if (sys::keyboard::shift) delta *= coord.now.h;
         if (sys::keyboard::ctrl) delta *= 5;
-        int d = flist.coord.now.size.y - flist.list.coord.now.size.y; // may be negative
+        int d = flist.coord.now.h - flist.list.coord.now.h; // may be negative
         int y = flist.list.coord.now.y + delta;
         if (y < d) y = d;
         if (y > 0) y = 0;

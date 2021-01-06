@@ -3,8 +3,6 @@
 #include "doc_text_text.h"
 namespace doc::html::lexica
 {
-	using text::place;
-	using text::range;
 	using text::token;
 
     inline array<token> tokenize (const text::text & text)

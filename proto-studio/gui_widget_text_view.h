@@ -33,13 +33,14 @@ namespace gui::text
         binary_property<bool> virtual_space = false;
         binary_property<bool> focused = false;
 
-        doc::html::model model;
+        doc::html::model _model;
+        doc::view::model* model = &_model;
 
         view () { on_change(&skin); }
 
         void refresh ()
         {
-            pix::text::format format;
+            format format;
             format.width = coord.now.size.x;
             format.margin_right = margin_right.now;
             format.margin_left = margin_left.now;
@@ -48,8 +49,8 @@ namespace gui::text
             format.ellipsis = ellipsis.now; if (ellipsis.now)
             format.height = coord.now.size.y;
 
-            model.set(style.now, format);
-            column.fill(model.lines);
+            model->set(style.now, format);
+            column.fill(model->lines);
             align();
         }
 
@@ -156,16 +157,16 @@ namespace gui::text
             {
                 highlights = array<range>{};
                 selections = array<range>{};
-                model.text(text.now);
-                html.now = model.html();
+                _model.text(text.now);
+                html.now = _model.html();
                 refresh();
             }
             if (what == &html)
             {
                 highlights = array<range>{};
                 selections = array<range>{};
-                model.html(html.now);
-                text.now = model.text();
+                _model.html(html.now);
+                text.now = _model.text();
                 refresh();
             }
             if (what == &skin)

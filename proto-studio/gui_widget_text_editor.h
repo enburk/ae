@@ -1,79 +1,77 @@
 #pragma once
-#include "doc_text_model.h"
+#include "doc_text_model_a.h"
 #include "gui_widget_text_aux.h"
-#include "gui_widget_text_model.h"
-#include "gui_widget_text_view.h"
+#include "gui_widget_text_page.h"
 namespace gui::text
 {
-    struct editor final : widget<editor>, model
+    struct editor:
+    widget<editor>, doc::view::model
     {
         page page;
         binary_property<bool> insert_mode = true;
         binary_property<bool> virtual_space = false;
-        doc::text_model model;
 
-        std::map<str, glyph_style_index> styles;
+        doc::text::model _model;
+        doc::text::model* model = &_model;
+        std::map<str, style_index> styles;
 
         editor ()
         {
             page.view.model = this;
-            page.alignment = XY{gui::text::left, gui::text::top};
+            page.alignment = XY{pix::left, pix::top};
         }
-
-        str text () override { return ""; }
-        str html () override { return ""; }
 
         void reset ()
         {
-            update(); // speed up
+            update(); // speed up rectifier
             page.view.column.clear(); // reset cache
-            model.proceed(model, model.tokens);
+            //model->proceed(model, model->tokens);
             page.view.refresh();
             page.refresh();
             refresh();
             notify();
         }
 
-        void set (str text, str format) override
+        //void set (str text, str format)
+        //{
+        //    update(); // speed up
+        //    page.view.column.clear(); // reset cache
+        //    //model = doc::text::model{text};
+        //    page.view.refresh();
+        //    page.refresh();
+        //    refresh();
+        //    notify();
+        //}
+
+        void set (style s, format f) override
         {
-            update(); // speed up
-            page.view.column.clear(); // reset cache
-            model = doc::text_model{text};
-            page.view.refresh();
-            page.refresh();
-            refresh();
-            notify();
-        }
-
-        void set (glyph_style_index s, format f) override
-        {
-            lines = {line::data{f}};
-
-            for (const auto & t : model.tokens)
-            {
-                if (t.text == "\n")
-                {
-                    if (virtual_space.now)
-                    lines.back().tokens += token::data{str(' ', 128), s}; // huge slowdown
-                    lines.back().tokens += token::data{"\n", s};
-                    lines += {line::data{f}};
-                }
-                else
-                {
-                    glyph_style_index style = s;
-                    if (auto it = styles.find(t.kind);
-                        it != styles.end())
-                        style = it->second;
-
-                    lines.back().tokens += token::data{t.text, style};
-                }
-            }
+            lines = {doc::view::line{f}};
+        
+            //for (const auto & t : model->tokens)
+            //{
+            //    if (t.text == "\n")
+            //    {
+            //        if (virtual_space.now)
+            //        lines.back().tokens += doc::view::token{str(' ', 128), s}; // huge slowdown
+            //        lines.back().tokens += doc::view::token{"\n", s};
+            //        lines += {line::data{f}};
+            //    }
+            //    else
+            //    {
+            //        glyph_style_index style = s;
+            //        if (auto it = styles.find(t.kind);
+            //            it != styles.end())
+            //            style = it->second;
+            //
+            //        lines.back().tokens += token::data{t.text, style};
+            //    }
+            //}
         }
 
         void refresh ()
         {
             array<range> selections;
-            for (auto s : model.selections)
+            for (auto s : model->selections)
                 selections += range{
                     place{s.from.line, s.from.offset},
                     place{s.upto.line, s.upto.offset}};
@@ -84,7 +82,7 @@ namespace gui::text
             
             XYXY r = page.view.carets.back().coord.now;
 
-            int d = metrics::text::height;
+            int d = gui::metrics::text::height;
             int w = coord.now.size.x, dx = 0;
             int h = coord.now.size.y, dy = 0;
 
@@ -118,22 +116,22 @@ namespace gui::text
 
         void go (int where, bool selective = false)
         {
-            int n = model.selections.size();
+            int n = model->selections.size();
             if (n >= 2 && !selective) {
-                model.selections[0] = 
-                model.selections[n-1];
-                model.selections.truncate(1);
+                model->selections[0] = 
+                model->selections[n-1];
+                model->selections.resize(1);
             }
 
-            for (auto & caret : model.selections)
+            for (auto & caret : model->selections)
                 go(caret, where, selective);
 
             refresh();
         }
-        void go (doc::range & caret, int where, bool selective)
+        void go (range & caret, int where, bool selective)
         {
             auto & [from, upto] = caret;
-            auto & line = model.lines[upto.line];
+            auto & line = model->lines[upto.line];
 
             switch(where){
             case THERE: from = caret.upto; break;
@@ -141,13 +139,13 @@ namespace gui::text
             case-GLYPH: upto.offset--;
                 if (upto.offset < 0 && virtual_space.now) upto.offset++; else
                 if (upto.offset < 0 && upto.line > 0) {
-                    upto.offset = model.lines[upto.line].size();
+                    upto.offset = model->lines[upto.line].size();
                     upto.line--;
                 }
                 break;
             case+GLYPH: upto.offset++;
                 if (upto.offset > line.size() && virtual_space.now) {;} else
-                if (upto.offset > line.size() && upto.line < model.lines.size()-1) {
+                if (upto.offset > line.size() && upto.line < model->lines.size()-1) {
                     upto.offset = 0;
                     upto.line++;
                 }
@@ -166,13 +164,13 @@ namespace gui::text
 
             case-LINE: upto.line--;
                 if (upto.line < 0) upto.line++; else
-                if (upto.offset > model.lines[upto.line].size() && !virtual_space.now)
-                    upto.offset = model.lines[upto.line].size();
+                if (upto.offset > model->lines[upto.line].size() && !virtual_space.now)
+                    upto.offset = model->lines[upto.line].size();
                 break;
             case+LINE: upto.line++;
-                if (upto.line  >= model.lines.size()) upto.line--; else
-                if (upto.offset > model.lines[upto.line].size() && !virtual_space.now)
-                    upto.offset = model.lines[upto.line].size();
+                if (upto.line  >= model->lines.size()) upto.line--; else
+                if (upto.offset > model->lines[upto.line].size() && !virtual_space.now)
+                    upto.offset = model->lines[upto.line].size();
                 break;
 
             //case-TOKEN: break;
@@ -185,27 +183,27 @@ namespace gui::text
                 break;
             case+PAGE: upto.line += page.view.coord.now.h /
                 sys::metrics(page.view.font.now).height;
-                if (upto.line > model.lines.size() - 1)
-                    upto.line = model.lines.size() - 1;
+                if (upto.line > model->lines.size() - 1)
+                    upto.line = model->lines.size() - 1;
                 break;
 
             //case PAGE_TOP   : break;
             //case PAGE_BOTTOM: break;
 
             case TEXT_BEGIN: upto.line = 0; upto.offset = 0; break;
-            case TEXT_END  : upto.line = model.lines.size()-1;
-                upto.offset = model.lines[upto.line].size();
+            case TEXT_END  : upto.line = model->lines.size()-1;
+                upto.offset = model->lines[upto.line].size();
                 break;
             }
 
             if (!selective) from = upto;
         }
 
-        void go (doc::place place)
+        void go (place place)
         {
-            model.selections.resize(1);
-            model.selections.back().from = 
-            model.selections.back().upto = place;
+            model->selections.resize(1);
+            model->selections.back().from = 
+            model->selections.back().upto = place;
 
             page.scroll.y.top = 
             sys::metrics(page.view.font.now).height * place.line
@@ -247,9 +245,9 @@ namespace gui::text
                 if (from > upto) std::swap (from, upto);
 
                 for (place p = from; p <= upto; p.offset = 0, p.line++) {
-                    ss += str(p.line == upto.line ?
-                        model.lines[p.line].from(p.offset).upto(upto.offset) :
-                        model.lines[p.line].from(p.offset), "");
+                    ss += doc::text::string(p.line == upto.line ?
+                        model->lines[p.line].from(p.offset).upto(upto.offset) :
+                        model->lines[p.line].from(p.offset));
                 }
             }
 
@@ -263,11 +261,11 @@ namespace gui::text
             refresh();
             notify();
         }
-        void undo        () { if (model.undo     ()) update_view(); }
-        void redo        () { if (model.redo     ()) update_view(); }
-        void erase       () { if (model.erase    ()) update_view(); }
-        void backspace   () { if (model.backspace()) update_view(); }
-        void insert (str s) { if (model.insert  (s)) update_view(); }
+        void undo        () { if (model->undo     ()) update_view(); }
+        void redo        () { if (model->redo     ()) update_view(); }
+        void erase       () { if (model->erase    ()) update_view(); }
+        void backspace   () { if (model->backspace()) update_view(); }
+        void insert (str s) { if (model->insert  (s)) update_view(); }
 
         void on_key_pressed (str key, bool down) override
         {
@@ -291,34 +289,34 @@ namespace gui::text
 
             if (key == "alt+shift+up")
             {
-                int n = model.selections.size();
+                int n = model->selections.size();
                 if (n >= 2 &&
-                    model.selections[n-2].upto.line == 
-                    model.selections[n-1].upto.line - 1)
-                    model.selections.truncate();
+                    model->selections[n-2].upto.line == 
+                    model->selections[n-1].upto.line - 1)
+                    model->selections.truncate();
                 else
                 if (n >= 1 &&
-                    model.selections[n-1].upto.line < model.lines.size())
-                    model.selections += doc::range{
-                        {model.selections[n-1].from.line-1, model.selections[n-1].from.offset},
-                        {model.selections[n-1].upto.line-1, model.selections[n-1].upto.offset}};
+                    model->selections[n-1].upto.line < model->lines.size())
+                    model->selections += range{
+                        {model->selections[n-1].from.line-1, model->selections[n-1].from.offset},
+                        {model->selections[n-1].upto.line-1, model->selections[n-1].upto.offset}};
                 else return;
                 refresh();
             }
             else
             if (key == "alt+shift+down")
             {
-                int n = model.selections.size();
+                int n = model->selections.size();
                 if (n >= 2 &&
-                    model.selections[n-2].upto.line == 
-                    model.selections[n-1].upto.line + 1)
-                    model.selections.truncate();
+                    model->selections[n-2].upto.line == 
+                    model->selections[n-1].upto.line + 1)
+                    model->selections.truncate();
                 else
                 if (n >= 1 &&
-                    model.selections[n-1].upto.line > 0)
-                    model.selections += doc::range{
-                        {model.selections[n-1].from.line+1, model.selections[n-1].from.offset},
-                        {model.selections[n-1].upto.line+1, model.selections[n-1].upto.offset}};
+                    model->selections[n-1].upto.line > 0)
+                    model->selections += range{
+                        {model->selections[n-1].from.line+1, model->selections[n-1].from.offset},
+                        {model->selections[n-1].upto.line+1, model->selections[n-1].upto.offset}};
                 else return;
                 refresh();
             }
@@ -440,17 +438,17 @@ namespace gui::text
                 if (touch)
                 {
                     int n = page.view.selections.now.size();
-                    model.selections.resize(n);
+                    model->selections.resize(n);
                     for (int i=0; i<n; i++) {
                         auto r = page.view.selections.now[i];
-                        model.selections[i] = doc::range{
-                            doc::place{r.from.line, r.from.offset},
-                            doc::place{r.upto.line, r.upto.offset}};
+                        model->selections[i] = range{
+                            place{r.from.line, r.from.offset},
+                            place{r.upto.line, r.upto.offset}};
 
-                        // hack for preventing focus hiding:
-                        auto & [from, upto] = model.selections[i];
-                        from = aux::clamp(from, model.front(), model.back());
-                        upto = aux::clamp(upto, model.front(), model.back());
+                        // hack to prevent focus hiding:
+                        auto & [from, upto] = model->selections[i];
+                        from = clamp(from, model->front(), model->back());
+                        upto = clamp(upto, model->front(), model->back());
                         page.view.selections.now[i] = range{
                             place{from.line, from.offset},
                             place{upto.line, upto.offset}};
@@ -460,10 +458,10 @@ namespace gui::text
             }
         }
 
-        void on_notify (gui::base::widget* w, int n) override
+        void on_notify (void* what) override
         {
-            if (w == &page.scroll.x) notify(w, n);
-            if (w == &page.scroll.y) notify(w, n);
+            if (what == &page.scroll.x) notify(what);
+            if (what == &page.scroll.y) notify(what);
         }
     };
 } 

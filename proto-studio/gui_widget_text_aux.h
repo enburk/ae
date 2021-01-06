@@ -6,8 +6,9 @@ namespace gui::text
     using pix::text::style;
     using pix::text::style_index;
     using pix::text::metrics;
-    using doc::text::place;
-    using doc::text::range;
+    using pix::text::format;
+    using doc::place;
+    using doc::range;
 
     struct glyph:
     widget<glyph>
