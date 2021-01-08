@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "doc_text_text.h"
-namespace doc::text
+namespace doc::text::a
 {
     struct model : text
     {
@@ -180,14 +180,14 @@ namespace doc::text
 #include "data_unittest.h"
 namespace data::unittest
 {
-    void out (doc::text::model const& m)
+    void out (doc::text::a::model const& m)
     {
         for (auto & line : m.lines) out(doc::text::string(line));
     }
 
     void text_model () try
     {
-        using doc::text::model;
+        using doc::text::a::model;
 
         test("text.model.ctor");
         {

@@ -1,4 +1,5 @@
 #pragma once
+#include "doc.h"
 #include "doc_text_glyph.h"
 namespace doc::text
 {
@@ -29,6 +30,63 @@ namespace doc::text
         void operator += (const glyph & g) { text += g.string(); range.upto.offset++; }
         bool operator != (const token & t) const = default;
         bool operator == (const token & t) const = default;
+    };
+
+    struct report
+    {
+        struct message
+        {
+            token* token = nullptr; str kind, what;
+        };
+        array<message> messages;
+        array<message> errors;
+        array<message> infos;
+
+        void info  (str what) { info (nullptr, what); }
+        void error (str what) { error(nullptr, what); }
+
+        void info  (token* token, str what) {
+            messages += message{token, "info", what};
+            infos    += message{token, "info", what};
+        }
+        void error (token* token, str what) {
+            messages += message{token, "error", what};
+            errors   += message{token, "error", what};
+            if (token)   token->kind = "error";
+        }
+        void operator += (report report)
+        {
+            messages += report.messages;
+            errors   += report.errors;
+        }
+        void clear ()
+        {
+            messages.clear();
+            errors  .clear();
+        }
+        str operator () () const
+        {
+            str s;
+            
+            for (auto [token, kind, what] : messages)
+            {
+                if (kind == "error")
+                    s += "<font color=#B00020>";
+
+                if (token) s += "("
+                    + std::to_string(token->range.from.line  +1) + ":"
+                    + std::to_string(token->range.from.offset+1) + ") ";
+
+                s += what;
+
+                if (kind == "error")
+                    s += "</font>";
+
+                s += "<br>";
+            }
+
+            return s;
+        }
     };
 }
 

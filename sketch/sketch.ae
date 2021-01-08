@@ -23,7 +23,10 @@ def cache(func):
         saved[args] = result
         return result
     return newfunc
-    
+
+
+main = print $ sq $ 2 + 3 (Haskell)
+print <<< sq(2 + 3) (?)    
 
 auto salariesByName = employees
 

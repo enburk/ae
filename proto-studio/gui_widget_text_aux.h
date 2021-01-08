@@ -1,4 +1,5 @@
 #pragma once
+#include "doc.h"
 #include "gui_widgetarium.h"
 #include "gui_widget_canvas.h"
 namespace gui::text

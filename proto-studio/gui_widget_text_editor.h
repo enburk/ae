@@ -1,5 +1,5 @@
 #pragma once
-#include "doc_text_model_a.h"
+#include "doc_text_model_b.h"
 #include "gui_widget_text_aux.h"
 #include "gui_widget_text_page.h"
 namespace gui::text
@@ -25,47 +25,48 @@ namespace gui::text
         {
             update(); // speed up rectifier
             page.view.column.clear(); // reset cache
-            //model->proceed(model, model->tokens);
+            page.view.refresh();
+            page.refresh();
+            refresh();
+        }
+        void update_view ()
+        {
             page.view.refresh();
             page.refresh();
             refresh();
             notify();
         }
-
-        //void set (str text, str format)
-        //{
-        //    update(); // speed up
-        //    page.view.column.clear(); // reset cache
-        //    //model = doc::text::model{text};
-        //    page.view.refresh();
-        //    page.refresh();
-        //    refresh();
-        //    notify();
-        //}
+        void undo        () { if (model->undo     ()) update_view(); }
+        void redo        () { if (model->redo     ()) update_view(); }
+        void erase       () { if (model->erase    ()) update_view(); }
+        void backspace   () { if (model->backspace()) update_view(); }
+        void insert (str s) { if (model->insert  (s)) update_view(); }
 
         void set (style s, format f) override
         {
             lines = {doc::view::line{f}};
+
+            auto i = pix::text::style_index(s);
         
-            //for (const auto & t : model->tokens)
-            //{
-            //    if (t.text == "\n")
-            //    {
-            //        if (virtual_space.now)
-            //        lines.back().tokens += doc::view::token{str(' ', 128), s}; // huge slowdown
-            //        lines.back().tokens += doc::view::token{"\n", s};
-            //        lines += {line::data{f}};
-            //    }
-            //    else
-            //    {
-            //        glyph_style_index style = s;
-            //        if (auto it = styles.find(t.kind);
-            //            it != styles.end())
-            //            style = it->second;
-            //
-            //        lines.back().tokens += token::data{t.text, style};
-            //    }
-            //}
+            for (const auto & t : model->tokens)
+            {
+                if (t.text == "\n")
+                {
+                    if (virtual_space.now)
+                    lines.back().tokens += doc::view::token{str(' ', 128), i}; // huge slowdown
+                    lines.back().tokens += doc::view::token{"\n", i};
+                    lines += {doc::view::line{f}};
+                }
+                else
+                {
+                    auto style = i;
+                    if (auto it = styles.find(t.kind);
+                        it != styles.end())
+                        style = it->second;
+            
+                    lines.back().tokens += doc::view::token{t.text, style};
+                }
+            }
         }
 
         void refresh ()
@@ -253,19 +254,6 @@ namespace gui::text
 
             return str(ss);
         }
-
-        void update_view ()
-        {
-            page.view.refresh();
-            page.refresh();
-            refresh();
-            notify();
-        }
-        void undo        () { if (model->undo     ()) update_view(); }
-        void redo        () { if (model->redo     ()) update_view(); }
-        void erase       () { if (model->erase    ()) update_view(); }
-        void backspace   () { if (model->backspace()) update_view(); }
-        void insert (str s) { if (model->insert  (s)) update_view(); }
 
         void on_key_pressed (str key, bool down) override
         {

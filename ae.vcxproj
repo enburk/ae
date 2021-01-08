@@ -193,6 +193,7 @@
     <ClInclude Include="library\cpp\proto-studio\test_pix.h" />
     <ClInclude Include="proto-studio\app_ide.h" />
     <ClInclude Include="proto-studio\app_ide_console.h" />
+    <ClInclude Include="proto-studio\app_ide_edflist.h" />
     <ClInclude Include="proto-studio\app_ide_editor.h" />
     <ClInclude Include="proto-studio\app_ide_flist.h" />
     <ClInclude Include="proto-studio\app_ide_test.h" />
@@ -218,6 +219,7 @@
     <ClInclude Include="proto-studio\doc_text_model_a.h" />
     <ClInclude Include="proto-studio\doc_text_model_b.h" />
     <ClInclude Include="proto-studio\doc_text_model_e.h" />
+    <ClInclude Include="proto-studio\doc_text_repo.h" />
     <ClInclude Include="proto-studio\doc_text_text.h" />
     <ClInclude Include="proto-studio\gui_colors.h" />
     <ClInclude Include="proto-studio\gui_effect.h" />

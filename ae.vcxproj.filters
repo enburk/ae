@@ -345,6 +345,12 @@
     <ClInclude Include="proto-studio\gui_widget_text_editor1.h">
       <Filter>proto</Filter>
     </ClInclude>
+    <ClInclude Include="proto-studio\app_ide_edflist.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_text_repo.h">
+      <Filter>proto</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="proto-studio\!main.cpp">

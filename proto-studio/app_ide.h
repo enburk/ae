@@ -1,12 +1,13 @@
 #pragma once
-#include "gui_widget.h"
-#include "gui_widget_canvas.h"
 #include "sys_aux.h"
 #include "sys_ui.h"
+#include "gui_widget.h"
+#include "gui_widget_canvas.h"
 #include "app_ide_console.h"
 #include "app_ide_editor.h"
 #include "app_ide_flist.h"
 #include "app_ide_test.h"
+using namespace std::literals::chrono_literals;
 using namespace data;
 using namespace pix;
 
@@ -28,6 +29,13 @@ struct IDE : gui::widget<IDE>
     Console& console = console_area.object;
     gui::area<Test> test_area; // very last
 
+    gui::property<gui::time> timer;
+    sys::directory_watcher watcher;
+    std::atomic<bool> reload_editor = false;
+    std::atomic<bool> reload_flist = false;
+    gui::time edittime;
+    bool syntax_ok = false;
+
     IDE()
     {
         skin = "gray";
@@ -37,11 +45,70 @@ struct IDE : gui::widget<IDE>
         button_run .text.text = "run";
         button_test.text.text = "test";
         canvas.color = RGBA::red;
+        console.activate(&console.events);
         test_area.hide();
+
+        watcher.dir = std::filesystem::current_path();
+        watcher.action = [this](std::filesystem::path path, str what)
+        {
+            str s = path.string();
+            if (s.contains("\\.vs\\")) return;
+            if (s.contains("\\.astudio\\")) return;
+            if (s.contains("\\.vstudio\\")) return;
+            if (s.contains("\\enc_temp_folder\\")) return;
+            if (s.ends_with(".ae!.cpp") || s.ends_with(".ae!!.cpp")) return;
+            if (s.ends_with(".ae!.obj") || s.ends_with(".ae!!.obj")) return;
+            if (s.ends_with(".ae!.exe") || s.ends_with(".ae!!.exe")) return;
+            if (s.ends_with("cl.log.txt")) return;
+            console.events << path.string() + " " + what;
+            reload_editor = true; if (what != "modified")
+            reload_flist = true;
+        };
+        watcher.error = [this](data::error error){
+            console.events << "<font color=#B00020>"
+                "watcher error: " + error + "</font>";
+        };
+        watcher.watch();
+    }
+    ~IDE()
+    {
+        doc::text::repo::close();
     }
 
     void on_change (void* what) override
     {
+        if (timer.now == gui::time())
+            timer.go (gui::time::infinity,
+                      gui::time::infinity);
+
+        if (what == &timer)
+        {
+            if (reload_editor) {
+                reload_editor = false;
+                doc::text::repo::reload();
+            }
+            if (reload_flist) {
+                reload_flist = false;
+                flist.reload();
+            }
+
+            if ((gui::time::now - edittime) > 2s) {
+                edittime = gui::time::infinity;
+                doc::text::repo::save();
+            }
+
+            if (doc::text::repo::report.errors.size() > 0) edittime = gui::time::now;
+            if (doc::text::repo::report.messages.size() > 0) { console.events << 
+                doc::text::repo::report(); console.activate(&console.events);
+                doc::text::repo::report.clear();
+            }
+
+            button_run.enabled = (
+                editor.path.now.extension() == ".ae!" or
+                editor.path.now.extension() == ".ae!!")
+                and syntax_ok;
+        }
+
         if (what == &coord)
         {
             int W = coord.now.w; if (W <= 0) return;
@@ -57,8 +124,8 @@ struct IDE : gui::widget<IDE>
             splitter_editor_r.coord = XYXY(r-d, h, r+d, H);
             splitter_editor_l.lower = 10'00 * W / 100'00;
             splitter_editor_l.upper = 35'00 * W / 100'00;
-            splitter_editor_r.lower = 65'00 * W / 100'00;
-            splitter_editor_r.upper = 90'00 * W / 100'00;
+            splitter_editor_r.lower = 55'00 * W / 100'00;
+            splitter_editor_r.upper = 85'00 * W / 100'00;
 
             canvas.coord = coord.now.local();
             toolbar.coord = XYWH(0, 0, W, h);
@@ -70,6 +137,18 @@ struct IDE : gui::widget<IDE>
             editor_area.coord = XYWH(l, h, r-l, H-h);
             console_area.coord = XYWH(r, h, W-r, H-h);
         }
+
+        if (what == &console)
+        {
+            std::string source = console.pressed_file;
+            if (source != "" and std::filesystem::exists(source))
+                editor.path = source;
+
+            editor.editor.go(doc::place{
+                std::stoi(console.pressed_line)-1,
+                std::stoi(console.pressed_char)-1});
+        }
+
         if (test_area.object.test_first.done) button_test.text.color = 
             test_area.object.test_first.ok ? RGBA::green : RGBA::error;
     }
@@ -86,6 +165,7 @@ struct IDE : gui::widget<IDE>
         }
         if (what == &editor)
         {
+            edittime = gui::time::now;
         }
 
         if (what == &splitter_editor_l) {
