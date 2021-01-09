@@ -147,6 +147,8 @@ pix::glyph::glyph (str text, text::style_index i) : text(text), style_index(i)
 
         advance -= width; // the pen position increment = width + advance
 
+        if (text == "\n") width = max(1, (ascent+descent)/16); // for text editor
+
         cache_metrics.emplace(key, *this);
     }
 

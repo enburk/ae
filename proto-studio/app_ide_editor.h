@@ -1,5 +1,6 @@
 #pragma once
 #include "doc_text_repo.h"
+#include "doc_cpp_model.h"
 #include "gui_widget_canvas.h"
 #include "gui_widget_button.h"
 #include "gui_widget_text_editor.h"
@@ -34,6 +35,20 @@ struct Editor : gui::widget<Editor>
             editor.page.style = pix::text::style{
                 sys::font{"Consolas", h},
                 RGBA::black};
+
+            auto s = editor.page.style.now;
+            s.color = RGBA::black;   editor.styles["name"   ] = pix::text::style_index(s);
+            s.color = RGBA::blue;    editor.styles["keyword"] = pix::text::style_index(s);
+            s.color = RGBA::teal;    editor.styles["keyname"] = pix::text::style_index(s);
+            s.color = RGBA::blue;    editor.styles["pragma" ] = pix::text::style_index(s);
+            s.color = RGBA::purple;  editor.styles["macros" ] = pix::text::style_index(s);
+            s.color = RGBA::navy;    editor.styles["number" ] = pix::text::style_index(s);
+            s.color = RGBA::white;   editor.styles["space"  ] = pix::text::style_index(s); 
+            s.color = RGBA::navy;    editor.styles["literal"] = pix::text::style_index(s); 
+            s.color = RGBA::navy;    editor.styles["char"   ] = pix::text::style_index(s); 
+            s.color = RGBA::maroon;  editor.styles["symbol" ] = pix::text::style_index(s);
+            s.color = RGBA::fuchsia; editor.styles["comment"] = pix::text::style_index(s);
+            s.color = RGBA::red;     editor.styles["error"  ] = pix::text::style_index(s);
         }
         if (what == &coord && coord.was.size != coord.now.size)
         {
@@ -54,7 +69,10 @@ struct Editor : gui::widget<Editor>
             ||  ext == ".c++" || ext == ".h++"  || ext == ".h" ) ext = "cpp"; else
             if (ext == ".ae!" || ext == ".ae!!" || ext == ".ae") ext = "ae";
 
-            editor.model = doc::text::repo::load(path.now);
+            editor.model = 
+//              ext == "ae"  ? doc::text::repo::load<doc::ae::model>(path.now):
+                ext == "cpp" ? doc::text::repo::load<doc::cpp::model>(path.now):
+                               doc::text::repo::load<doc::text::model>(path.now);
             editor.reset();
         }
     }

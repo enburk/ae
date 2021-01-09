@@ -1,9 +1,8 @@
 #pragma once
-#include <functional>
 #include "doc_text_model_a.h"
 namespace doc::text
 {
-    struct model : a::model
+    struct model : a::model, polymorphic
     {
         using base = a::model;
 
@@ -11,7 +10,7 @@ namespace doc::text
 
         array<token> tokens;
 
-        std::function<void()> tokenize = [this]() mutable
+        virtual void tokenize ()
         {
             tokens.clear(); token t;
 
@@ -56,17 +55,23 @@ namespace doc::text
             }
         };
 
-        void set (text const& text)
+        virtual bool tokenize_if (bool updated)
+        {
+            if (updated) tokenize();
+            return updated;
+        };
+
+        virtual void set (text const& text)
         {
             *this = model(text.string());
             tokenize();
             ///////////// ...
         }
 
-        bool undo        () { if (!base::undo     ()) return false; tokenize(); return true; }
-        bool redo        () { if (!base::redo     ()) return false; tokenize(); return true; }
-        bool erase       () { if (!base::erase    ()) return false; tokenize(); return true; }
-        bool backspace   () { if (!base::backspace()) return false; tokenize(); return true; }
-        bool insert (str s) { if (!base::insert  (s)) return false; tokenize(); return true; }
+        virtual bool undo        () { return tokenize_if(base::undo     ()); }
+        virtual bool redo        () { return tokenize_if(base::redo     ()); }
+        virtual bool erase       () { return tokenize_if(base::erase    ()); }
+        virtual bool backspace   () { return tokenize_if(base::backspace()); }
+        virtual bool insert (str s) { return tokenize_if(base::insert  (s)); }
     };
 }

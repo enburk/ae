@@ -15,19 +15,21 @@ namespace doc::text::repo
         time filetime;
         time edittime;
         text saved_text;
-        model model;
+        std::unique_ptr<model> model;
     };
 
     inline std::unordered_map<str, source> map;
     inline doc::text::report report;
     inline doc::text::model error;
 
-    auto load (path path) -> model* try
+    template<class Model=model> auto load (path path) -> model* try
     {
         auto & source = map[std::filesystem::canonical(path).string()];
 
         time filetime = std::filesystem::last_write_time(path);
-        if (filetime <= source.edittime) return &source.model;
+        if (filetime <= source.edittime) return source.model.get();
+
+        if (!source.model) source.model = std::move(std::make_unique<Model>());
 
         str s;
         {
@@ -40,10 +42,10 @@ namespace doc::text::repo
             s.upto(3).erase(); // UTF-8 BOM
 
         source.saved_text = text{s};
-        source.model.set(source.saved_text);
+        source.model->set(source.saved_text);
         source.filetime = filetime;
         source.edittime = filetime;
-        return &source.model;
+        return source.model.get();
     }
     catch (const std::exception & e) {
         report.error(path.string() +

@@ -37,6 +37,8 @@ namespace gui::text
         property<double> breadth = 0.15;
         binary_property<bool> insert_mode = true;
 
+        caret () { image.color = skins[skin].touched.first; }
+
         void on_change (void* what) override
         {
             if (timer.now == time())
@@ -48,15 +50,18 @@ namespace gui::text
                 const int MS = 1024;
                 int ms = time::now.ms % MS;
                 if (ms > MS/2) ms = MS-ms;
-                image.alpha = data::clamp<uint8_t>
-                    (256 * ms/(MS/2) + 00 - 1);
+                auto a = data::clamp<uint8_t>
+                (256 * ms/(MS/2) + 00 - 1);
+                if (true) a = a > 127 ? 255 : 0;
+                image.alpha = a;
+                return;
             }
             if (what == &skin
             or  what == &insert_mode)
             {
                 image.color = insert_mode.now ?
-                skins[skin.now].dark.first:
-                skins[skin.now].heavy.first;
+                skins[skin].dark.first:
+                skins[skin].heavy.first;
             }
             if((what == &coord and coord.now.size != coord.was.size)
             or  what == &insert_mode

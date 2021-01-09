@@ -5,6 +5,7 @@ namespace gui::text
 {
     struct token final : widgetarium<glyph>, metrics
     {
+        array<str> glyphs;
         str text; style_index style; void fill (
         str text, style_index style)
         {
@@ -32,7 +33,6 @@ namespace gui::text
             }
             resize(XY(width, ascent + descent));
         }
-        array<str> glyphs;
     };
 
     ///////////////////////////////////////////////////////////////////////
@@ -220,7 +220,7 @@ namespace gui::text
         int length () const
         {
             int length = 0;
-            for (const auto & token : *this) length += token.glyphs.size();
+            for (const auto & token : *this) length += token.size();
             return length;
         }
     };
