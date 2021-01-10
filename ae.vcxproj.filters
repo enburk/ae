@@ -297,6 +297,12 @@
     <ClInclude Include="proto-studio\doc_cpp_syntax_preprocessor.h">
       <Filter>proto</Filter>
     </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_lexica.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_model.h">
+      <Filter>proto</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="proto-studio\!main.cpp">

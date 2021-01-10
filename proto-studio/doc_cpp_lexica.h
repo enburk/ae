@@ -1,6 +1,5 @@
 #pragma once
 #include <set>
-#include "doc.h"
 #include "doc_text_text.h"
 namespace doc::cpp::lexica
 {

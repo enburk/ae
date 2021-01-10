@@ -1,6 +1,7 @@
 #pragma once
-#include "doc_text_repo.h"
+#include "doc_ae_model.h"
 #include "doc_cpp_model.h"
+#include "doc_text_repo.h"
 #include "gui_widget_canvas.h"
 #include "gui_widget_button.h"
 #include "gui_widget_text_editor.h"
@@ -70,7 +71,7 @@ struct Editor : gui::widget<Editor>
             if (ext == ".ae!" || ext == ".ae!!" || ext == ".ae") ext = "ae";
 
             editor.model = 
-//              ext == "ae"  ? doc::text::repo::load<doc::ae::model>(path.now):
+                ext == "ae"  ? doc::text::repo::load<doc::ae::model>(path.now):
                 ext == "cpp" ? doc::text::repo::load<doc::cpp::model>(path.now):
                                doc::text::repo::load<doc::text::model>(path.now);
             editor.reset();

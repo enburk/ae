@@ -190,6 +190,8 @@
     <ClInclude Include="proto-studio\data_struct_vector.h" />
     <ClInclude Include="proto-studio\data_unittest.h" />
     <ClInclude Include="proto-studio\doc.h" />
+    <ClInclude Include="proto-studio\doc_ae_lexica.h" />
+    <ClInclude Include="proto-studio\doc_ae_model.h" />
     <ClInclude Include="proto-studio\doc_cpp_lexica.h" />
     <ClInclude Include="proto-studio\doc_cpp_model.h" />
     <ClInclude Include="proto-studio\doc_cpp_syntax.h" />

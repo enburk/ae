@@ -1,8 +1,8 @@
 #pragma once
 #include "doc_text_model_b.h"
-#include "doc_cpp_lexica.h"
-#include "doc_cpp_syntax.h"
-namespace doc::cpp
+#include "doc_ae_lexica.h"
+//#include "doc_ae_syntax.h"
+namespace doc::ae
 {
     using doc::text::report;
 
@@ -16,7 +16,7 @@ namespace doc::cpp
 
             report log;
 
-            syntax::parser(log).proceed(tokens);
+            //syntax::parser(log).proceed(tokens);
         }
     };
 }

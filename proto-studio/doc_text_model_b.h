@@ -6,8 +6,6 @@ namespace doc::text
     {
         using base = a::model;
 
-        explicit model (str s = "") : base(s) {}
-
         array<token> tokens;
 
         virtual void tokenize ()
@@ -63,7 +61,7 @@ namespace doc::text
 
         virtual void set (text const& text)
         {
-            *this = model(text.string());
+            base::operator = (base(text.string()));
             tokenize();
             ///////////// ...
         }
