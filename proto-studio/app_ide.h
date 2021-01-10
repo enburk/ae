@@ -72,7 +72,7 @@ struct IDE : gui::widget<IDE>
     }
     ~IDE()
     {
-        doc::text::repo::close();
+        doc::text::repo::save();
     }
 
     void on_change (void* what) override
@@ -85,6 +85,7 @@ struct IDE : gui::widget<IDE>
         {
             if (reload_editor) {
                 reload_editor = false;
+                editor.flist.reload(); // before repo
                 doc::text::repo::reload();
             }
             if (reload_flist) {

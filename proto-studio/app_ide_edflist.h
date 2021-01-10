@@ -1,4 +1,5 @@
 #pragma once
+#include <filesystem>
 #include "gui_widget_canvas.h"
 #include "gui_widget_button.h"
 using path = std::filesystem::path;
@@ -72,6 +73,25 @@ struct edflist : gui::widget<edflist>
             buttons(i).show(flist[i].ago < n);
             buttons(i).coord = XYWH(i*w, 0, w, H);
         }
+    }
+
+    void reload ()
+    {
+        for (int i=0; i<flist.size(); )
+        {
+            if (std::filesystem::exists(
+            flist[i].path)) { i++; continue; }
+            flist.erase(flist.begin()+i);
+            buttons.erase(i);
+        }
+
+        for (int i=0; i<flist.size(); i++)
+            if (selected.now == flist[i].path)
+                return;
+
+        selected = flist.size() > 0 ? 
+            flist[0].path :
+            path{};
     }
 
     void on_notify (void* what) override

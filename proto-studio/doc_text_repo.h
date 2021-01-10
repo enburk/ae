@@ -2,7 +2,6 @@
 #include <chrono>
 #include <fstream>
 #include <filesystem>
-#include <shared_mutex>
 #include <unordered_map>
 #include "doc_text_model_b.h"
 namespace doc::text::repo
@@ -12,99 +11,16 @@ namespace doc::text::repo
 
     struct source
     {
-        time filetime;
+        path path;
         time edittime;
         text saved_text;
         std::unique_ptr<model> model;
-    };
-
-    inline std::unordered_map<str, source> map;
-    inline doc::text::report report;
-    inline doc::text::model error;
-
-    template<class Model=model> auto load (path path) -> model* try
-    {
-        auto & source = map[std::filesystem::canonical(path).string()];
-
-        time filetime = std::filesystem::last_write_time(path);
-        if (filetime <= source.edittime) return source.model.get();
-
-        if (!source.model) source.model = std::move(std::make_unique<Model>());
-
-        str s;
-        {
-            std::ifstream stream(path); s = std::string{(
-            std::istreambuf_iterator<char>(stream)),
-            std::istreambuf_iterator<char>()};
-        }
-        s.erase_if([](auto c){ return c == '\r'; });
-        if (s.starts_with("\xEF" "\xBB" "\xBF"))
-            s.upto(3).erase(); // UTF-8 BOM
-
-        source.saved_text = text{s};
-        source.model->set(source.saved_text);
-        source.filetime = filetime;
-        source.edittime = filetime;
-        return source.model.get();
-    }
-    catch (const std::exception & e) {
-        report.error(path.string() +
-            ": " + e.what());
-        return &error;
-    }
-
-    void edit (path path)
-    {
-    }
-
-    void save ()
-    {
-    }
-
-    void reload ()
-    {
-    }
-
-    void close ()
-    {
-    }
-
-
-    /*
-    * 
-    * 
-    * 
-    * 
-    * 
-    struct source
-    {
-        path path;
-        time filetime;
-        time edittime;
-        text saved_text;
-        model model;
-        
-        std::shared_mutex mutex;
-
-        source (std::filesystem::path path) : path(path) {}
+        doc::text::report report;
 
         expected<nothing> load () try
         {
-            std::unique_lock guard{mutex};
-
-            time last_write_time = std::filesystem::last_write_time(path);
-            if (edittime != time{} and edittime >= last_write_time or
-                edittime != time{} and edittime < last_write_time and
-
-                sys::dialog("AE proto-studio",
-
-                "File" "\n" + path.string() + "\n"
-                "has been modified outside of the editor." "\n"
-                "Do you want to reload it?",
-
-                sys::choice::yes_no) == "no")
-                return nothing{};
-
+            time filetime = std::filesystem::last_write_time(path);
+            if (filetime <= edittime) return nothing{};
             str s;
             {
                 std::ifstream stream(path); s = std::string{(
@@ -115,195 +31,96 @@ namespace doc::text::repo
             if (s.starts_with("\xEF" "\xBB" "\xBF"))
                 s.upto(3).erase(); // UTF-8 BOM
 
-            model = text_model{s};
-            filetime = edittime = last_write_time;
-            saved_text = model;
-            saveable::del(path);
+            saved_text = text{s};
+            edittime = filetime; // prevent recursive load
+            model->set(saved_text); // triggers compiling
             return nothing{};
         }
         catch (const std::exception & e) {
-            return error(path.string() +
+            return data::error(path.string() +
                 ": " + e.what());
         }
 
         expected<nothing> save () try
         {
-            std::shared_lock guard{mutex};
-
-            if (edittime == filetime) return nothing{};
-
-            if (!std::filesystem::exists(path) and
-                sys::dialog("AE proto-studio", "File" "\n" + path.string() +
-                "\n" "has been deleted." "\n" "Do you want to create it?",
-                sys::choice::yes_no) == "no")
+            time filetime = std::filesystem::last_write_time(path);
+            if (edittime <= filetime) return nothing{};
+            if (saved_text == *model) {
+                edittime = filetime;
                 return nothing{};
-
-            time write_time = std::filesystem::last_write_time(path);
-            if (edittime != time{} and edittime < write_time and
-                sys::dialog("AE proto-studio", "File" "\n" + path.string() +
-                "\n" "has been modified outside of the editor."
-                "\n" "Do you want to rewrite it?",
-                sys::choice::yes_no) == "no")
-                return nothing{};
+            }
 
             std::filesystem::path temp = path;
             temp.replace_extension(temp.extension().string() + "~");
             {
                 std::ofstream stream(temp);
-                for (auto & line : model.lines)
-                    stream << str(line, "") << "\n";
+                for (auto & line : model->lines)
+                    stream << doc::text::string(line) << "\n";
             }
             std::filesystem::rename(temp, path);
-            filetime = edittime = std::filesystem::last_write_time(path);
-            saved_text = model;
-            saveable::del(path);
+            filetime = std::filesystem::last_write_time(path);
+            edittime = filetime;
+            saved_text = *model;
             return nothing{};
         }
         catch (const std::exception & e) {
-            return error(path.string() +
+            return data::error(path.string() +
                 ": " + e.what());
         }
     };
-    
-    
-    namespace saveable
+
+    inline std::unordered_map<str, source> map;
+    inline doc::text::report report;
+    inline doc::text::model error;
+
+    template<class Model> auto load (path path) -> model*
     {
-        array<path> paths;
-        std::shared_mutex mutex;
+        if (path == std::filesystem::path{}) return &error;
 
-        void add (path path) {
-            std::shared_lock guard{mutex};
-            paths.try_emplace(path);
-        }
-        void del (path path) {
-            std::shared_lock guard{mutex};
-            paths.try_erase(path);
+        auto & source = map[std::filesystem::canonical(path).string()];
+
+        if (!source.model) {
+             source.model = std::move(std::make_unique<Model>());
+             source.path = path;
         }
 
-        std::pair<bool, bool> any_one (path path)
+        auto rc = source.load();
+        if (!rc.ok()) report.error(
+             rc.error());
+
+        return source.model.get();
+    }
+
+    void edit (path path)
+    {
+        if (path == std::filesystem::path{}) return;
+
+        auto & source = map[std::filesystem::canonical(path).string()];
+
+        source.edittime = time::clock::now();
+    }
+
+    void save ()
+    {
+        for (auto & [path, source] : map)
         {
-            std::pair<bool, bool> any_one {false, false};
-            std::shared_lock guard{mutex};
-            for (auto & p : paths) {
-                any_one.first = true; if (p == path)
-                any_one.second = true;
-            }
-            return any_one;
+            auto rc = source.save();
+            if (!rc.ok()) report.error(
+                 rc.error());
         }
     }
 
-
-    expected<nothing> load (path path, text_model & model, time & time)
+    void reload ()
     {
-        if (path == std::filesystem::path{})
-            return nothing{};
+        std::erase_if(map, [](auto & pair){ return 
+            !std::filesystem::exists(pair.second.path); });
 
-        decltype(map)::iterator it;
+        for (auto & [path, source] : map)
         {
-            std::unique_lock guard{mutex};
-            it = map.try_emplace(path, path).first;
-        }
-        auto rc = it->second.load(); if (!rc.ok()) return rc;
-        std::shared_lock data_guard{it->second.mutex};
-        model = it->second.model;
-        time = it->second.edittime;
-        return nothing{};
-    }
-
-    expected<nothing> load (path path, text_model & model)
-    {
-        time time; return load(path, model, time);
-    }
-
-    expected<nothing> edittime (path path, time & time)
-    {
-        if (path == std::filesystem::path{})
-            return nothing{};
-
-        decltype(map)::iterator it;
-        {
-            std::unique_lock guard{mutex};
-            it = map.try_emplace(path, path).first;
-        }
-        auto rc = it->second.load(); if (!rc.ok()) return rc;
-        std::shared_lock data_guard{it->second.mutex};
-        time = it->second.edittime;
-        return nothing{};
-    }
-
-    expected<nothing> modify (path path, const text_model & model)
-    {
-        decltype(map)::iterator it;
-        {
-            std::shared_lock guard{mutex};
-            it = map.find(path);
-            if (it == map.end())
-                return error(path.string() +
-                    ": file doesn't open");
-        }
-        std::unique_lock data_guard{it->second.mutex};
-        it->second.model = model; // problem: full text copy and comparison
-        it->second.edittime = it->second.saved_text.lines == model.lines ?
-        it->second.filetime : time::clock::now();
-        if (it->second.edittime >
-            it->second.filetime)
-            saveable::add(path); else
-            saveable::del(path);
-        return nothing{};
-    }
-
-    expected<nothing> save (path path)
-    {
-        decltype(map)::iterator it;
-        {
-            std::shared_lock guard{mutex};
-            it = map.find(path);
-            if (it == map.end())
-                return error(path.string() +
-                    ": file doesn't open");
-        }
-        return it->second.save();
-    }
-
-    expected<nothing> save_all ()
-    {
-        std::shared_lock guard{mutex};
-
-        for (auto & [path, data] : map) {
-            auto rc = data.save();
-            if (!rc.ok())
-                return rc;
-        }
-        return nothing{};
-    }
-
-    expected<nothing> reload ()
-    {
-        std::shared_lock guard{mutex};
-
-        for (auto & [path, data] : map) {
-            auto rc = data.load();
-            if (!rc.ok())
-                return rc;
-        }
-        return nothing{};
-    }
-
-    void close ()
-    {
-        std::shared_lock guard{mutex};
-
-        for (auto & [path, data] : map)
-        {
-            std::shared_lock data_guard{data.mutex};
-            if (data.edittime > data.filetime and
-                sys::dialog("AE proto-studio", "File" "\n" + path.string() +
-                "\n" "has been modified."
-                "\n" "Do you want to save it?",
-                sys::choice::yes_no) == "yes")
-                data.save();
+            auto rc = source.load();
+            if (!rc.ok()) report.error(
+                 rc.error());
         }
     }
-    */
 }
 

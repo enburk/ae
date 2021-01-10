@@ -1,11 +1,12 @@
 operator (x) >>> (f) = f(x);
 operator (f) <<< (x) = f(x);
 
-;; operator if (x) then (y) else (z) = 
+;; operator if (x) then (y) else (z) =
 ;; {
 ;;     if x
 ;;     then return y;
 ;;     else return z;
 ;; }
+
 
 

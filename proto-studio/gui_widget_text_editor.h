@@ -20,14 +20,11 @@ namespace gui::text
             page.view.model = this;
             page.alignment = XY{pix::left, pix::top};
         }
-
         void reset ()
         {
             update(); // speed up rectifier
             page.view.column.clear(); // reset cache
-            page.view.refresh();
-            page.refresh();
-            refresh();
+            update_view();
         }
         void update_view ()
         {

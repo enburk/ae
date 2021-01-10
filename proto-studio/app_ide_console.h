@@ -7,9 +7,9 @@ struct Console : gui::widget<Console>
 {
     gui::canvas canvas;
     gui::radio::group buttons;
-    gui::console editor, events, search;
-    std::array<gui::console*,3> consoles = {&editor,  &events,  &search };
-    std::array<std::string,  3> titles   = {"editor", "events", "search"};
+    gui::console editor, search, events;
+    std::array<gui::console*,3> consoles = {&editor , &search , &events };
+    std::array<std::string,  3> titles   = {"editor", "search", "events"};
 
     str pressed_file;
     str pressed_line;
@@ -27,13 +27,10 @@ struct Console : gui::widget<Console>
 
     void activate (gui::console * console)
     {
-        for (auto& button: buttons) button.on = false;
-        if (console == &editor) buttons(0).on = true;
-        if (console == &events) buttons(1).on = true;
-        if (console == &search) buttons(2).on = true;
-
-        for (int i=0; i<consoles.size(); i++)
+        for (int i=0; i<consoles.size(); i++) {
+            buttons(i).on = console == consoles[i];
             consoles[i]->show(buttons(i).on.now);
+        }
     }
 
     void on_change (void* what) override
