@@ -1,5 +1,5 @@
 #pragma once
-#include "doc_text_model_b.h"
+#include "doc_text_model.h"
 #include "doc_cpp_lexica.h"
 #include "doc_cpp_syntax.h"
 namespace doc::cpp
@@ -10,7 +10,7 @@ namespace doc::cpp
     {
         using base = doc::text::model;
 
-        virtual void tokenize ()
+        void tokenize () override
         {
             tokens = lexica::parse(*this);
 

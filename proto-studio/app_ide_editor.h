@@ -1,6 +1,7 @@
 #pragma once
 #include "doc_ae_model.h"
 #include "doc_cpp_model.h"
+#include "doc_text_model.h"
 #include "doc_text_repo.h"
 #include "gui_widget_canvas.h"
 #include "gui_widget_button.h"

@@ -6,12 +6,13 @@ namespace doc::text::a
     {
         array<range> selections;
 
-        explicit model (str s = "") : text(s)
+        explicit model (text t) : text(t)
         {
             for (auto & line : lines) line.trimr(glyph(" "));
             if (lines.size() == 0) lines += array<glyph>{};
             selections = array<range>{range{}};
         }
+        explicit model (str s = "") : model(text(s)) {}
 
         struct replace { range range; text text; };
 
@@ -26,17 +27,22 @@ namespace doc::text::a
         place front () const { return place{}; }
         place back  () const { return place{lines.size()-1, lines.back().size()}; }
 
-        bool perform (array<replace> replaces, int dir = 1 )
+        bool perform (array<replace> ordered_replaces, int dir = 1 )
         {
+            array<std::pair<replace, int>> replaces;
+            replaces.reserve(ordered_replaces.size());
+            for (int i=0; auto && r : ordered_replaces)
+                replaces.emplace_back(r, i++);
+
             replaces.sort([](auto a, auto b){ return
-                min(a.range.from, a.range.upto) >
-                min(b.range.from, b.range.upto); });
+                min(a.first.range.from, a.first.range.upto) >
+                min(b.first.range.from, b.first.range.upto); });
 
             reundo undo;
-            undo.selections = selections;
-            selections.clear();
+            undo.selections = selections; selections.clear();
+            array<std::pair<range, int>> ordered_selections;
 
-            for (auto && r : replaces)
+            for (auto && [r, order] : replaces)
             {
                 auto & [from, upto] = r.range;
                 place last = back(); last.offset = max<int>();
@@ -44,7 +50,7 @@ namespace doc::text::a
                 upto = clamp(upto, front(), last);
                 if (from > upto) std::swap(from, upto);
                 if (from == upto && r.text == text{}) {
-                    selections += range{from, upto};
+                    ordered_selections.emplace_back(range{from, upto}, order);
                     continue;
                 }
 
@@ -89,8 +95,11 @@ namespace doc::text::a
 
                 undo.replaces.back().range = r.range;
 
-                selections += range{upto, upto};
+                ordered_selections.emplace_back(range{upto, upto}, order);
             }
+
+            ordered_selections.sort([](auto a, auto b){ return a.second < b.second; });
+            for (auto selection : ordered_selections) selections += selection.first;
 
             if (undo.replaces.size() == 0) return false;
 
@@ -127,10 +136,15 @@ namespace doc::text::a
             {
                 if (from == upto)
                 {
-                    auto & [line, offset] = upto; int n = lines[line].size();
-                    if (offset >= n && line >= lines.size()-1) return false; else
-                    if (offset >= n) { line++; offset = 0; } else
-                        offset++;
+                    auto & [line, offset] = upto;
+                    if (offset < lines[line].size())
+                        offset++; else
+                    {
+                        if (selections.size() == 1 &&
+                            line < lines.size()-1) {
+                            line++; offset = 0;
+                        }
+                    }
                 }
 
                 replaces += replace{range{from, upto}, text{}};
@@ -150,9 +164,14 @@ namespace doc::text::a
                 if (from == upto)
                 {
                     auto & [line, offset] = upto;
-                    if (offset == 0 && line == 0) return false; else
-                    if (offset == 0) { line--; offset = lines[line].size(); } else
-                        offset--;
+                    if (offset > 0)
+                        offset--; else
+                    {
+                        if (selections.size() == 1 &&
+                            line > 0) {
+                            line--; offset = lines[line].size();
+                        }
+                    }
                 }
 
                 replaces += replace{range{from, upto}, text{}};
@@ -174,6 +193,23 @@ namespace doc::text::a
 
             return perform(replaces);
         }
+
+        bool set (text text)
+        {
+            redoes.clear();
+
+            if (*this == text) return false;
+
+            if (*this == model{}) {
+                *this =  model{text};
+                return true;
+            }
+
+            selections.resize(1);
+            selections[0].from = front();
+            selections[0].upto = back();
+            return insert(text.string());
+        }
     };
 }
 
@@ -184,10 +220,22 @@ namespace data::unittest
     {
         for (auto & line : m.lines) out(doc::text::string(line));
     }
+    void out (doc::range r)
+    {
+        out("("+std::to_string(r.from.line)+","+std::to_string(r.from.offset)+")-"
+            "("+std::to_string(r.upto.line)+","+std::to_string(r.upto.offset)+")"
+        );
+    }
+    void out (array<doc::range> ss)
+    {
+        for (auto s : ss) out(s);
+    }
 
-    void text_model () try
+    void text_model_a () try
     {
         using doc::text::a::model;
+        using doc::range;
+        using doc::place;
 
         test("text.model.ctor");
         {
@@ -196,13 +244,13 @@ namespace data::unittest
             oops( model m("a"); out(m) ) { "a" };
             oops( model m("a "); out(m) ) { "a" };
             oops( model m(" a"); out(m) ) { " a" };
-            oops( model m("\n"); out(m) ) { "", "", "-----" };
-            oops( model m("\n "); out(m) ) { "", "", "-----" };
-            oops( model m(" \n"); out(m) ) { "", "", "-----" };
-            oops( model m(" \n "); out(m) ) { "", "", "-----" };
-            oops( model m("a\nb"); out(m) ) { "a", "b", "-----" };
-            oops( model m("a \nb"); out(m) ) { "a", "b", "-----" };
-            oops( model m("a\n b"); out(m) ) { "a", " b", "-----" };
+            oops( model m("\n"); out(m) ) { "", "" };
+            oops( model m("\n "); out(m) ) { "", "" };
+            oops( model m(" \n"); out(m) ) { "", "" };
+            oops( model m(" \n "); out(m) ) { "", "" };
+            oops( model m("a\nb"); out(m) ) { "a", "b" };
+            oops( model m("a \nb"); out(m) ) { "a", "b" };
+            oops( model m("a\n b"); out(m) ) { "a", " b" };
         }
         test("text.model.char");
         {
@@ -265,6 +313,85 @@ namespace data::unittest
             oops( m.undo     (); out(m) ) { "" };
             oops( m.erase    (); out(m) ) { "" };
             oops( m.redo     (); out(m) ) { "" };
+        }
+        test("text.model.erase");
+        {
+            model m
+            (
+                "abc"  "\n"
+                "defg" "\n"
+                "h"
+            );
+            m.selections.resize(2);
+            m.selections[0] = range{place{0,1}, place{0,2}};
+            m.selections[1] = range{place{1,1}, place{1,2}};
+
+            oops( m.backspace(); out(m) ) {
+                "ac",
+                "dfg",
+                "h"
+            };
+            oops( out(m.selections) ) {
+                "(0,1)-(0,1)",
+                "(1,1)-(1,1)"
+            };
+            oops( m.backspace(); out(m) ) {
+                "c",
+                "fg",
+                "h"
+            };
+            oops( m.backspace(); out(m) ) {
+                "c",
+                "fg",
+                "h"
+            };
+            oops( m.erase(); out(m) ) {
+                "",
+                "g",
+                "h"
+            };
+            oops( m.erase(); out(m) ) {
+                "",
+                "",
+                "h"
+            };
+            oops( out(m.selections) ) {
+                "(0,0)-(0,0)",
+                "(1,0)-(1,0)"
+            };
+            oops( m.erase(); out(m) ) {
+                "",
+                "",
+                "h"
+            };
+            oops( out(m.selections) ) {
+                "(0,0)-(0,0)",
+                "(1,0)-(1,0)"
+            };
+            oops( m.undo(); out(m) ) {
+                "",
+                "g",
+                "h"
+            };
+            oops( m.undo(); out(m) ) {
+                "c",
+                "fg",
+                "h"
+            };
+            oops( m.undo(); out(m) ) {
+                "ac",
+                "dfg",
+                "h"
+            };
+            oops( m.undo(); out(m) ) {
+                "abc",
+                "defg",
+                "h"
+            };
+            oops( out(m.selections) ) {
+                "(0,1)-(0,2)",
+                "(1,1)-(1,2)"
+            };
         }
     }
     catch(assertion_failed){}

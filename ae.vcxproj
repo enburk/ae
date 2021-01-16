@@ -192,6 +192,8 @@
     <ClInclude Include="proto-studio\doc.h" />
     <ClInclude Include="proto-studio\doc_ae_lexica.h" />
     <ClInclude Include="proto-studio\doc_ae_model.h" />
+    <ClInclude Include="proto-studio\doc_ae_syntax.h" />
+    <ClInclude Include="proto-studio\doc_ae_syntax_parser.h" />
     <ClInclude Include="proto-studio\doc_cpp_lexica.h" />
     <ClInclude Include="proto-studio\doc_cpp_model.h" />
     <ClInclude Include="proto-studio\doc_cpp_syntax.h" />
@@ -202,9 +204,9 @@
     <ClInclude Include="proto-studio\doc_html_syntax.h" />
     <ClInclude Include="proto-studio\doc_html_utils.h" />
     <ClInclude Include="proto-studio\doc_text_glyph.h" />
+    <ClInclude Include="proto-studio\doc_text_model.h" />
     <ClInclude Include="proto-studio\doc_text_model_a.h" />
     <ClInclude Include="proto-studio\doc_text_model_b.h" />
-    <ClInclude Include="proto-studio\doc_text_model_e.h" />
     <ClInclude Include="proto-studio\doc_text_repo.h" />
     <ClInclude Include="proto-studio\doc_text_text.h" />
     <ClInclude Include="proto-studio\gui_colors.h" />

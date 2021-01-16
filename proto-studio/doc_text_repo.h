@@ -3,7 +3,7 @@
 #include <fstream>
 #include <filesystem>
 #include <unordered_map>
-#include "doc_text_model_b.h"
+#include "doc_text_model.h"
 namespace doc::text::repo
 {
     using path = std::filesystem::path;

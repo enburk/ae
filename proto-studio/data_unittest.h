@@ -101,10 +101,6 @@ namespace data::unittest
 
     bool check (string title, vector<string> true_log)
     {
-        if (log.size() == 2 &&
-            log[1] == "-----")
-            log.resize(1);
-
         bool ok = log == true_log;
         
         string ss;
@@ -136,8 +132,8 @@ namespace data::unittest
     auto expect_(string title) { return assertion{title, false}; }
     auto assert_(string title) { return assertion{title, true }; }
 
-#define oops(...) { __VA_ARGS__; out("-----"); }; expect_(#__VA_ARGS__) == vector<string>
-#define ouch(...) { __VA_ARGS__; out("-----"); }; assert_(#__VA_ARGS__) == vector<string>
+#define oops(...) { __VA_ARGS__; }; expect_(#__VA_ARGS__) == vector<string>
+#define ouch(...) { __VA_ARGS__; }; assert_(#__VA_ARGS__) == vector<string>
 
     struct element
     {

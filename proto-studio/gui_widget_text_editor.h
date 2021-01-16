@@ -1,5 +1,5 @@
 #pragma once
-#include "doc_text_model_b.h"
+#include "doc_text_model.h"
 #include "gui_widget_text_aux.h"
 #include "gui_widget_text_page.h"
 namespace gui::text

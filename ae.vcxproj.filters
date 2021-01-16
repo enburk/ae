@@ -198,9 +198,6 @@
     <ClInclude Include="proto-studio\doc_text_model_b.h">
       <Filter>proto</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\doc_text_model_e.h">
-      <Filter>proto</Filter>
-    </ClInclude>
     <ClInclude Include="proto-studio\data_algo_forward.h">
       <Filter>data</Filter>
     </ClInclude>
@@ -301,6 +298,15 @@
       <Filter>proto</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\doc_ae_model.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_syntax.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_syntax_parser.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_text_model.h">
       <Filter>proto</Filter>
     </ClInclude>
   </ItemGroup>
