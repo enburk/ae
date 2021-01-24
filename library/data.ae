@@ -4,11 +4,11 @@ using math::max;
 using math::abs;
 
 type pointer(x) : ordered =
-{
+
     address : meta::address;
 ;;  constructor(x) = address ← meta::address.of(x);
     function value = meta::value.of(x)::at(address);
-}
+
 
 type collection(x) : range(x) =
 {
@@ -21,16 +21,15 @@ type collection(x) : range(x) =
 }
 
 using R = range(x), C = collection(x)
-{
-    operator (C left) ~ (x right) = { C c; c ~= left; c ~= right; return c }
-    operator (C left) ~ (R right) = { C c; c ~= left; c ~= right; return c }
-    operator (C left) ~ (C right) = { C c; c ~= left; c ~= right; return c }
-    operator (R left) ~ (C right) = { C c; c ~= left; c ~= right; return c }
-    operator (x left) ~ (C right) = { C c; c ~= left; c ~= right; return c }
-}
+
+    operator (C left) ~ (x right) = C c; c ~= left; c ~= right; return c
+    operator (C left) ~ (R right) = C c; c ~= left; c ~= right; return c
+    operator (C left) ~ (C right) = C c; c ~= left; c ~= right; return c
+    operator (R left) ~ (C right) = C c; c ~= left; c ~= right; return c
+    operator (x left) ~ (C right) = C c; c ~= left; c ~= right; return c
 
 type contiguous.collection(x) : collection(x), random.access.range(x) =
-{
+
     type iterator = contiguous.iterator;
     type sentinel = contiguous.iterator;
 
@@ -41,21 +40,20 @@ type contiguous.collection(x) : collection(x), random.access.range(x) =
     function last  = this[size-1];
 
     operator ~= (c: collection(x)) =
-    {
+    
         i := end;
         size += c.size;
-        for each e in c do {
+        for each e in c do 
             i::value ← e;
             i++;
-        }
-    }
+        
     operator ~= (e: x) =
     {
         size++; last = e;
     }
 
     ;; mutation erase =
-}
+
 
 type contiguous.collection.range(x) : contiguous.range(x) =
 {
@@ -126,6 +124,8 @@ type array(x) : contiguous.collection(x) =
 ;; type array(byte)
 ;; {
 ;; }
+
+
 
 
 

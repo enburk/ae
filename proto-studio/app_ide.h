@@ -174,6 +174,16 @@ struct IDE : gui::widget<IDE>
                 console.editor << log();
             }
         }
+        if (what == &console)
+        {
+            std::string source = console.pressed_file;
+            if (source != "" and std::filesystem::exists(source))
+                editor.path = source;
+
+            editor.editor.go(doc::place{
+                std::stoi(console.pressed_line)-1,
+                std::stoi(console.pressed_char)-1});
+        }
 
         if (what == &splitter_editor_l) {
             sys::settings::save(

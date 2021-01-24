@@ -70,5 +70,71 @@ struct Console : gui::widget<Console>
             for (int i=0; i<consoles.size(); i++)
                 consoles[i]->show(buttons(i).on.now);
     }
+
+    void on_mouse_press (XY p, char button, bool down) override
+    {
+        if (button != 'L' or not down) return;
+
+        pressed_file = "";
+        pressed_line = "";
+        pressed_char = "";
+
+        for (int i=0; i<consoles.size(); i++)
+        {
+            if (not buttons(i).on.now) continue;
+
+            auto & console = *consoles[i];
+            std::lock_guard guard{console.mutex};
+            auto & column = console.page.view.column;
+
+            p -= console.coord.now.origin;
+
+            if (not column.coord.now.includes(p)) return;
+            auto cp = p - column.coord.now.origin;
+            for (int ln=0; ln<column.size(); ln++)
+            {
+                if (not column(ln).coord.now.includes(cp)) continue;
+
+                while (ln >= 0)
+                {
+                    auto & tokens = column(ln).data_copy.tokens;
+                    str line; for (auto & t : tokens) line += t.text;
+                    line.replace_all("\n", "");
+
+                    if (not line.starts_with("(")) { ln--; continue; }
+
+                    line.split_by("(", pressed_line, line);
+                    line.split_by(":", pressed_line, line);
+                    line.split_by(")", pressed_char, line);
+
+                    break;
+                }
+
+                ln--; if (pressed_line == "") return;
+
+                while (ln >= 0)
+                {
+                    auto & tokens = column(ln).data_copy.tokens;
+                    str line; for (auto & t : tokens) line += t.text;
+                    line.replace_all("\n", "");
+
+                    if (line.starts_with("(")) { ln--; continue; }
+
+                    if (line.ends_with(".ae")
+                    or  line.ends_with(".ae!")
+                    or  line.ends_with(".ae!!"))
+                        pressed_file = line;
+
+                    break;
+                }
+
+                break;
+            }
+
+            break;
+        }
+
+        if (pressed_line != "") notify();
+    }
 };
  

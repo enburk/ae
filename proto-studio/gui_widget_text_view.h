@@ -32,6 +32,7 @@ namespace gui::text
         binary_property<bool> insert_mode = true;
         binary_property<bool> virtual_space = false;
         binary_property<bool> focused = false;
+        frame current_line_frame;
 
         doc::html::model _model;
         doc::view::model* model = &_model;
@@ -86,6 +87,13 @@ namespace gui::text
                 caret.insert_mode = insert_mode.now;
                 caret.show(focused.now);
             }
+
+            if (n == 1) {
+                XYWH r = carets(0).coord.now;
+                r.x = 0; r.w = coord.now.w;
+                current_line_frame.coord = r;
+                current_line_frame.show(); } else
+                current_line_frame.hide();
         }
 
         void highlight (array<range> ranges, widgetarium<gui::canvas> & bars, RGBA color)

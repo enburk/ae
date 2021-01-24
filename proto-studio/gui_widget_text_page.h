@@ -128,8 +128,8 @@ namespace gui::text
             if (what == &scroll.x) view.shift = XY(-scroll.x.top, view.shift.now.y);
             if (what == &scroll.y) view.shift = XY(view.shift.now.x, -scroll.y.top);
 
-            if (what == &scroll.x) notify();
-            if (what == &scroll.y) notify();
+            if (what == &scroll.x) notify(what);
+            if (what == &scroll.y) notify(what);
         }
 
         void on_mouse_wheel (XY p, int delta) override

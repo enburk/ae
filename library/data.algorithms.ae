@@ -53,7 +53,7 @@ type random.access.range(x) extension =
         b := begin;
         m := middle;
         e := end;
-        
+
         reverse(b, m);
         reverse(m, e);
         reverse(b, e);
@@ -89,6 +89,7 @@ type random.access.range(x) extension =
         )
     }
 }
+
 
 
 

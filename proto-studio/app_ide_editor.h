@@ -33,6 +33,7 @@ struct Editor : gui::widget<Editor>
             editor.virtual_space = true;
             editor.page.view.word_wrap = false;
             editor.page.scroll.x.mode = gui::scroll::mode::none;
+            editor.page.view.current_line_frame.color = RGBA::silver;
             editor.page.view.canvas.color = RGBA::white;
             editor.page.style = pix::text::style{
                 sys::font{"Consolas", h},
@@ -108,6 +109,6 @@ struct Editor : gui::widget<Editor>
         }
 
         if (what == &editor.page.scroll.y) lineup.shift =
-            XY(0, editor.page.scroll.y.top);
+            XY(0, -editor.page.scroll.y.top);
     }
 };
