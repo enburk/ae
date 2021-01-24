@@ -1,24 +1,43 @@
 #pragma once
-#include "doc_ae_syntax.h"
+#include "doc_text_text.h"
 namespace doc::ae::syntax
 {
+    using text::token;
+    using text::report;
+
+    struct element
+    {
+        str kind;
+        token* opening = nullptr;
+        token* closing = nullptr;
+        array<element> elements;
+    };
+
+    struct cluster
+    {
+        int tab = 0;
+        array<element> elements;
+        array<cluster> clusters;
+    };
+
     struct parser
     {
-        array<element> output;
+        array<cluster> output;
         array<token> & input; report & log; parser (
         array<token> & input, report & log) : input(input), log(log)
         {
             deque<token*> tokens;
             for (auto & token : input)
-                if (token.kind != "space" &&
-                    token.kind != "comment"&&
-                    token.text != "\n")
+                if (token.kind != "comment")
                     tokens += &token;
 
             output = 
-            elementing(
+            delimiting(
+            clustering(
+            tabulating(
+            scanlining(
             bracketing(
-            tokens));
+            tokens)))));
         }
 
         auto bracketing (deque<token*> & input, str closing = "") -> array<element>
@@ -29,10 +48,11 @@ namespace doc::ae::syntax
                     auto token = input.front();
                     input.pop_front();
                     e.closing = token;
-                    e.name = e.opening->text + e.closing->text;
-                    e.kind = e.name == "{}" ? "{}" : "()";
+                    e.kind = "()";
                 }
-                else log.error(e.opening, "unclosed '" + e.opening->text + "'");
+                else log.error(
+                    e.opening, "unclosed '" +
+                    e.opening->text + "'");
             };
 
             array<element> output; while (input.size() > 0)
@@ -44,6 +64,10 @@ namespace doc::ae::syntax
                 if (token->text == "]" && closing == ")") break;
             
                 input.pop_front();
+
+                if (token->kind == "space" &&
+                    token->text == "\n")
+                    continue;
 
                 if (token->text == "}") { log.error(token, "unexpected '}'"); } else
                 if (token->text == ")") { log.error(token, "unexpected ')'"); } else
@@ -57,78 +81,126 @@ namespace doc::ae::syntax
 
                 output += e;
             }
+
             return output;
         }
 
-        auto elementing (array<element> input) -> array<element>
+        auto scanlining (array<element> input) -> array<array<element>>
         {
-            array<element> output; element s;
+            array<array<element>> output; array<element> line;
 
-            if (log.errors.size() > 0) return output;
-        
-            for (auto && e : input)
+            for (auto & e : input)
             {
-                if (e.opening->text == ";")
+                if (e.opening->text != "\n") line += e; else
+                if (line.size() > 0) output += std::move(line);
+            }
+            if (line.size() > 0) output += std::move(line);
+
+            return output;
+        }
+
+        auto tabulating (array<array<element>> input) -> array<cluster>
+        {
+            array<cluster> output;
+
+            for (auto && line : input)
+            {
+                cluster cluster;
+
+                for (auto && e : line)
                 {
-                    if (s.elements.empty()) continue;
-                    output += std::move(s);
-                    s = element{};
+                    if (e.opening->text != " ") cluster.elements += e;
+                    else if (cluster.elements.size() == 0)
+                        cluster.tab++;
                 }
-                else
-                if (e.name == "{}")
-                {
-                    e.elements = elementing(e.elements);
-                    s.elements += std::move(e);
-                    output += std::move(s);
-                    s = element{};
-                }
-                else
-                if (e.kind == "()")
-                {
-                    e.elements = argumenting(e.elements);
-                    s.elements += std::move(e);
-                }
-                else s.elements += std::move(e);
+                if (cluster.elements.size() > 0)
+                    output += cluster;
             }
 
-            if (not s.elements.empty())
-                output += std::move(s);
+            return output;
+        }
+
+        auto clustering (array<cluster> input) -> array<cluster>
+        {
+            array<cluster> output;
+
+            for (auto && line : input)
+            {
+                array<cluster>* body = &output;
+
+                while (true)
+                {
+                    if (body->rbegin() != body->rend() &&
+                        body->rbegin()->tab < line.tab) { body = &
+                        body->rbegin()->clusters;
+                        continue;
+                    }
+                    body->push_back(line);
+                    break;
+                }
+            }
+
+            return output;
+        }
+
+        auto delimiting (array<cluster> input) -> array<cluster>
+        {
+            array<cluster> output;
+
+            for (auto && in : input)
+            {
+                cluster out{.tab = in.tab};
+
+                for (auto && e : in.elements)
+                {
+                    if (e.opening->text == ";")
+                    {
+                        if (out.elements.empty()) continue;
+                        output += std::move(out);
+                        out = cluster{.tab = in.tab};
+                    }
+                    else
+                    if (e.kind == "()")
+                    {
+                        e.elements = delimiting(e.elements);
+                        out.elements += std::move(e);
+                    }
+                    else out.elements += std::move(e);
+                }
+
+                out.clusters = delimiting(in.clusters);
+            }
     
             return output;
         }
 
-        auto argumenting (array<element> input) -> array<element>
+        auto delimiting (array<element> input) -> array<element>
         {
-            array<element> output; element s;
+            array<element> output; element o;
 
-            for (auto && e : input)
+            for (auto && i : input)
             {
-                if (e.opening->text == ";")
+                if (i.opening->text == ";")
                 {
-                    log.error(e.opening, "unexpected ';'");
+                    log.error(i.opening, "unexpected ';'");
                 }
-                if (e.opening->text == ",")
+                if (i.opening->text == ",")
                 {
-                    output += std::move(s);
-                    s = element{};
-                }
-                else
-                if (e.name == "{}")
-                {
-                    e.elements = elementing(e.elements);
-                    s.elements += std::move(e);
+                    if (o.elements.empty()) continue;
+                    output += std::move(o);
+                    o = element{};
                 }
                 else
-                if (e.kind == "()")
+                if (i.kind == "()")
                 {
-                    e.elements = argumenting(e.elements);
-                    s.elements += std::move(e);
+                    i.elements = delimiting(i.elements);
+                    o.elements += std::move(i);
                 }
-                else s.elements += e;
+                else o.elements += i;
             }
 
-            if (not s.elements.empty())
-                output += s;
+            if (not o.elements.empty())
+                output += std::move(o);
     
             return output;
         }

@@ -6,7 +6,7 @@ namespace doc::text
     {
         using base = b::model;
 
-        array<token> tokens;
+        array<token> tokens; report log;
 
         virtual void tokenize ()
         {

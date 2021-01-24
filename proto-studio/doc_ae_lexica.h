@@ -39,7 +39,11 @@ namespace doc::ae::lexica
                 if (t.kind == "symbol"   ) same =
                     not alpha(c) && not brace(c) &&
                     not digit(c) && not brace(t.text) &&
-                    not space(c) && not (c == ";");
+                    not space(c) &&
+                    c != ","  &&
+                    c != ";"  &&
+                    c != "\n" &&
+                    c != "\"";
                 else
                 if (t.kind == "literal") same =
                     t.text == "\"" || not

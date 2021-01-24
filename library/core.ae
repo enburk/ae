@@ -1,5 +1,5 @@
-operator (x) >>> (f) = f(x);
-operator (f) <<< (x) = f(x);
+operator (x) >>> (f) = f(x)
+operator (f) <<< (x) = f(x)
 
 ;; operator if (x) then (y) else (z) =
 ;; {
@@ -7,6 +7,11 @@ operator (f) <<< (x) = f(x);
 ;;     then return y;
 ;;     else return z;
 ;; }
+
+
+
+
+
 
 
 

@@ -14,8 +14,6 @@ namespace doc::cpp
         {
             tokens = lexica::parse(*this);
 
-            report log;
-
             syntax::parser(log).proceed(tokens);
         }
     };

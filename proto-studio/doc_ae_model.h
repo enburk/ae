@@ -1,7 +1,8 @@
 ﻿#pragma once
 #include "doc_text_model.h"
 #include "doc_ae_lexica.h"
-//#include "doc_ae_syntax.h"
+#include "doc_ae_syntax.h"
+#include "doc_ae_syntax_parser.h"
 namespace doc::ae
 {
     using doc::text::report;
@@ -12,11 +13,11 @@ namespace doc::ae
 
         void tokenize () override
         {
+            log.clear();
+
             tokens = lexica::parse(*this);
 
-            report log;
-
-            //syntax::parser(log).proceed(tokens);
+            syntax::parser parser(tokens, log);
         }
 
         bool insert (str s) override
