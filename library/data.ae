@@ -1,7 +1,6 @@
-using "math";
-using math::min;
-using math::max;
-using math::abs;
+min = ::math::min
+max = ::math::max
+abs = ::math::abs
 
 type pointer(x) : ordered =
 
@@ -40,13 +39,13 @@ type contiguous.collection(x) : collection(x), random.access.range(x) =
     function last  = this[size-1];
 
     operator ~= (c: collection(x)) =
-    
+
         i := end;
         size += c.size;
-        for each e in c do 
+        for each e in c do
             i::value ← e;
             i++;
-        
+
     operator ~= (e: x) =
     {
         size++; last = e;
@@ -124,6 +123,9 @@ type array(x) : contiguous.collection(x) =
 ;; type array(byte)
 ;; {
 ;; }
+
+
+
 
 
 

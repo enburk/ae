@@ -3,7 +3,8 @@ using "math.c++";
 
 ;; operator |(x)| = if x < 0 then -x else x;
 
-operator √ (real x) → real = {…}
+operator √ (real x) → real = …
+operator √ (complex x) → complex = …
 
 golden.ratio = (1 + √5) / 2;
 
@@ -22,6 +23,7 @@ golden.ratio = (1 + √5) / 2;
 ;;     and max(real.64.nan, 1.0) = 1.0
 ;;     and min(1.0, real.64.nan) = 1.0
 ;;     and max(1.0, real.64.nan) = real.64.nan
+
 
 
 

@@ -1,3 +1,20 @@
+a = "abc"
+a = ["a", "b", "c"]
+
+a = (1.0, "b", true)
+type a = {one, two, three}
+
+meta::begin(a)
+meta::end(a)
+
+a::meta::elements : element[]
+meta
+  element = 
+    text::string type
+    text::string name
+    
+
+
 python:
 for i, color in enumerate(colors) :
     print i, '--->', color

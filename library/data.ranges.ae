@@ -12,8 +12,8 @@ type random.access.range(x) : range(x) =
     type iterator = random.access.iterator;
     type sentinel = {…}
 
-    function from (iterator i) → same = {…}
-    function upto (iterator i) → same = {…}
+    function from (iterator i) → same = …
+    function upto (iterator i) → same = …
     operator [iterator i, iterator j] = from(i).upto(j+1);
     operator [iterator i, iterator j) = from(i).upto(j);
 
@@ -37,16 +37,15 @@ type contiguous.range(x) : random.access.range(x) =
     function upto (iterator i) = same(begin, clip(i));
 }
 
-type integer.range : random.access.range(x) = ;; immutable
-{
-    type iterator = integer.iterator; iterator begin;
-    type sentinel = integer.iterator; iterator end;
+integer.range : random.access.range(integer) = ;; immutable
+
+    iterator = integer.iterator; iterator begin;
+    sentinel = integer.iterator; iterator end
 
     function size = end - begin;
-    function clip (iterator i) = min(max(begin,i),end);
-    function from (iterator i) = same(clip(i), end);
-    function upto (iterator i) = same(begin, clip(i));
-}
+    function clip (iterator i) = min(max(begin,i),end)
+    function from (iterator i) = same(clip(i), end)
+    function upto (iterator i) = same(begin, clip(i))
 
 ;; type type extension =
 ;; {
@@ -67,28 +66,25 @@ type integer extension =
     operator [integer a, integer b] = integer.range[a, b];
 }
 
-statement for each (x) in (some.type[] r) do {…} =
-{
-    i := r.begin;
-    while i ≠ r.end do
-        using x = i.value
-            {…}
-}
+statement for each (x) in (type… r) do (f(x)) =
 
-operator (f(x)) for each (x) in (some.type[] r) =
-{
-    i := r.begin;
-    while i ≠ r.end do
-        using x = i.value
+    i := r::begin
+    while i ≠ r::end do
+        using x = i::value
+            f(x)
+
+
+;; f, r - expressions, x - name
+operator (f(x)) for each (x) in (r) =
+
+    i := r::begin;
+    while i ≠ r::end do
+        using x = i::value
             yield f(x)
-}
-
-operator (f) while (x) = { while x yield f; }
-operator (f) until (x) = { yield f; while x yield f; }
 
 
-
-
+operator (f) while (x) = while x yield f
+operator (f) until (x) = yield f; while x yield f
 
 
 

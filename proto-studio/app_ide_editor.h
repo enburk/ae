@@ -33,25 +33,26 @@ struct Editor : gui::widget<Editor>
             editor.virtual_space = true;
             editor.page.view.word_wrap = false;
             editor.page.scroll.x.mode = gui::scroll::mode::none;
-            editor.page.view.current_line_frame.color = RGBA::silver;
+            editor.page.view.current_line_frame.color = pix::ARGB(0x40909090);
             editor.page.view.canvas.color = RGBA::white;
             editor.page.style = pix::text::style{
                 sys::font{"Consolas", h},
                 RGBA::black};
 
             auto s = editor.page.style.now;
-            s.color = RGBA::black;   editor.styles["name"   ] = pix::text::style_index(s);
-            s.color = RGBA::blue;    editor.styles["keyword"] = pix::text::style_index(s);
-            s.color = RGBA::teal;    editor.styles["keyname"] = pix::text::style_index(s);
-            s.color = RGBA::blue;    editor.styles["pragma" ] = pix::text::style_index(s);
-            s.color = RGBA::purple;  editor.styles["macros" ] = pix::text::style_index(s);
-            s.color = RGBA::navy;    editor.styles["number" ] = pix::text::style_index(s);
-            s.color = RGBA::white;   editor.styles["space"  ] = pix::text::style_index(s); 
-            s.color = RGBA::navy;    editor.styles["literal"] = pix::text::style_index(s); 
-            s.color = RGBA::navy;    editor.styles["char"   ] = pix::text::style_index(s); 
-            s.color = RGBA::maroon;  editor.styles["symbol" ] = pix::text::style_index(s);
-            s.color = RGBA::fuchsia; editor.styles["comment"] = pix::text::style_index(s);
-            s.color = RGBA::red;     editor.styles["error"  ] = pix::text::style_index(s);
+            s.color = RGBA::black;   editor.styles["name"     ] = pix::text::style_index(s);
+            s.color = RGBA::blue;    editor.styles["keyword"  ] = pix::text::style_index(s);
+            s.color = RGBA::teal;    editor.styles["keyname"  ] = pix::text::style_index(s);
+            s.color = RGBA::blue;    editor.styles["pragma"   ] = pix::text::style_index(s);
+            s.color = RGBA::purple;  editor.styles["macros"   ] = pix::text::style_index(s);
+            s.color = RGBA::navy;    editor.styles["number"   ] = pix::text::style_index(s);
+            s.color = RGBA::white;   editor.styles["space"    ] = pix::text::style_index(s); 
+            s.color = RGBA::navy;    editor.styles["literal"  ] = pix::text::style_index(s); 
+            s.color = RGBA::navy;    editor.styles["char"     ] = pix::text::style_index(s); 
+            s.color = RGBA::maroon;  editor.styles["symbol"   ] = pix::text::style_index(s);
+            s.color = RGBA::maroon;  editor.styles["semicolon"] = pix::text::style_index(s);
+            s.color = RGBA::fuchsia; editor.styles["comment"  ] = pix::text::style_index(s);
+            s.color = RGBA::red;     editor.styles["error"    ] = pix::text::style_index(s);
         }
         if (what == &coord && coord.was.size != coord.now.size)
         {

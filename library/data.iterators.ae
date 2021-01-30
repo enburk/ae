@@ -20,13 +20,13 @@ type bidirectional.iterator(x) : forward.iterator(x) =
 
 type random.access.iterator(x) : bidirectional.iterator(x), ordered =
 {
-    operator ++ = { this += 1 }
-    operator -- = { this -= 1 }
-    operator +  (integer n) = { i := this; i += n; return i }
-    operator -  (integer n) = { i := this; i -= n; return i }
-    operator += (integer n) = {…}
-    operator -= (integer n) = {…}
-    operator -  (same i) → integer = {…}
+    mutation ++ = { this += 1 }
+    mutation -- = { this -= 1 }
+    function +  (integer n) = { i := this; i += n; return i }
+    function -  (integer n) = { i := this; i -= n; return i }
+    mutation += (integer n) = {…}
+    mutation -= (integer n) = {…}
+    function -  (same i) → integer = {…}
 }
 
 type contiguous.iterator(x) : random.access.iterator(x) =
@@ -48,6 +48,7 @@ type integer.iterator : random.access.iterator(x) =
     operator -= (integer n) = value -= n;
     operator -  (same i) = value - i.value;
 }
+
 
 
 

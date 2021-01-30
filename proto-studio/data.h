@@ -64,11 +64,6 @@ namespace data
             std::move(s)) {}
     };
 
-    template<class T, class... Types>
-    constexpr bool got (const std::variant<Types...> & v) noexcept {
-        return std::holds_alternative<T>(v);
-    }
-
     template<class Value> struct expected : std::variant<Value, error>
     {
         using variant = std::variant<Value, error>;
@@ -76,8 +71,8 @@ namespace data
         expected (Value v) : variant(std::move(v)) {}
         expected (error e) : variant(std::move(e)) {}
 
-        bool ok  () const { return got<Value>(*this); }
-        bool bad () const { return got<Error>(*this); }
+        bool ok  () const { return std::holds_alternative<Value>(*this); }
+        bool bad () const { return std::holds_alternative<Error>(*this); }
 
         /***/ Value &  value () /***/ &  { if (ok()) return std::get<0>(/*******/(*this)); throw exception(std::get<1>(*this)); }
         /***/ Value && value () /***/ && { if (ok()) return std::get<0>(std::move(*this)); throw exception(std::get<1>(*this)); }
@@ -109,4 +104,10 @@ namespace data
     // https://en.cppreference.com/w/cpp/utility/variant/visit
     template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
     template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+
+    namespace aux {
+    template<class T, class... Types>
+    constexpr bool got (const std::variant<Types...> & v) noexcept {
+        return std::holds_alternative<T>(v);
+    }}
 }

@@ -1,7 +1,7 @@
 ;; system::window::coords =
 ;;     system::settings("window::coords",
 ;;         .default = system::screen::coords);
-;; 
+;;
 ;; system::window::changed = (what)
 ;; {
 ;;     if what = coords then
@@ -9,4 +9,5 @@
 ;;         system::settings("window::coords") = coords;
 ;;     }
 ;; }
+
 

@@ -155,7 +155,6 @@ namespace doc::ae::syntax
                 {
                     if (e.opening->text == ";")
                     {
-                        if (out.elements.empty()) continue;
                         output += std::move(out);
                         out = cluster{.tab = in.tab};
                     }
@@ -169,6 +168,7 @@ namespace doc::ae::syntax
                 }
 
                 out.clusters = delimiting(in.clusters);
+                output += std::move(out);
             }
     
             return output;

@@ -114,11 +114,13 @@ namespace gui::text
 
         void go (int where, bool selective = false)
         {
-            int n = model->selections.size();
+            auto & ss = model->selections;
+            int n = ss.size();
             if (n >= 2 && !selective) {
-                model->selections[0] = 
-                model->selections[n-1];
-                model->selections.resize(1);
+                if((ss[0].from < ss[n-1].from && (where == +GLYPH || where == +LINE))
+                || (ss[0].from > ss[n-1].from && (where == -GLYPH || where == -LINE)))
+                    ss[0] = ss[n-1];
+                ss.resize(1);
             }
 
             for (auto & caret : model->selections)
@@ -274,35 +276,37 @@ namespace gui::text
 
             if (key == "alt+shift+up")
             {
-                int n = model->selections.size();
+                auto & ss = model->selections;
+                int n = ss.size();
                 if (n >= 2 &&
-                    model->selections[n-2].upto.line == 
-                    model->selections[n-1].upto.line - 1)
-                    model->selections.truncate();
+                    ss[n-2].upto.line == 
+                    ss[n-1].upto.line - 1)
+                    ss.truncate();
                 else
-                if (n >= 1 &&
-                    model->selections[n-1].upto.line < model->lines.size())
-                    model->selections += range{
-                        {model->selections[n-1].from.line-1, model->selections[n-1].from.offset},
-                        {model->selections[n-1].upto.line-1, model->selections[n-1].upto.offset}};
-                else return;
+                if (n >= 1) {
+                    auto [from, upto] = ss[n-1];
+                    if (upto.line <= 0) return;
+                    ss += range{{from.line-1, from.offset},
+                                {upto.line-1, upto.offset}};
+                }
                 refresh();
             }
             else
             if (key == "alt+shift+down")
             {
-                int n = model->selections.size();
+                auto & ss = model->selections;
+                int n = ss.size();
                 if (n >= 2 &&
-                    model->selections[n-2].upto.line == 
-                    model->selections[n-1].upto.line + 1)
-                    model->selections.truncate();
+                    ss[n-2].upto.line == 
+                    ss[n-1].upto.line + 1)
+                    ss.truncate();
                 else
-                if (n >= 1 &&
-                    model->selections[n-1].upto.line > 0)
-                    model->selections += range{
-                        {model->selections[n-1].from.line+1, model->selections[n-1].from.offset},
-                        {model->selections[n-1].upto.line+1, model->selections[n-1].upto.offset}};
-                else return;
+                if (n >= 1) {
+                    auto [from, upto] = ss[n-1];
+                    if (upto.line >= model->lines.size()-1) return;
+                    ss += range{{from.line+1, from.offset},
+                                {upto.line+1, upto.offset}};
+                }
                 refresh();
             }
             else

@@ -8,6 +8,11 @@ operator (f) <<< (x) = f(x)
 ;;     else return z;
 ;; }
 
+;; operator (f) if (x) else (g) = ;; python
+
+;; operator if (x) then (y) elif (z) then (a) … else (b) =
+
+
 
 
 

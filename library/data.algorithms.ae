@@ -5,9 +5,9 @@ using "data.ranges";
 ;; using math::max;
 ;; using math::abs;
 
-type predicate (args...)     = function (args...) → boolean;
-type binary.predicate (x, y) = function (x, y) → boolean;
-type unary.predicate (x)     = function (x) → boolean;
+type predicate (args…)       = function (args…) → boolean
+type binary.predicate (x, y) = function (x, y) → boolean
+type unary.predicate (x)     = function (x) → boolean
 
 mutation swap (a, b) = { c := a; a ← b; b ← c }
 
@@ -89,6 +89,7 @@ type random.access.range(x) extension =
         )
     }
 }
+
 
 
 

@@ -36,6 +36,7 @@ namespace gui::text
         property<time> timer;
         property<double> breadth = 0.15;
         binary_property<bool> insert_mode = true;
+        static inline time time_moved;
 
         caret () { image.color = skins[skin].touched.first; }
 
@@ -47,6 +48,10 @@ namespace gui::text
 
             if (what == &timer)
             {
+                if (time::now - time_moved < 200ms) {
+                    image.alpha = 255;
+                    return;
+                }
                 const int MS = 1024;
                 int ms = time::now.ms % MS;
                 if (ms > MS/2) ms = MS-ms;
@@ -63,10 +68,11 @@ namespace gui::text
                 skins[skin].dark.first:
                 skins[skin].heavy.first;
             }
-            if((what == &coord and coord.now.size != coord.was.size)
+            if (what == &coord
             or  what == &insert_mode
             or  what == &breadth)
             {
+                time_moved = time::now;
                 XYWH r = coord.now.local();
                 if (insert_mode.now) r.w = max (1, (int)(r.w*breadth.now));
                 image.coord = r;
