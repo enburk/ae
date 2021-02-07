@@ -1,10 +1,7 @@
 #pragma once
-#include "doc_text_text.h"
+#include "doc_ae_syntax.h"
 namespace doc::ae::syntax
 {
-    using text::token;
-    using text::report;
-
     struct element
     {
         str kind;

@@ -68,13 +68,7 @@ namespace gui::text
 
         void refresh ()
         {
-            array<range> selections;
-            for (auto s : model->selections)
-                selections += range{
-                    place{s.from.line, s.from.offset},
-                    place{s.upto.line, s.upto.offset}};
-                
-            page.view.selections = selections;
+            page.view.selections = model->selections;
 
             if (page.view.carets.size() == 0) return;
             
@@ -116,10 +110,11 @@ namespace gui::text
         {
             auto & ss = model->selections;
             int n = ss.size();
-            if (n >= 2 && !selective) {
-                if((ss[0].from < ss[n-1].from && (where == +GLYPH || where == +LINE))
-                || (ss[0].from > ss[n-1].from && (where == -GLYPH || where == -LINE)))
-                    ss[0] = ss[n-1];
+            if (n >= 2 && not selective) {
+                auto b = ss[0].from; // begin of multiline caret
+                auto e = ss[n-1].from; // end of multiline caret
+                if((b < e && (where == +GLYPH || where == +LINE))
+                || (b > e && (where == -GLYPH || where == -LINE))) ss[0] = ss[n-1];
                 ss.resize(1);
             }
 
@@ -131,70 +126,63 @@ namespace gui::text
         void go (range & caret, int where, bool selective)
         {
             auto & [from, upto] = caret;
-            auto & line = model->lines[upto.line];
+            auto & [line, offset] = upto;
+            auto & lines = model->lines;
+
+            int lines_on_page = page.view.coord.now.h /
+                sys::metrics(page.view.font.now).height;
 
             switch(where){
-            case THERE: from = caret.upto; break;
+            case THERE: from = upto; break;
 
-            case-GLYPH: upto.offset--;
-                if (upto.offset < 0 && virtual_space.now) upto.offset++; else
-                if (upto.offset < 0 && upto.line > 0) {
-                    upto.offset = model->lines[upto.line].size();
-                    upto.line--;
-                }
+            case-GLYPH:
+                offset--;
+                if (!virtual_space.now)
+                if (offset < 0 && line > 0)
+                    offset = lines[--line].size();
                 break;
-            case+GLYPH: upto.offset++;
-                if (upto.offset > line.size() && virtual_space.now) {;} else
-                if (upto.offset > line.size() && upto.line < model->lines.size()-1) {
-                    upto.offset = 0;
-                    upto.line++;
-                }
-                break;
-
-            case LINE_END  : upto.offset = line.size(); break;
-            case LINE_BEGIN:
-                {
-                    auto i = line.find_if([](auto s){ return s != " "; });
-                    if (i == line.end()) upto.offset = 0; else {
-                        int n = (int)(i - line.begin());
-                        upto.offset = upto.offset != n ? n : 0;
-                    }
-                }
-                break;
-
-            case-LINE: upto.line--;
-                if (upto.line < 0) upto.line++; else
-                if (upto.offset > model->lines[upto.line].size() && !virtual_space.now)
-                    upto.offset = model->lines[upto.line].size();
-                break;
-            case+LINE: upto.line++;
-                if (upto.line  >= model->lines.size()) upto.line--; else
-                if (upto.offset > model->lines[upto.line].size() && !virtual_space.now)
-                    upto.offset = model->lines[upto.line].size();
+            case+GLYPH:
+                offset++;
+                if (!virtual_space.now)
+                if (offset > lines[line].size() &&
+                    line < lines.size()-1) {
+                    line++; offset = 0; }
                 break;
 
             //case-TOKEN: break;
             //case+TOKEN: break;
 
-            case-PAGE: upto.line -= page.view.coord.now.h /
-                sys::metrics(page.view.font.now).height;
-                if (upto.line < 0)
-                    upto.line = 0;
-                break;
-            case+PAGE: upto.line += page.view.coord.now.h /
-                sys::metrics(page.view.font.now).height;
-                if (upto.line > model->lines.size() - 1)
-                    upto.line = model->lines.size() - 1;
+            case-LINE: line--; break;
+            case+LINE: line++; break;
+
+            case LINE_END  : offset = lines[line].size(); break;
+            case LINE_BEGIN: {
+                    int n = (int)(
+                    lines[line].find_if([](auto s){ return s != " "; }) -
+                    lines[line].begin());
+                    offset = offset != n ? n : 0;
+                }
                 break;
 
             //case PAGE_TOP   : break;
             //case PAGE_BOTTOM: break;
 
-            case TEXT_BEGIN: upto.line = 0; upto.offset = 0; break;
-            case TEXT_END  : upto.line = model->lines.size()-1;
-                upto.offset = model->lines[upto.line].size();
-                break;
+            case-PAGE: line -= lines_on_page; break;
+            case+PAGE: line += lines_on_page; break;
+
+            case TEXT_BEGIN: upto = model->front(); break;
+            case TEXT_END  : upto = model->back(); break;
             }
+
+            if (line > lines.size()-1)
+                line = lines.size()-1;
+            if (line < 0)
+                line = 0;
+
+            if (offset > lines[line].size() && !virtual_space.now)
+                offset = lines[line].size();
+            if (offset < 0)
+                offset = 0;
 
             if (!selective) from = upto;
         }
@@ -441,8 +429,8 @@ namespace gui::text
                         page.view.selections.now[i] = range{
                             place{from.line, from.offset},
                             place{upto.line, upto.offset}};
-                        refresh();
                     }
+                    refresh();
                 }
             }
         }

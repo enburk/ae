@@ -31,3 +31,7 @@ swap (range a, range b) requires intersection(a, b) = nil
 { ... }
 swap (range a, range b) requires contiguous([a.begin, b.end)) and a.end = b.begin
 { ... }
+
+l := true
+O := false
+

@@ -13,7 +13,7 @@ meta
     text::string type
     text::string name
     
-
+JS: return ["a", "b", "c"].includes(s)
 
 python:
 for i, color in enumerate(colors) :

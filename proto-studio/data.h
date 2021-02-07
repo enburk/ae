@@ -111,3 +111,7 @@ namespace data
         return std::holds_alternative<T>(v);
     }}
 }
+
+#define not !  // anti-intellisense
+#define and && // anti-intellisense
+#define or  || // anti-intellisense

@@ -1,7 +1,3 @@
-using "data";
-using data::array;
-using data::text;
-
 type size = {…};
 type address = {…};
 
@@ -10,6 +6,9 @@ type address = {…};
 ;; function name.of (x) → text = {…}
 
 type value.of(x) = { function at (a: address) → x = {…} }
+
+
+
 
 
 

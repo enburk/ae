@@ -29,6 +29,12 @@ using R = range(x), C = collection(x)
 
 type contiguous.collection(x) : collection(x), random.access.range(x) =
 
+type contiguous.collection(x)
+
+    is ordered
+    is collection(x)
+    is random.access.range(x)
+
     type iterator = contiguous.iterator;
     type sentinel = contiguous.iterator;
 
@@ -123,23 +129,6 @@ type array(x) : contiguous.collection(x) =
 ;; type array(byte)
 ;; {
 ;; }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

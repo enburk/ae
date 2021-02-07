@@ -57,7 +57,7 @@ void sys::mouse::cursor(str image)
 
 // https://blog.keyman.com/2008/06/robust-key-mess/
 
-static str wm_key (WPARAM wparam, LPARAM lparam, bool down)
+static str wm_key (WPARAM wparam, LPARAM, bool down)
 {
     str s;
     if (0x30 <= wparam && wparam <= 0x39) s = '0' + (char)wparam-0x30; else
@@ -97,12 +97,13 @@ static str wm_key (WPARAM wparam, LPARAM lparam, bool down)
     if (sys::keyboard::ctrl ) s =  "ctrl+" + s;
     return s;
 }
-static str wm_char (WPARAM wparam, LPARAM lparam)
+static str wm_char (WPARAM wparam, LPARAM)
 {
     if (wparam < 32) return "";
     if (sys::keyboard::alt) return "";
     if (sys::keyboard::ctrl) return "";
-    std::wstring s; s += (wchar_t)wparam; return unwinstr(s);
+    std::wstring s; s += (wchar_t)wparam;
+    return unwinstr(s);
 }
 
 LRESULT CALLBACK WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)

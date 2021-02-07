@@ -1,7 +1,35 @@
+type boolean = {false, true}
+
+operator if (x) = (if x = true)
+operator (x) ?  = (if x = true)
+
+type integral
+
+type integer.8
+type integer.16
+type integer.32
+type integer.64
+
+integer : rational =
+
+    mutation += (integer) = …
+
+operator (real) + (real) → real = …
+
+
+
 operator (x) >>> (f) = f(x)
 operator (f) <<< (x) = f(x)
 
-;; operator if (x) then (y) else (z) =
+operator (x) >>> (f) : f(x)
+operator (f) <<< (x) : f(x)
+
+operator (x):(y) = ratio(x, y)
+
+operator a:a ::
+operator x:y = ratio x y
+
+;; operator if (x) then (y) else (z) ;; = x ? y : z
 ;; {
 ;;     if x
 ;;     then return y;
@@ -11,10 +39,6 @@ operator (f) <<< (x) = f(x)
 ;; operator (f) if (x) else (g) = ;; python
 
 ;; operator if (x) then (y) elif (z) then (a) … else (b) =
-
-
-
-
 
 
 
