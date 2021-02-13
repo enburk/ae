@@ -21,18 +21,19 @@ namespace doc::ae::syntax
             input.front().opening->kind;
         }
 
-        auto read (str s) -> token*
+        auto read (str s = "") -> token*
         {
             if (input.empty()) throw error("next expected " + s);
             token* token = last_token = input.front().opening; input.pop_front();
-            if (token->text != s) throw error("expected " + s);
+            if (s != "" && s != token->text) throw error("expected " + s);
             return token;
         }
         auto read_name () -> token*
         {
             if (input.empty()) throw error("next expected name");
             token* token = last_token = input.front().opening; input.pop_front();
-            if (token->kind != "name") throw error("expected name, not " + token->kind);
+            if (token->kind != "name" && token->kind != "symbol")
+            throw error("expected name or symbol, not " + token->kind);
             return token;
         }
 
@@ -111,6 +112,67 @@ namespace doc::ae::syntax
             return names;
         }
 
+        parameter read_parameter ()
+        {
+            parameter p;
+
+            if (input.size() >= 3 and
+                input[0].opening->kind == "name" and
+                input[1].opening->text == ":")
+            {
+                p.name = read_name();
+                if (next() == ":") { read(":"); p.type  = read_namepack(); }
+                if (next() == "=") { read("="); p.value = read_expression(); }
+            }
+            else
+            if (input.size() >= 2)
+            {
+                p.type = read_namepack();
+                p.name = read_name();
+                if (next() == "=") { read("="); p.value = read_expression(); }
+            }
+            else
+                p.name = read_name();
+
+            return p;
+        }
+
+        auto read_parameters ()
+        {
+            if (input.empty() ||
+                input.front().kind != "()")
+                throw error("expected parameters");
+
+            parameters parameters;
+            parameters.opening = input.front().opening;
+            parameters.closing = input.front().closing;
+
+            auto && eee = std::move(
+            input.front().elements);
+            input.pop_front();
+            
+            for (auto && ee : eee)
+                parameters.list += reader(std::move(ee.elements), log)
+                    .read_parameter();
+
+            return parameters;
+        }
+
+        auto read_one_parameter ()
+        {
+            auto parameters = read_parameters();
+            if (parameters.list.size() != 1) throw error
+            ("expected exactly one parameter");
+            return parameters.list[0];
+        }
+
+        auto read_optional_args ()
+        {
+            return next_kind() == "()" ?
+                read_parameters() :
+                parameters{};
+        }
+
         auto read_optional_type ()
         {
             if (next()
@@ -121,70 +183,10 @@ namespace doc::ae::syntax
             return namepack{};
         }
 
-        parameter read_parameter ()
-        {
-            parameter p;
-
-            if (input.size() >= 3 and
-                input[0].opening->kind == "name" and
-                input[1].opening->text == ":")
-            {
-                p.name = read_name();
-                if (next() == ":") { read(":"); p.type  = read_named_pack(); }
-                if (next() == "=") { read("="); p.value = read_expression(); }
-            }
-            else
-            if (input.size() >= 2)
-            {
-                p.type = read_named_pack();
-                p.name = read_name();
-                if (next() == "=") { read("="); p.value = read_expression(); }
-            }
-            else
-            {
-                p.name = read_name();
-            }
-
-            if (not input.empty()) { read_token(); throw error("unexpected token"); }
-
-            return p;
-        }
-
-        parameters read_parameters ()
-        {
-            parameters parameters;
-
-            if (input.empty() ||
-                input.front().kind != "()")
-                throw error("expected parameters");
-
-            parameters.opening = input.front().opening;
-            parameters.closing = input.front().closing;
-
-            auto eee =
-            input.front().input;
-            input.pop_front();
-            
-            for (auto & ee : eee) {
-                auto eedeque = deque(ee.input);
-                std::swap(input, eedeque); parameters.list += read_parameter();
-                std::swap(input, eedeque);
-            }
-            return parameters;
-        }
-
-        auto read_one_parameter ()
-        {
-            auto parameters = read_parameters();
-            if (parameters.list.size() != 1) throw error
-            ("expected exactly one parameter");
-            return parameters[0];
-        }
-
         auto read_expression () -> expression { return read_expression_until(""); }
         auto read_expression_until (str until) -> expression
         {
-            operation o;
+            operands o;
 
             while (not input.empty())
             {
@@ -195,20 +197,19 @@ namespace doc::ae::syntax
                 }
 
                 str kind = next_kind();
-                if (kind == "number" ) o.operands += expression{number {read_token()}}; else
-                if (kind == "symbol" ) o.operands += expression{symbol {read_token()}}; else
-                if (kind == "literal") o.operands += expression{literal{read_token()}}; else
+                if (kind == "number" ) o.list += expression{terminal{read(next())}}; else
+                if (kind == "symbol" ) o.list += expression{terminal{read(next())}}; else
+                if (kind == "literal") o.list += expression{terminal{read(next())}}; else
 
                 if (input.front().kind == "()")
-                    o.operands += expression{read_brackets()};
-                
-                else try { o.operands += expression{read_named_pack()}; }
-                catch(...) { throw error("expression should start with name"); }
+                    o.list += expression{read_brackets()};
+                else
+                    o.list += expression{read_namepack()};
             }
 
             if (until != "") throw error("expected " + until);
-            if (o.operands.size() == 0) throw error("expected expression");
-            if (o.operands.size() == 1) return o.operands[0];
+            if (o.list.size() == 0) throw error("expected expression");
+            if (o.list.size() == 1) return o.list[0];
             return expression{o};
         }
     };

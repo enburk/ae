@@ -3,6 +3,7 @@
 #include "doc_ae_lexica.h"
 #include "doc_ae_syntax.h"
 #include "doc_ae_syntax_parser.h"
+#include "doc_ae_syntax_schema.h"
 namespace doc::ae
 {
     using doc::text::report;
@@ -11,13 +12,20 @@ namespace doc::ae
     {
         using base = doc::text::model;
 
+        array<syntax::statement> statements;
+
         void tokenize () override
         {
             log.clear();
 
             tokens = lexica::parse(*this);
 
-            syntax::parser parser(tokens, log);
+            statements =
+                syntax::schema(
+                syntax::parser(tokens
+                , log).output
+                , log).output
+                ;
         }
 
         bool insert (str s) override

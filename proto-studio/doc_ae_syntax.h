@@ -25,13 +25,18 @@ namespace doc::ae::syntax
 
     struct namepack { array<nameunit> names; };
 
+    struct operands { array<expression> list; };
+
+    struct terminal { token* token = nullptr; };
+
     struct expression
     {
         std::variant
         <
-//          terminal,
+            terminal,
             namepack,
-            brackets
+            brackets,
+            operands
         >
         variant;
     };
@@ -43,13 +48,22 @@ namespace doc::ae::syntax
         expression value;
     };
 
+    struct parameters
+    {
+        token* opening = nullptr;
+        token* closing = nullptr;
+        array<parameter> list;
+    };
+
     struct definition
     {
         token* name = nullptr;
-        token* kind = nullptr;
         array<statement> body;
-        array<parameter> args;
+        parameters args;
         namepack type;
+        str kind;
+        str schema;
+        str source;
     };
 
     struct statement
@@ -60,8 +74,6 @@ namespace doc::ae::syntax
             definition
         >
         variant;
-        str schema;
-        str source;
     };
 }
 

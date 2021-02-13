@@ -131,4 +131,16 @@ type array(x) : contiguous.collection(x) =
 ;; }
 
 
+type json
 
+    type object
+
+        constructor {o}
+
+    type array
+
+        constructor [a]
+
+    constructor {e}
+
+        

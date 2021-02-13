@@ -10,11 +10,59 @@ type integer.16
 type integer.32
 type integer.64
 
+using
+    type N = natural
+    type Z = integer
+    type Q = rational
+    type R = real
+    type C = complex
+
+type complex extension
+
+    function re → real
+    function im → real
+
 integer : rational =
 
     mutation += (integer) = …
 
 operator (real) + (real) → real = …
+
+operator (Z) + (Z) → Z = …
+operator (R) + (R) → R = …
+
+operator (x) = (x) = …
+
+
+for x in {natural, integer, rational, real, complex}
+
+    operator (x) + (x) = …
+    operator (x) - (x) = …
+    operator (x) × (x) = …
+    operator (x) / (x) = …
+
+operator (N) / (N) → Q
+operator (Z) / (Z) → Q
+operator (N) - (N) → Z
+
+operator (N) + (N) → N; operator (Z) + (Z) → Z;
+operator (N) - (N) → Z; operator (Z) - (Z) → Z;
+operator (N) × (N) → N; operator (Z) × (Z) → Z;
+operator (N) : (N) → Q; operator (Z) : (Z) → Q;
+
+operator (x) / (y) = (x) : (y)
+
+operator (numeric x) / (numeric y) = x : y
+
+operator -(N) → Z
+operator -(Z) → Z
+operator -(Q) → Q
+operator -(R) → R
+operator -(C) → C
+
+axiom (Z a, b, c): a + (b + c) = (a + b) + c
+
+axiom: N is semiring
 
 
 
@@ -39,6 +87,7 @@ operator x:y = ratio x y
 ;; operator (f) if (x) else (g) = ;; python
 
 ;; operator if (x) then (y) elif (z) then (a) … else (b) =
+
 
 
 
