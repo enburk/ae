@@ -6,7 +6,9 @@ namespace doc::ae::syntax
     struct reader
     {
         token * last_token = nullptr;
-        using error = std::logic_error;
+        struct error { error(str what) : what_(what) {}
+            str what() const { return what_; }
+            str what_; };
 
         deque<element> input; report& log; reader(
         array<element> input, report& log) :
@@ -25,7 +27,8 @@ namespace doc::ae::syntax
         {
             if (input.empty()) throw error("next expected " + s);
             token* token = last_token = input.front().opening; input.pop_front();
-            if (s != "" && s != token->text) throw error("expected " + s);
+            if (s != "" && s != token->text)
+            throw error("expected " + s);
             return token;
         }
         auto read_name () -> token*
@@ -47,7 +50,7 @@ namespace doc::ae::syntax
             brackets.opening = input.front().opening;
             brackets.closing = input.front().closing;
 
-            auto && eee = std::move(
+            auto eee = std::move(
             input.front().elements);
             input.pop_front();
             
@@ -120,19 +123,22 @@ namespace doc::ae::syntax
                 input[0].opening->kind == "name" and
                 input[1].opening->text == ":")
             {
-                p.name = read_name();
-                if (next() == ":") { read(":"); p.type  = read_namepack(); }
-                if (next() == "=") { read("="); p.value = read_expression(); }
+                p.name = read_name(); read(":");
+                p.type = read_namepack();
+                if (next() == "=") { read("=");
+                p.value = read_expression(); }
             }
             else
-            if (input.size() >= 2)
+            if (input.size() == 2)
             {
                 p.type = read_namepack();
                 p.name = read_name();
-                if (next() == "=") { read("="); p.value = read_expression(); }
+                if (next() == "=") { read("=");
+                p.value = read_expression(); }
             }
             else
-                p.name = read_name();
+            if (input.size() == 1)
+                p.type = read_namepack();
 
             return p;
         }
@@ -147,7 +153,7 @@ namespace doc::ae::syntax
             parameters.opening = input.front().opening;
             parameters.closing = input.front().closing;
 
-            auto && eee = std::move(
+            auto eee = std::move(
             input.front().elements);
             input.pop_front();
             
@@ -161,8 +167,8 @@ namespace doc::ae::syntax
         auto read_one_parameter ()
         {
             auto parameters = read_parameters();
-            if (parameters.list.size() != 1) throw error
-            ("expected exactly one parameter");
+            if (parameters.list.size() != 1)
+            throw error("expected exactly one parameter");
             return parameters.list[0];
         }
 

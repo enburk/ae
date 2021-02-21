@@ -6,6 +6,7 @@ namespace doc::ae::syntax
     using text::token;
     using text::report;
 
+    struct scope;
     struct statement;
     struct expression;
 
@@ -43,7 +44,7 @@ namespace doc::ae::syntax
 
     struct parameter
     {
-        token* name;
+        token* name = nullptr;
         namepack type;
         expression value;
     };
@@ -55,25 +56,17 @@ namespace doc::ae::syntax
         array<parameter> list;
     };
 
-    struct definition
+    struct statement
     {
         token* name = nullptr;
         array<statement> body;
         parameters args;
+        expression expr;
         namepack type;
-        str kind;
+        scope* scope;
         str schema;
         str source;
-    };
-
-    struct statement
-    {
-        std::variant
-        <
-            expression,
-            definition
-        >
-        variant;
+        str kind;
     };
 }
 

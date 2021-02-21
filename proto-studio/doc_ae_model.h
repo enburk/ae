@@ -4,6 +4,7 @@
 #include "doc_ae_syntax.h"
 #include "doc_ae_syntax_parser.h"
 #include "doc_ae_syntax_schema.h"
+#include "doc_ae_syntax_scopes.h"
 namespace doc::ae
 {
     using doc::text::report;
@@ -13,6 +14,8 @@ namespace doc::ae
         using base = doc::text::model;
 
         array<syntax::statement> statements;
+
+        syntax::scope scope;
 
         void tokenize () override
         {
@@ -26,6 +29,8 @@ namespace doc::ae
                 , log).output
                 , log).output
                 ;
+
+            scope = syntax::scope(statements, log);
         }
 
         bool insert (str s) override

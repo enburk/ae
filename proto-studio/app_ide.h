@@ -87,6 +87,7 @@ struct IDE : gui::widget<IDE>
                 reload_editor = false;
                 editor.flist.reload(); // before repo
                 doc::text::repo::reload();
+                // recompiling ?
             }
             if (reload_flist) {
                 reload_flist = false;
@@ -98,10 +99,12 @@ struct IDE : gui::widget<IDE>
                 doc::text::repo::save();
             }
 
-            if (doc::text::repo::report.errors.size() > 0) edittime = gui::time::now;
-            if (doc::text::repo::report.messages.size() > 0) { console.events << 
-                doc::text::repo::report(); console.activate(&console.events);
-                doc::text::repo::report.clear();
+            auto & report = doc::text::repo::report;
+            if (report.errors.size() > 0) edittime = gui::time::now;
+            if (report.messages.size() > 0) {
+                console.activate(&console.events);
+                console.events << report();
+                report.clear();
             }
 
             button_run.enabled = (

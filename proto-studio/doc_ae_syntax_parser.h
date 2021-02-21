@@ -106,7 +106,7 @@ namespace doc::ae::syntax
 
                 for (auto && e : line)
                 {
-                    if (e.opening->text != " ") cluster.elements += e;
+                    if (e.opening->kind != "space") cluster.elements += e;
                     else if (cluster.elements.size() == 0)
                         cluster.tab++;
                 }

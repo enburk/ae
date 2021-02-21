@@ -315,6 +315,9 @@
     <ClInclude Include="proto-studio\doc_ae_syntax_schema.h">
       <Filter>proto</Filter>
     </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_syntax_scopes.h">
+      <Filter>proto</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="proto-studio\!main.cpp">

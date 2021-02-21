@@ -1,10 +1,3 @@
-using "data.ranges";
-
-;; using "math";
-;; using math::min;
-;; using math::max;
-;; using math::abs;
-
 type predicate (args…)       = function (args…) → boolean
 type binary.predicate (x, y) = function (x, y) → boolean
 type unary.predicate (x)     = function (x) → boolean
@@ -89,6 +82,7 @@ type random.access.range(x) extension =
         )
     }
 }
+
 
 
 

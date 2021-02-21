@@ -53,9 +53,9 @@ type contiguous.collection(x)
             i++;
 
     operator ~= (e: x) =
-    {
+
         size++; last = e;
-    }
+
 
     ;; mutation erase =
 
@@ -143,4 +143,6 @@ type json
 
     constructor {e}
 
-        
+
+
+

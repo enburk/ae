@@ -196,6 +196,7 @@
     <ClInclude Include="proto-studio\doc_ae_syntax_parser.h" />
     <ClInclude Include="proto-studio\doc_ae_syntax_reader.h" />
     <ClInclude Include="proto-studio\doc_ae_syntax_schema.h" />
+    <ClInclude Include="proto-studio\doc_ae_syntax_scopes.h" />
     <ClInclude Include="proto-studio\doc_cpp_lexica.h" />
     <ClInclude Include="proto-studio\doc_cpp_model.h" />
     <ClInclude Include="proto-studio\doc_cpp_syntax.h" />
