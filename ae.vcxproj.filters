@@ -22,6 +22,9 @@
     <Filter Include="pix">
       <UniqueIdentifier>{04c4633d-4b48-49f2-a455-316385b7786a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="doc_ae">
+      <UniqueIdentifier>{1b08c17e-5616-4df6-87b2-2bffc92490e6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="library\cpp\proto-studio\ide.h">
@@ -294,29 +297,35 @@
     <ClInclude Include="proto-studio\doc_cpp_syntax_preprocessor.h">
       <Filter>proto</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\doc_ae_lexica.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc_ae_model.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc_ae_syntax.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc_ae_syntax_parser.h">
-      <Filter>proto</Filter>
-    </ClInclude>
     <ClInclude Include="proto-studio\doc_text_model.h">
       <Filter>proto</Filter>
     </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_lexica.h">
+      <Filter>doc_ae</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_model.h">
+      <Filter>doc_ae</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_syntax.h">
+      <Filter>doc_ae</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_syntax_parser.h">
+      <Filter>doc_ae</Filter>
+    </ClInclude>
     <ClInclude Include="proto-studio\doc_ae_syntax_reader.h">
-      <Filter>proto</Filter>
+      <Filter>doc_ae</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\doc_ae_syntax_schema.h">
-      <Filter>proto</Filter>
+      <Filter>doc_ae</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\doc_ae_syntax_scopes.h">
-      <Filter>proto</Filter>
+      <Filter>doc_ae</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_synthesis.h">
+      <Filter>doc_ae</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_translator.h">
+      <Filter>doc_ae</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
