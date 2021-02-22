@@ -171,7 +171,7 @@ struct IDE : gui::widget<IDE>
         {
             edittime = gui::time::now;
             console.editor.clear(); syntax_ok = true;
-            if (auto & log = editor.editor.model->log; log() != "") {
+            if (auto log = editor.editor.model->log(); log() != "") {
                 if (log.errors.size() > 0) syntax_ok = false;
                 console.activate(&console.editor);
                 console.editor << log();

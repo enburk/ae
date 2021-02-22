@@ -1,7 +1,10 @@
 #pragma once
 #include "doc_ae_syntax.h"
+#include "doc_ae_synthesis.h"
 namespace doc::ae
 {
+    using namespace syntax;
+
 
 
     struct context

@@ -327,6 +327,9 @@
     <ClInclude Include="proto-studio\doc_ae_translator.h">
       <Filter>doc_ae</Filter>
     </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_syntax_analysis.h">
+      <Filter>doc_ae</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="proto-studio\!main.cpp">

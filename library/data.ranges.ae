@@ -1,14 +1,13 @@
 type range(x) =
-{
+
     type iterator = forward.iterator(x);
     type sentinel = {…}
 
     function begin → iterator = {…}
     function end   → sentinel = {…}
-}
 
 type random.access.range(x) : range(x) =
-{
+
     type iterator = random.access.iterator;
     type sentinel = {…}
 
@@ -24,10 +23,9 @@ type random.access.range(x) : range(x) =
 
     operator [integer i] = (begin+i)::value;
     operator (integer i) = (begin+i)::value;
-}
 
 type contiguous.range(x) : random.access.range(x) =
-{
+
     type iterator = contiguous.iterator; iterator begin;
     type sentinel = contiguous.iterator; iterator end;
 
@@ -35,7 +33,6 @@ type contiguous.range(x) : random.access.range(x) =
     function clip (iterator i) = min(max(begin,i),end);
     function from (iterator i) = same(clip(i), end);
     function upto (iterator i) = same(begin, clip(i));
-}
 
 integer.range : random.access.range(integer) = ;; immutable
 
@@ -61,10 +58,9 @@ integer.range : random.access.range(integer) = ;; immutable
 ;; operator (x) [] = random.access.range(x);
 
 type integer extension =
-{
+
     operator [integer a, integer b) = integer.range[a, b);
     operator [integer a, integer b] = integer.range[a, b];
-}
 
 statement for each (x) in (type… r) do (f(x)) =
 
@@ -85,6 +81,7 @@ operator (f(x)) for each (x) in (r) =
 
 operator (f) while (x) = while x yield f
 operator (f) until (x) = yield f; while x yield f
+
 
 
 

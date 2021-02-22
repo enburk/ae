@@ -15,7 +15,6 @@ namespace doc::text::repo
         time edittime;
         text saved_text;
         std::unique_ptr<model> model;
-        doc::text::report report;
 
         expected<nothing> load () try
         {
@@ -81,6 +80,7 @@ namespace doc::text::repo
 
         if (!source.model) {
              source.model = std::move(std::make_unique<Model>());
+             source.model->path = path;
              source.path = path;
         }
 

@@ -1,10 +1,7 @@
 ﻿#pragma once
 #include "doc_text_model.h"
 #include "doc_ae_lexica.h"
-#include "doc_ae_syntax.h"
-#include "doc_ae_syntax_parser.h"
-#include "doc_ae_syntax_schema.h"
-#include "doc_ae_syntax_scopes.h"
+#include "doc_ae_syntax_analysis.h"
 namespace doc::ae
 {
     using doc::text::report;
@@ -13,24 +10,18 @@ namespace doc::ae
     {
         using base = doc::text::model;
 
-        array<syntax::statement> statements;
+        syntax::analysis::data syntax;
 
-        syntax::scope scope;
+        ~model() { syntax::analysis::remove(path); }
+
+        report log () override { return syntax.log; }
 
         void tokenize () override
         {
-            log.clear();
-
-            tokens = lexica::parse(*this);
-
-            statements =
-                syntax::schema(
-                syntax::parser(tokens
-                , log).output
-                , log).output
-                ;
-
-            scope = syntax::scope(statements, log);
+            tokens =
+            lexica::parse(*this);
+            syntax::analysis::pass1(path, syntax, tokens);
+            syntax::analysis::pass2(path, syntax);
         }
 
         bool insert (str s) override

@@ -8,7 +8,7 @@ namespace doc::ae
         array<str> head;
         array<entity> body;
         array<str> tail;
-        array<str> debug;
+        array<str> infos;
 
         void print (array<str> & lines, bool semicolon = true, int indent = 0)
         {
@@ -26,8 +26,8 @@ namespace doc::ae
             if (line != "") line = str(' ', indent) + line;
             if (line != "") lines += line;
 
-            if (not debug.empty())
-                for (auto s : debug)
+            if (not infos.empty())
+                for (auto s : infos)
                     lines += str(' ', indent)
                         + "// " + s;
 
@@ -37,7 +37,8 @@ namespace doc::ae
                 bool outer_semicolon = kind == "enum" or kind == "declarator"
                     or kind == "class" or kind == "function"
                     or kind == "union" or kind == "lambda";
-            
+
+                int n0 = lines.size();
                 lines += str(' ', indent) + "{";
 
                     for (auto && e : body)
@@ -45,9 +46,20 @@ namespace doc::ae
                             indent + 4);
 
                 lines += str(' ', indent) + "}";
+                int n1 = lines.size();
                 
                 if (outer_semicolon)
                     lines.back() += ";";
+
+                if (n1-n0 == 3 and n0 > 0
+                    and not lines[n1-4].contains("//")
+                    and not lines[n1-2].contains("//"))
+                {
+                    lines[n1-1].strip(); lines[n1-4] += " " + lines[n1-1];
+                    lines[n1-2].strip(); lines[n1-4] += " " + lines[n1-2];
+                    lines[n1-3].strip(); lines[n1-4] += " " + lines[n1-3];
+                    lines.resize(n0);
+                }
             }
 
             line = "";

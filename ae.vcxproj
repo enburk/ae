@@ -193,6 +193,7 @@
     <ClInclude Include="proto-studio\doc_ae_lexica.h" />
     <ClInclude Include="proto-studio\doc_ae_model.h" />
     <ClInclude Include="proto-studio\doc_ae_syntax.h" />
+    <ClInclude Include="proto-studio\doc_ae_syntax_analysis.h" />
     <ClInclude Include="proto-studio\doc_ae_syntax_parser.h" />
     <ClInclude Include="proto-studio\doc_ae_syntax_reader.h" />
     <ClInclude Include="proto-studio\doc_ae_syntax_schema.h" />

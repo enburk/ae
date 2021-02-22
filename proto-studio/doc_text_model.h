@@ -1,4 +1,5 @@
 #pragma once
+#include <filesystem>
 #include "doc_text_model_b.h"
 namespace doc::text
 {
@@ -6,7 +7,11 @@ namespace doc::text
     {
         using base = b::model;
 
-        array<token> tokens; report log;
+        std::filesystem::path path;
+
+        array<token> tokens;
+
+        virtual report log () { return report{}; }
 
         virtual void tokenize ()
         {

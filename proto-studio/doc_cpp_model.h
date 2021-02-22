@@ -9,12 +9,15 @@ namespace doc::cpp
     struct model : doc::text::model
     {
         using base = doc::text::model;
-
+        
+        report log_;
+        report log () override { return log_; }
+        
         void tokenize () override
         {
             tokens = lexica::parse(*this);
 
-            syntax::parser(log).proceed(tokens);
+            syntax::parser(log_).proceed(tokens);
         }
     };
 }
