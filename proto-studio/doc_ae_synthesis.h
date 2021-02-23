@@ -1,5 +1,5 @@
 #pragma once
-#include "doc_ae_syntax.h"
+#include "doc.h"
 namespace doc::ae
 {
     struct entity
@@ -53,11 +53,17 @@ namespace doc::ae
 
                 if (n1-n0 == 3 and n0 > 0
                     and not lines[n1-4].contains("//")
-                    and not lines[n1-2].contains("//"))
-                {
-                    lines[n1-1].strip(); lines[n1-4] += " " + lines[n1-1];
-                    lines[n1-2].strip(); lines[n1-4] += " " + lines[n1-2];
+                    and not lines[n1-2].contains("//")) {
                     lines[n1-3].strip(); lines[n1-4] += " " + lines[n1-3];
+                    lines[n1-2].strip(); lines[n1-4] += " " + lines[n1-2];
+                    lines[n1-1].strip(); lines[n1-4] += " " + lines[n1-1];
+                    lines.resize(n0);
+                }
+                else
+                if (n1-n0 == 2 and n0 > 0
+                    and not lines[n1-3].contains("//")) {
+                    lines[n1-2].strip(); lines[n1-3] += " " + lines[n1-2];
+                    lines[n1-1].strip(); lines[n1-3] += " " + lines[n1-1];
                     lines.resize(n0);
                 }
             }

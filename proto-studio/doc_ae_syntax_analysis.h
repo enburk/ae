@@ -5,6 +5,7 @@
 #include "doc_ae_syntax_parser.h"
 #include "doc_ae_syntax_schema.h"
 #include "doc_ae_syntax_scopes.h"
+#include "doc_ae_syntax_visitor.h"
 namespace doc::ae::syntax::analysis
 {
     using path = std::filesystem::path;
@@ -14,28 +15,40 @@ namespace doc::ae::syntax::analysis
     {
         scope scope;
         array<statement> statements;
-        array<str> dependencies;
         array<path> dependers;
         array<path> dependees;
         report log;
+
+        void pass1 (array<token> & tokens)
+        {
+            log.clear();
+            statements =
+                schema(
+                parser(tokens
+                , log).output
+                , log).output
+                ;
+            scope = decltype(scope)(
+                statements,
+                log);
+
+            array<str> deps;
+            visitor visitor;
+            visitor.on_name = [&deps](namepack& n)
+            {
+                if (n.names.size() > 0 and
+                    n.names[0].coloncolon) deps.try_emplace(
+                    n.names[0].identifier->text);
+            };
+            visitor.pass(statements);
+        }
     };
 
     std::map<path, data*> datae;
 
-    void pass1 (path path, data & data, array<token> & tokens)
+    void pass1 (path fname, data & data, array<token> & tokens)
     {
-        datae[path] = &data;
-
-        data.log.clear();
-        data.statements =
-            schema(
-            parser(tokens
-            , data.log).output
-            , data.log).output
-            ;
-        data.scope = scope(
-            data.statements,
-            data.log);
+        datae[fname] = &data; data.pass1(tokens);
     }
 
     void pass2 (path path, data & data)

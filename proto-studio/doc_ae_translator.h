@@ -6,6 +6,42 @@ namespace doc::ae
     using namespace syntax;
 
 
+    str print (const brackets &);
+    str print (const namepack &);
+    str print (const terminal &);
+    str print (const operands &);
+    str print (const expression &);
+    str print (const parameters &);
+
+    str print (const brackets & b)
+    {
+        str es;
+        for (auto & e : b.list) {
+            es += print(e);
+            es += ",";
+            es += " ";
+        }
+        es.truncate();
+        es.truncate();
+
+        str s;
+        if (b.opening) s += b.opening->text; s += es;
+        if (b.closing) s += b.closing->text;
+        return s;
+    }
+
+    str print (const namepack & namepack)
+    {
+        str s;
+        for (auto name : namepack.names)
+        {
+            if (name.coloncolon) s += "::";
+            if (name.identifier) s += name.identifier->text;
+            for (auto arg : name.args) s += print(arg);
+        }
+        return s;
+    }
+
 
     struct context
     {

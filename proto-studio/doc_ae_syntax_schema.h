@@ -91,10 +91,11 @@ namespace doc::ae::syntax
             for (auto & e : reader::input)
             {
                 schema += " ";
-                source += " " + (e.kind == "()" ? e.kind : e.opening->text);
+                source += " " + print(e);
 
                 if (e.opening and
-                    e.opening->kind == "name" and keywords.contains(e.opening->text))
+                    e.opening->kind == "name" and
+                    keywords.contains(e.opening->text))
                     e.opening->kind = "keyword";
 
                 if (e.kind == "()") schema += "()"; else

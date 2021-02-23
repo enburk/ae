@@ -202,5 +202,25 @@ namespace doc::ae::syntax
             return output;
         }
     };
+
+    str print (const element & e)
+    {
+        if (e.kind != "()") return
+            e.opening ?
+            e.opening->text :
+            "";
+
+        str s;
+        if (e.opening) s += e.opening->text;
+        
+        for (auto & ee : e.elements) {
+            s += print(ee);
+            s += " ";
+        }
+        s.truncate();
+
+        if (e.closing) s += e.closing->text;
+        return s;
+    }
 }
 

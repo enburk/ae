@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "doc_text_model.h"
+#include "doc_text_repo.h"
 #include "doc_ae_lexica.h"
 #include "doc_ae_syntax_analysis.h"
 namespace doc::ae
@@ -21,6 +21,10 @@ namespace doc::ae
             tokens =
             lexica::parse(*this);
             syntax::analysis::pass1(path, syntax, tokens);
+
+            for (auto depender : syntax.dependers)
+            doc::text::repo::load<model>(depender);
+
             syntax::analysis::pass2(path, syntax);
         }
 

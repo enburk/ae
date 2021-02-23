@@ -40,6 +40,7 @@ namespace doc::ae::syntax
             operands
         >
         variant;
+        namepack type;
     };
 
     struct parameter
