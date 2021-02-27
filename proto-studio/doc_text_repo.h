@@ -121,6 +121,12 @@ namespace doc::text::repo
             if (!rc.ok()) report.error(
                  rc.error());
         }
+
+        for (auto & [path, source] : map)
+            source.model->preanalyze();
+
+        for (auto & [path, source] : map)
+            source.model->reanalyze();
     }
 }
 

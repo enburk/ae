@@ -4,18 +4,13 @@ namespace doc::ae
 {
     struct entity
     {
-        str name, kind, info;
-        array<str> head;
+        str head, kind, info;
         array<entity> body;
-        array<str> tail;
         array<str> infos;
 
         void print (array<str> & lines, bool semicolon = true, int indent = 0)
         {
-            str line;
-            for (auto && s : head) line +=
-                (line == "" or s == "," ? "" : " ")
-                    + s;
+            str line = head;
 
             semicolon &= body.empty() and
                 not line.starts_with("#");
@@ -67,14 +62,6 @@ namespace doc::ae
                     lines.resize(n0);
                 }
             }
-
-            line = "";
-
-            for (auto && s : tail) line +=
-                (line == "" or s == "," ? "" : " ")
-                    + s;
-        
-            if (line != "") lines += line;
         }
     };
 }

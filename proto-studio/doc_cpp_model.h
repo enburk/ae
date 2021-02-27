@@ -15,6 +15,8 @@ namespace doc::cpp
         
         void tokenize () override
         {
+            log_.clear();
+
             tokens = lexica::parse(*this);
 
             syntax::parser(log_).proceed(tokens);

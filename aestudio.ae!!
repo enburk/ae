@@ -1,3 +1,8 @@
+::meta::import ::core ;; it's a call of a function
+
+out = ::meta::out
+out := ::system::out
+
 ;; system::window::coords =
 ;;     system::settings("window::coords",
 ;;         .default = system::screen::coords);
@@ -9,5 +14,6 @@
 ;;         system::settings("window::coords") = coords;
 ;;     }
 ;; }
+
 
 

@@ -5,7 +5,7 @@
 #include "doc_ae_syntax_parser.h"
 #include "doc_ae_syntax_schema.h"
 #include "doc_ae_syntax_scopes.h"
-#include "doc_ae_syntax_visitor.h"
+#include "doc_ae_syntax_dependencies.h"
 namespace doc::ae::syntax::analysis
 {
     using path = std::filesystem::path;
@@ -15,9 +15,13 @@ namespace doc::ae::syntax::analysis
     {
         scope scope;
         array<statement> statements;
-        array<path> dependers;
+        array<str> dependencies;
         array<path> dependees;
         report log;
+        bool passed2 = false;
+        bool passed3 = false;
+        time time;
+        path path;
 
         void pass1 (array<token> & tokens)
         {
@@ -31,40 +35,51 @@ namespace doc::ae::syntax::analysis
             scope = decltype(scope)(
                 statements,
                 log);
+            dependencies =
+            dependencies::collect(statements);
+            passed2 = false;
+            passed3 = false;
+        }
 
-            array<str> deps;
-            visitor visitor;
-            visitor.on_name = [&deps](namepack& n)
-            {
-                if (n.names.size() > 0 and
-                    n.names[0].coloncolon) deps.try_emplace(
-                    n.names[0].identifier->text);
-            };
-            visitor.pass(statements);
+        void pass2 ()
+        {
+            if (passed2) return;
+            else passed2 = true;
+            dependees =
+            dependencies::resolve(path, dependencies, log);
+        }
+
+        void pass3 ()
+        {
+            if (passed3) return;
+            else passed3 = true;
+            time = time::clock::now();
         }
     };
 
     std::map<path, data*> datae;
 
-    void pass1 (path fname, data & data, array<token> & tokens)
+    void pass1 (path path, data & data, array<token> & tokens)
     {
-        datae[fname] = &data; data.pass1(tokens);
+        datae[path] = &data;
+        data.path = path;
+        data.pass1(tokens);
     }
 
-    void pass2 (path path, data & data)
+    void pass2 (path path)
     {
+        datae[path]->pass2();
+    }
+
+    void pass3 (path path)
+    {
+        // interscopes
+        datae[path]->pass3();
     }
 
     void remove (path path)
     {
-        auto dependers =
-        datae[path]->dependers;
         datae.erase(path);
-
-        for (auto depender : dependers) {
-            datae[depender]->dependees.try_erase(path);
-            pass2(depender, *datae[depender]);
-        }
     }
 }
 

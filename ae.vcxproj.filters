@@ -333,6 +333,15 @@
     <ClInclude Include="proto-studio\doc_ae_syntax_visitor.h">
       <Filter>doc_ae</Filter>
     </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_transtr.h">
+      <Filter>doc_ae</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\app_ide_compiler.h">
+      <Filter>proto</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_syntax_dependencies.h">
+      <Filter>doc_ae</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="proto-studio\!main.cpp">

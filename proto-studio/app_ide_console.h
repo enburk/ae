@@ -7,9 +7,9 @@ struct Console : gui::widget<Console>
 {
     gui::canvas canvas;
     gui::radio::group buttons;
-    gui::console editor, search, events;
-    std::array<gui::console*,3> consoles = {&editor , &search , &events };
-    std::array<std::string,  3> titles   = {"editor", "search", "events"};
+    gui::console editor, search, events, output;
+    std::array<gui::console*, 4> consoles = {&editor , &search , &events , &output };
+    std::array<std::string,   4> titles   = {"editor", "search", "events", "output"};
 
     str pressed_file;
     str pressed_line;

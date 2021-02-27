@@ -13,6 +13,10 @@ namespace doc::text
 
         virtual report log () { return report{}; }
 
+        virtual void preanalyze () {}
+
+        virtual void reanalyze () {}
+
         virtual void tokenize ()
         {
             tokens.clear(); token t;

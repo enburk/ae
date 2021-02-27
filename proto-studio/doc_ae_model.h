@@ -21,11 +21,21 @@ namespace doc::ae
             tokens =
             lexica::parse(*this);
             syntax::analysis::pass1(path, syntax, tokens);
+            reanalyze();
+        }
 
-            for (auto depender : syntax.dependers)
-            doc::text::repo::load<model>(depender);
+        void reanalyze () override
+        {
+            syntax::analysis::pass2(path);
+            for (auto dependee : syntax.dependees)
+            doc::text::repo::load<model>(dependee)->reanalyze();
+            syntax::analysis::pass3(path);
+        }
 
-            syntax::analysis::pass2(path, syntax);
+        void preanalyze () override
+        {
+            syntax.passed2 = false;
+            syntax.passed3 = false;
         }
 
         bool insert (str s) override

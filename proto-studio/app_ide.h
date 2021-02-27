@@ -3,6 +3,7 @@
 #include "sys_ui.h"
 #include "gui_widget.h"
 #include "gui_widget_canvas.h"
+#include "app_ide_compiler.h"
 #include "app_ide_console.h"
 #include "app_ide_editor.h"
 #include "app_ide_flist.h"
@@ -29,10 +30,10 @@ struct IDE : gui::widget<IDE>
     Console& console = console_area.object;
     gui::area<Test> test_area; // very last
 
+    std::thread thread;
     gui::property<gui::time> timer;
     sys::directory_watcher watcher;
-    std::atomic<bool> reload_editor = false;
-    std::atomic<bool> reload_flist = false;
+    std::atomic<bool> reload = false;
     gui::time edittime;
     bool syntax_ok = false;
 
@@ -61,8 +62,7 @@ struct IDE : gui::widget<IDE>
             if (s.ends_with(".ae!.exe") || s.ends_with(".ae!!.exe")) return;
             if (s.ends_with("cl.log.txt")) return;
             console.events << path.string() + " " + what;
-            reload_editor = true; if (what != "modified")
-            reload_flist = true;
+            reload = true;
         };
         watcher.error = [this](data::error error){
             console.events << "<font color=#B00020>"
@@ -73,6 +73,8 @@ struct IDE : gui::widget<IDE>
     ~IDE()
     {
         doc::text::repo::save();
+        if (thread.joinable())
+            thread.join();
     }
 
     void on_change (void* what) override
@@ -83,15 +85,11 @@ struct IDE : gui::widget<IDE>
 
         if (what == &timer)
         {
-            if (reload_editor) {
-                reload_editor = false;
-                editor.flist.reload(); // before repo
-                doc::text::repo::reload();
-                // recompiling ?
-            }
-            if (reload_flist) {
-                reload_flist = false;
+            if (reload) {
+                reload = false;
                 flist.reload();
+                editor.flist.reload(); // before repo erasing
+                doc::text::repo::reload(); // triggers recompiling
             }
 
             if ((gui::time::now - edittime) > 2s) {
@@ -211,13 +209,32 @@ struct IDE : gui::widget<IDE>
                 XYXY(0, toolbar.coord.now.h, coord.now.w, coord.now.h):
                 XYXY{};
         }
+        if (what == &button_run)
+        {
+            console.activate(&console.output);
+
+            if (not ide::compiler::translate(
+                editor.path.now,
+                console.output))
+                return;
+
+            if (thread.joinable())
+                thread.join();
+
+            thread = std::thread([this]()
+            {
+                ide::compiler::run(
+                    editor.path.now,
+                    console.output);
+            });
+        }
     }
 
     void on_focus (bool on) override { editor.on_focus(on); }
     void on_key_pressed (str key, bool down) override { editor.on_key_pressed(key,down); }
     void on_keyboard_input (str symbol) override { editor.on_keyboard_input(symbol); }
 };
-sys::app<IDE> app("AE proto-studio");//, {0,0}, {100, 100});
+sys::app<IDE> app("ae proto-studio");//, {0,0}, {100, 100});
 
 
 

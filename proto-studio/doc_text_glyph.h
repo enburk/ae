@@ -20,8 +20,9 @@ namespace doc::text
             int i = 0; for (auto C : CC) cc[i++] = (char)(C);
         }
 
-        bool operator == (glyph const&) const = default;
-        bool operator != (glyph const&) const = default;
+        bool operator ==  (glyph const&) const = default;
+        bool operator !=  (glyph const&) const = default;
+        auto operator <=> (glyph const&) const = default;
 
         operator str () const { return string(); }
 
