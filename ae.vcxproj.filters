@@ -1,17 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="proto-studio">
-      <UniqueIdentifier>{2651600c-05a3-44bb-afe3-bbed7b805100}</UniqueIdentifier>
-    </Filter>
     <Filter Include="gui">
       <UniqueIdentifier>{ffe1ee67-dd58-41d5-8e70-254587c0dd47}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="doc">
-      <UniqueIdentifier>{765ef79c-b72a-4dd0-86dd-5928e70e6197}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="proto">
-      <UniqueIdentifier>{7f2c9289-c202-441a-9c5b-ea34500b3352}</UniqueIdentifier>
     </Filter>
     <Filter Include="data">
       <UniqueIdentifier>{22297187-e464-404d-ad0c-e099a2db51ff}</UniqueIdentifier>
@@ -25,113 +16,14 @@
     <Filter Include="doc_ae">
       <UniqueIdentifier>{1b08c17e-5616-4df6-87b2-2bffc92490e6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="doc">
+      <UniqueIdentifier>{19c8af0b-a90f-4339-9d11-4784789d81d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="app">
+      <UniqueIdentifier>{85013704-7325-4295-a14e-dbaef100f960}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="library\cpp\proto-studio\ide.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\ide_console.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\ide_editor.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\ide_flist.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\test.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\test_fonts.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\test_pix.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc.h">
-      <Filter>doc</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_lexica.h">
-      <Filter>doc</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_cpp_lexica.h">
-      <Filter>doc</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_html_lexica.h">
-      <Filter>doc</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_html_syntax.h">
-      <Filter>doc</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_text_lexica.h">
-      <Filter>doc</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax.h">
-      <Filter>doc</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_cpp_syntax.h">
-      <Filter>doc</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_cpp_preprocessor.h">
-      <Filter>doc</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_synthesis.h">
-      <Filter>doc</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_text_model.h">
-      <Filter>doc</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_schema.h">
-      <Filter>doc</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_scopes.h">
-      <Filter>doc</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_analysis.h">
-      <Filter>doc</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_parser.h">
-      <Filter>doc</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\ide_compiler.h">
-      <Filter>proto-studio</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_text_repo.h">
-      <Filter>doc</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_synthesis_print.h">
-      <Filter>doc</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_scheme.h">
-      <Filter>doc</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_analysis_1.h">
-      <Filter>doc</Filter>
-    </ClInclude>
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_analysis_2.h">
-      <Filter>doc</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\app_ide.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\app_ide_console.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\app_ide_editor.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\app_ide_flist.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc_html_lexica.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc_html_syntax.h">
-      <Filter>proto</Filter>
-    </ClInclude>
     <ClInclude Include="proto-studio\data.h">
       <Filter>data</Filter>
     </ClInclude>
@@ -143,9 +35,6 @@
     </ClInclude>
     <ClInclude Include="proto-studio\data_ranges.h">
       <Filter>data</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\app_ide_test.h">
-      <Filter>proto</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\sys_aux.h">
       <Filter>sys</Filter>
@@ -195,12 +84,6 @@
     <ClInclude Include="proto-studio\data_struct_string.h">
       <Filter>data</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\doc_text_model_a.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc_text_model_b.h">
-      <Filter>proto</Filter>
-    </ClInclude>
     <ClInclude Include="proto-studio\data_algo_forward.h">
       <Filter>data</Filter>
     </ClInclude>
@@ -215,27 +98,6 @@
     </ClInclude>
     <ClInclude Include="proto-studio\data_struct_vector.h">
       <Filter>data</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc_text_glyph.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc_text_text.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc_html_utils.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc_html.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc_html_model.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\app_ide_edflist.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc_text_repo.h">
-      <Filter>proto</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\gui_colors.h">
       <Filter>gui</Filter>
@@ -285,21 +147,6 @@
     <ClInclude Include="proto-studio\gui_widgetarium.h">
       <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\doc_cpp_lexica.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc_cpp_model.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc_cpp_syntax.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc_cpp_syntax_preprocessor.h">
-      <Filter>proto</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc_text_model.h">
-      <Filter>proto</Filter>
-    </ClInclude>
     <ClInclude Include="proto-studio\doc_ae_lexica.h">
       <Filter>doc_ae</Filter>
     </ClInclude>
@@ -336,16 +183,82 @@
     <ClInclude Include="proto-studio\doc_ae_transtr.h">
       <Filter>doc_ae</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\app_ide_compiler.h">
-      <Filter>proto</Filter>
-    </ClInclude>
     <ClInclude Include="proto-studio\doc_ae_syntax_dependencies.h">
       <Filter>doc_ae</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\app_ide.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\app_ide_compiler.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\app_ide_console.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\app_ide_edflist.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\app_ide_editor.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\app_ide_flist.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\app_ide_test.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_cpp_lexica.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_cpp_model.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_cpp_syntax.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_cpp_syntax_preprocessor.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_html.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_html_lexica.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_html_model.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_html_syntax.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_html_utils.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_text_glyph.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_text_model.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_text_model_a.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_text_model_b.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_text_repo.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_text_text.h">
+      <Filter>doc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="proto-studio\!main.cpp">
-      <Filter>proto</Filter>
+      <Filter>app</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

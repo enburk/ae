@@ -31,7 +31,7 @@ namespace doc::text::repo
                 s.upto(3).erase(); // UTF-8 BOM
 
             saved_text = text{s};
-            edittime = filetime; // prevent recursive load
+            edittime = filetime; // prevents recursive load
             model->set(saved_text); // triggers compiling
             return nothing{};
         }

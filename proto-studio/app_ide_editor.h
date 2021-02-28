@@ -45,6 +45,7 @@ struct Editor : gui::widget<Editor>
             s.color = RGBA::teal;    editor.styles["keyname"  ] = pix::text::style_index(s);
             s.color = RGBA::blue;    editor.styles["pragma"   ] = pix::text::style_index(s);
             s.color = RGBA::purple;  editor.styles["macros"   ] = pix::text::style_index(s);
+            s.color = RGBA::purple;  editor.styles["module"   ] = pix::text::style_index(s);
             s.color = RGBA::navy;    editor.styles["number"   ] = pix::text::style_index(s);
             s.color = RGBA::white;   editor.styles["space"    ] = pix::text::style_index(s); 
             s.color = RGBA::navy;    editor.styles["literal"  ] = pix::text::style_index(s); 

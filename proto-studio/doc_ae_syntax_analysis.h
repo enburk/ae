@@ -19,7 +19,7 @@ namespace doc::ae::syntax::analysis
         array<statement> statements;
         array<token*> dependencies;
         array<path> dependees;
-        report log;
+        report log, log2, log3;
         bool passed2 = false;
         bool passed3 = false;
         time time;
@@ -29,6 +29,7 @@ namespace doc::ae::syntax::analysis
         {
             events.info("pass1 "
                 + path.string());
+
             log.clear();
             statements =
                 schema(
@@ -51,10 +52,12 @@ namespace doc::ae::syntax::analysis
             else passed2 = true;
             events.info("pass2 "
                 + path.string());
+
+            log2.clear();
             dependees =
             dependencies::resolve(
                 path.parent_path(),
-                dependencies, log);
+                dependencies, log2);
         }
 
         void pass3 ()
@@ -63,6 +66,8 @@ namespace doc::ae::syntax::analysis
             else passed3 = true;
             events.info("pass3 " +
                 path.string());
+
+            log3.clear();
             time = time::clock::now();
         }
     };

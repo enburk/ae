@@ -143,34 +143,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="library\cpp\proto-studio\doc.h" />
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_lexica.h" />
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax.h" />
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_analysis.h" />
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_analysis_1.h" />
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_analysis_2.h" />
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_parser.h" />
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_schema.h" />
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_scheme.h" />
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_syntax_scopes.h" />
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_synthesis.h" />
-    <ClInclude Include="library\cpp\proto-studio\doc_ae_synthesis_print.h" />
-    <ClInclude Include="library\cpp\proto-studio\doc_cpp_lexica.h" />
-    <ClInclude Include="library\cpp\proto-studio\doc_cpp_preprocessor.h" />
-    <ClInclude Include="library\cpp\proto-studio\doc_cpp_syntax.h" />
-    <ClInclude Include="library\cpp\proto-studio\doc_html_lexica.h" />
-    <ClInclude Include="library\cpp\proto-studio\doc_html_syntax.h" />
-    <ClInclude Include="library\cpp\proto-studio\doc_text_lexica.h" />
-    <ClInclude Include="library\cpp\proto-studio\doc_text_model.h" />
-    <ClInclude Include="library\cpp\proto-studio\doc_text_repo.h" />
-    <ClInclude Include="library\cpp\proto-studio\ide.h" />
-    <ClInclude Include="library\cpp\proto-studio\ide_compiler.h" />
-    <ClInclude Include="library\cpp\proto-studio\ide_console.h" />
-    <ClInclude Include="library\cpp\proto-studio\ide_editor.h" />
-    <ClInclude Include="library\cpp\proto-studio\ide_flist.h" />
-    <ClInclude Include="library\cpp\proto-studio\test.h" />
-    <ClInclude Include="library\cpp\proto-studio\test_fonts.h" />
-    <ClInclude Include="library\cpp\proto-studio\test_pix.h" />
     <ClInclude Include="proto-studio\app_ide.h" />
     <ClInclude Include="proto-studio\app_ide_compiler.h" />
     <ClInclude Include="proto-studio\app_ide_console.h" />

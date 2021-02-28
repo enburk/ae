@@ -66,12 +66,14 @@ namespace doc::ae::syntax::dependencies
 
                 if (std::filesystem::is_regular_file(path) &&
                     path.filename().string() == dependency->text + ".ae") {
+                    dependency->kind = "module";
                     dependees += path;
                     found = true;
                 }
 
                 if (std::filesystem::is_directory(path) &&
                     path.filename().string() == dependency->text) {
+                    dependency->kind = "module";
                     dependees += all(path);
                     found = true;
                 }

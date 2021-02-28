@@ -14,7 +14,13 @@ namespace doc::ae
 
         ~model() { syntax::analysis::remove(path); }
 
-        report log () override { return syntax.log; }
+        report log () override {
+            report log;
+            log += syntax.log;
+            log += syntax.log2;
+            log += syntax.log3;
+            return log;
+        }
 
         void tokenize () override
         {

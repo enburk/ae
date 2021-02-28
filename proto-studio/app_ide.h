@@ -88,8 +88,9 @@ struct IDE : gui::widget<IDE>
             if (reload) {
                 reload = false;
                 flist.reload();
-                editor.flist.reload(); // before repo erasing
+                editor.flist.reload(); // before repo delete something
                 doc::text::repo::reload(); // triggers recompiling
+                editor.editor.update_view();
             }
 
             if ((gui::time::now - edittime) > 2s) {
