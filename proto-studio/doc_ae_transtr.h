@@ -93,7 +93,7 @@ namespace doc::ae
             [&](operands v) {
 
                 if (v.list.empty()) return;
-                for (auto o : v.list)
+                for (auto & o : v.list)
                 s += print(o) + " ";
                 s.truncate();
             },

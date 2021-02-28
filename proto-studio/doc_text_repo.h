@@ -36,8 +36,8 @@ namespace doc::text::repo
             return nothing{};
         }
         catch (const std::exception & e) {
-            return data::error(path.string() +
-                ": " + e.what());
+            return data::error("doc::text::repo::source: "
+                + path.string() + " : " + e.what());
         }
 
         expected<nothing> save () try
@@ -63,8 +63,8 @@ namespace doc::text::repo
             return nothing{};
         }
         catch (const std::exception & e) {
-            return data::error(path.string() +
-                ": " + e.what());
+            return data::error("doc::text::repo::source: "
+                + path.string() + " : " + e.what());
         }
     };
 

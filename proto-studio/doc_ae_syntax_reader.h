@@ -202,15 +202,21 @@ namespace doc::ae::syntax
                     break;
                 }
 
-                str kind = next_kind();
-                if (kind == "number" ) o.list += expression{terminal{read(next())}}; else
-                if (kind == "symbol" ) o.list += expression{terminal{read(next())}}; else
-                if (kind == "literal") o.list += expression{terminal{read(next())}}; else
+                if (next() == "::")
+                    o.list += expression{
+                    read_namepack()}; else
+
+                if (next_kind() == "number" or
+                    next_kind() == "symbol" or
+                    next_kind() == "literal")
+                    o.list += expression{
+                    terminal{read(next())}}; else
 
                 if (input.front().kind == "()")
-                    o.list += expression{read_brackets()};
-                else
-                    o.list += expression{read_namepack()};
+                    o.list += expression{
+                    read_brackets()}; else
+                    o.list += expression{
+                    read_namepack()};
             }
 
             if (until != "") throw error("expected " + until);

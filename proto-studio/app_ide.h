@@ -105,6 +105,12 @@ struct IDE : gui::widget<IDE>
                 report.clear();
             }
 
+            auto & events = doc::ae::syntax::analysis::events;
+            if (events.messages.size() > 0) {
+                console.events << events();
+                events.clear();
+            }
+
             button_run.enabled = (
                 editor.path.now.extension() == ".ae!" or
                 editor.path.now.extension() == ".ae!!")

@@ -11,11 +11,13 @@ namespace doc::ae::syntax::analysis
     using path = std::filesystem::path;
     using time = std::filesystem::file_time_type;
 
+    report events;
+
     struct data
     {
         scope scope;
         array<statement> statements;
-        array<str> dependencies;
+        array<token*> dependencies;
         array<path> dependees;
         report log;
         bool passed2 = false;
@@ -25,6 +27,8 @@ namespace doc::ae::syntax::analysis
 
         void pass1 (array<token> & tokens)
         {
+            events.info("pass1 "
+                + path.string());
             log.clear();
             statements =
                 schema(
@@ -45,14 +49,20 @@ namespace doc::ae::syntax::analysis
         {
             if (passed2) return;
             else passed2 = true;
+            events.info("pass2 "
+                + path.string());
             dependees =
-            dependencies::resolve(path, dependencies, log);
+            dependencies::resolve(
+                path.parent_path(),
+                dependencies, log);
         }
 
         void pass3 ()
         {
             if (passed3) return;
             else passed3 = true;
+            events.info("pass3 " +
+                path.string());
             time = time::clock::now();
         }
     };
