@@ -1,38 +1,3 @@
-;; function out (byte… data) → void = {...}
-;; function err (byte… data) → void = {...}
-
 mutation out (byte[] data) = …
 mutation err (byte[] data) = …
-
-;; function out (contiguous.range(byte) data) = {…}
-;; function err (contiguous.range(byte) data) = {…}
-
-window  : ::gui::window
-screen  : ::gui::screen;
-screens : ::gui::screen[];
-
-;; f(x, y, z, w) = {}
-;; f(x, y, z) → w = {}
-;; f(x, y) → (f(z) → w) = {}
-;; f(x) → (f(y, z) → w) = {}
-;;
-;; f(Args… args) = {}
-;; f((Type value)…) = {}
-;; f(head, tail…) = f(head), f(tail)…;
-;;
-;; operator (type x) … =
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

@@ -22,6 +22,7 @@ namespace doc::ae::syntax
         }
         str next_kind () { return
             input.empty() ? "" :
+            input.front().kind == "()" ? "()" :
             input.front().opening->kind;
         }
 
@@ -212,13 +213,13 @@ namespace doc::ae::syntax
                     break;
                 }
 
-                if (input.front().kind == "()")
-                    o.list += expression{
-                    read_brackets()}; else
-
                 if (next() == "::")
                     o.list += expression{
                     read_namepack()}; else
+
+                if (next_kind() == "()")
+                    o.list += expression{
+                    read_brackets()}; else
 
                 if (next_kind() == "number" or
                     next_kind() == "symbol" or

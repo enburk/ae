@@ -52,7 +52,14 @@ struct Flist : gui::widget<Flist>
         scroller.step = h;
     }
 
-    void reload () { on_change(&root); }
+    void reload ()
+    {
+        on_change(&root);
+        for (auto& button : flist.list)
+            button.on = root.now / std::string(
+            button.text.text.now) ==
+            selected.now;
+    }
 
     void on_change (void* what) override
     {

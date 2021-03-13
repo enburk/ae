@@ -50,7 +50,7 @@ namespace gui::text
                 if (t.text == "\n")
                 {
                     if (virtual_space.now)
-                    lines.back().tokens += doc::view::token{str(' ', 128), i}; // huge slowdown
+                    lines.back().tokens += doc::view::token{str(' ', 192), i}; // huge slowdown
                     lines.back().tokens += doc::view::token{"\n", i};
                     lines += {doc::view::line{f}};
                 }

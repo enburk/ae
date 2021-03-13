@@ -68,7 +68,7 @@ namespace doc::ae::syntax
                 info += "  kind: \"<font color=#4000B0>" + s.kind + "\"</font>"; 
                 info += ", scheme: <font color=#800080>" + s.schema + "</font>"; 
                 info += ", source: <font color=#808080>" + s.source + "</font>"; 
-                log.error(what + info);
+                log.error(info);
             }
         }
 
