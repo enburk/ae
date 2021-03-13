@@ -6,9 +6,10 @@ namespace gui::text
     struct token final : widgetarium<glyph>, metrics
     {
         array<str> glyphs;
-        str text; style_index style; void fill (
-        str text, style_index style)
+        str text; str info; style_index style; void fill (
+        str text, str info, style_index style)
         {
+                this->info =  info;
             if (this->text == text && this->style == style) return;
                 this->text =  text;   this->style =  style;
 
@@ -153,7 +154,7 @@ namespace gui::text
             {
                 n++;
                 token & token = (*this)(n);
-                token.fill(lexeme.text, lexeme.style);
+                token.fill(lexeme.text, lexeme.info, lexeme.style);
 
                 unbreakable += &token;
                 if (token.text != " " &&

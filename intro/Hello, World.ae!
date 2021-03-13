@@ -1,5 +1,29 @@
 "Hello, World!" >>> ::system::out
 
+::system::out "Hello, World!"
+
+"Hello, World!" >>> #system::out
+
+#system::out "Hello, World!"
+
+out(a(::system::a));
+
+::system ::out, ::system:: out, :: system::out
+#system ::out, ::system:: out, :: system::out
+
+::system::out >>> ::system::out + (aaa or ::system::out)
+::system::out >>>
+    ::system::out + (aaa or
+        ::system::out)
+
+::system::out ::system::version
+#system::out #system::version
+
+::system::out(::system::out{})::get("")::set["aa"]::value
+
+operator (::system::out #) / (::system::out b)
+
+
 
 
 

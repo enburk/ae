@@ -1,4 +1,5 @@
 #pragma once
+#include <atomic>
 #include "doc_ae_syntax.h"
 namespace doc::ae::syntax
 {
@@ -20,8 +21,9 @@ namespace doc::ae::syntax
     struct parser
     {
         array<cluster> output;
-        array<token> & input; report & log; parser (
-        array<token> & input, report & log) : input(input), log(log)
+        array<token> & input; report& log; std::atomic<bool>& stop; parser (
+        array<token> & input, report& log, std::atomic<bool>& stop) :
+        input(input), log(log), stop(stop)
         {
             deque<token*> tokens;
             for (auto & token : input)
@@ -54,6 +56,8 @@ namespace doc::ae::syntax
 
             array<element> output; while (input.size() > 0)
             {
+                if (stop) break;
+
                 auto token = input.front();
 
                 if (token->text == "}" && closing == "}") break;
@@ -62,7 +66,8 @@ namespace doc::ae::syntax
             
                 input.pop_front();
 
-                if (token->kind == "space" &&
+                if (closing != "")
+                if (token->kind == "space" or
                     token->text == "\n")
                     continue;
 
@@ -88,6 +93,7 @@ namespace doc::ae::syntax
 
             for (auto & e : input)
             {
+                if (stop) break;
                 if (e.opening->text != "\n") line += e; else
                 if (line.size() > 0) output += std::move(line);
             }
@@ -102,10 +108,13 @@ namespace doc::ae::syntax
 
             for (auto && line : input)
             {
+                if (stop) break;
+
                 cluster cluster;
 
                 for (auto && e : line)
                 {
+                    if (stop) break;
                     if (e.opening->kind != "space") cluster.elements += e;
                     else if (cluster.elements.size() == 0)
                         cluster.tab++;
@@ -123,10 +132,13 @@ namespace doc::ae::syntax
 
             for (auto && line : input)
             {
+                if (stop) break;
+
                 array<cluster>* body = &output;
 
                 while (true)
                 {
+                    if (stop) break;
                     if (body->rbegin() != body->rend() &&
                         body->rbegin()->tab < line.tab) { body = &
                         body->rbegin()->clusters;
@@ -146,10 +158,14 @@ namespace doc::ae::syntax
 
             for (auto && in : input)
             {
+                if (stop) break;
+
                 cluster out{.tab = in.tab};
 
                 for (auto && e : in.elements)
                 {
+                    if (stop) break;
+
                     if (e.opening->text == ";")
                     {
                         output += std::move(out);
@@ -177,9 +193,11 @@ namespace doc::ae::syntax
 
             for (auto && i : input)
             {
+                if (stop) break;
+
                 if (i.opening->text == ";")
                 {
-                    log.error(i.opening, "unexpected ';'");
+                    log.error(i.opening, "unexpected ;");
                 }
                 if (i.opening->text == ",")
                 {
@@ -193,7 +211,10 @@ namespace doc::ae::syntax
                     i.elements = delimiting(i.elements);
                     o.elements += std::move(i);
                 }
-                else o.elements += i;
+                else
+                {
+                    o.elements += std::move(i);
+                }
             }
 
             if (not o.elements.empty())

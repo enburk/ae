@@ -22,14 +22,18 @@ namespace doc::ae::syntax
     {
         array<statement> output;
         array<cluster> && input; report& log; schema(
-            array<cluster> && input, report& log) :
-            reader(array<element>{}, log),
-            input(std::move(input)), log(log)
+        array<cluster> && input, report& log, std::atomic<bool>& stop) :
+        reader(array<element>{}, log, stop),
+        input(std::move(input)), log(log)
         {
             statement s;
 
+            // if (not log.errors.empty()) return;
+
             for (auto && cluster : input) try
             {
+                if (stop) break;
+
                 reader::input = deque{std::move(cluster.elements)};
 
                 s = read_statement();
@@ -56,15 +60,16 @@ namespace doc::ae::syntax
 
                 if (not reader::input.empty())
                 s.body += read_statement();
-                s.body += schema(std::move(cluster.clusters), log).output;
+                s.body += schema(std::move(cluster.clusters), log, stop).output;
                 output += std::move(s);
             }
-            catch (const reader::error & e) {
+            catch (const str & what) {
                 str info = "<font color=#000080>";
-                info += "  kind: "   + s.kind; 
-                info += ", scheme: " + s.schema; 
-                log.error(reader::last_token,
-                    e.what() + info); }
+                info += "  kind: \"<font color=#4000B0>" + s.kind + "\"</font>"; 
+                info += ", scheme: <font color=#800080>" + s.schema + "</font>"; 
+                info += ", source: <font color=#808080>" + s.source + "</font>"; 
+                log.error(what + info);
+            }
         }
 
         deque<element> read_clusters (array<cluster> && clusters)
@@ -113,7 +118,7 @@ namespace doc::ae::syntax
                 if (schema.starts_with(" operator ")) continue;
 
                 auto replace = [&schema](str what, str with) {
-                    if (schema.ends_with(str(" " + what))) {
+                    if (schema.ends_with(str(" " + what)) or schema == what) {
                         schema.resize(schema.size() - what.size());
                         schema += with;
                     }
@@ -122,8 +127,8 @@ namespace doc::ae::syntax
                 replace("name , name", "names");
                 replace("names , name", "names");
             
-                replace("name ()", "namepack");
                 replace(":: name", "namepack");
+                replace("name ()", "namepack");
                 replace("name ::", "namepack::");
                 replace("namepack ()", "namepack");
                 replace("namepack ::", "namepack::");

@@ -123,10 +123,16 @@ namespace doc::text::repo
         }
 
         for (auto & [path, source] : map)
-            source.model->preanalyze();
+            source.model->prereanalyze();
 
         for (auto & [path, source] : map)
             source.model->reanalyze();
+    }
+
+    void tick ()
+    {
+        for (auto & [path, source] : map)
+            source.model->tick();
     }
 }
 

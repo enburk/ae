@@ -112,7 +112,7 @@ namespace doc::cpp::lexica
 
                     if (t.text != "") tokens += t;
 
-                    t = token {c, "", range{
+                    t = token {c, "", "", range{
                         {n, offset},
                         {n, offset}}
                     };
@@ -133,7 +133,7 @@ namespace doc::cpp::lexica
 
             if (t.text != "") tokens += t;
 
-            tokens += token {"\n", "", range{
+            tokens += token {"\n", "", "", range{
                 {n, line.size()},
                 {n, line.size()}}
             };

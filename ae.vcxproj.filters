@@ -255,6 +255,12 @@
     <ClInclude Include="proto-studio\doc_text_text.h">
       <Filter>doc</Filter>
     </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_syntax_expressions.h">
+      <Filter>doc_ae</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_syntax_typing.h">
+      <Filter>doc_ae</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="proto-studio\!main.cpp">

@@ -14,34 +14,47 @@ namespace doc::ae
 
         ~model() { syntax::analysis::remove(path); }
 
-        report log () override {
-            report log;
-            log += syntax.log;
-            log += syntax.log2;
-            log += syntax.log3;
-            return log;
-        }
-
         void tokenize () override
         {
-            tokens =
-            lexica::parse(*this);
-            syntax::analysis::pass1(path, syntax, tokens);
-            reanalyze();
+            syntax::analysis::abort(path);
+            tokens = lexica::parse(*this);
+            syntax::analysis::start(path, syntax, tokens);
+        }
+
+        void prereanalyze () override
+        {
+            syntax::analysis::prereanalize(path);
         }
 
         void reanalyze () override
         {
-            syntax::analysis::pass2(path);
-            for (auto dependee : syntax.dependees)
-            doc::text::repo::load<model>(dependee)->reanalyze();
-            syntax::analysis::pass3(path);
+            syntax::analysis::reanalize(path);
         }
 
-        void preanalyze () override
+        void tick () override
         {
-            syntax.passed2 = false;
-            syntax.passed3 = false;
+            if (syntax::analysis::tick(path) ==
+                syntax::analysis::state::depend)
+            {
+                for (auto [name, path] : syntax.dependees)
+                    doc::text::repo::load<model>
+                        (path)->reanalyze();
+
+                syntax::analysis::resume(path);
+            }
+        }
+
+        bool ready () override { return
+            syntax::analysis::tick(path) ==
+            syntax::analysis::state::ready;
+        }
+
+        report log () override { // don't ask until it's ready
+            report log;
+            log += syntax.log1;
+            log += syntax.log2;
+            log += syntax.log3;
+            return log;
         }
 
         bool insert (str s) override

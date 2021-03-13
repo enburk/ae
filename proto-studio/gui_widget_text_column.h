@@ -103,6 +103,49 @@ namespace gui::text
             return point;
         }
 
+        token* target (XY p)
+        {
+            range point;
+            point.from.line = -1;
+            point.upto.line = -1;
+
+            for (auto & line : *this)
+            {
+                XY lp = p - line.coord.now.origin;
+                if (lp.y < 0) break;
+                point.from.line++;
+                point.from.offset = 0;
+                point.upto = point.from;
+                if (lp.y >= line.coord.now.size.y) {
+                    point.from.offset += line.length();
+                    point.upto = point.from;
+                    continue;
+                }
+
+                for (auto & token : line)
+                {
+                    XY tp = lp - token.coord.now.origin;
+                    if (tp.y < 0) break;
+                    if (tp.y >= token.coord.now.size.y ||
+                        tp.x >= token.coord.now.size.x) {
+                        point.from.offset += token.size();
+                        point.upto = point.from;
+                        continue;
+                    }
+
+                    for (auto & glyph : token)
+                    {
+                        XY gp = tp - glyph.coord.now.origin;
+                        if (gp.x < 0) return &token;
+                        point.from.offset = point.upto.offset;
+                        point.upto.offset++;
+                    }
+                }
+            }
+
+            return nullptr;
+        }
+
         array<XYWH> bars (range range)
         {
             array<XYWH> bars;

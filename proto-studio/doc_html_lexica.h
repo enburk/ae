@@ -17,12 +17,12 @@ namespace doc::html::lexica
                 {
                     if (t.text != "") tokens += t;
 
-                    tokens += token {glyph, "", range{
+                    tokens += token {glyph, "", "", range{
                         {n, offset},
                         {n, offset+1}}
                     };
 
-                    t = token {"", "", range{
+                    t = token {"", "", "", range{
                         {n, offset+1},
                         {n, offset+1}}
                     };
@@ -37,12 +37,12 @@ namespace doc::html::lexica
 
             if (n != text.lines.size()-1)
             {
-                tokens += token {"\n", "", range{
+                tokens += token {"\n", "", "", range{
                     {n, line.size()},
                     {n, line.size()}}
                 };
 
-                t = token {"", "", range{
+                t = token {"", "", "", range{
                     {n+1, 0},
                     {n+1, 0}}
                 };

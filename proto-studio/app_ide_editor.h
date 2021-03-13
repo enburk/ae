@@ -16,6 +16,7 @@ struct Editor : gui::widget<Editor>
     gui::text::view lineup;
     gui::text::editor editor;
     gui::binary_property<path> path;
+    doc::text::report log;
 
     void on_change (void* what) override
     {
@@ -38,6 +39,12 @@ struct Editor : gui::widget<Editor>
             editor.page.style = pix::text::style{
                 sys::font{"Consolas", h},
                 RGBA::black};
+
+            editor.page.info.canvas.color = gui::skins[skin].light.first;
+            editor.page.info.frame.color = gui::skins[skin].heavy.first;
+            editor.page.info.style = pix::text::style{
+                sys::font{"Consolas", h},
+                gui::skins[skin].dark.first};
 
             auto s = editor.page.style.now;
             s.color = RGBA::black;   editor.styles["name"     ] = pix::text::style_index(s);
@@ -112,5 +119,24 @@ struct Editor : gui::widget<Editor>
 
         if (what == &editor.page.scroll.y) lineup.shift =
             XY(0, -editor.page.scroll.y.top);
+    }
+
+    bool syntax_ready ()
+    {
+        if (editor.model->ready()) { log =
+            editor.model->log();
+            //auto t0 = doc::ae::syntax::analysis::now();
+            editor.page.view.update();
+            editor.page.view.refresh();
+            editor.page.refresh();
+            editor.refresh();
+            //auto t1 = doc::ae::syntax::analysis::now();
+            //auto ms = doc::ae::syntax::analysis::ms(t1-t0);
+            //doc::ae::syntax::analysis::events.debug("syntax_ready " + ms + " ms");
+            return
+            true;
+        }
+
+        return false;
     }
 };

@@ -36,8 +36,8 @@ namespace gui
         static void reset_after_pause() { pause = time(); }
         static void set_after_pause() { set(); pause = now - was; }
         static void set() { static
-            auto t0 = std::chrono::high_resolution_clock::now ();
-            auto t1 = std::chrono::high_resolution_clock::now ();
+            auto t0 = std::chrono::high_resolution_clock::now();
+            auto t1 = std::chrono::high_resolution_clock::now();
             was = now; now = t1-t0;
         }
     };

@@ -35,6 +35,7 @@ struct IDE : gui::widget<IDE>
     sys::directory_watcher watcher;
     std::atomic<bool> reload = false;
     gui::time edittime;
+    bool syntax_run = false;
     bool syntax_ok = false;
 
     IDE()
@@ -61,7 +62,8 @@ struct IDE : gui::widget<IDE>
             if (s.ends_with(".ae!.obj") || s.ends_with(".ae!!.obj")) return;
             if (s.ends_with(".ae!.exe") || s.ends_with(".ae!!.exe")) return;
             if (s.ends_with("cl.log.txt")) return;
-            console.events << path.string() + " " + what;
+            console.events << "<font color=#9E9E9E>"
+            + path.string() + " " + what + "</font>";
             reload = true;
         };
         watcher.error = [this](data::error error){
@@ -72,6 +74,7 @@ struct IDE : gui::widget<IDE>
     }
     ~IDE()
     {
+        watcher.cancel();
         doc::text::repo::save();
         if (thread.joinable())
             thread.join();
@@ -91,25 +94,45 @@ struct IDE : gui::widget<IDE>
                 editor.flist.reload(); // before repo delete something
                 doc::text::repo::reload(); // triggers recompiling
                 editor.editor.update_view();
+                syntax_run = true;
+                syntax_ok = false;
             }
 
-            if ((gui::time::now - edittime) > 2s) {
+            if ((gui::time::now - edittime) > 30s) {
                 edittime = gui::time::infinity;
                 doc::text::repo::save();
             }
 
-            auto & report = doc::text::repo::report;
-            if (report.errors.size() > 0) edittime = gui::time::now;
-            if (report.messages.size() > 0) {
-                console.activate(&console.events);
-                console.events << report();
-                report.clear();
+            if ((gui::time::now - edittime) > 0s) {
+                auto & report = doc::text::repo::report;
+                if (report.errors.size() > 0) edittime = gui::time::now;
+                if (report.messages.size() > 0) {
+                    console.activate(&console.events);
+                    console.events << report();
+                    report.clear();
+                }
+            }
+            
+            if ((gui::time::now - edittime) > 10s) {
+                auto & report = doc::ae::syntax::analysis::events;
+                if (report.messages.size() > 0) {
+                    console.events << report();
+                    report.clear();
+                }
             }
 
-            auto & events = doc::ae::syntax::analysis::events;
-            if (events.messages.size() > 0) {
-                console.events << events();
-                events.clear();
+            doc::text::repo::tick();
+
+            if ((gui::time::now - edittime) > 500ms)
+            if (syntax_run and editor.syntax_ready()) {
+                syntax_run = false;
+                syntax_ok = editor.log.errors.size() == 0;
+                console.editor.clear();
+                if (editor.log.messages.size() > 0) {
+                    console.activate(&console.editor);
+                    console.editor << editor.log();
+                    editor.log.clear();
+                }
             }
 
             button_run.enabled = (
@@ -167,23 +190,25 @@ struct IDE : gui::widget<IDE>
         if (what == &flist)
         {
             editor.flist.selected = flist.selected.now;
+            syntax_run = true;
+            syntax_ok = false;
         }
         if (what == &editor.flist)
         {
             flist.selected = editor.flist.selected.now;
+            syntax_run = true;
+            syntax_ok = false;
         }
         if (what == &editor)
         {
             edittime = gui::time::now;
-            console.editor.clear(); syntax_ok = true;
-            if (auto log = editor.editor.model->log(); log() != "") {
-                if (log.errors.size() > 0) syntax_ok = false;
-                console.activate(&console.editor);
-                console.editor << log();
-            }
+            syntax_run = true;
+            syntax_ok = false;
         }
         if (what == &console)
         {
+            if (syntax_run) return;
+
             std::string source = console.pressed_file;
             if (source != "" and std::filesystem::exists(source))
                 editor.path = source;

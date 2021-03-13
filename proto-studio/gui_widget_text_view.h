@@ -7,7 +7,7 @@ namespace gui::text
     struct view:
     widget<view>
     {
-        canvas canvas;
+        canvas canvas; frame frame;
         widgetarium<gui::canvas> highlight_bars;
         widgetarium<gui::canvas> selection_bars;
         column column;
@@ -32,7 +32,7 @@ namespace gui::text
         binary_property<bool> insert_mode = true;
         binary_property<bool> virtual_space = false;
         binary_property<bool> focused = false;
-        frame current_line_frame;
+        gui::frame current_line_frame;
 
         doc::html::model _model;
         doc::view::model* model = &_model;
@@ -157,6 +157,7 @@ namespace gui::text
             {
                 carets.coord = coord.now.local();
                 canvas.coord = coord.now.local();
+                frame .coord = coord.now.local();
                 highlight_bars.coord = coord.now.local();
                 selection_bars.coord = coord.now.local();
                 refresh();

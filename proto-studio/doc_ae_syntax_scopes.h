@@ -169,6 +169,13 @@ namespace doc::ae::syntax
         */
     };
 
+    struct scopes
+    {
+        std::multimap<str, scope*> outscope; scope* core; scope* scope;
+    };
+
+
+
 
 
 }

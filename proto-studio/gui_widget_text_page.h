@@ -21,6 +21,8 @@ namespace gui::text
         binary_property<XY> margin_left;
         scroll scroll;
 
+        gui::text::view info;
+
         void on_change (void* what) override
         {
             #define CHANGE(p) if (what == &p) view.p = p.now;
@@ -151,6 +153,11 @@ namespace gui::text
                 view.column.coord.now.origin);
         }
 
+        token* target (XY p) {
+            return view.column.target(p - 
+                view.column.coord.now.origin);
+        }
+
         bool touch = false; XY touch_point; range touch_range; time touch_time;
         
         property<time> timer;
@@ -215,6 +222,24 @@ namespace gui::text
                     array<range> selections;
                     selections += selection;
                     view.selections = selections;
+                    info.hide();
+                }
+                else
+                {
+                    if (auto token = target(p); token && token->info != "")
+                    {
+                        XYWH r = view.column.bar(point(p).from, false);
+                        info.hide(); r.w = r.h*100;
+                        info.alignment = XY{pix::left, pix::top};
+                        info.coord = r;
+                        info.html = token->info;
+                        r.w = info.column.coord.now.w + r.h*2; r.y += r.h;
+                        r.h = info.column.coord.now.h + r.h/2;
+                        info.coord = r;
+                        info.alignment = XY{pix::center, pix::center};
+                        info.show();
+                    }
+                    else info.hide();
                 }
             }
 

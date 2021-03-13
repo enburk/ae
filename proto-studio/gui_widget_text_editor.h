@@ -61,7 +61,7 @@ namespace gui::text
                         it != styles.end())
                         style = it->second;
             
-                    lines.back().tokens += doc::view::token{t.text, style};
+                    lines.back().tokens += doc::view::token{t.text, style, t.info};
                 }
             }
         }

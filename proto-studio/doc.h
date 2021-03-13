@@ -30,7 +30,7 @@ namespace doc::view
 
     struct token
     {
-        str text; style_index style;
+        str text; style_index style; str info;
         bool operator != (const token & d) const = default;
         bool operator == (const token & d) const = default;
     };

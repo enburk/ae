@@ -294,12 +294,14 @@ LRESULT CALLBACK GpuWindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     }
     case WM_PAINT:
     {
+        auto t0 = doc::ae::syntax::analysis::now();
+
         PAINTSTRUCT ps;
         HDC hdc = ::BeginPaint(hwnd, &ps);
-        //int x = ps.rcPaint.left;
-        //int y = ps.rcPaint.top;
-        //int w = ps.rcPaint.right - x;
-        //int h = ps.rcPaint.bottom - y;
+        int x = ps.rcPaint.left;
+        int y = ps.rcPaint.top;
+        int w = ps.rcPaint.right - x;
+        int h = ps.rcPaint.bottom - y;
         //::glScissor(x, y, w, h);
         //::glEnable(GL_SCISSOR_TEST);
 
@@ -310,6 +312,18 @@ LRESULT CALLBACK GpuWindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
         ::glFinish();
         ::SwapBuffers(hdc);
         ::EndPaint(hwnd, &ps);
+
+        if (false)
+        if (x != 2019 or y != 63) if (w != 1) {
+        auto t1 = doc::ae::syntax::analysis::now();
+        auto ms = doc::ae::syntax::analysis::ms(t1-t0);
+        doc::ae::syntax::analysis::events.debug("WM_PAINT "
+        + std::to_string(x) + ","
+        + std::to_string(y) + "-"
+        + std::to_string(w) + ","
+        + std::to_string(h) + " "
+        + ms + " ms");
+        }
         return 0;
     }
     }

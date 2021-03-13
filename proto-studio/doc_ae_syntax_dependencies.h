@@ -6,7 +6,7 @@ namespace doc::ae::syntax::dependencies
     using path = std::filesystem::path;
     using time = std::filesystem::file_time_type;
 
-    auto collect(array<statement> & statements) -> array<token*>
+    auto collect(array<statement> & statements)
     {
         array<token*> dependencies;
 
@@ -18,6 +18,7 @@ namespace doc::ae::syntax::dependencies
                 n.names[0].identifier) {
 
                 token* t = n.names[0].identifier;
+                t->kind = "module";
 
                 if (dependencies.find_if([t](auto & d) {
                     return d->text == t->text; }) ==
@@ -30,7 +31,7 @@ namespace doc::ae::syntax::dependencies
         return dependencies;
     }
 
-    auto all(path dir) -> array<path>
+    auto all(path dir)
     {
         array<path> dependees;
 
@@ -45,9 +46,10 @@ namespace doc::ae::syntax::dependencies
         return dependees;
     }
 
-    auto resolve(path dir, array<token*> & dependencies, report & log) -> array<path>
+    array<std::pair<str, path>>
+    resolve(path dir, array<token*> & dependencies, report & log)
     {
-        array<path> dependees;
+        array<std::pair<str, path>> dependees;
         array<token*> unresolved;
 
         if (not dir.has_relative_path()) {
@@ -57,7 +59,7 @@ namespace doc::ae::syntax::dependencies
 
         for (auto & dependency : dependencies)
         {
-            bool found = false;
+            str name = dependency->text; bool found = false;
 
             for (std::filesystem::directory_iterator
                 next(dir), end; next != end; ++next)
@@ -65,16 +67,14 @@ namespace doc::ae::syntax::dependencies
                 auto path = next->path();
 
                 if (std::filesystem::is_regular_file(path) &&
-                    path.filename().string() == dependency->text + ".ae") {
-                    dependency->kind = "module";
-                    dependees += path;
+                    path.filename().string() == name + ".ae") {
+                    dependees += std::pair{name, path};
                     found = true;
                 }
 
                 if (std::filesystem::is_directory(path) &&
-                    path.filename().string() == dependency->text) {
-                    dependency->kind = "module";
-                    dependees += all(path);
+                    path.filename().string() == name) for (auto p : all(path)) {
+                    dependees += std::pair{name, p};
                     found = true;
                 }
             }

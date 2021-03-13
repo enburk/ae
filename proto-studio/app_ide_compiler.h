@@ -31,9 +31,8 @@ namespace ide::compiler
     bool translate (path src, gui::console & console)
     {
         console.clear();
-        auto analysis = *doc::ae::syntax::analysis::datae[src];
-        if (analysis.log() != "") console << analysis.log();
-        if (analysis.log.errors.size() > 0) return false;
+        auto & analysis =
+        *doc::ae::syntax::analysis::datae[src];
 
         if (std::filesystem::exists(cpp(src)) and
             std::filesystem::last_write_time(cpp(src)) >

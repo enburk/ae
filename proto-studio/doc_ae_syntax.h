@@ -40,7 +40,8 @@ namespace doc::ae::syntax
             operands
         >
         variant;
-        namepack type;
+        scope* scope;
+        str typeline;
     };
 
     struct parameter
@@ -48,6 +49,7 @@ namespace doc::ae::syntax
         token* name = nullptr;
         namepack type;
         expression value;
+        str typeline;
     };
 
     struct parameters
