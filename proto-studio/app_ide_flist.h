@@ -12,12 +12,10 @@ struct Flist : gui::widget<Flist>
     {
         int selected = 0;
         gui::radio::group list;
-
         void on_notify (void* w) override {
-            selected = list.notifier_index; notify (); }
-
-        void on_mouse_wheel (XY p, int delta) override {
-            parent->on_mouse_wheel(p, delta); }
+            selected = list.notifier_index;
+            notify ();
+        }
     };
 
     gui::canvas canvas;
@@ -158,7 +156,7 @@ struct Flist : gui::widget<Flist>
         }
     }
 
-    void on_mouse_wheel (XY p, int delta) override
+    bool on_mouse_wheel (XY p, int delta) override
     {
         int h = scroller.step; if (h <= 0) h = gui::metrics::text::height;
         delta = delta/20 * h; if (delta == 0) delta = delta < 0 ? -h : h;
@@ -169,5 +167,6 @@ struct Flist : gui::widget<Flist>
         if (y < d) y = d;
         if (y > 0) y = 0;
         scroller.top =-y;
+        return true;
     }
 }; 

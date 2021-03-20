@@ -134,7 +134,7 @@ namespace gui::text
             if (what == &scroll.y) notify(what);
         }
 
-        void on_mouse_wheel (XY p, int delta) override
+        bool on_mouse_wheel (XY p, int delta) override
         {
             delta /= 20;
             delta *= gui::metrics::text::height;
@@ -146,6 +146,7 @@ namespace gui::text
             if (y < d) y = d;
             if (y > 0) y = 0;
             scroll.y.top =-y;
+            return true;
         }
 
         range point (XY p) {

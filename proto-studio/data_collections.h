@@ -24,7 +24,7 @@ contiguous_collection_range_
     auto upto (int n) { return range(begin(), host.clip(host.begin() + n)); }
     auto span (int n) { return range(begin(), host.clip(     begin() + n)); }
 
-    auto offset () { return begin() - host.begin(); }
+    auto offset () { return (int)(begin() - host.begin()); }
 
     bool operator != (range_type r) { return !(*this == r); }
     bool operator == (range_type r) { return

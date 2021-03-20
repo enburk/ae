@@ -101,6 +101,7 @@ namespace doc::html::syntax
                 }
 
                 if (e.name != "br" &&
+                    e.name != "br2" &&
                     e.info != "closed")
                     e.body += combine(input, e.name);
 

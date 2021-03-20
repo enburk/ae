@@ -6,6 +6,35 @@ void sort (binary_predicate order = std::less{})
     std::sort(begin(), end(), order);
 }
 
+
+template<class binary_predicate>
+auto lower_bound (value_type const& e,
+    binary_predicate order = std::less<>{}) const
+{
+    return std::lower_bound(begin(), end(), e, order);
+}
+template<class binary_predicate>
+auto upper_bound (value_type const& e,
+    binary_predicate order = std::less<>{}) const
+{
+    return std::upper_bound(begin(), end(), e, order);
+}
+template<class binary_predicate>
+auto equal_range (value_type const& e,
+    binary_predicate order = std::less<>{}) const
+{
+    auto r = std::equal_range (begin(), end(), e, order);
+    return range(r.first, r.second);
+}
+template<class binary_predicate>
+auto equal_range (value_type const& e,
+    binary_predicate order = std::less<>{})
+{
+    auto r = std::equal_range (begin(), end(), e, order);
+    return range(r.first, r.second);
+}
+
+
 bool starts_with (random_access_range auto r) const
 {
     if (size() < r.size()) return false;

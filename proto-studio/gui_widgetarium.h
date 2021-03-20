@@ -15,7 +15,7 @@ namespace gui
         array<int> indices;
         std::deque<std::optional<T>> deque;
 
-        void* notifier = nullptr;
+        T* notifier = nullptr;
         int notifier_index = 0;
 
         int size () const { return indices.size(); }
@@ -31,7 +31,7 @@ namespace gui
             for (int i = 0; i < size(); i++)
                 if (&(*this)(i) == w)
                 {
-                    notifier = w;
+                    notifier = &(*this)(i);
                     notifier_index = i;
                     widget::notify();
                 }

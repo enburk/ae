@@ -103,7 +103,7 @@ struct cache_metrics_key
 
 MAKE_HASHABLE(cache_metrics_key, t.text, t.font);
 
-static std::unordered_map<cache_metrics_key, text::metrics> cache_metrics;
+static std::unordered_map<cache_metrics_key, pix::text::metrics> cache_metrics;
 
 pix::glyph::glyph (str text, text::style_index i) : text(text), style_index(i)
 {

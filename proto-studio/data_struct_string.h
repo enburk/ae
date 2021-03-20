@@ -110,7 +110,38 @@ namespace data
             return result;
         }
 
+        int replace_all (char c, int ccc, str to) // c repeated exactly ccc times
+        {
+            int pos = 0, nn = 0;
+            while (true) {
+                auto range = from(pos).first(str(c, ccc)); if (range.empty()) break;
+                pos = range.begin() - begin();
+                if (pos+ccc >= size() || at(pos+ccc) != c) {
+                    range.replace_by(to);
+                    pos += to.size ();
+                    nn++;
+                }
+                else {
+                    range = from(pos).first(one_not_of{str(c, 1)}); if (range.empty()) break;
+                    pos = range.begin() - begin();
+                }
+            }
+            return nn;
+        }
 
+        void align_left (int n, char padding = ' ') {
+        if (size() < n) *this += str(padding, n - size()); }
+
+        void align_right (int n, char padding = ' ') {
+        if (size() < n) *this = str(padding, n - size()) + *this; }
+
+        str left_aligned  (int n, char padding = ' ') {
+        str s = *this; s.align_left(n, padding); return s; }
+
+        str right_aligned (int n, char padding = ' ') {
+        str s = *this; s.align_right(n, padding); return s; }
+
+    
 
         bool ascii_isalnum () const {
             for (char c : *this)

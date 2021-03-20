@@ -132,7 +132,9 @@ namespace doc::html
                             if (val.ends_with("%")) {
                                 val.truncate();
                                 int x = std::atoi(val.c_str());
-                                style.font.size = style.font.size * x/100;
+                                int size = style.font.size;
+                                if (size == 0) size = gui::metrics::text::height;
+                                style.font.size = size * x/100;
                                 styles += style;
                             }
                         }

@@ -149,7 +149,7 @@ namespace gui
                     if (i != n)
                         (*this)(i).on = false;
 
-                notifier = w;
+                notifier = &(*this)(n);
                 notifier_index = n;
                 widget::notify();
             }

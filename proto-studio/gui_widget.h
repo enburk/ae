@@ -35,7 +35,10 @@ namespace gui::base
         void update (XYWH r) {
             if (alpha.now == 0) return; r &= coord.now.local();
             if (parent) parent->update (r +  coord.now.origin);
-            else updates += r;
+        /// prevent multiple redraw with OpenGL
+        /// (saving rectangles union time also):
+            else updates += coord.now.local();
+        /// else updates += r;
         }
 
         void change (void* what) {
@@ -78,7 +81,7 @@ namespace gui::base
 
         virtual bool mouse_sensible (XY p) { return false; }
         virtual void on_mouse_press (XY, char button, bool down) {}
-        virtual void on_mouse_wheel (XY, int) {}
+        virtual bool on_mouse_wheel (XY, int) { return false; }
         virtual void on_mouse_hover (XY) {}
         virtual void on_mouse_leave () {}
 
@@ -153,13 +156,14 @@ namespace gui::base
             else on_mouse_leave ();
         }
 
-        void mouse_wheel (XY p, int delta)
+        bool mouse_wheel (XY p, int delta)
         {
-            if (alpha.now == 0) return;
-            if (coord.now.local().excludes(p)) return;
-            for (auto w : children)
-                w->mouse_wheel(p - w->coord.now.origin, delta);
-            on_mouse_wheel(p, int(delta*mouse_wheel_speed));
+            if (alpha.now == 0) return false;
+            if (coord.now.local().excludes(p)) return false;
+            for (auto it = children.rbegin(); it != children.rend(); ++it)
+                if ((*it)->mouse_wheel(p - (*it)->coord.now.origin, delta))
+                    return true;
+            return on_mouse_wheel(p, int(delta*mouse_wheel_speed));
         }
 
         ////////////////////////////////////////////////////////////////////////

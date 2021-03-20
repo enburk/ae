@@ -92,6 +92,10 @@ struct Editor : gui::widget<Editor>
     void on_focus (bool on) override { editor.on_focus(on); }
     void on_keyboard_input (str symbol) override { editor.on_keyboard_input(symbol); }
     void on_key_pressed (str key, bool down) override { editor.on_key_pressed(key,down); }
+    bool on_mouse_wheel (XY p, int delta) override
+    {
+        return editor.page.on_mouse_wheel(p - editor.coord.now.origin, delta);
+    }
 
     void on_notify (void* what) override
     {

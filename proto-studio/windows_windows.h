@@ -113,11 +113,13 @@ LRESULT CALLBACK WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     int LX = GET_X_LPARAM(lparam);
     int LY = GET_Y_LPARAM(lparam);
 
+    POINT p{0,0}; ClientToScreen(hwnd, &p); XY o {p.x, p.y};
+
     switch (msg) {
     case WM_COMMAND: if (wparam == 11111) win->on_timing(); break;
     
     case WM_MOUSEMOVE     : win->mouse_on_move  (XY(LX,LY)); break;
-    case WM_MOUSEWHEEL    : win->mouse_on_wheel (XY(LX,LY), (short)HIWORD(wparam)); break;
+    case WM_MOUSEWHEEL    : win->mouse_on_wheel (XY(LX,LY) - o, (short)HIWORD(wparam)); break;
     case WM_LBUTTONDOWN   : win->mouse_on_press (XY(LX,LY), 'L', true ); SetCapture(hwnd); break;
     case WM_LBUTTONUP     : win->mouse_on_press (XY(LX,LY), 'L', false); ReleaseCapture(); break;
     case WM_MBUTTONDOWN   : win->mouse_on_press (XY(LX,LY), 'M', true ); break;
@@ -294,14 +296,14 @@ LRESULT CALLBACK GpuWindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     }
     case WM_PAINT:
     {
-        auto t0 = doc::ae::syntax::analysis::now();
+        //auto t0 = doc::ae::syntax::analysis::now();
 
         PAINTSTRUCT ps;
         HDC hdc = ::BeginPaint(hwnd, &ps);
-        int x = ps.rcPaint.left;
-        int y = ps.rcPaint.top;
-        int w = ps.rcPaint.right - x;
-        int h = ps.rcPaint.bottom - y;
+        //int x = ps.rcPaint.left;
+        //int y = ps.rcPaint.top;
+        //int w = ps.rcPaint.right - x;
+        //int h = ps.rcPaint.bottom - y;
         //::glScissor(x, y, w, h);
         //::glEnable(GL_SCISSOR_TEST);
 
@@ -313,17 +315,16 @@ LRESULT CALLBACK GpuWindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
         ::SwapBuffers(hdc);
         ::EndPaint(hwnd, &ps);
 
-        if (false)
-        if (x != 2019 or y != 63) if (w != 1) {
-        auto t1 = doc::ae::syntax::analysis::now();
-        auto ms = doc::ae::syntax::analysis::ms(t1-t0);
-        doc::ae::syntax::analysis::events.debug("WM_PAINT "
-        + std::to_string(x) + ","
-        + std::to_string(y) + "-"
-        + std::to_string(w) + ","
-        + std::to_string(h) + " "
-        + ms + " ms");
-        }
+        //if (x != 2019 or y != 63) if (w != 1) {
+        //auto t1 = doc::ae::syntax::analysis::now();
+        //auto ms = doc::ae::syntax::analysis::ms(t1-t0);
+        //doc::ae::syntax::analysis::events.debug("WM_PAINT "
+        //+ std::to_string(x) + ","
+        //+ std::to_string(y) + "-"
+        //+ std::to_string(w) + ","
+        //+ std::to_string(h) + " "
+        //+ ms + " ms");
+        //}
         return 0;
     }
     }
