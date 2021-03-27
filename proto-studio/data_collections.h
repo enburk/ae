@@ -62,7 +62,7 @@ contiguous_collection_range
     auto upto (int n) { return range(begin(), host.clip(host.begin() + n)); }
     auto span (int n) { return range(begin(), host.clip(     begin() + n)); }
 
-    auto offset () { return begin() - host.begin(); }
+    auto offset () const { return (int)(begin() - host.begin()); }
 
     void insert (iterator i, range_type r) { host.insert(i, r); }
     void insert (iterator i, value_type e) { host.insert(i, std::move(e)); }

@@ -90,9 +90,11 @@ namespace data
 
         bool split_by (str pattern, str& str1, str& str2, delimiter delimiter = delimiter::exclude) const
         {
-            auto range = container::find (pattern); int n = range; int m = pattern.size();
-            str1 = m > 0 ? str(upto (n     + (delimiter == delimiter::to_the_left  ? m : 0))) : *this;
-            str2 = m > 0 ? str(from (n + m - (delimiter == delimiter::to_the_right ? m : 0))) : str{};
+            int n = container::find (pattern); int m = n == container::npos ? 0 : pattern.size();
+            str s1 = m > 0 ? str(upto (n     + (delimiter == delimiter::to_the_left  ? m : 0))) : *this;
+            str s2 = m > 0 ? str(from (n + m - (delimiter == delimiter::to_the_right ? m : 0))) : str{};
+            str1 = std::move(s1); // could be this
+            str2 = std::move(s2); // could be this
             return m > 0;
         }
         array<str> split_by (str pattern) const

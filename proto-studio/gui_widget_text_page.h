@@ -248,5 +248,58 @@ namespace gui::text
                 parent->on_mouse_hover (
                     p + coord.now.origin);
         }
+
+        void on_key_pressed (str key, bool down) override
+        {
+            if (!down) return;
+            if (touch) return; // mouse
+            if (view.selections.now.size() != 1) return;
+            auto selection = view.selections.now[0];
+            auto & [from, upto] = selection;
+            auto select = [this, &selection]() {
+                array<range> selections;
+                selections += selection;
+                view.selections =
+                     selections;
+            };
+
+            if (key == "shift+left")
+            {
+                if (upto.offset > 0) {
+                    upto.offset--;
+                    select();
+                }
+            }
+            if (key == "shift+right")
+            {
+                int n = view.column(from.line).length();
+                if (upto.offset < n) {
+                    upto.offset++;
+                    select();
+                }
+            }
+            if (key == "ctrl+left" or
+                key == "ctrl+shift+left")
+            {
+                if (from.offset > 0) {
+                    from.offset--;
+                    select();
+                }
+            }
+            if (key == "ctrl+right" or
+                key == "ctrl+shift+right")
+            {
+                int n = view.column(from.line).length();
+                if (from.offset < n) {
+                    from.offset++;
+                    select();
+                }
+            }
+
+            if (key == "ctrl+C" or
+                key == "ctrl+insert") {
+                sys::clipboard::set(view.selected());
+            }
+        }
     };
 } 

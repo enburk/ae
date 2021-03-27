@@ -263,8 +263,31 @@ struct IDE : gui::widget<IDE>
     }
 
     void on_focus (bool on) override { editor.on_focus(on); }
-    void on_key_pressed (str key, bool down) override { editor.on_key_pressed(key,down); }
-    void on_keyboard_input (str symbol) override { editor.on_keyboard_input(symbol); }
+    void on_keyboard_input (str symbol) override
+    {
+        console.active()->page.view.selections = array<gui::text::range>();
+        editor.on_keyboard_input(symbol);
+    }
+    void on_key_pressed (str key, bool down) override
+    {
+        if (key == "") return;
+        if((key == "ctrl+insert" or
+            key == "shift+left"  or
+            key == "shift+right" or
+            key == "ctrl+left"   or
+            key == "ctrl+right"  or
+            key == "ctrl+shift+left"  or
+            key == "ctrl+shift+right" or
+            key == "shift+up"    or
+            key == "shift+down") and
+            console.active()->page.view.selected() != "") {
+            console.active()->page.on_key_pressed(key,down);
+            return;
+        }
+
+        console.active()->page.view.selections = array<gui::text::range>();
+        editor.on_key_pressed(key,down);
+    }
 };
 sys::app<IDE> app("ae proto-studio");//, {0,0}, {100, 100});
 

@@ -363,7 +363,7 @@ namespace gui::text
             if (key == "shift+tab"        ) { insert("shift+\t"); } else
             if (key == "escape"           ) { go(THERE); } else
 
-            {} // insert(" [" + key + "] "); // (down ? " (down) " : " (up) ");
+            {}
         }
         void on_keyboard_input (str symbol) override
         {

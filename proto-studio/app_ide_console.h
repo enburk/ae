@@ -33,6 +33,15 @@ struct Console : gui::widget<Console>
         }
     }
 
+    auto active () -> gui::console*
+    {
+        for (int i=0; i<consoles.size(); i++) {
+            if (buttons(i).on.now)
+                return consoles[i];
+        }
+        return nullptr;
+    }
+
     void on_change (void* what) override
     {
         if (what == &skin)

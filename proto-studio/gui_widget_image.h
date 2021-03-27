@@ -140,7 +140,7 @@ namespace gui
             {
                 try
                 {
-                    std::ifstream ifstream (path, std::ios::binary);
+                    std::ifstream ifstream(path, std::ios::binary);
 
                     int size = length;
                     if (size == 0)
@@ -152,6 +152,10 @@ namespace gui
 
                     data.resize(size);
                     ifstream.read((char*)(data.data()), size);
+
+                    if (false) {
+                    std::ofstream ofstream("test.jpg", std::ios::binary);
+                    ofstream.write((char*)(data.data()), size); }
 
                     play();
                 }
