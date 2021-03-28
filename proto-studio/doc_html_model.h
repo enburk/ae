@@ -32,16 +32,18 @@ namespace doc::html
 
             array<style>  styles  {s}; // stack
             array<format> formats {f}; // stack
+            array<str>    links  {""}; // stack
 
             for (auto entity : entities)
-                proceed(entity, styles, formats);
+                proceed(entity, styles, formats, links);
         }
 
         void proceed
         (
             entity const& entity,
             array<style>  styles,
-            array<format> formats
+            array<format> formats,
+            array<str>    links
         )
         {
             if (entity.kind == "text")
@@ -53,7 +55,8 @@ namespace doc::html
                 for (auto token : entity.head)
                     lines.back().tokens +=
                         doc::view::token{token.text,
-                            style_index(styles.back())};
+                            style_index(styles.back()),
+                            links.back()};
             }
             else
             if (entity.name == "br")
@@ -77,6 +80,14 @@ namespace doc::html
             if (entity.name == "i") {
                 styles += styles.back();
                 styles.back().font.italic = true;
+            }
+            else
+            if (entity.name == "a")
+            {
+                for (auto [attr, value] : entity.attr)
+                    if (attr == "href") {
+                        value.strip("\"");
+                        links += value; }
             }
             else
             if (entity.name == "font")
@@ -143,7 +154,7 @@ namespace doc::html
             }
 
             for (auto e : entity.body)
-                proceed(e, styles, formats);
+                proceed(e, styles, formats, links);
 
             if (entity.name == "h4") {
                 if (lines.size() > 0 &&

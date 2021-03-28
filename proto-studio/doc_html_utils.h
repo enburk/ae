@@ -77,4 +77,15 @@ namespace doc::html
 
         return output;
     }
+    inline str print (const str & html)
+    {
+        auto tokens = print(entities(html));
+
+        str s;
+
+        for (auto & t : tokens)
+            s += t.text;
+
+        return s;
+    }
 }
