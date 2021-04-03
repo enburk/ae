@@ -232,3 +232,110 @@ void sys::settings::save (str name, int value) {
     int_settings[name] = value;
     save_settings();
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+#include <dsound.h>
+#pragma comment(lib, "dsound.lib")
+namespace sys::audio
+{
+    struct DATA
+    {
+        LPDIRECTSOUND8      DS = nullptr;
+        LPDIRECTSOUNDBUFFER PB = nullptr; // primary buffer
+        LPDIRECTSOUNDBUFFER B1 = nullptr; // secondary buffer
+        LPDIRECTSOUNDBUFFER B2 = nullptr; // secondary buffer
+
+        DATA ()
+        {
+            HRESULT hr;
+            hr = DirectSoundCreate8(0, &DS, 0);
+            if (FAILED(hr)) throw std::runtime_error(
+                "DirectSoundCreate failed");
+
+            DSBUFFERDESC desc;
+            ZeroMemory (&desc, sizeof(desc));
+            desc.dwSize      = sizeof(desc);
+            desc.dwFlags = DSBCAPS_PRIMARYBUFFER;
+            desc.guid3DAlgorithm = GUID_NULL;
+
+            hr = DS->CreateSoundBuffer(&desc, &PB, 0);
+            if (FAILED(hr)) throw std::runtime_error(
+                "CreateSoundBuffer failed");
+        }
+        ~DATA ()
+        {
+            if (B1) B1->Release();
+            if (B2) B2->Release();
+            if (PB) PB->Release();
+            if (DS) DS->Release();
+        }
+    };
+
+    player::player()
+    {
+        data_ = new DATA;
+    }
+    player::~player()
+    {
+        if (data_) delete (DATA*)(data_);
+    }
+
+    void player::load(array<byte> input, int channels, int samples, int bps)
+    {
+        HRESULT hr;
+        DATA & data = *(DATA*)(data_);
+
+        int align = channels * bps / 8;
+        duration = (double) input.size() / (align*samples);
+
+        if (data.B1) { data.B1->Release(); data.B1 = nullptr; }
+
+        if (input.empty()) return;
+
+        WAVEFORMATEX wfmt;
+        ZeroMemory (&wfmt, sizeof(wfmt));
+        wfmt.wFormatTag      = WAVE_FORMAT_PCM;
+        wfmt.nChannels       = channels;
+        wfmt.nSamplesPerSec  = samples;
+        wfmt.nAvgBytesPerSec = samples * align;
+        wfmt.nBlockAlign     = align;
+        wfmt.wBitsPerSample  = bps;
+
+        DSBUFFERDESC desc;
+        ZeroMemory (&desc, sizeof(desc));
+        desc.dwSize          = sizeof(desc);
+        desc.guid3DAlgorithm = GUID_NULL;
+        desc.dwFlags         = 0;
+        desc.dwBufferBytes   = input.size();
+        desc.lpwfxFormat     = & wfmt;
+
+        hr = data.DS->CreateSoundBuffer(&desc, &data.B1, 0);
+        if (FAILED(hr)) throw std::runtime_error(
+            "CreateSoundBuffer failed");
+
+        byte* p1; DWORD s1;
+        byte* p2; DWORD s2;
+
+        data.B1->Lock(0, 0,
+            (void**) &p1, &s1,
+            (void**) &p2, &s2,
+            DSBLOCK_ENTIREBUFFER);
+
+        memcpy (p1, input.data(), s1);
+
+        data.B1->Unlock(p1, s1, p2, s2);
+        data.B1->SetCurrentPosition(0);
+    }
+    void player::play(double rise, double fade)
+    {
+        DATA & data = *(DATA*)(data_);
+        data.B1->Play(0, 0, 0);
+    }
+    void player::stop(double fade)
+    {
+        DATA & data = *(DATA*)(data_);
+        data.B1->Stop();
+    }
+}
+

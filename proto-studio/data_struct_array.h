@@ -66,6 +66,7 @@ namespace data
 
         void insert(iterator_ i, range_type r) { container::insert(i, r.begin(), r.end()); }
         void insert(iterator_ i, value_type e) { container::insert(i, std::move(e)); }
+        void insert(iterator_ i, iterator_ b, iterator_ e) { container::insert(i, b, e); }
 
         void insert(int i, range_type r) { container::insert(begin()+i, r.begin(), r.end()); }
         void insert(int i, value_type e) { container::insert(begin()+i, std::move(e)); }

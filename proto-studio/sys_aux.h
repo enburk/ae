@@ -57,6 +57,22 @@ namespace sys
         std::atomic<bool> stop = false;
         ~directory_watcher(){cancel();}
     };
+
+    namespace audio
+    {
+        struct player
+        {
+            player();
+           ~player();
+
+            void load(array<byte>, int channels, int samples, int bps);
+            void play(double rise, double fade);
+            void stop(double fade);
+            double duration = 0.0;
+
+            void* data_ = nullptr;
+        };
+    }
 }
 
 namespace pix
