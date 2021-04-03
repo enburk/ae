@@ -26,6 +26,10 @@ auto find_if (unary_predicate match)
     return i;
 }
 
+auto find (value_type const& element)
+{
+    return std::find(begin(), end(), element);
+}
 auto find (value_type const& element) const
 {
     return std::find(begin(), end(), element);

@@ -80,7 +80,9 @@ namespace gui
 
     struct media
     {
-        enum class state { loading, playing, finished, failure };
+        enum class state {
+            loading, ready, playing,
+            finished, failure };
     };
 
     struct player : widget<player>
@@ -88,8 +90,8 @@ namespace gui
         std::atomic<media::state> state = media::state::finished;
         std::atomic<time> duration = time{};
         std::atomic<time> elapsed = time{};
+        std::atomic<bool> finish = false;
         std::atomic<bool> pause = false;
-        std::atomic<bool> stop = false;
         XY resolution;
         str error;
 
@@ -124,7 +126,7 @@ namespace gui
                 {
                     data.resize(range.size());
                     std::copy(range.begin(), range.end(), data.begin());
-                    play();
+                    ready();
                 }
                 catch (std::exception & e) {
                     error = e.what();
@@ -157,7 +159,7 @@ namespace gui
                     std::ofstream ofstream("test.jpg", std::ios::binary);
                     ofstream.write((char*)(data.data()), size); }
 
-                    play();
+                    ready();
                 }
                 catch (std::exception & e) {
                     error = e.what();
@@ -165,6 +167,9 @@ namespace gui
                 }
             });
         }
+
+        void play () { pause = false; state = media::state::finished; }
+        void stop () { pause = true;  }
 
         void on_change (void* what) override
         {
@@ -190,7 +195,7 @@ namespace gui
 
         private: void reset ()
         {
-            stop = true;
+            finish = true;
             if (thread.joinable())
                 thread.join();
 
@@ -203,7 +208,7 @@ namespace gui
             state = media::state::finished;
             error = "";
         }
-        private: void play ()
+        private: void ready ()
         {
             if (data.size() > 5  
             &&  data[0] == 0x47  // G
@@ -221,7 +226,7 @@ namespace gui
                 int next = (current_frame + 1) % 2;
                 sources[next] = pix::unpack(data.from(0)).value();
                 resolution = sources[next].size;
-                state = media::state::finished;
+                state = media::state::ready;
                 frame_ready = true;
             }
         }

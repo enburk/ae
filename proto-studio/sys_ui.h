@@ -23,7 +23,9 @@ namespace sys
     }
     namespace mouse
     {
-        void cursor(str image);
+        void image(str image);
+        auto position() -> XY;
+        void position(XY);
     }
 
     enum class choice
@@ -137,7 +139,8 @@ namespace sys
         void on_timing() override
         {
              gui::time::set();
-             gui::active_properties.for_each([](auto p){ p->tick(); });
+             auto active_properties_copy = gui::active_properties;
+             active_properties_copy.for_each([](auto p){ p->tick(); });
              for (XYWH r : widget.updates) widget.render(*this, r, r.origin);
              widget.updates.clear();
         }
@@ -172,7 +175,8 @@ namespace sys
         void on_timing() override
         {
              gui::time::set();
-             gui::active_properties.for_each([](auto p){ p->tick(); });
+             auto active_properties_copy = gui::active_properties;
+             active_properties_copy.for_each([](auto p){ p->tick(); });
              image.updates = widget.updates;
              widget.updates.clear();
              update();

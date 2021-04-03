@@ -42,7 +42,7 @@ data::str sys::dialog (str title, str text, sys::choice choice, void* handle)
     }
 }
 
-void sys::mouse::cursor(str image)
+void sys::mouse::image(str image)
 {
     ::SetCursor(::LoadCursor(NULL,
         image == "hand" ? IDC_HAND :
@@ -53,6 +53,15 @@ void sys::mouse::cursor(str image)
         image == "horizontal splitter" ? IDC_SIZENS : 
         IDC_ARROW
     ));
+}
+
+auto sys::mouse::position() -> XY
+{
+    POINT p; ::GetCursorPos(&p); return XY{p.x, p.y};
+}
+void sys::mouse::position(XY p)
+{
+    ::SetCursorPos(p.x, p.y);
 }
 
 // https://blog.keyman.com/2008/06/robust-key-mess/
@@ -343,7 +352,7 @@ void sys::window::render (XYWH r, uint8_t alpha, RGBA c)
     auto h = (float)r.h; h = -h;
 
     glBegin(GL_QUADS);
-    glColor4f(c.r/255.0f, c.g/255.0f, c.b/255.0f, c.a/255.0f);
+    glColor4d(c.r/255.0, c.g/255.0, c.b/255.0, c.a*alpha/255.0/255.0);
     glVertex3f(x,y,0);
     glVertex3f(x+w,y,0);
     glVertex3f(x+w,y+h,0);
@@ -398,7 +407,7 @@ void sys::window::render (XYWH r, uint8_t alpha, frame<RGBA> frame)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glBegin(GL_QUADS);
-    glColor3f(1.0f, 1.0f, 1.0f); // prevent darkness
+    glColor4d(1.0, 1.0, 1.0, alpha/255.0);
     glTexCoord2d(tx1, ty1); glVertex2d(r.x,     r.y);
     glTexCoord2d(tx2, ty1); glVertex2d(r.x+r.w, r.y);
     glTexCoord2d(tx2, ty2); glVertex2d(r.x+r.w, r.y+r.h);

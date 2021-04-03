@@ -23,6 +23,7 @@ namespace gui::text
         binary_property<XY> alignment = XY{center, center};
         binary_property<XY> margin_right;
         binary_property<XY> margin_left;
+        binary_property<XY> padding;
         binary_property<XY> shift;
 
         unary_property<array<range>> highlights;
@@ -207,6 +208,7 @@ namespace gui::text
                 refresh();
             }
             if (what == &word_wrap
+            ||  what == &padding
             ||  what == &margin_right
             ||  what == &margin_left
             ||  what == &alignment)

@@ -82,6 +82,7 @@ namespace gui::base
         virtual bool mouse_sensible (XY p) { return false; }
         virtual void on_mouse_press (XY, char button, bool down) {}
         virtual bool on_mouse_wheel (XY, int) { return false; }
+        virtual void on_mouse_hover_child (XY) {}
         virtual void on_mouse_hover (XY) {}
         virtual void on_mouse_leave () {}
 
@@ -119,7 +120,7 @@ namespace gui::base
                 }
             }
             on_mouse_press(p, button, down);
-            sys::mouse::cursor(mouse_image.now);
+            sys::mouse::image(mouse_image.now);
         }
 
         void mouse_move (XY p)
@@ -141,10 +142,11 @@ namespace gui::base
                 mouse_hover_child->mouse_leave();
 
             mouse_hover_child = hover;
-            if (mouse_hover_child) return;
+            if (mouse_hover_child) {
+            on_mouse_hover_child(p); return; }
             on_mouse_hover(p); // every mouse_move
 
-            sys::mouse::cursor(mouse_image.now);
+            sys::mouse::image(mouse_image.now);
         }
 
         void mouse_leave ()
