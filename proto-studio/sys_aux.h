@@ -63,11 +63,15 @@ namespace sys
         struct player
         {
             player();
+            player(player &&) = default;
+            player(player const&) = delete;
+            player& operator = (player const&) = delete;
+            player& operator = (player &&) = default;
            ~player();
 
-            void load(array<byte>, int channels, int samples, int bps);
-            void play(double rise, double fade);
-            void stop(double fade);
+            void load (array<byte>, int channels, int samples, int bps);
+            void play (double rise = 0.0, double fade = 0.0);
+            void stop (double fade = 0.0);
             double duration = 0.0;
 
             void* data_ = nullptr;

@@ -464,6 +464,8 @@ void sys::window::render (XYWH r, uint8_t alpha, glyph g, XY offset, int x)
         .from(3*offset.x, offset.y));
 }
 
+HWND MainWindowHwnd = nullptr;
+
 void sys::window::create (str title)
 {
     WNDCLASS wc = {};
@@ -492,6 +494,8 @@ void sys::window::create (str title)
     if (!handle) throw std::system_error(
         ::GetLastError(), std::system_category(),
         "Failed to create window.");
+
+    MainWindowHwnd = handle;
 
     ::ShowWindow(handle, SW_MAXIMIZE);
 }

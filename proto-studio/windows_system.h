@@ -235,6 +235,8 @@ void sys::settings::save (str name, int value) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+extern HWND MainWindowHwnd;
+
 #include <dsound.h>
 #pragma comment(lib, "dsound.lib")
 namespace sys::audio
@@ -252,6 +254,10 @@ namespace sys::audio
             hr = DirectSoundCreate8(0, &DS, 0);
             if (FAILED(hr)) throw std::runtime_error(
                 "DirectSoundCreate failed");
+
+            hr = DS->SetCooperativeLevel(MainWindowHwnd, DSSCL_PRIORITY);
+            if (FAILED(hr)) throw std::runtime_error(
+                "SetCooperativeLevel failed");
 
             DSBUFFERDESC desc;
             ZeroMemory (&desc, sizeof(desc));
@@ -272,10 +278,7 @@ namespace sys::audio
         }
     };
 
-    player::player()
-    {
-        data_ = new DATA;
-    }
+    player:: player() {}
     player::~player()
     {
         if (data_) delete (DATA*)(data_);
@@ -283,7 +286,7 @@ namespace sys::audio
 
     void player::load(array<byte> input, int channels, int samples, int bps)
     {
-        HRESULT hr;
+        if (!data_) data_ = new DATA;
         DATA & data = *(DATA*)(data_);
 
         int align = channels * bps / 8;
@@ -310,6 +313,7 @@ namespace sys::audio
         desc.dwBufferBytes   = input.size();
         desc.lpwfxFormat     = & wfmt;
 
+        HRESULT hr;
         hr = data.DS->CreateSoundBuffer(&desc, &data.B1, 0);
         if (FAILED(hr)) throw std::runtime_error(
             "CreateSoundBuffer failed");
