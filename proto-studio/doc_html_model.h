@@ -92,14 +92,30 @@ namespace doc::html
             else
             if (entity.name == "font")
             {
+                auto style = styles.back();
+
                 for (auto [attr, value] : entity.attr)
                 {
+                    if (attr == "face")
+                    {
+                        value.strip("\"");
+                        style.font.face = value;
+                    }
+                    if (attr == "size")
+                    {
+                        value.strip("\"");
+                        if (value.ends_with("%")) {
+                            value.truncate();
+                            int x = std::atoi(value.c_str());
+                            int size = style.font.size;
+                            if (size == 0) size = gui::metrics::text::height;
+                            style.font.size = size * x/100;
+                        }
+                    }
                     if (attr == "color" && // <font color=#008000>
                         value.starts_with("#") &&
                         value.size() == 1+6)
                     {
-                        styles += styles.back();
-                        auto & style = styles.back();
                         str r = value.from(1).upto(3);
                         str g = value.from(3).upto(5);
                         str b = value.from(5).upto(7);
@@ -109,6 +125,8 @@ namespace doc::html
                         style.color.a = 255;
                     }
                 }
+
+                styles += style;
             }
             else
             if (entity.name == "div")

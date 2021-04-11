@@ -96,6 +96,12 @@ namespace data
              container::resize(size()-1);
         }
 
+        void deduplicate () {
+            sort(std::less{});
+            container::erase(std::unique(
+                begin(), end()), end());
+        }
+
         #include "data_algo_random.h"
         #include "data_algo_resizing.h"
     };
