@@ -64,11 +64,20 @@ namespace pix
         void operator &= (XYXY q) { *this = *this & q; };
         void operator |= (XYXY q) { *this = *this | q; };
 
-        void operator += (XY p) { l += p.x; t += p.y; r += p.x; b += p.y; }; friend XYXY operator + (XYXY a, XY p) { a += p; return a; }
-        void operator -= (XY p) { l -= p.x; t -= p.y; r -= p.x; b -= p.y; }; friend XYXY operator - (XYXY a, XY p) { a -= p; return a; }
+        void operator += (XYXY q) { l += q.l; t += q.t; r -= q.r; b -= q.b; }
+        void operator -= (XYXY q) { l -= q.l; t -= q.t; r += q.r; b += q.b; }
+        friend XYXY operator + (XYXY a, XYXY q) { a += q; return a; }
+        friend XYXY operator - (XYXY a, XYXY q) { a -= q; return a; }
 
-        void operator *= (int n) { l *= n; t *= n; r *= n; b *= n; }; friend XYXY operator * (XYXY a, int n) { a *= n; return a; }
-        void operator /= (int n) { l /= n; t /= n; r /= n; b /= n; }; friend XYXY operator / (XYXY a, int n) { a /= n; return a; }
+        void operator += (XY p) { l += p.x; t += p.y; r += p.x; b += p.y; }
+        void operator -= (XY p) { l -= p.x; t -= p.y; r -= p.x; b -= p.y; }
+        friend XYXY operator + (XYXY a, XY p) { a += p; return a; }
+        friend XYXY operator - (XYXY a, XY p) { a -= p; return a; }
+
+        void operator *= (int n) { l *= n; t *= n; r *= n; b *= n; }
+        void operator /= (int n) { l /= n; t /= n; r /= n; b /= n; }
+        friend XYXY operator * (XYXY a, int n) { a *= n; return a; }
+        friend XYXY operator / (XYXY a, int n) { a /= n; return a; }
 
         bool operator == (XYXY q) const { return l == q.l && t == q.t && r == q.r && b == q.b; }
         bool operator != (XYXY q) const { return ! (*this == q); }
@@ -95,20 +104,30 @@ namespace pix
 
         explicit operator bool () { return w > 0 && h > 0; }
 
-        void operator &= (XYWH r) { *this = XYXY(*this) & XYXY(r); }; friend XYWH operator & (XYWH a, XYWH b) { a &= b; return a; }
-        void operator |= (XYWH r) { *this = XYXY(*this) | XYXY(r); }; friend XYWH operator | (XYWH a, XYWH b) { a |= b; return a; }
+        void operator &= (XYWH r) { *this = XYXY(*this) & XYXY(r); }
+        void operator |= (XYWH r) { *this = XYXY(*this) | XYXY(r); }
+        friend XYWH operator & (XYWH a, XYWH b) { a &= b; return a; }
+        friend XYWH operator | (XYWH a, XYWH b) { a |= b; return a; }
 
-        void operator += (XY p) { x += p.x; y += p.y; }; friend XYWH operator + (XYWH r, XY p) { r += p; return r; }
-        void operator -= (XY p) { x -= p.x; y -= p.y; }; friend XYWH operator - (XYWH r, XY p) { r -= p; return r; }
+        void operator += (XY p) { x += p.x; y += p.y; }
+        void operator -= (XY p) { x -= p.x; y -= p.y; }
+        friend XYWH operator + (XYWH r, XY p) { r += p; return r; }
+        friend XYWH operator - (XYWH r, XY p) { r -= p; return r; }
 
-        void operator *= (int n) { x *= n; y *= n; w *= n; h *= n; }; friend XYWH operator * (XYWH r, int n) { r *= n; return r; }
-        void operator /= (int n) { x /= n; y /= n; w /= n; h /= n; }; friend XYWH operator / (XYWH r, int n) { r /= n; return r; }
+        void operator *= (int n) { x *= n; y *= n; w *= n; h *= n; }
+        void operator /= (int n) { x /= n; y /= n; w /= n; h /= n; }
+        friend XYWH operator * (XYWH r, int n) { r *= n; return r; }
+        friend XYWH operator / (XYWH r, int n) { r /= n; return r; }
 
-        bool operator == (XYWH r) const { return x == r.x && y == r.y && w == r.w && h == r.h; }
         bool operator != (XYWH r) const { return ! (*this == r); }
+        bool operator == (XYWH r) const { return
+            x == r.x and y == r.y and
+            w == r.w and h == r.h; }
 
-        bool includes (XY p) const { return x <= p.x && p.x <  x + w && y <= p.y && p.y <  y + h; }
         bool excludes (XY p) const { return !includes(p); }
+        bool includes (XY p) const { return
+            x <= p.x and p.x < x + w and
+            y <= p.y and p.y < y + h; }
 
         void inflate (int n) { x -= n; y -= n; w += n+n; h += n+n; }
         void deflate (int n) { x += n; y += n; w -= n+n; h -= n+n; }

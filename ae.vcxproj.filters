@@ -261,6 +261,9 @@
     <ClInclude Include="proto-studio\doc_ae_syntax_typing.h">
       <Filter>doc_ae</Filter>
     </ClInclude>
+    <ClInclude Include="proto-studio\gui_widget_player.h">
+      <Filter>gui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="proto-studio\!main.cpp">

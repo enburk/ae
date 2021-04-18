@@ -95,6 +95,9 @@ namespace pix
     template<class color> inline
     image<color> resized (frame<color> src, XY size)
     {
+        if (size.x <= 0 or size.y <= 0)
+            return image<color>{};
+
         if (size.x < src.size.x/2)
         {
             image<color> dst(XY(src.size.x/2, src.size.y));

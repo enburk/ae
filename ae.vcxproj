@@ -201,6 +201,7 @@
     <ClInclude Include="proto-studio\gui_widget_canvas.h" />
     <ClInclude Include="proto-studio\gui_widget_console.h" />
     <ClInclude Include="proto-studio\gui_widget_image.h" />
+    <ClInclude Include="proto-studio\gui_widget_player.h" />
     <ClInclude Include="proto-studio\gui_widget_scroller.h" />
     <ClInclude Include="proto-studio\gui_widget_text_aux.h" />
     <ClInclude Include="proto-studio\gui_widget_text_column.h" />

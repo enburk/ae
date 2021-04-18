@@ -23,7 +23,11 @@ namespace gui
         time repeat_notch;
         property<time> timer;
 
-        frame frame; image image; text::view text;
+        frame frame;
+        canvas canvas;
+        image image;
+        icon icon;
+        text::view text;
 
         std::function<void(void)> on_change_state = [this]()
         {
@@ -41,13 +45,15 @@ namespace gui
             if (on           .now) colors = style.active; else
             if (mouse_hover  .now) colors = style.hovered;
 
-            text.canvas.color.go(colors.first);
+            canvas.color.go(colors.first);
+            icon.color.go(colors.second);
             text.color.go(colors.second);
 
             auto r = coord.now.local();
             frame.thickness = metrics::line::width;
-            frame.coord = r; r.deflate(frame.thickness.now);
+            frame.coord = r; r.deflate(frame.thickness.now); canvas.coord = r;
             image.coord = r; r.deflate(frame.thickness.now);
+            icon .coord = r;
             text .coord = r;
         };
 

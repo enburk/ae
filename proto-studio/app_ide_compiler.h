@@ -114,7 +114,7 @@ namespace ide::compiler
 
             str sources = "\"" + cpp(src).string() + "\"";
             sys::process compile(cl, flags + " " + sources + " " + links,
-            sys::process::options{.hidden = true, .out = cllog});
+            sys::process::options{.out = cllog, .hidden = true});
             if (!compile.wait(5*1000)) throw std::runtime_error(
                 "Compilation takes too long.");
         }

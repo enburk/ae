@@ -4,6 +4,7 @@
 
 sys::process::process (std::filesystem::path path, str args, options opt)
 {
+    PROCESS_INFORMATION pi; 
     HANDLE out = 0; if (opt.out != std::filesystem::path{})
     {
         SECURITY_ATTRIBUTES sa;
@@ -21,33 +22,60 @@ sys::process::process (std::filesystem::path path, str args, options opt)
             NULL);
     }
 
-    STARTUPINFOW si;
-    PROCESS_INFORMATION pi; 
-    ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
-    ZeroMemory(&si, sizeof(STARTUPINFO));
-    si.cb = sizeof(STARTUPINFO); 
-
-    if (opt.out != std::filesystem::path{}) {
-        si.dwFlags |= STARTF_USESTDHANDLES;
-        si.hStdInput = NULL;
-        si.hStdError = out;
-        si.hStdOutput = out;
-    }
-
     DWORD flags = 0; if (opt.hidden) flags = CREATE_NO_WINDOW;
 
-    auto ws = winstr(" " + args);
-    array<WCHAR> buffer; buffer.resize((int)(ws.size()));
-    std::copy(ws.begin(), ws.end(), buffer.begin());
+    if (opt.ascii)
+    {
+        STARTUPINFOA si;
+        ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+        ZeroMemory(&si, sizeof(STARTUPINFOA));
+        si.cb = sizeof(STARTUPINFOA); 
 
-    BOOL rc = CreateProcessW(
-        winstr(path.string()).c_str(),
-        buffer.data(),
-        NULL, NULL, TRUE, flags,
-        NULL, NULL, &si, &pi);
+        if (opt.out != std::filesystem::path{}) {
+            si.dwFlags |= STARTF_USESTDHANDLES;
+            si.hStdInput = NULL;
+            si.hStdError = out;
+            si.hStdOutput = out;
+        }
 
-    if (!rc) throw std::runtime_error(
-        GetErrorMessage(::GetLastError()));
+        std::string buffer = " " + args;
+
+        BOOL rc = CreateProcessA(
+            path.string().c_str(),
+            buffer.data(),
+            NULL, NULL, TRUE, flags,
+            NULL, NULL, &si, &pi);
+
+        if (!rc) throw std::runtime_error(
+            GetErrorMessage(::GetLastError()));
+    }
+    else
+    {
+        STARTUPINFOW si;
+        ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+        ZeroMemory(&si, sizeof(STARTUPINFO));
+        si.cb = sizeof(STARTUPINFO); 
+
+        if (opt.out != std::filesystem::path{}) {
+            si.dwFlags |= STARTF_USESTDHANDLES;
+            si.hStdInput = NULL;
+            si.hStdError = out;
+            si.hStdOutput = out;
+        }
+
+        auto ws = winstr(" " + args);
+        array<WCHAR> buffer; buffer.resize((int)(ws.size()));
+        std::copy(ws.begin(), ws.end(), buffer.begin());
+
+        BOOL rc = CreateProcessW(
+            winstr(path.string()).c_str(),
+            buffer.data(),
+            NULL, NULL, TRUE, flags,
+            NULL, NULL, &si, &pi);
+
+        if (!rc) throw std::runtime_error(
+            GetErrorMessage(::GetLastError()));
+    }
 
     handle = (size_t)(pi.hProcess);
     if (out != 0) CloseHandle(out);
@@ -56,13 +84,15 @@ sys::process::process (std::filesystem::path path, str args, options opt)
     if (opt.ms_wait_for_input_idle > 0) ::WaitForInputIdle(pi.hProcess, 
         opt.ms_wait_for_input_idle);
 }
+sys::process::process (std::filesystem::path path, str args)
+    : process(path, args, options{})
+        {}
 bool sys::process::wait (int ms)
 {
     if (handle == 0) return false;
     DWORD time = ms == max<int>() ? INFINITE : ms;
     auto rc = ::WaitForSingleObject((HANDLE)(handle), time);
     return rc == WAIT_OBJECT_0 || rc == WAIT_ABANDONED_0;
-
 }
 sys::process::~process ()
 {
@@ -334,12 +364,16 @@ namespace sys::audio
     void player::play(double rise, double fade)
     {
         DATA & data = *(DATA*)(data_);
-        data.B1->Play(0, 0, 0);
+        if (data_ and
+            data.B1)
+            data.B1->Play(0, 0, 0);
     }
     void player::stop(double fade)
     {
         DATA & data = *(DATA*)(data_);
-        data.B1->Stop();
+        if (data_ and
+            data.B1)
+            data.B1->Stop();
     }
 }
 

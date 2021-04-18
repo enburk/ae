@@ -34,9 +34,10 @@ namespace sys
         size_t handle = 0;
         struct options
         {
-            bool hidden = false;
             std::filesystem::path out;
             int ms_wait_for_input_idle = 0;
+            bool hidden = false;
+            bool ascii = false;
         };
         process () noexcept = default;
         process (const process&) = delete;
