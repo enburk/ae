@@ -3,41 +3,6 @@
 #include "gui_widget_text_aux.h"
 namespace gui::text
 {
-    struct token final : widgetarium<glyph>, metrics
-    {
-        array<str> glyphs;
-        str text; str info; style_index style; void fill (
-        str text, str info, style_index style)
-        {
-                this->info =  info;
-            if (this->text == text && this->style == style) return;
-                this->text =  text;   this->style =  style;
-
-            width = ascent = descent = advance = 0;
-
-            glyphs = unicode::glyphs(text);
-            reserve(glyphs.size());
-
-            for (int i=0; i<glyphs.size(); i++)
-            {
-                glyph & glyph = (*this)(i);
-                glyph.value = sys::glyph(glyphs[i], style);
-                ascent  = max(ascent,  glyph.value.now.ascent);
-                descent = max(descent, glyph.value.now.descent);
-            }
-            truncate(glyphs.size());
-            for (auto & glyph : *this)
-            {
-                glyph.move_to(XY(width + advance, ascent - glyph.value.now.ascent));
-                width  += advance + glyph.value.now.width;
-                advance = glyph.value.now.advance;
-            }
-            resize(XY(width, ascent + descent));
-        }
-    };
-
-    ///////////////////////////////////////////////////////////////////////
-
     struct row : metrics
     {
         pix::text::format format;

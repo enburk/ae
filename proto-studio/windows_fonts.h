@@ -19,9 +19,15 @@ struct GDI_FONT
         LONG height = font.size >= 0 ? -font.size :
             MulDiv (font.size, ::GetDeviceCaps(dc,LOGPIXELSY), 72);
 
+        str face = font.face;
+        if (face == "monospace")
+            face =  "Consolas";
+        if (face == "small-caps")
+            face =  "";
+
         LOGFONT lf;
         _tcscpy_s (
-        lf.lfFaceName       , 32, str(font.face.upto(31)).c_str());
+        lf.lfFaceName       , 32, str(face.upto(31)).c_str());
         lf.lfHeight         = height;
         lf.lfWidth          = 0;
         lf.lfEscapement     = 0;
@@ -113,7 +119,17 @@ pix::glyph::glyph (str text, text::style_index i) : text(text), style_index(i)
     auto it = cache_metrics.find(key);
     if (it != cache_metrics.end()) text::metrics::operator = (it->second); else
     {
-        GDI_CONTEXT context(style.font);
+        auto font = style.font;
+        if (font.face == "small-caps" and
+            text.is_ascii_lowercased()) {
+            text = text.ascii_uppercased();
+            font.face = "";
+            font.size = (font.size == 0 ?
+                gui::metrics::text::height:
+                font.size) * 85/100;
+        }
+
+        GDI_CONTEXT context(font);
 
         SIZE Size;
         auto ss = winstr(text);
@@ -130,7 +146,7 @@ pix::glyph::glyph (str text, text::style_index i) : text(text), style_index(i)
         image.fill(RGBA::white);
 
         text::style simple_style;
-        simple_style.font = style.font;
+        simple_style.font = font;
         simple_style.color = RGBA::black;
 
         sys::glyph simple_glyph = *this;
@@ -181,6 +197,17 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
     &&  style.strikeout.color.a == 0)
         return;
 
+    auto text = this->text;
+    auto font = style.font;
+    if (font.face == "small-caps" and
+        text.is_ascii_lowercased()) {
+        text = text.ascii_uppercased();
+        font.face = "";
+        font.size = (font.size == 0 ?
+            gui::metrics::text::height:
+            font.size) * 85/100;
+    }
+
     RGBA fore = style.color;
     RGBA back;
 
@@ -204,7 +231,7 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
     }
 
     text::style cacheable_style;
-    cacheable_style.font = style.font;
+    cacheable_style.font = font;
     cacheable_style.color = style.color;
 
     bool cacheable =
@@ -214,7 +241,7 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
 
     if (cacheable)
     {
-        auto it = cache_glyphs.find(cache_glyphs_key{text, style.font, fore, back});
+        auto it = cache_glyphs.find(cache_glyphs_key{text, font, fore, back});
         if (it != cache_glyphs.end())
         {
             frame.blend_from(it->second.crop()
@@ -223,7 +250,7 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
         }
     }
 
-    GDI_CONTEXT context(style.font);
+    GDI_CONTEXT context(font);
 
     BITMAPINFO bi;
     ZeroMemory(&bi,               sizeof(bi));
@@ -273,7 +300,7 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
         pix::image<RGBA> image (XY(w,h));
         image.crop().copy_from(view);
         cache_glyphs.emplace(
-            cache_glyphs_key{text, style.font, fore, back},
+            cache_glyphs_key{text, font, fore, back},
             image);
     }
 

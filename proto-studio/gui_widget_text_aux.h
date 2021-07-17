@@ -19,13 +19,53 @@ namespace gui::text
         Opacity opacity () override { return semitransparent; }
 
         void on_change (void* what) override {
-             if (what == &value) { resize(XY(value.now.width,
-                 value.now.ascent + value.now.descent));
+             if (what == &value) {
+                 resize(XY(
+                 value.now.width,
+                 value.now.ascent +
+                 value.now.descent));
                  update();
              }
         }
         void on_render (sys::window& window, XYWH r, XY offset, uint8_t alpha) override {
              window.render(r, alpha, value.now, offset, coord.now.x);
+        }
+    };
+
+    struct token final : widgetarium<glyph>, metrics
+    {
+        array<str> glyphs;
+        str text; str info; style_index style; void fill (
+        str text, str info, style_index style)
+        {
+                this->info =  info;
+            if (this->text == text && this->style == style) return;
+                this->text =  text;   this->style =  style;
+
+            width = ascent = descent = advance = 0;
+
+            XY shift = style.style().shift;
+
+            glyphs = unicode::glyphs(text); reserve(glyphs.size());
+
+            for (int i=0; i<glyphs.size(); i++)
+            {
+                glyph & glyph = (*this)(i);
+                glyph.value = sys::glyph(glyphs[i], style);
+                ascent  = max(ascent,  shift.y + glyph.value.now.ascent);
+                descent = max(descent, shift.y + glyph.value.now.descent);
+            }
+
+            truncate(glyphs.size());
+
+            for (auto & glyph : *this)
+            {
+                glyph.move_to(shift + XY(width + advance, ascent - glyph.value.now.ascent));
+                width  += shift.x + glyph.value.now.width + advance;
+                advance = shift.x + glyph.value.now.advance;
+            }
+
+            resize(XY(width, ascent + descent));
         }
     };
 

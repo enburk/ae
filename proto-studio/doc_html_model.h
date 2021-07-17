@@ -82,6 +82,32 @@ namespace doc::html
                 styles.back().font.italic = true;
             }
             else
+            if (entity.name == "small") {
+                int size = gui::metrics::text::height;
+                styles += styles.back();
+                styles.back().font.size = size*85/100;
+            }
+            else
+            if (entity.name == "big") {
+                int size = gui::metrics::text::height;
+                styles += styles.back();
+                styles.back().font.size = size*115/100;
+            }
+            else
+            if (entity.name == "sub") {
+                int size = gui::metrics::text::height;
+                styles += styles.back();
+                styles.back().font.size = size*75/100;
+                styles.back().shift.y = size*50/100;
+            }
+            else
+            if (entity.name == "sup") {
+                int size = gui::metrics::text::height;
+                styles += styles.back();
+                styles.back().font.size = size*75/100;
+                styles.back().shift.y = -size*50/100;
+            }
+            else
             if (entity.name == "a")
             {
                 for (auto [attr, value] : entity.attr)
@@ -107,8 +133,7 @@ namespace doc::html
                         if (value.ends_with("%")) {
                             value.truncate();
                             int x = std::atoi(value.c_str());
-                            int size = style.font.size;
-                            if (size == 0) size = gui::metrics::text::height;
+                            int size = gui::metrics::text::height;
                             style.font.size = size * x/100;
                         }
                     }
@@ -127,6 +152,15 @@ namespace doc::html
                 }
 
                 styles += style;
+            }
+            else
+            if (entity.name == "blockquote")
+            {
+                auto style = styles.back();
+                int x = 3 * sys::metrics(style.font).height;
+                x += formats.back().margin_left.x;
+                formats += formats.back();
+                formats.back().margin_left = pix::XY(x, max<int>());
             }
             else
             if (entity.name == "div")
@@ -161,10 +195,40 @@ namespace doc::html
                             if (val.ends_with("%")) {
                                 val.truncate();
                                 int x = std::atoi(val.c_str());
-                                int size = style.font.size;
-                                if (size == 0) size = gui::metrics::text::height;
+                                int size = gui::metrics::text::height;
                                 style.font.size = size * x/100;
                                 styles += style;
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            if (entity.name == "span")
+            {
+                auto style = styles.back();
+
+                for (auto [attr, value] : entity.attr)
+                {
+                    if (attr == "style")
+                    {
+                        value.strip("\"");
+                        for (str s : value.split_by(";"))
+                        {
+                            if (s == "font-variant:small-caps") {
+                                styles += styles.back();
+                                styles.back().font.face = 
+                                "small-caps";
+                            }
+                            if (s == "font-family:monospace") {
+                                styles += styles.back();
+                                styles.back().font.face = 
+                                "monospace";
+                            }
+                            if (s == "font-style:normal") {
+                                styles += styles.back();
+                                styles.back().font.bold = false;
+                                styles.back().font.italic = false;
                             }
                         }
                     }

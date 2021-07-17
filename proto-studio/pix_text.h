@@ -42,6 +42,7 @@ namespace pix
             line underline;  // "solid", "double", "dahsed", "dotted", "wavy"
             line strikeout;
             line outline;
+            XY   shift;
 
             bool operator == (style const&) const = default;
             bool operator != (style const&) const = default;
@@ -82,12 +83,11 @@ namespace pix
             int height = max<int>();
 
             XY alignment = XY{center, center};
+            XY margin_left;
+            XY margin_right;
 
             bool word_wrap = true;
             bool ellipsis = false;
-
-            XY margin_left;
-            XY margin_right;
 
             bool operator == (const format & f) const = default;
             bool operator != (const format & f) const = default;

@@ -113,11 +113,12 @@ namespace pix
         frame from (XY p) const { return from(p.x, p.y); }
         frame from (int x, int y) const
         {
-            if (x < offset.x or offset.x + size.x <= x) return frame();
-            if (y < offset.y or offset.y + size.y <= y) return frame();
             frame f; f.image = image;
             f.offset = XY(offset.x + x, offset.y + y);
             f.size   = XY(size.x - x, size.y - y);
+            if (f.size.x < 0 or
+                f.size.y < 0)
+                f.size = XY{};
             return f;
         }
 

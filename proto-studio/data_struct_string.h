@@ -159,6 +159,9 @@ namespace data
 
         str ascii_lowercased () const { str s = *this; std::transform(s.begin(), s.end(), s.begin(), ascii_tolower); return s; }
         str ascii_uppercased () const { str s = *this; std::transform(s.begin(), s.end(), s.begin(), ascii_toupper); return s; }
+
+        bool is_ascii_lowercased () const { for (char c : *this) if ('A' <= c and c <= 'Z') return false; return true; }
+        bool is_ascii_uppercased () const { for (char c : *this) if ('a' <= c and c <= 'z') return false; return true; }
     };
 
     namespace unicode

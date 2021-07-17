@@ -85,6 +85,60 @@ namespace doc::html::syntax
         return output;
     }
 
+    inline deque<entity> repair (deque<entity> input)
+    {
+        deque<entity> output;
+
+        array<int> bis; // <b> and <i>
+
+        while (input.size() > 0)
+        {
+            entity e = input.front(); input.pop_front();
+
+            if (e.kind == "text") {;} else
+            if (e.info == "closed") {;} else
+            if (e.info == "closing")
+            {
+                if (e.name == "div")
+                {
+                    while (not bis.empty()) {
+                        str name = output[bis.back()].name;
+                        output += entity{name, "tag"};
+                        output.back().info="closing";
+                        bis.pop_back();
+                    }
+                }
+                if (e.name == "b" or
+                    e.name == "i" )
+                {
+                    if (auto
+                        i = bis.size()-2,
+                        j = bis.size()-1;
+                        bis.size() >= 2 and
+                        output[bis[j]].name != e.name and
+                        output[bis[i]].name == e.name and
+                        bis[j] - bis[i] == 1) std::swap(
+                        output[bis[i]],
+                        output[bis[j]]);
+
+                    if (bis.size() > 0 and output[
+                        bis.back()].name == e.name)
+                        bis.pop_back();
+                }
+            }
+            else
+            {
+                if (e.name == "b" or
+                    e.name == "i" )
+                    bis += output.size();
+            }
+
+            output += e;
+        }
+
+        return output;
+    }
+
     inline array<entity> combine (deque<entity> & input, str closing)
     {
         array<entity> output;
