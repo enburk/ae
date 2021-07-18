@@ -20,8 +20,11 @@ namespace gui::text
             int tokens_width = 0;
             int tokens_advance = 0;
             for (auto token : tokens) {
-                tokens_width += token->width + token->advance;
                 tokens_advance = token->advance;
+                tokens_width = max(tokens_width,
+                    token->style.style().shift.x +
+                    token->width +
+                    token->advance);
             }
             tokens_width -= tokens_advance;
 
@@ -36,8 +39,8 @@ namespace gui::text
             for (auto token : tokens)
             {
                 indices += index;
-                offsets += width + advance;
-                width = offsets.back() + token->width;
+                offsets += width + advance + token->style.style().shift.x;
+                width = max(width, offsets.back() + token->width);
                 advance = token->advance;
                 ascent  = max (ascent,  token->ascent);
                 descent = max (descent, token->descent);

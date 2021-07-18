@@ -168,6 +168,9 @@ pix::glyph::glyph (str text, text::style_index i) : text(text), style_index(i)
         cache_metrics.emplace(key, *this);
     }
 
+    ascent  -= style.shift.y;
+    descent += style.shift.y;
+
     // adapt metrics for style.outline/undeline/shadow here
 }
 

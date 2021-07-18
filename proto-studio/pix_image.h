@@ -116,8 +116,8 @@ namespace pix
             frame f; f.image = image;
             f.offset = XY(offset.x + x, offset.y + y);
             f.size   = XY(size.x - x, size.y - y);
-            if (f.size.x < 0 or
-                f.size.y < 0)
+            if (f.size.x <= 0 or
+                f.size.y <= 0)
                 f.size = XY{};
             return f;
         }
@@ -146,7 +146,7 @@ namespace pix
             image->updates += XYWH(offset.x, offset.y, w, h);
         }
 
-        void blend_to   (frame f, uint8_t alpha = 255) const { f.blend_from (*this, alpha); }
+        void blend_to   (frame f, uint8_t alpha = 255) const { f.blend_from(*this, alpha); }
         void blend_from (frame f, uint8_t alpha = 255)
         {
             if (alpha == 0) return;

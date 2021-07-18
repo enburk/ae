@@ -44,25 +44,23 @@ namespace gui::text
 
             width = ascent = descent = advance = 0;
 
-            XY shift = style.style().shift;
-
             glyphs = unicode::glyphs(text); reserve(glyphs.size());
 
             for (int i=0; i<glyphs.size(); i++)
             {
                 glyph & glyph = (*this)(i);
                 glyph.value = sys::glyph(glyphs[i], style);
-                ascent  = max(ascent,  shift.y + glyph.value.now.ascent);
-                descent = max(descent, shift.y + glyph.value.now.descent);
+                ascent  = max(ascent,  glyph.value.now.ascent);
+                descent = max(descent, glyph.value.now.descent);
             }
 
             truncate(glyphs.size());
 
             for (auto & glyph : *this)
             {
-                glyph.move_to(shift + XY(width + advance, ascent - glyph.value.now.ascent));
-                width  += shift.x + glyph.value.now.width + advance;
-                advance = shift.x + glyph.value.now.advance;
+                glyph.move_to(XY(width + advance, ascent - glyph.value.now.ascent));
+                width = max(width, width + advance + glyph.value.now.width);
+                advance = glyph.value.now.advance;
             }
 
             resize(XY(width, ascent + descent));

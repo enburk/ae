@@ -46,66 +46,100 @@ namespace doc::html
             array<str>    links
         )
         {
+            auto link = links.back();
+            auto style = styles.back();
+            auto format = formats.back();
+
+            int height = sys::metrics(style.font).height;
+
+            std::map<str,str> attr_style;
+            for (auto [attr, value] : entity.attr)
+            {
+                if (attr == "style")
+                {
+                    value.strip("\"");
+                    for (str s : value.split_by(";"))
+                    {
+                        str key, value;
+                        if (s.split_by(":", key, value))
+                            attr_style[key] = value;
+                    }
+                }
+            }
+
+            auto heights = [height](str val)
+            {
+                double h = 0;
+                if (val.ends_with("em")) h = height; else
+                if (val.ends_with("ex")) h = height * 0.39; else
+                return h;
+                val.truncate();
+                val.truncate();
+                return h * std::atof(val.c_str());
+            };
+
             if (entity.kind == "text")
             {
                 if (lines.size() == 0 ||
-                    lines.back().format != formats.back())
-                    lines += line{formats.back()};
+                    lines.back().format != format)
+                    lines += line{format};
 
                 for (auto token : entity.head)
                     lines.back().tokens +=
                         doc::view::token{token.text,
-                            style_index(styles.back()),
-                            links.back()};
+                            style_index(style),
+                            link};
             }
             else
             if (entity.name == "br")
             {
                 if (lines.size() == 0)
-                lines += line{formats.back()};
-                lines.back().tokens += token{"\n", style_index(styles.back())};
-                lines += line{formats.back()};
+                lines += line{format};
+                lines.back().tokens += token{"\n", style_index(style)};
+                lines += line{format};
             }
             else
             if (entity.name == "h4") {
-                styles += styles.back();
-                styles.back().font.bold = true;
+                style.font.bold = true;
+                styles += style;
             }
             else
             if (entity.name == "b") {
-                styles += styles.back();
-                styles.back().font.bold = true;
+                style.font.bold = true;
+                styles += style;
             }
             else
             if (entity.name == "i") {
-                styles += styles.back();
-                styles.back().font.italic = true;
+                style.font.italic = true;
+                styles += style;
             }
             else
             if (entity.name == "small") {
-                int size = gui::metrics::text::height;
-                styles += styles.back();
-                styles.back().font.size = size*85/100;
+                style.font.size = height * 85/100;
+                styles += style;
             }
             else
             if (entity.name == "big") {
-                int size = gui::metrics::text::height;
-                styles += styles.back();
-                styles.back().font.size = size*115/100;
+                style.font.size = height * 125/100;
+                styles += style;
             }
             else
             if (entity.name == "sub") {
-                int size = gui::metrics::text::height;
-                styles += styles.back();
-                styles.back().font.size = size*75/100;
-                styles.back().shift.y = size*50/100;
+                style.font.size = height * 77/100;
+                style.shift.y   = height * 30/100;
+                for (auto [key, val] : attr_style)
+                    if (key == "margin-left")
+                        style.shift.x = heights(val);
+                styles += style;
             }
             else
             if (entity.name == "sup") {
-                int size = gui::metrics::text::height;
-                styles += styles.back();
-                styles.back().font.size = size*75/100;
-                styles.back().shift.y = -size*50/100;
+                style.font.size = height * 77/100;
+                style.shift.y  = -height * 30/100;
+                for (auto [key, val] : attr_style)
+                    if (key == "margin-left")
+                        style.shift.x = heights(val);
+                styles += style;
             }
             else
             if (entity.name == "a")
@@ -118,8 +152,6 @@ namespace doc::html
             else
             if (entity.name == "font")
             {
-                auto style = styles.back();
-
                 for (auto [attr, value] : entity.attr)
                 {
                     if (attr == "face")
@@ -150,55 +182,33 @@ namespace doc::html
                         style.color.a = 255;
                     }
                 }
-
                 styles += style;
             }
             else
             if (entity.name == "blockquote")
             {
-                auto style = styles.back();
-                int x = 3 * sys::metrics(style.font).height;
-                x += formats.back().margin_left.x;
-                formats += formats.back();
-                formats.back().margin_left = pix::XY(x, max<int>());
+                int x = 3 * height + format.margin_left.x;
+                format.margin_left = pix::XY(x, max<int>());
+                formats += format;
             }
             else
             if (entity.name == "div")
             {
-                auto style = styles.back();
-
-                for (auto [attr, value] : entity.attr)
+                for (auto [key, val] : attr_style)
                 {
-                    if (attr == "style") // <div style="margin-left: 9em">
+                    if (key == "margin-left") {
+                        format.margin_left = pix::XY(heights(val), max<int>());
+                        formats += format;
+                    }
+
+                    if (key == "line-height")
                     {
-                        str arg, val;
-                        value.strip("\"");
-                        value.split_by(":", arg, val);
-                        arg.strip();
-                        val.strip();
-
-                        if (arg == "margin-left")
-                        {
-                            if (val.ends_with("em")) {
-                                val.truncate();
-                                val.truncate();
-                                int x = std::atoi(val.c_str());
-                                x = x * sys::metrics(style.font).height;
-                                // x += formats.back().margin_left.x;
-                                formats += formats.back();
-                                formats.back().margin_left = pix::XY(x, max<int>());
-                            }
-                        }
-
-                        if (arg == "line-height")
-                        {
-                            if (val.ends_with("%")) {
-                                val.truncate();
-                                int x = std::atoi(val.c_str());
-                                int size = gui::metrics::text::height;
-                                style.font.size = size * x/100;
-                                styles += style;
-                            }
+                        if (val.ends_with("%")) {
+                            val.truncate();
+                            int x = std::atoi(val.c_str());
+                            int size = gui::metrics::text::height;
+                            style.font.size = size * x/100;
+                            styles += style;
                         }
                     }
                 }
@@ -206,31 +216,21 @@ namespace doc::html
             else
             if (entity.name == "span")
             {
-                auto style = styles.back();
-
-                for (auto [attr, value] : entity.attr)
+                for (auto [key, val] : attr_style)
                 {
-                    if (attr == "style")
-                    {
-                        value.strip("\"");
-                        for (str s : value.split_by(";"))
-                        {
-                            if (s == "font-variant:small-caps") {
-                                styles += styles.back();
-                                styles.back().font.face = 
-                                "small-caps";
-                            }
-                            if (s == "font-family:monospace") {
-                                styles += styles.back();
-                                styles.back().font.face = 
-                                "monospace";
-                            }
-                            if (s == "font-style:normal") {
-                                styles += styles.back();
-                                styles.back().font.bold = false;
-                                styles.back().font.italic = false;
-                            }
-                        }
+                    if (key == "font-variant") {
+                        style.font.face = val;
+                        styles += style;
+                    }
+                    if (key == "font-family") {
+                        style.font.face = val;
+                        styles += style;
+                    }
+                    if (key == "font-style" and
+                        val == "normal") {
+                        style.font.bold = false;
+                        style.font.italic = false;
+                        styles += style;
                     }
                 }
             }
@@ -241,8 +241,8 @@ namespace doc::html
             if (entity.name == "h4") {
                 if (lines.size() > 0 &&
                     lines.back().tokens.size() > 0) {
-                    lines.back().tokens += token{"\n", style_index(styles.back())};
-                    lines += line{formats.back()};
+                    lines.back().tokens += token{"\n", style_index(style)};
+                    lines += line{format};
                 }
             }
 
