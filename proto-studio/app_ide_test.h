@@ -1,6 +1,7 @@
 #pragma once
-#include "data_struct_array.h"
-#include "data_struct_string.h"
+#include "aux_abc.h"
+#include "aux_unittest_array.h"
+#include "aux_unittest_string.h"
 #include "gui_widget_canvas.h"
 #include "gui_widget_console.h"
 #include "doc_text_model_a.h"
@@ -28,30 +29,29 @@ struct TestFirst : gui::widget<TestFirst>
             if (done) return; done = true;
 
             auto style = pix::text::style{
-                sys::font{"Consolas", gui::metrics::text::height},
-                RGBA::black};
+            sys::font{"Consolas"}, RGBA::black};
             console1.object.page.style = style;
             console2.object.page.style = style;
             console3.object.page.style = style;
 
-            data::unittest::test_array();
-            data::unittest::test("");
+            aux::unittest::test_array();
+            aux::unittest::test("");
             console1.object.page.html = 
-            data::unittest::results; ok &= 
-            data::unittest::all_ok;
+            aux::unittest::results; ok &= 
+            aux::unittest::all_ok;
 
-            data::unittest::test_string();
-            data::unittest::test("");
+            aux::unittest::test_string();
+            aux::unittest::test("");
             console2.object.page.html = 
-            data::unittest::results; ok &= 
-            data::unittest::all_ok;
+            aux::unittest::results; ok &= 
+            aux::unittest::all_ok;
 
-            data::unittest::text_model_a();
-            data::unittest::text_model_b();
-            data::unittest::test("");
+            aux::unittest::text_model_a();
+            aux::unittest::text_model_b();
+            aux::unittest::test("");
             console3.object.page.html = 
-            data::unittest::results; ok &= 
-            data::unittest::all_ok;
+            aux::unittest::results; ok &= 
+            aux::unittest::all_ok;
 
             console1.object.page.scroll.y.top = max<int>();
             console2.object.page.scroll.y.top = max<int>();
@@ -170,6 +170,58 @@ struct TestTexts : gui::widget<TestTexts>
     }
 };
 
+
+struct TestCoros : gui::widget<TestCoros>
+{
+    bool ok = true;
+    bool done = false;
+    gui::canvas canvas;
+    gui::area<gui::console> console1;
+    gui::area<gui::console> console2;
+    gui::area<gui::console> console3;
+    void on_change (void* what) override
+    {
+        if (what == &coord && coord.was.size != coord.now.size)
+        {
+            int W = coord.now.w; if (W <= 0) return; int w = W/3;
+            int H = coord.now.h; if (H <= 0) return;
+            console1.coord = XYWH(w*0, 0, w, H);
+            console2.coord = XYWH(w*1, 0, w, H);
+            console3.coord = XYWH(w*2, 0, w, H);
+
+            if (done) return; done = true;
+
+            auto style = pix::text::style{
+            sys::font{"Consolas"}, RGBA::black};
+            console1.object.page.style = style;
+            console2.object.page.style = style;
+            console3.object.page.style = style;
+
+            aux::unittest::test_coro1();
+            aux::unittest::test("");
+            console1.object.page.html = 
+            aux::unittest::results; ok &= 
+            aux::unittest::all_ok;
+
+            aux::unittest::test_coro2();
+            aux::unittest::test("");
+            console2.object.page.html = 
+            aux::unittest::results; ok &= 
+            aux::unittest::all_ok;
+
+            aux::unittest::test_coro3();
+            aux::unittest::test("");
+            console3.object.page.html = 
+            aux::unittest::results; ok &= 
+            aux::unittest::all_ok;
+
+            console1.object.page.scroll.y.top = max<int>();
+            console2.object.page.scroll.y.top = max<int>();
+            console3.object.page.scroll.y.top = max<int>();
+        }
+    }
+};
+
 struct Test : gui::widget<Test>
 {
     gui::canvas canvas;
@@ -178,12 +230,14 @@ struct Test : gui::widget<Test>
     TestFirst test_first;
     TestFonts test_fonts;
     TestTexts test_texts;
+    TestCoros test_coros;
 
     Test ()
     {
         tests += &test_first; buttons.emplace_back().text.text = "unit test";
         tests += &test_fonts; buttons.emplace_back().text.text = "test fonts";
         tests += &test_texts; buttons.emplace_back().text.text = "test texts";
+        tests += &test_coros; buttons.emplace_back().text.text = "coroutines";
 
         buttons(0).on = true;
         for (int i=1; i<tests.size(); i++)

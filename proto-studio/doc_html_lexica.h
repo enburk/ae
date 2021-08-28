@@ -9,9 +9,9 @@ namespace doc::html::lexica
     {
         array<token> tokens; token t;
 
-        for (auto [n, line] : text.lines.enumerate())
+        for (auto [n, line] : enumerate(text.lines))
         {
-            for (auto [offset, glyph] : line.enumerate())
+            for (auto [offset, glyph] : enumerate(line))
             {
 				if (!glyph.letter() && !glyph.digit())
                 {

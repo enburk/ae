@@ -11,7 +11,7 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' \
 language='*'\"")
 #endif
 
-data::str sys::dialog (str title, str text, sys::choice choice, void* handle)
+str sys::dialog (str title, str text, sys::choice choice, void* handle)
 {
     UINT type = MB_OK;
     switch (choice) {
@@ -50,7 +50,7 @@ void sys::mouse::image(str image)
         image == "no way" ? IDC_NO :
         image == "editor" ? IDC_IBEAM :
         image == "vertical splitter" ? IDC_SIZEWE :
-        image == "horizontal splitter" ? IDC_SIZENS : 
+        image == "horizontal splitter" ? IDC_SIZENS :
         IDC_ARROW
     ));
 }
@@ -126,7 +126,7 @@ LRESULT CALLBACK WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     switch (msg) {
     case WM_COMMAND: if (wparam == 11111) win->on_timing(); break;
-    
+
     case WM_MOUSEMOVE     : win->mouse_on_move  (XY(LX,LY)); break;
     case WM_MOUSEWHEEL    : win->mouse_on_wheel (XY(LX,LY) - o, (short)HIWORD(wparam)); break;
     case WM_LBUTTONDOWN   : win->mouse_on_press (XY(LX,LY), 'L', true ); SetCapture(hwnd); break;
@@ -137,7 +137,7 @@ LRESULT CALLBACK WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_RBUTTONUP     : win->mouse_on_press (XY(LX,LY), 'R', false); break;
     case WM_CAPTURECHANGED: win->mouse_on_leave (); break;
     case WM_MOUSELEAVE    : win->mouse_on_leave (); break;
-    
+
     case WM_SETFOCUS      : win->keyboard_on_focus (true); break;
     case WM_KILLFOCUS     : win->keyboard_on_focus (false); break;
     case WM_SYSKEYDOWN    : win->keyboard_on_press (wm_key(wparam, lparam, true ), true ); break;
@@ -145,7 +145,7 @@ LRESULT CALLBACK WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_KEYDOWN       : win->keyboard_on_press (wm_key(wparam, lparam, true ), true ); break;
     case WM_KEYUP         : win->keyboard_on_press (wm_key(wparam, lparam, false), false); break;
     case WM_CHAR          : win->keyboard_on_input (wm_char(wparam, lparam)); break;
-    
+
     case WM_SIZE:
     {
         static bool minimized = false;
@@ -154,7 +154,7 @@ LRESULT CALLBACK WindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         win->on_resize(XY(LOWORD(lparam), HIWORD(lparam)));
         break;
     }
-    case WM_CREATE : 
+    case WM_CREATE :
         win = (sys::window*)((CREATESTRUCT*)lparam)->lpCreateParams;
         ::SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)(win));
         win->native_handle1 = hwnd;
@@ -188,7 +188,7 @@ LRESULT CALLBACK PixWindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
         int w = ps.rcPaint.right - x;
         int h = ps.rcPaint.bottom - y;
         int W = win->image.size.x;
-    
+
         BITMAPINFO bi;
         ZeroMemory(&bi,              sizeof(bi));
         bi.bmiHeader.biSize        = sizeof(BITMAPINFOHEADER);
@@ -198,7 +198,7 @@ LRESULT CALLBACK PixWindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
         bi.bmiHeader.biBitCount    = 32;
         bi.bmiHeader.biCompression = BI_RGB;
         bi.bmiHeader.biSizeImage   = W*h*4;
-    
+
         auto p = &win->image(0,y);
         SetDIBitsToDevice(hdc, x,y,w,h, x,0,0,h, p, (BITMAPINFO*)&bi, DIB_RGB_COLORS);
         EndPaint(hwnd, &ps);
@@ -237,42 +237,42 @@ LRESULT CALLBACK GpuWindowProc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     auto rc = msg == WM_PAINT ? 0 : WindowProc(hwnd, msg, wparam, lparam);
 
     sys::window* win = (sys::window*)(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
-    
+
     HGLRC handle = win ? (HGLRC)(win->native_handle2) : NULL;
 
     switch (msg) {
-    case WM_CREATE : 
+    case WM_CREATE :
     {
-        PIXELFORMATDESCRIPTOR pfd = 
-        { 
+        PIXELFORMATDESCRIPTOR pfd =
+        {
             sizeof(PIXELFORMATDESCRIPTOR),
-            1,                      // version number 
-            PFD_DRAW_TO_WINDOW |    // support window 
-            PFD_SUPPORT_OPENGL |    // support OpenGL 
-            PFD_DOUBLEBUFFER,       // double buffered 
-            PFD_TYPE_RGBA,          // RGBA type 
-            24,                     // 24-bit color depth 
-            0, 0, 0, 0, 0, 0,       // color bits ignored 
-            0,                      // no alpha buffer 
-            0,                      // shift bit ignored 
-            0,                      // no accumulation buffer 
-            0, 0, 0, 0,             // accum bits ignored 
-            32,                     // 32-bit z-buffer     
-            0,                      // no stencil buffer 
-            0,                      // no auxiliary buffer 
-            PFD_MAIN_PLANE,         // main layer 
-            0,                      // reserved 
-            0, 0, 0                 // layer masks ignored 
+            1,                      // version number
+            PFD_DRAW_TO_WINDOW |    // support window
+            PFD_SUPPORT_OPENGL |    // support OpenGL
+            PFD_DOUBLEBUFFER,       // double buffered
+            PFD_TYPE_RGBA,          // RGBA type
+            24,                     // 24-bit color depth
+            0, 0, 0, 0, 0, 0,       // color bits ignored
+            0,                      // no alpha buffer
+            0,                      // shift bit ignored
+            0,                      // no accumulation buffer
+            0, 0, 0, 0,             // accum bits ignored
+            32,                     // 32-bit z-buffer
+            0,                      // no stencil buffer
+            0,                      // no auxiliary buffer
+            PFD_MAIN_PLANE,         // main layer
+            0,                      // reserved
+            0, 0, 0                 // layer masks ignored
         };
 
         HDC hdc = ::GetDC(hwnd);
 
-        auto pixel_format  = 
+        auto pixel_format  =
         ::ChoosePixelFormat   (hdc, &pfd);
         ::DescribePixelFormat (hdc, pixel_format, sizeof(PIXELFORMATDESCRIPTOR), &pfd );
         ::SetPixelFormat      (hdc, pixel_format, &pfd);
 
-        handle = 
+        handle =
         ::wglCreateContext    (hdc);
         ::wglMakeCurrent      (hdc, handle);
         ::ReleaseDC     (hwnd, hdc);
@@ -536,6 +536,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR pCmdLine, int nCmdShow
         ::DispatchMessage(&msg);
     }
 }
+
 
 
 

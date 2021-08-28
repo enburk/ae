@@ -44,7 +44,7 @@ namespace gui::text
 
             width = ascent = descent = advance = 0;
 
-            glyphs = unicode::glyphs(text); reserve(glyphs.size());
+            glyphs = aux::unicode::glyphs(text); reserve(glyphs.size());
 
             for (int i=0; i<glyphs.size(); i++)
             {
@@ -93,7 +93,7 @@ namespace gui::text
                 const int MS = 1024;
                 int ms = time::now.ms % MS;
                 if (ms > MS/2) ms = MS-ms;
-                auto a = data::clamp<uint8_t>
+                auto a = clamp<uint8_t>
                 (256 * ms/(MS/2) + 00 - 1);
                 if (true) a = a > 127 ? 255 : 0;
                 image.alpha = a;

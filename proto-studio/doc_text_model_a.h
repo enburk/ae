@@ -213,8 +213,8 @@ namespace doc::text::a
     };
 }
 
-#include "data_unittest.h"
-namespace data::unittest
+#include "aux_unittest.h"
+namespace aux::unittest
 {
     void out (doc::text::a::model const& m)
     {

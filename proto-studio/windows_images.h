@@ -13,6 +13,7 @@ static int GetEncoderClsid (const WCHAR* format, CLSID* pClsid);
 static expected<image<RGBA>> FromImage (Image*);
 static Image* MakeImage (frame<RGBA>);
 
+using aux::error;
 
 expected<XY> pix::size (array<sys::byte>::range_type r)
 {

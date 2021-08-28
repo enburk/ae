@@ -1,6 +1,7 @@
 #pragma once
-#include "data.h"
-#include "data_iterators.h"
+#include "aux_aux.h"
+#include "aux_math.h"
+#include "aux_v2_iterators.h"
 #include <concepts>
 #include <ranges>
 

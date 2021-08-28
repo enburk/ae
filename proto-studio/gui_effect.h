@@ -4,7 +4,7 @@
 #include <chrono>
 #include <cassert>
 #include <algorithm>
-#include "data_struct_registry.h"
+#include "aux_registry.h"
 #include "pix_color.h"
 #include "pix_coord.h"
 namespace gui

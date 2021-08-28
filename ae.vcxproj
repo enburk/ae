@@ -47,7 +47,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>ClangCL</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -129,7 +129,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -150,18 +150,27 @@
     <ClInclude Include="proto-studio\app_ide_editor.h" />
     <ClInclude Include="proto-studio\app_ide_flist.h" />
     <ClInclude Include="proto-studio\app_ide_test.h" />
-    <ClInclude Include="proto-studio\data.h" />
-    <ClInclude Include="proto-studio\data_algo_forward.h" />
-    <ClInclude Include="proto-studio\data_algo_random.h" />
-    <ClInclude Include="proto-studio\data_algo_resizing.h" />
-    <ClInclude Include="proto-studio\data_collections.h" />
-    <ClInclude Include="proto-studio\data_iterators.h" />
-    <ClInclude Include="proto-studio\data_ranges.h" />
-    <ClInclude Include="proto-studio\data_struct_array.h" />
-    <ClInclude Include="proto-studio\data_struct_registry.h" />
-    <ClInclude Include="proto-studio\data_struct_string.h" />
-    <ClInclude Include="proto-studio\data_struct_vector.h" />
-    <ClInclude Include="proto-studio\data_unittest.h" />
+    <ClInclude Include="proto-studio\aux_abc.h" />
+    <ClInclude Include="proto-studio\aux_aux.h" />
+    <ClInclude Include="proto-studio\aux_coro.h" />
+    <ClInclude Include="proto-studio\aux_math.h" />
+    <ClInclude Include="proto-studio\aux_registry.h" />
+    <ClInclude Include="proto-studio\aux_unicode.h" />
+    <ClInclude Include="proto-studio\aux_unittest.h" />
+    <ClInclude Include="proto-studio\aux_unittest_array.h" />
+    <ClInclude Include="proto-studio\aux_unittest_string.h" />
+    <ClInclude Include="proto-studio\aux_v1_algo1.h" />
+    <ClInclude Include="proto-studio\aux_v1_algo2.h" />
+    <ClInclude Include="proto-studio\aux_v1_array.h" />
+    <ClInclude Include="proto-studio\aux_v1_string.h" />
+    <ClInclude Include="proto-studio\aux_v2_algo_forward.h" />
+    <ClInclude Include="proto-studio\aux_v2_algo_random.h" />
+    <ClInclude Include="proto-studio\aux_v2_algo_resizing.h" />
+    <ClInclude Include="proto-studio\aux_v2_array.h" />
+    <ClInclude Include="proto-studio\aux_v2_collections.h" />
+    <ClInclude Include="proto-studio\aux_v2_iterators.h" />
+    <ClInclude Include="proto-studio\aux_v2_ranges.h" />
+    <ClInclude Include="proto-studio\aux_v2_string.h" />
     <ClInclude Include="proto-studio\doc.h" />
     <ClInclude Include="proto-studio\doc_ae_lexica.h" />
     <ClInclude Include="proto-studio\doc_ae_model.h" />

@@ -4,9 +4,6 @@
     <Filter Include="gui">
       <UniqueIdentifier>{ffe1ee67-dd58-41d5-8e70-254587c0dd47}</UniqueIdentifier>
     </Filter>
-    <Filter Include="data">
-      <UniqueIdentifier>{22297187-e464-404d-ad0c-e099a2db51ff}</UniqueIdentifier>
-    </Filter>
     <Filter Include="sys">
       <UniqueIdentifier>{d5bb69b5-336f-4f06-abac-a77bd894f396}</UniqueIdentifier>
     </Filter>
@@ -22,20 +19,11 @@
     <Filter Include="app">
       <UniqueIdentifier>{85013704-7325-4295-a14e-dbaef100f960}</UniqueIdentifier>
     </Filter>
+    <Filter Include="aux">
+      <UniqueIdentifier>{d8c5866a-d481-4f76-9963-0ffabc7bfdba}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="proto-studio\data.h">
-      <Filter>data</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\data_collections.h">
-      <Filter>data</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\data_iterators.h">
-      <Filter>data</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\data_ranges.h">
-      <Filter>data</Filter>
-    </ClInclude>
     <ClInclude Include="proto-studio\sys_aux.h">
       <Filter>sys</Filter>
     </ClInclude>
@@ -74,30 +62,6 @@
     </ClInclude>
     <ClInclude Include="proto-studio\pix_text.h">
       <Filter>pix</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\data_unittest.h">
-      <Filter>data</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\data_struct_array.h">
-      <Filter>data</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\data_struct_string.h">
-      <Filter>data</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\data_algo_forward.h">
-      <Filter>data</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\data_algo_random.h">
-      <Filter>data</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\data_algo_resizing.h">
-      <Filter>data</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\data_struct_registry.h">
-      <Filter>data</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\data_struct_vector.h">
-      <Filter>data</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\gui_colors.h">
       <Filter>gui</Filter>
@@ -263,6 +227,69 @@
     </ClInclude>
     <ClInclude Include="proto-studio\gui_widget_player.h">
       <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_abc.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_aux.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_coro.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_math.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_registry.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_unicode.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_unittest.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_unittest_array.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_unittest_string.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_v1_array.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_v1_string.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_v2_algo_forward.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_v2_algo_random.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_v2_algo_resizing.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_v2_array.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_v2_collections.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_v2_iterators.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_v2_ranges.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_v2_string.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_v1_algo1.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_v1_algo2.h">
+      <Filter>aux</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

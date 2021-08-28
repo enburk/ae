@@ -1,5 +1,4 @@
 #pragma once
-#include "data_struct_string.h"
 #include "pix_color.h"
 #include "pix_image.h"
 namespace pix

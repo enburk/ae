@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "data_ranges.h"
+#include "aux_v2_ranges.h"
 
 template<class X> struct
 contiguous_collection_range_
@@ -29,14 +29,13 @@ contiguous_collection_range_
     bool operator != (range_type r) { return !(*this == r); }
     bool operator == (range_type r) { return
         std::equal(begin(), end(),
-            r.begin(), r.end();
-    }
+            r.begin(), r.end(); }
     auto operator <=> (range_type r) { return
         std::lexicographical_compare_three_way(begin(), end(),
             r.begin(), r.end());
     }
 
-    #include "data_algo_random.h"
+    #include "aux_v2_algo_random.h"
 };
 
 template<class X> struct
@@ -68,9 +67,9 @@ contiguous_collection_range
     void insert (iterator i, value_type e) { host.insert(i, std::move(e)); }
     void erase  () { host.erase(begin(), end()); end_ = begin_; }
 
-    void operator = (range_type       r) { replace_by(r); }
-    void operator = (input_range auto r) { replace_by(r); }
-    void operator = (const char *     r) { replace_by(r); }
+    //void operator = (range_type       r) { replace_by(r); }
+    //void operator = (input_range auto r) { replace_by(r); }
+    //void operator = (const char *     r) { replace_by(r); }
 
     bool operator != (range_type r) { return !(*this == r); }
     bool operator == (range_type r) { return
@@ -82,6 +81,6 @@ contiguous_collection_range
             r.begin(), r.end());
     }
 
-    #include "data_algo_random.h"
-    #include "data_algo_resizing.h"
+    #include "aux_v2_algo_random.h"
+    #include "aux_v2_algo_resizing.h"
 };

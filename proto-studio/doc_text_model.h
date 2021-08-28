@@ -25,9 +25,9 @@ namespace doc::text
         {
             tokens.clear(); token t;
 
-            for (auto [n, line] : lines.enumerate())
+            for (auto [n, line] : enumerate(lines))
             {
-                for (auto [offset, glyph] : line.enumerate())
+                for (auto [offset, glyph] : enumerate(line))
                 {
 				    if (!glyph.letter() && !glyph.digit())
                     {

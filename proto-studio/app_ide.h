@@ -66,7 +66,7 @@ struct IDE : gui::widget<IDE>
             + path.string() + " " + what + "</font>";
             reload = true;
         };
-        watcher.error = [this](data::error error){
+        watcher.error = [this](aux::error error){
             console.events << "<font color=#B00020>"
                 "watcher error: " + error + "</font>";
         };

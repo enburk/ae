@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include <optional>
-#include "data.h"
 namespace data
 {
     // Sean Parent, CppCon 2019

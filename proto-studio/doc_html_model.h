@@ -72,10 +72,10 @@ namespace doc::html
                 double h = 0;
                 if (val.ends_with("em")) h = height; else
                 if (val.ends_with("ex")) h = height * 0.39; else
-                return h;
+                return int(h);
                 val.truncate();
                 val.truncate();
-                return h * std::atof(val.c_str());
+                return int(h * std::atof(val.c_str()));
             };
 
             if (entity.kind == "text")
@@ -139,6 +139,11 @@ namespace doc::html
                 for (auto [key, val] : attr_style)
                     if (key == "margin-left")
                         style.shift.x = heights(val);
+                styles += style;
+            }
+            else
+            if (entity.name == "code") {
+                style.font.face = "monospace";
                 styles += style;
             }
             else

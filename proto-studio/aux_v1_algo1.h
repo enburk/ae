@@ -1,13 +1,4 @@
-﻿#include "data_algo_forward.h"
-
-template<class binary_predicate>
-void sort (binary_predicate order = std::less{})
-{
-    std::sort(begin(), end(), order);
-}
-
-
-template<class binary_predicate>
+﻿template<class binary_predicate>
 auto lower_bound (value_type const& e,
     binary_predicate order = std::less<>{}) const
 {
@@ -34,35 +25,6 @@ auto equal_range (value_type const& e,
     return range(r.first, r.second);
 }
 
-
-bool starts_with (random_access_range auto r) const
-{
-    if (size() < r.size()) return false;
-    return std::equal(begin(), begin() + r.size(),
-        r.begin(), r.end());
-}
-bool ends_with (random_access_range auto r) const
-{
-    if (size() < r.size()) return false;
-    return std::equal(end() - r.size(), end(),
-        r.begin(), r.end());
-}
-bool starts_with (char c) const noexcept
-    requires std::same_as<value_type, char> {
-        return size() > 0 && *begin() == c;
-}
-bool ends_with (char c) const noexcept
-    requires std::same_as<value_type, char> {
-        return size() > 0 && *rbegin() == c;
-}
-bool starts_with (const char* s) const
-    requires std::same_as<value_type, char> {
-        return starts_with(str(s));
-}
-bool ends_with (const char* s) const
-    requires std::same_as<value_type, char> {
-        return ends_with(str(s));
-}
 
 auto first () { return range(begin(), begin() + min(1, size())); }
 auto last  () { return range(end() - min(1, size()), end()); }
@@ -123,20 +85,21 @@ auto last (value_type const& e) {
 }
 auto first (const char* s) const
     requires std::same_as<value_type, char> {
-        return first(str(s));
+        return first(std::string_view(s));
 }
 auto first (const char* s)
     requires std::same_as<value_type, char> {
-        return first(str(s));
+        return first(std::string_view(s));
 }
 auto last (const char* s) const
     requires std::same_as<value_type, char> {
-        return last(str(s));
+        return last(std::string_view(s));
 }
 auto last (const char* s)
     requires std::same_as<value_type, char> {
-        return last(str(s));
+        return last(std::string_view(s));
 }
+
 
 template<class T>
 auto first (one_of<T> r)
@@ -218,7 +181,7 @@ bool contains_only (T r) const
 }
 bool contains_only (const char* s) const
     requires std::same_as<value_type, char> {
-        return contains_only(str(s));
+        return contains_only(std::string(s));
 }
 template<class T>
 bool contains_only (one_of<T> r) const

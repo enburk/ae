@@ -36,7 +36,7 @@ namespace doc::text::repo
             return nothing{};
         }
         catch (const std::exception & e) {
-            return data::error("doc::text::repo::source: "
+            return aux::error("doc::text::repo::source: "
                 + path.string() + " : " + e.what());
         }
 
@@ -63,7 +63,7 @@ namespace doc::text::repo
             return nothing{};
         }
         catch (const std::exception & e) {
-            return data::error("doc::text::repo::source: "
+            return aux::error("doc::text::repo::source: "
                 + path.string() + " : " + e.what());
         }
     };

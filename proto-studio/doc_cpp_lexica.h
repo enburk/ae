@@ -47,12 +47,12 @@ namespace doc::cpp::lexica
     {
         array<token> tokens; token t; str comment;
 
-        for (auto [n, line] : text.lines.enumerate())
+        for (auto [n, line] : enumerate(text.lines))
         {
             if (comment == "//") comment = "";
             if (comment == "/**") comment = "/*";
 
-            for (auto [offset, c] : line.enumerate())
+            for (auto [offset, c] : enumerate(line))
             {
                 if (comment != "") { t.kind = "comment"; t.text += c; t.range.upto.offset++; }
 

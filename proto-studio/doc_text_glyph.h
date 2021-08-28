@@ -1,6 +1,5 @@
 #pragma once
-#include "data_struct_array.h"
-#include "data_struct_string.h"
+#include "aux_abc.h"
 namespace doc::text
 {
     using namespace data;
@@ -103,8 +102,6 @@ namespace doc::text
 
     template<class X>
     inline str string (X glyphs)
-    requires input_range<X> &&
-    std::same_as<typename X::value_type, glyph>
     {
         str s; int n = 0;
         for (auto g : glyphs) n += g.size(); s.reserve(n);

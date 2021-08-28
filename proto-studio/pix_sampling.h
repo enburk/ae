@@ -1,10 +1,9 @@
 #pragma once
-#include "data_struct_vector.h"
 #include "pix_color.h"
 #include "pix_image.h"
 namespace pix::sampling
 {
-    using data::vector;
+    using aux::vector;
 
     template<class color> inline
     color linear (frame<color> frame, double x, double y)
@@ -15,17 +14,17 @@ namespace pix::sampling
         int x0 = (int) x;  int x1 = x0 + 1;  double dx = x - x0;
         int y0 = (int) y;  int y1 = y0 + 1;  double dy = y - y0;
 
-        x0 = aux::clamp(x0, 0, sx-1); y0 = aux::clamp(y0, 0, sy-1);
-        x1 = aux::clamp(x1, 0, sx-1); y1 = aux::clamp(y1, 0, sy-1);
+        x0 = clamp(x0, 0, sx-1); y0 = clamp(y0, 0, sy-1);
+        x1 = clamp(x1, 0, sx-1); y1 = clamp(y1, 0, sy-1);
 
         color co00 = frame (x0, y0);
         color co01 = frame (x0, y1);
         color co10 = frame (x1, y0);
         color co11 = frame (x1, y1);
 
-        co00.blend(co10, aux::clamp<uint8_t>(std::lround(255*dx)));
-        co10.blend(co11, aux::clamp<uint8_t>(std::lround(255*dx)));
-        co00.blend(co10, aux::clamp<uint8_t>(std::lround(255*dy)));
+        co00.blend(co10, clamp<uint8_t>(std::lround(255*dx)));
+        co10.blend(co11, clamp<uint8_t>(std::lround(255*dx)));
+        co00.blend(co10, clamp<uint8_t>(std::lround(255*dy)));
 
         return co00;
     }
@@ -43,8 +42,8 @@ namespace pix::sampling
 
         auto source = [frame](int x, int y)
         {
-            x = data::clamp(x, 0, frame.size.x-1);
-            y = data::clamp(y, 0, frame.size.y-1);
+            x = clamp(x, 0, frame.size.x-1);
+            y = clamp(y, 0, frame.size.y-1);
             
             return frame(x,y);
         };
@@ -83,7 +82,7 @@ namespace pix::sampling
 
             c = a0 + a1*dy + a2*dy2 + a3*dy3;
 
-            co.channels[channel] = data::clamp<uint8_t>(c);
+            co.channels[channel] = clamp<uint8_t>(c);
         }
 
         return co;
@@ -95,6 +94,8 @@ namespace pix
     template<class color> inline
     image<color> resized (frame<color> src, XY size)
     {
+        using aux::vector;
+
         if (size.x <= 0 or size.y <= 0)
             return image<color>{};
 

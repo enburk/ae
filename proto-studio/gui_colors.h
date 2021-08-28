@@ -1,7 +1,6 @@
 #pragma once
 #include <map>
 #include <variant>
-#include "data_struct_string.h"
 #include "pix_color.h"
 #include "pix_text.h"
 namespace gui

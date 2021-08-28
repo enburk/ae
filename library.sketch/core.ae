@@ -41,9 +41,17 @@ for x in {natural, integer, rational, real, complex}
     operator (x) × (x) = …
     operator (x) / (x) = …
 
+function Z (N) = …
+function Q (Z) = …
+function R (Q) = …
+function C (R) = …
+
 operator (N) / (N) → Q
 operator (Z) / (Z) → Q
 operator (N) - (N) → Z
+
+operator (N) mod (N) → N
+operator (Z) mod (Z) → Z
 
 operator (N) + (N) → N; operator (Z) + (Z) → Z;
 operator (N) - (N) → Z; operator (Z) - (Z) → Z;
@@ -87,6 +95,8 @@ operator x:y = ratio x y
 ;; operator (f) if (x) else (g) = ;; python
 
 ;; operator if (x) then (y) elif (z) then (a) … else (b) =
+
+
 
 
 

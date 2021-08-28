@@ -64,7 +64,7 @@ namespace doc::ae::syntax
                 output += std::move(s);
             }
             catch (const str & what) {
-                str info = "<font color=#000080>";
+                str info = "<font color=#000080>" + what;
                 info += "  kind: \"<font color=#4000B0>" + s.kind + "\"</font>"; 
                 info += ", scheme: <font color=#800080>" + s.schema + "</font>"; 
                 info += ", source: <font color=#808080>" + s.source + "</font>"; 

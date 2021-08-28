@@ -23,9 +23,9 @@ namespace doc::ae::lexica
     {
         array<token> tokens; token t;
 
-        for (auto [n, line] : text.lines.enumerate())
+        for (auto [n, line] : enumerate(text.lines))
         {
-            for (auto [offset, c] : line.enumerate())
+            for (auto [offset, c] : enumerate(line))
             {
                 if (c == "\r") continue;
 
@@ -37,17 +37,17 @@ namespace doc::ae::lexica
                 if (t.kind == "number"   ) same = alpha(c) || digit(c) || c == "."; else
                 if (t.kind == "semicolon") same = c == ";"; else
                 if (t.kind == "symbol"   ) same =
-                    not alpha(c) && not brace(c) &&
-                    not digit(c) && not brace(t.text) &&
-                    not space(c) &&
-                    c != ","  &&
-                    c != ";"  &&
-                    c != "\n" &&
+                    not alpha(c) and not brace(c) &&
+                    not digit(c) and not brace(t.text) &&
+                    not space(c) and
+                    c != ","     and
+                    c != ";"     and
+                    c != "\n"    and
                     c != "\"";
                 else
                 if (t.kind == "literal") same =
-                    t.text == "\"" || not
-                    t.text.ends_with("\"") ||
+                    t.text == "\"" or not
+                    t.text.ends_with("\"") or
                     t.text.ends_with("\\\"");
 
                 if (same)

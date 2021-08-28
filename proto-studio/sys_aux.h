@@ -2,7 +2,7 @@
 #include <atomic>
 #include <thread>
 #include <filesystem>
-#include "data_struct_string.h"
+#include "aux_abc.h"
 #include "pix_color.h"
 #include "pix_image.h"
 namespace sys
@@ -53,7 +53,7 @@ namespace sys
     {
         using path = std::filesystem::path; path dir;
         std::function<void(path, str)> action = [](path, str){};
-        std::function<void(data::error)> error = [](data::error){};
+        std::function<void(aux::error)> error = [](aux::error){};
         std::thread thread; void watch(); void cancel();
         std::atomic<bool> stop = false;
         ~directory_watcher(){cancel();}

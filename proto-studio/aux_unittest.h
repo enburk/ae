@@ -1,8 +1,6 @@
 ﻿#pragma once
-#include <string>
-#include <vector>
-#include <algorithm>
-namespace data::unittest
+#include "aux_abc.h"
+namespace aux::unittest
 {
     using std::vector;
     using std::string;
@@ -19,27 +17,28 @@ namespace data::unittest
     auto to_string (string s) { return s; }
 
     void out (auto x) { log.push_back(to_string(x)); }
+    void out (string s) { log.push_back(std::move(s)); }
+
+#ifdef aux_v2
     template<class X>
     void out (contiguous_collection_range<X> r)
-    requires std::same_as<typename X::value_type, char>
-    {
-        out(string(r.begin(), r.end()));
-    }
+    requires std::same_as<typename X::value_type, char> {
+        out(string(r.begin(), r.end())); }
+#endif
+
     template<class X>
     void out (X r)
-    requires input_range<X> && std::same_as<typename X::value_type, char>
-    {
+        requires input_range<X> and
+        std::same_as<typename X::value_type, char> {
         string s;
         for (auto x : r) s += x;
-        out(s);
-    }
-    void out (input_range auto r, string delimiter = ", ")
-    {
+        out(s); }
+
+    void out (input_range auto r, string delimiter = ", ") {
         string s;
         for (auto x : r) s += to_string(x) + delimiter;
         if (s != "") s.resize(s.size() - delimiter.size());
-        out(s);
-    }
+        out(s); }
 
     void commit () { for (auto s : log) results += s + "<br>"; log.clear(); }
     void print (string s) { out(s); commit(); }
@@ -183,7 +182,7 @@ namespace data::unittest
          makeable& operator = (makeable const& e) = delete;
          makeable& operator = (makeable     && e) = delete;
     };
-    using neither_copyable_nor_movable =  makeable;
-    using movable =  moveable;
-    using makable =  makeable;
+    using neither_copyable_nor_movable = makeable;
+    using movable = moveable;
+    using makable = makeable;
 }

@@ -1,6 +1,4 @@
 #pragma once
-#include "data_struct_array.h"
-#include "data_struct_string.h"
 #include "pix_text.h"
 namespace doc
 {

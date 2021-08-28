@@ -52,7 +52,7 @@ namespace pix
 
         if (kernel.size() <= 0) { dst.copy_from(src); return; }
 
-        using COLOR = vector<color::color_channels>;
+        using COLOR = aux::vector<color::color_channels>;
         image<COLOR> intermediate (src.size);
         const int d = kernel.size() / 2;
 

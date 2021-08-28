@@ -1,7 +1,6 @@
 #pragma once
 #include <thread>
 #include <atomic>
-#include "data_struct_string.h"
 #include "pix_color.h"
 #include "pix_image.h"
 #include "gui_colors.h"
