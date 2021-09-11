@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <variant>
 #include <string>
+#include <ranges>
 namespace aux
 {
     struct polymorphic
@@ -78,11 +79,15 @@ namespace aux
     template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
     template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
-    namespace aux {
     template<class T, class... Types>
     constexpr bool got (const std::variant<Types...> & v) noexcept {
-        return std::holds_alternative<T>(v);
-    }}
+        return std::holds_alternative<T>(v); }
+
+    template<class Container, class T, class F>
+    void if_found(Container const& c, T const& value, F f) {
+        auto it = std::ranges::find(c, value);
+        if (it != c.end())
+            f(it); }
 }
 
 #define not !  // anti-intellisense

@@ -29,29 +29,12 @@ namespace doc::html
         void set (style s, format f) override
         {
             lines.clear();
-
-            array<style>  styles  {s}; // stack
-            array<format> formats {f}; // stack
-            array<str>    links  {""}; // stack
-
             for (auto entity : entities)
-                proceed(entity, styles, formats, links);
+                proceed(entity, s, f, "");
         }
 
-        void proceed
-        (
-            entity const& entity,
-            array<style>  styles,
-            array<format> formats,
-            array<str>    links
-        )
+        void proceed (entity const& entity, style style, format format, str link)
         {
-            auto link = links.back();
-            auto style = styles.back();
-            auto format = formats.back();
-
-            int height = sys::metrics(style.font).height;
-
             std::map<str,str> attr_style;
             for (auto [attr, value] : entity.attr)
             {
@@ -67,6 +50,7 @@ namespace doc::html
                 }
             }
 
+            int height = sys::metrics(style.font).height;
             auto heights = [height](str val)
             {
                 double h = 0;
@@ -101,27 +85,22 @@ namespace doc::html
             else
             if (entity.name == "h4") {
                 style.font.bold = true;
-                styles += style;
             }
             else
             if (entity.name == "b") {
                 style.font.bold = true;
-                styles += style;
             }
             else
             if (entity.name == "i") {
                 style.font.italic = true;
-                styles += style;
             }
             else
             if (entity.name == "small") {
                 style.font.size = height * 85/100;
-                styles += style;
             }
             else
             if (entity.name == "big") {
                 style.font.size = height * 125/100;
-                styles += style;
             }
             else
             if (entity.name == "sub") {
@@ -130,7 +109,6 @@ namespace doc::html
                 for (auto [key, val] : attr_style)
                     if (key == "margin-left")
                         style.shift.x = heights(val);
-                styles += style;
             }
             else
             if (entity.name == "sup") {
@@ -139,12 +117,10 @@ namespace doc::html
                 for (auto [key, val] : attr_style)
                     if (key == "margin-left")
                         style.shift.x = heights(val);
-                styles += style;
             }
             else
             if (entity.name == "code") {
                 style.font.face = "monospace";
-                styles += style;
             }
             else
             if (entity.name == "a")
@@ -152,7 +128,7 @@ namespace doc::html
                 for (auto [attr, value] : entity.attr)
                     if (attr == "href") {
                         value.strip("\"");
-                        links += value; }
+                        link = value; }
             }
             else
             if (entity.name == "font")
@@ -187,14 +163,12 @@ namespace doc::html
                         style.color.a = 255;
                     }
                 }
-                styles += style;
             }
             else
             if (entity.name == "blockquote")
             {
                 int x = 3 * height + format.margin_left.x;
                 format.margin_left = pix::XY(x, max<int>());
-                formats += format;
             }
             else
             if (entity.name == "div")
@@ -203,7 +177,6 @@ namespace doc::html
                 {
                     if (key == "margin-left") {
                         format.margin_left = pix::XY(heights(val), max<int>());
-                        formats += format;
                     }
 
                     if (key == "line-height")
@@ -213,7 +186,6 @@ namespace doc::html
                             int x = std::atoi(val.c_str());
                             int size = gui::metrics::text::height;
                             style.font.size = size * x/100;
-                            styles += style;
                         }
                     }
                 }
@@ -225,23 +197,20 @@ namespace doc::html
                 {
                     if (key == "font-variant") {
                         style.font.face = val;
-                        styles += style;
                     }
                     if (key == "font-family") {
                         style.font.face = val;
-                        styles += style;
                     }
                     if (key == "font-style" and
                         val == "normal") {
                         style.font.bold = false;
                         style.font.italic = false;
-                        styles += style;
                     }
                 }
             }
 
             for (auto e : entity.body)
-                proceed(e, styles, formats, links);
+                proceed(e, style, format, link);
 
             if (entity.name == "h4") {
                 if (lines.size() > 0 &&
@@ -250,8 +219,6 @@ namespace doc::html
                     lines += line{format};
                 }
             }
-
         }
-
     };
 } 

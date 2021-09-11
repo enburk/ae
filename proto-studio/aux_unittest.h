@@ -16,7 +16,7 @@ namespace aux::unittest
     using std::to_string;
     auto to_string (string s) { return s; }
 
-    void out (auto x) { log.push_back(to_string(x)); }
+    void out (auto   x) { log.push_back(to_string(x)); }
     void out (string s) { log.push_back(std::move(s)); }
 
 #ifdef aux_v2
