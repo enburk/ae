@@ -269,7 +269,7 @@ namespace aux
             int pos = 0;
             while (true) {
                 auto range = from(begin()+pos).first(what); if (range.size() == 0) break;
-                pos = int(range.begin() - begin()) + with.size();
+                pos = int(range.begin() - begin() + with.size());
                 range.replace_by(with);
                 nn++;
             };

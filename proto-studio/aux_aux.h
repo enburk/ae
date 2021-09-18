@@ -84,7 +84,7 @@ namespace aux
         return std::holds_alternative<T>(v); }
 
     template<class Container, class T, class F>
-    void if_found(Container const& c, T const& value, F f) {
+    void for_first(Container const& c, T const& value, F f) {
         auto it = std::ranges::find(c, value);
         if (it != c.end())
             f(it); }

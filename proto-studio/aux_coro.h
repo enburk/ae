@@ -10,6 +10,7 @@ namespace aux::unittest
 #else
 #include <coroutine>
 #include <experimental/generator>
+#include <future>
 
 namespace aux
 {
@@ -36,7 +37,7 @@ namespace aux
         co_yield {n, end};
     }
 
-    template<class T = void>
+    template<class T=nothing>
     struct [[nodiscard]] task
     {
         struct promise_type {
@@ -91,7 +92,7 @@ namespace aux
             return awaiter{handle};
         }
 
-        T operator()() {
+        T operator()() const {
             handle.resume();
             auto& r = handle.promise().result;
             if (r.index() == 1) return std::get<1>(r);
@@ -179,27 +180,75 @@ namespace aux::unittest
 
     task<int> four () { co_return 4; }
     task<int> five () { co_return 5; }
+    task<int> boom () { throw std::runtime_error("boom"); co_return 0; }
     task<int> sum (task<int>&& a, task<int>&& b) {
         co_return (co_await a + co_await b); }
+
+    string safe (auto&& task)
+    try { return std::to_string(task()); }
+    catch(std::exception const& e) { return e.what(); }
 
     void test_coro2 () try
     {
         test("coro.task");
         {
-            int a = sum(four(), four())();
-            int b = sum(four(), five())();
-            oops(out(a)) { "8" };
-            oops(out(b)) { "9" };
-//            oops(out(co_await sum{four{}, four{}})) { "8" };
-//            oops(out(co_await sum{four{}, five{}})) { "9" };
+            oops(out(four()())) { "4" };
+            oops(out(five()())) { "5" };
+            oops(out(sum(four(), four())())) { "8" };
+            oops(out(sum(four(), five())())) { "9" };
+
+            oops(out(safe(four()))) { "4" };
+            oops(out(safe(boom()))) { "boom" };
+            oops(out(safe(sum(boom(), four())))) { "boom" };
+            oops(out(safe(sum(four(), boom())))) { "boom" };
         }
     }
     catch(assertion_failed){}
 
+    std::mutex mutex;
+
+    task<> sleep (string s, int ms) {
+        std::this_thread::sleep_for(
+        std::chrono::milliseconds(ms));
+        std::lock_guard lock{mutex};
+        out(s + " awaken after " +
+        std::to_string(ms) + " ms");
+        co_return nothing{}; }
+
+    auto launch (task<>&& t) {
+        return std::async(
+        std::launch::async,
+        [t=std::move(t)]()
+        { t(); }); }
+
+    task<> await (task<>&& a, task<>&& b) {
+        auto future1 = launch(std::move(a));
+        auto future2 = launch(std::move(b));
+        auto t0 = std::chrono::high_resolution_clock::now();
+        future1.get();
+        future2.get();
+        auto t1 = std::chrono::high_resolution_clock::now();
+        auto ms = std::chrono::duration_cast<
+                  std::chrono::milliseconds>(t1-t0 +
+                  std::chrono::microseconds(500));
+        std::lock_guard lock{mutex};
+        out("waited for " +
+        std::to_string(ms.count()) + " ms");
+        co_return nothing{}; }
+
     void test_coro3 () try
     {
-        test("coro.task");
+        test("coro.async");
         {
+            oops(sleep("0", 0)()) { "0 awaken after 0 ms" };
+            oops(sleep("1", 1)()) { "1 awaken after 1 ms" };
+
+            oops(await(sleep("A", 100), sleep("B", 200))()) {
+                "A awaken after 100 ms",
+                "B awaken after 200 ms",
+                "waited for 200 ms" };
+
+
         }
     }
     catch(assertion_failed){}

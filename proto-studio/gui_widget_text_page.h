@@ -39,15 +39,15 @@ namespace gui::text
             #undef CHANGE
 
             if (what == &text
-            ||  what == &html)
+            or  what == &html)
             {
                 text.now = view.text.now;
                 html.now = view.html.now;
             }
             if (what == &skin
-            ||  what == &font
-            ||  what == &color
-            ||  what == &style)
+            or  what == &font
+            or  what == &color
+            or  what == &style)
             {
                 font .now = view.style.now.font;
                 color.now = view.style.now.color;
@@ -60,13 +60,13 @@ namespace gui::text
                 //scroll.y.coord = XYWH();
             }
             if((what == &coord && coord.was.size != coord.now.size)
-            ||  what == &text
-            ||  what == &html
-            ||  what == &font
-            ||  what == &style
-            ||  what == &word_wrap
-            ||  what == &margin_right
-            ||  what == &margin_left)
+            or  what == &text
+            or  what == &html
+            or  what == &font
+            or  what == &style
+            or  what == &word_wrap
+            or  what == &margin_right
+            or  what == &margin_left)
                 refresh();
 
             if (what == &timer) {

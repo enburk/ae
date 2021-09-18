@@ -176,6 +176,7 @@ struct TestCoros : gui::widget<TestCoros>
     bool ok = true;
     bool done = false;
     gui::canvas canvas;
+    gui::button asyncs;
     gui::area<gui::console> console1;
     gui::area<gui::console> console2;
     gui::area<gui::console> console3;
@@ -183,11 +184,14 @@ struct TestCoros : gui::widget<TestCoros>
     {
         if (what == &coord && coord.was.size != coord.now.size)
         {
-            int W = coord.now.w; if (W <= 0) return; int w = W/3;
+            int h = gui::metrics::text::height*12/7;
+            int W = coord.now.w; if (W <= 0) return; int w = (W-5*h)/3;
             int H = coord.now.h; if (H <= 0) return;
             console1.coord = XYWH(w*0, 0, w, H);
             console2.coord = XYWH(w*1, 0, w, H);
             console3.coord = XYWH(w*2, 0, w, H);
+            asyncs  .coord = XYWH(w*3, 0, 5*h, h);
+            asyncs.text.text = "asyncs";
 
             if (done) return; done = true;
 
@@ -209,14 +213,20 @@ struct TestCoros : gui::widget<TestCoros>
             aux::unittest::results; ok &= 
             aux::unittest::all_ok;
 
+            console1.object.page.scroll.y.top = max<int>();
+            console2.object.page.scroll.y.top = max<int>();
+        }
+    }
+    void on_notify (void* what) override
+    {
+        if (what == &asyncs)
+        {
             aux::unittest::test_coro3();
             aux::unittest::test("");
             console3.object.page.html = 
             aux::unittest::results; ok &= 
             aux::unittest::all_ok;
 
-            console1.object.page.scroll.y.top = max<int>();
-            console2.object.page.scroll.y.top = max<int>();
             console3.object.page.scroll.y.top = max<int>();
         }
     }
