@@ -14,16 +14,15 @@ namespace aux
         using base = array_of_chars;
         using base:: array;
 
-        str (const char * s ) : base (s) {}
-        str (const char8_t * s ) : base ((char*)s) {}
-        str (char c, int n=1) { if (n > 0) *this = std::string (n,c); }
-        str (std::string_view s) { *this = std::string (s); }
+        constexpr str (const char * s ) : base(s) {}
+        constexpr str (const char8_t * s ) : base((char*)s) {}
+        constexpr str (char c, int n=1) { if (n > 0) *this = std::string(n,c); }
+        constexpr str (std::string_view s) : base(std::string(s)) {}
+        constexpr str (const_iterator f, const_iterator l) : base(std::string(f, l)) {}
+        constexpr str (const char *   f, const char *   l) : base(std::string(f, l)) {}
 
-        str (const_iterator f, const_iterator l) { *this = std::string(f, l); }
-        str (const char *   f, const char *   l) { *this = std::string(f, l); }
-
-        explicit str (array<char> text) { *this = std::string(text.data(), text.data()+text.size()); }
-        explicit str (array<str> lines, str delimiter = "\n") {
+        explicit  str (array<char> text) { *this = std::string(text.data(), text.data()+text.size()); }
+        explicit  str (array<str> lines, str delimiter = "\n") {
             for (auto line : lines) {
                 *this += line;
                 *this += delimiter; }

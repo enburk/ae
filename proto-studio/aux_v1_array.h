@@ -28,12 +28,12 @@ namespace aux
         void resize  (int n)  { base::resize (max(0,n)); }
         void reserve (int n)  { base::reserve(max(0,n)); }
 
-        array (              ) = default;
-        array (const array  &) = default;
-        array (      array &&) = default;
-        array (const base  &c) : base(c) {}
-        array (      base &&c) : base(std::move(c)) {}
-        array (std::initializer_list<type> list) : base(list) {}
+        constexpr array (              ) = default;
+        constexpr array (const array  &) = default;
+        constexpr array (      array &&) = default;
+        constexpr array (const base  &c) : base(c) {}
+        constexpr array (      base &&c) : base(std::move(c)) {}
+        constexpr array (std::initializer_list<type> list) : base(list) {}
 
         auto& operator =  (const array  & a) { base::operator = (a); return *this; }
         auto& operator =  (      array && a) { base::operator = (std::move(a)); return *this; }

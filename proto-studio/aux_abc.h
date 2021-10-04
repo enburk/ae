@@ -19,11 +19,14 @@ using aux::polymorphic;
 using aux::overloaded;
 using aux::expected;
 using aux::nothing;
+using aux::input_range;
+using aux::random_access_range;
 using aux::deque;
 using aux::array;
 using aux::str;
 using aux::one_of;
 using aux::one_not_of;
 using aux::enumerate;
+using aux::generator;
 using aux::task;
 

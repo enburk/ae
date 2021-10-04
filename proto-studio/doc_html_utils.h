@@ -30,9 +30,10 @@ namespace doc::html
         return
         syntax::combine(
         syntax::repair(
+        syntax::parsee(
         syntax::parse(
         lexica::parse(
-        text::text(text)))));
+        text::text(text))))));
     }
 
     inline void print (const entity & e, array<text::token> & output, int indent = 0)

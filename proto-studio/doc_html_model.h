@@ -7,8 +7,8 @@ namespace doc::html
     struct model : doc::view::model
     {
         str source;
-    //  array<line> lines;
         array<entity> entities;
+    /// array<line> lines; /// doc::view::model ///
 
         str text () const { return untagged(source); }
         str html () const { return source; }

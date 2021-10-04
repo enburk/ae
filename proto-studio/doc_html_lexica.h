@@ -5,19 +5,22 @@ namespace doc::html::lexica
 {
 	using text::token;
 
-    inline array<token> tokenize (const text::text & text)
+    generator<token> tokenize (const text::text & text)
     {
-        array<token> tokens; token t;
+        token t;
 
         for (auto [n, line] : enumerate(text.lines))
         {
-            for (auto [offset, glyph] : enumerate(line))
+            for (auto [offset, glyph] : enumerate(line, ""))
             {
-				if (!glyph.letter() && !glyph.digit())
+				if (glyph.letter() or
+					glyph.digit()) t += glyph; else
                 {
-                    if (t.text != "") tokens += t;
+                    if (t.text != "")
+						co_yield t;
 
-                    tokens += token {glyph, "", "", range{
+					// each and every symbol is a token
+                    co_yield token {glyph, "", "", range{
                         {n, offset},
                         {n, offset+1}}
                     };
@@ -27,74 +30,53 @@ namespace doc::html::lexica
                         {n, offset+1}}
                     };
                 }
-                else
-                {
-                    t += glyph;
-                }
-            }
-
-            if (t.text != "") tokens += t;
-
-            if (n != text.lines.size()-1)
-            {
-                tokens += token {"\n", "", "", range{
-                    {n, line.size()},
-                    {n, line.size()}}
-                };
-
-                t = token {"", "", "", range{
-                    {n+1, 0},
-                    {n+1, 0}}
-                };
             }
         }
-
-        return tokens;
     }
 
-    inline deque<token> parse (const text::text & text)
+    generator<token> parse (const text::text & text)
     {
-        deque<token> output;
-        
-        str kind = "text";
+        token last; str kind = "text";
 
-        for (token t : tokenize(text))
+		for (token t : tokenize(text))
         {
-            if (output.size() > 0
-            &&  output.back().kind == "text"
-            &&  output.back().text.starts_with("&")
-            && !output.back().text.ends_with(";")) {
-                output.back().text += t.text;
-                output.back().range.upto = t.range.upto;
+            if (last.kind == "text"
+            &&  last.text.starts_with("&")
+            && !last.text.ends_with(";")) {
+                last.text += t.text;
+                last.range.upto = t.range.upto;
                 continue;
             }
 
-            if (output.size() > 0
-            &&  output.back().kind == "tag"
-            &&  output.back().text.starts_with("\""))
-            if (output.back().text.size() == 1
-            || !output.back().text.ends_with("\"")) {
-                output.back().text += t.text;
-                output.back().range.upto = t.range.upto;
+            if (last.kind == "tag"
+            &&  last.text.starts_with("\""))
+            if (last.text.size() == 1
+            || !last.text.ends_with("\"")) {
+                last.text += t.text;
+                last.range.upto = t.range.upto;
                 continue;
             }
 
-            if (output.size() > 0
-            &&  output.back().kind == "tag"
-            &&  output.back().text == "#") {
-                output.back().text += t.text;
-                output.back().range.upto = t.range.upto;
+            if (last.kind == "tag"
+            &&  last.text == "#") {
+                last.text += t.text;
+                last.range.upto = t.range.upto;
                 continue;
             }
 
             if (t.text == "<") kind = "tag";
 
-            t.kind = kind;  output += t;
+			if (last.kind != "")
+				co_yield last;
+
+            last = t;
+			last.kind = kind;
 
             if (t.text == ">") kind = "text";
         }
 
-        return output;
+		if (last.kind != "")
+			co_yield last;
     }
 
 	inline std::map<str, const char8_t*> symbols

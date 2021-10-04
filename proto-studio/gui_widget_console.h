@@ -9,7 +9,9 @@ namespace gui
         text::page page;
         std::mutex mutex;
         property<time> timer;
-        array<str> log, addon;
+        array<str> addon;
+        int limit = 64*1024;
+        str log;
 
         void operator << (str s)
         {
@@ -47,11 +49,19 @@ namespace gui
                 {
                     std::lock_guard guard{mutex};
                     if (addon.size() == 0) return;
-                    log += addon;
+                    log += str(addon);
                     addon.clear();
                 }
-                page.html = str(log);
-                page.scroll.y.top = max<int>();
+
+                if (log.size() > limit*3/2)
+                    log.erase(log.begin(),
+                    log.from(limit/2)
+                        .first("<br>")
+                        .begin());
+
+                page.html = log;
+                page.scroll.y.top =
+                    max<int>();
             }
         }
 
