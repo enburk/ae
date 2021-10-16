@@ -47,6 +47,20 @@ namespace doc::text
                 return (c >= 'A' && c <= 'Z')
                     || (c >= 'a' && c <= 'z');
             }
+            else
+            if (size() == 2) {
+                auto x = static_cast<uint8_t>(cc[0]);
+                auto y = static_cast<uint8_t>(cc[1]);
+                if (x == 0xC3
+                and y >= 0x80 // Latin-1 Supplement
+                and y <= 0xBF // Latin-1 Supplement
+                and y != 0x97 // multiplication sign
+                and y != 0xB7 // division sign
+                ) return true;
+                if (x >= 0xC4 // Latin Extended-A
+                and x <= 0xDD // Arabic
+                ) return true;
+            }
             return false;
         }
 

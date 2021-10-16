@@ -14,7 +14,10 @@ namespace doc::html::lexica
             for (auto [offset, glyph] : enumerate(line, ""))
             {
 				if (glyph.letter() or
-					glyph.digit()) t += glyph; else
+					glyph.digit() or
+					glyph == "_")
+					t += glyph;
+				else
                 {
                     if (t.text != "")
 						co_yield t;
@@ -66,7 +69,7 @@ namespace doc::html::lexica
 
             if (t.text == "<") kind = "tag";
 
-			if (last.kind != "")
+			if (last.text != "")
 				co_yield last;
 
             last = t;
@@ -75,7 +78,7 @@ namespace doc::html::lexica
             if (t.text == ">") kind = "text";
         }
 
-		if (last.kind != "")
+		if (last.text != "")
 			co_yield last;
     }
 

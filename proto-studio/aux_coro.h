@@ -37,6 +37,12 @@ namespace aux
         co_yield {n, end};
     }
 
+    template<class X>
+    generator<X> enddd (generator<X>&& g, X ending)
+    {
+        for (auto x: g) co_yield x; co_yield ending;
+    }
+
     template<class T=nothing>
     struct [[nodiscard]] task
     {

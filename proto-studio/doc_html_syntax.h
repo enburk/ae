@@ -128,6 +128,8 @@ namespace doc::html::syntax
                     if (bis.size() > 0 and output[
                         bis.back()].name == e.name)
                         bis.pop_back();
+                    else // ignore it
+                        continue;
                 }
             }
             else
