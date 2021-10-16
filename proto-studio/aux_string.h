@@ -3,7 +3,7 @@
 #include <variant> 
 #include <stdexcept> 
 #include <functional>
-#include "aux_v1_array.h"
+#include "aux_array.h"
 namespace aux
 {
     using array_of_chars =
@@ -46,11 +46,6 @@ namespace aux
         void operator += (const char * s) { std::string::operator+=(s); }
         void operator += (const str  & s) { std::string::operator+=(s); }
         void operator += (      str && s) { std::string::operator+=(std::move(s)); }
-
-        //friend bool operator == (const range & l, const char  * r) { return std::string_view(l.begin(), l.end()) == r; }
-        //friend bool operator != (const range & l, const char  * r) { return std::string_view(l.begin(), l.end()) != r; }
-        //friend bool operator == (const char  * l, const range & r) { return std::string_view(r.begin(), r.end()) == l; }
-        //friend bool operator != (const char  * l, const range & r) { return std::string_view(r.begin(), r.end()) != l; }
 
         using base::first;
         using base::last;

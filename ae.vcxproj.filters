@@ -255,40 +255,13 @@
     <ClInclude Include="proto-studio\aux_unittest_string.h">
       <Filter>aux</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\aux_v1_array.h">
+    <ClInclude Include="proto-studio\aux_algo.h">
       <Filter>aux</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\aux_v1_string.h">
+    <ClInclude Include="proto-studio\aux_array.h">
       <Filter>aux</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\aux_v2_algo_forward.h">
-      <Filter>aux</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\aux_v2_algo_random.h">
-      <Filter>aux</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\aux_v2_algo_resizing.h">
-      <Filter>aux</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\aux_v2_array.h">
-      <Filter>aux</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\aux_v2_collections.h">
-      <Filter>aux</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\aux_v2_iterators.h">
-      <Filter>aux</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\aux_v2_ranges.h">
-      <Filter>aux</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\aux_v2_string.h">
-      <Filter>aux</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\aux_v1_algo1.h">
-      <Filter>aux</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\aux_v1_algo2.h">
+    <ClInclude Include="proto-studio\aux_string.h">
       <Filter>aux</Filter>
     </ClInclude>
   </ItemGroup>

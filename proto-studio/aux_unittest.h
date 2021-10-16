@@ -19,13 +19,6 @@ namespace aux::unittest
     void out (auto   x) { log.push_back(to_string(x)); }
     void out (string s) { log.push_back(std::move(s)); }
 
-#ifdef aux_v2
-    template<class X>
-    void out (contiguous_collection_range<X> r)
-    requires std::same_as<typename X::value_type, char> {
-        out(string(r.begin(), r.end())); }
-#endif
-
     template<class X>
     void out (X r)
         requires input_range<X> and

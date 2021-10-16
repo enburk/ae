@@ -1,23 +1,14 @@
 #pragma once
-#ifdef __clang__
-#include "aux_unittest.h"
-namespace aux::unittest
-{
-	void test_coro1 () {}
-	void test_coro2 () {}
-	void test_coro3 () {}
-}
-#else
 #include <coroutine>
 #include <experimental/generator>
 #include <future>
 
+using std::ranges::input_range;
+using std::ranges::random_access_range;
+using std::experimental::generator;
+
 namespace aux
 {
-    using std::ranges::input_range;
-    using std::ranges::random_access_range;
-    using std::experimental::generator;
-
     template<input_range R>
     auto enumerate (R& r) -> generator<
     std::pair<int, typename R::value_type>>
@@ -259,5 +250,3 @@ namespace aux::unittest
     }
     catch(assertion_failed){}
 }
-
-#endif

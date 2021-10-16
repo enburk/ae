@@ -173,10 +173,10 @@ namespace aux
                 replace_by(a.whole());
             }
 
-            #include "aux_v1_algo1.h"
+            #include "aux_algo.h"
         };
 
-        #include "aux_v1_algo1.h"
+        #include "aux_algo.h"
 
         ////////////////////////////////////////////////////////////////////////
 
