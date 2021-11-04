@@ -38,6 +38,9 @@ namespace doc::html
             std::map<str,str> attr_style;
             for (auto [attr, value] : entity.attr)
             {
+                if (attr == "hidden")
+                    return;
+
                 if (attr == "style")
                 {
                     value.strip("\"");

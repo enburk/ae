@@ -82,9 +82,11 @@ namespace gui::base
         virtual bool mouse_sensible (XY p) { return false; }
         virtual void on_mouse_press (XY, char button, bool down) {}
         virtual bool on_mouse_wheel (XY, int) { return false; }
-        virtual void on_mouse_hover_child (XY) {}
         virtual void on_mouse_hover (XY) {}
         virtual void on_mouse_leave () {}
+
+        virtual void on_mouse_press_child (XY, char, bool) {}
+        virtual void on_mouse_hover_child (XY) {}
 
         bool mouse_sense (XY p)
         {
@@ -108,6 +110,7 @@ namespace gui::base
                 if (mouse_press_child) {
                     mouse_press_child->mouse_press (p -
                     mouse_press_child->coord.now.origin, button, true);
+                    on_mouse_press_child(p, button, down);
                     return;
                 }
             }
@@ -116,6 +119,7 @@ namespace gui::base
                     mouse_press_child->mouse_press (p - 
                     mouse_press_child->coord.now.origin, button, false);
                     mouse_press_child = nullptr;
+                    on_mouse_press_child(p, button, down);
                     return;
                 }
             }

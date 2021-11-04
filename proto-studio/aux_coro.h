@@ -9,6 +9,13 @@ using std::experimental::generator;
 
 namespace aux
 {
+     template
+    <typename X>
+    generator<X> operator_plus (generator<X>&& g, X ending)
+    {
+        for (auto x: g) co_yield x; co_yield ending;
+    }
+
     template<input_range R>
     auto enumerate (R& r) -> generator<
     std::pair<int, typename R::value_type>>
@@ -26,12 +33,6 @@ namespace aux
         for (auto& x : r)
             co_yield {n++, x};
         co_yield {n, end};
-    }
-
-    template<class X>
-    generator<X> enddd (generator<X>&& g, X ending)
-    {
-        for (auto x: g) co_yield x; co_yield ending;
     }
 
     template<class T=nothing>
@@ -129,6 +130,20 @@ namespace aux::unittest
                 sum += n; }
 			
             oops(out(sum)) { std::to_string(N*(N+1)/2) };
+        }
+
+        test("coro.generator.plus");
+        {
+            auto abc = []() -> generator<char> {
+                co_yield 'a';
+                co_yield 'b';
+                co_yield 'c';
+            };
+
+            string s1; for (char c: abc()) s1 += c;
+            string s2; for (auto z = abc(); char c: operator_plus(std::move(abc()), ' ')) s2 += c;
+            oops(out(s1)) { "abc"  };
+            oops(out(s2)) { "abc " };
         }
 
         test("coro.enumerate.1");
