@@ -3,6 +3,7 @@
 #include "aux_string.h"
 #include "aux_coro.h"
 #include "aux_registry.h"
+#include "aux_timing.h"
 #include "aux_unicode.h"
 
 using aux::max;
@@ -19,4 +20,5 @@ using aux::one_of;
 using aux::one_not_of;
 using aux::enumerate;
 using aux::task;
+using aux::timing;
 

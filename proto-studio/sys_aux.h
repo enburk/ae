@@ -78,44 +78,6 @@ namespace sys
             void* data_ = nullptr;
         };
     }
-
-    struct timing
-    {
-        decltype (std::chrono::high_resolution_clock::now ())
-        stamp  =  std::chrono::high_resolution_clock::now ();
-        friend auto operator - (timing t1, timing t0) noexcept
-            { return t1.stamp - t0.stamp; }
-    };
-
-    std::ostream & operator << (std::ostream & stream,
-    std::chrono::high_resolution_clock::duration duration)
-    {
-        using std::chrono:: duration_cast;
-        auto seconds      = duration_cast<std::chrono::seconds     >(duration); duration -= seconds;
-        auto milliseconds = duration_cast<std::chrono::milliseconds>(duration); duration -= milliseconds;
-        auto microseconds = duration_cast<std::chrono::microseconds>(duration); duration -= microseconds;
-        auto nanoseconds  = duration_cast<std::chrono::nanoseconds >(duration);
-
-        stream.fill ('0');
-        stream           << seconds     .count () << "."
-        << std::setw (3) << milliseconds.count () << "'"
-        << std::setw (3) << microseconds.count () << "'"
-        << std::setw (3) << nanoseconds .count (); 
-
-        return stream;
-    }
-    str format_nano (std::chrono::high_resolution_clock::duration duration)
-    {
-        std::stringstream stream;
-        stream << duration;
-        return stream.str();
-    }
-    str format (std::chrono::high_resolution_clock::duration duration)
-    {
-        str s = format_nano(duration);
-        s.resize(s.size()-4);
-        return s;
-    }
 }
 
 namespace pix

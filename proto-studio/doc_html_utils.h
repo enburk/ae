@@ -12,15 +12,17 @@ namespace doc::html
         return text;
     }
 
-    inline str untagged (const str & text)
+    inline str untagged (str text_)
     {
         str output;
 
-        for (text::token t : lexica::parse(text::text(text)))
-        {
-            if (t.text == "<br>") output += "\n"; else
-            if (t.kind != "tag" ) output += t.text;
-        }
+        text::text text(text_); // save temporary
+        for (text::token t : lexica::parse(text))
+            if (t.kind == "text" )
+                output += t.text; else
+            if (t.kind == "tag" and
+                t.text == "br")
+                output += "\n";
 
         return output;
     }

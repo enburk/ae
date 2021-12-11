@@ -16,6 +16,7 @@ namespace gui::text
         binary_property<style> style;
         binary_property<bool> word_wrap = true;
         binary_property<bool> ellipsis = false;
+        binary_property<bool> infotip = false;
         binary_property<XY> alignment = XY{center, center};
         binary_property<XY> margin_right;
         binary_property<XY> margin_left;
@@ -225,7 +226,7 @@ namespace gui::text
                     view.selections = selections;
                     info.hide();
                 }
-                else
+                else if (infotip.now)
                 {
                     if (auto token = target(p); token && token->info != "")
                     {

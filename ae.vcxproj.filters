@@ -264,6 +264,15 @@
     <ClInclude Include="proto-studio\aux_string.h">
       <Filter>aux</Filter>
     </ClInclude>
+    <ClInclude Include="proto-studio\aux_monad.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_timing.h">
+      <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\aux_unittest_coro.h">
+      <Filter>aux</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="proto-studio\!main.cpp">

@@ -28,13 +28,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -47,7 +47,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -156,11 +156,14 @@
     <ClInclude Include="proto-studio\aux_aux.h" />
     <ClInclude Include="proto-studio\aux_coro.h" />
     <ClInclude Include="proto-studio\aux_math.h" />
+    <ClInclude Include="proto-studio\aux_monad.h" />
     <ClInclude Include="proto-studio\aux_registry.h" />
     <ClInclude Include="proto-studio\aux_string.h" />
+    <ClInclude Include="proto-studio\aux_timing.h" />
     <ClInclude Include="proto-studio\aux_unicode.h" />
     <ClInclude Include="proto-studio\aux_unittest.h" />
     <ClInclude Include="proto-studio\aux_unittest_array.h" />
+    <ClInclude Include="proto-studio\aux_unittest_coro.h" />
     <ClInclude Include="proto-studio\aux_unittest_string.h" />
     <ClInclude Include="proto-studio\doc.h" />
     <ClInclude Include="proto-studio\doc_ae_lexica.h" />
