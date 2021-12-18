@@ -87,18 +87,7 @@ struct Editor : gui::widget<Editor>
                                doc::text::repo::load<doc::text::model>(path.now);
             editor.reset();
         }
-    }
 
-    void on_focus (bool on) override { editor.on_focus(on); }
-    void on_keyboard_input (str symbol) override { editor.on_keyboard_input(symbol); }
-    void on_key_pressed (str key, bool down) override { editor.on_key_pressed(key,down); }
-    bool on_mouse_wheel (XY p, int delta) override
-    {
-        return editor.page.on_mouse_wheel(p - editor.coord.now.origin, delta);
-    }
-
-    void on_notify (void* what) override
-    {
         if (what == &editor)
         {
             doc::text::repo::edit(path.now);
@@ -107,8 +96,8 @@ struct Editor : gui::widget<Editor>
             int n2 = editor.model->lines.size();
             if (n1 != n2) {
                 str text;
-                text.reserve(n2*(int)(std::log10(n2))); for (int i=0; i<n2; i++)
-                text += std::to_string(i+1) + (char*)(u8"\u00A0") + "\n"; // &nbsp;
+                text.reserve(n2 * (int)(std::log10(n2))); for (int i = 0; i < n2; i++)
+                    text += std::to_string(i + 1) + (char*)(u8"\u00A0") + "\n"; // &nbsp;
                 text.truncate();
                 lineup.text = text;
             }
@@ -118,11 +107,19 @@ struct Editor : gui::widget<Editor>
 
         if (what == &flist) {
             path = flist.selected.now;
-            notify (&flist);
+            notify(&flist);
         }
 
         if (what == &editor.page.scroll.y) lineup.shift =
             XY(0, -editor.page.scroll.y.top);
+    }
+
+    void on_focus (bool on) override { editor.on_focus(on); }
+    void on_keyboard_input (str symbol) override { editor.on_keyboard_input(symbol); }
+    void on_key_pressed (str key, bool down) override { editor.on_key_pressed(key,down); }
+    bool on_mouse_wheel (XY p, int delta) override
+    {
+        return editor.page.on_mouse_wheel(p - editor.coord.now.origin, delta);
     }
 
     bool syntax_ready ()

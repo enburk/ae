@@ -99,6 +99,8 @@ namespace gui::text
             {
                 page.view.insert_mode = insert_mode.now;
             }
+            if (what == &page.scroll.x) notify(what);
+            if (what == &page.scroll.y) notify(what);
         }
 
         enum WHERE { THERE = 0,
@@ -433,12 +435,6 @@ namespace gui::text
                     refresh();
                 }
             }
-        }
-
-        void on_notify (void* what) override
-        {
-            if (what == &page.scroll.x) notify(what);
-            if (what == &page.scroll.y) notify(what);
         }
     };
 } 

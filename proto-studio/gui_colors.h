@@ -24,7 +24,9 @@ namespace gui
     };
     inline std::map<str, schema> skins;
 
-    inline std::map<str, std::pair<RGBA,RGBA>[10]> palettes;
+    inline std::map<str, std::pair<RGBA, RGBA>[10]> palettes;
+
+    inline array<str> palettes_names;
 
     const inline array<const char*> palettes_data = {
     // https://material.io/design/color/#tools-for-picking-colors
@@ -74,22 +76,34 @@ namespace gui
         metrics::text::height = pix::metrics(pix::font{}).height;
         metrics::line::width = max (1, metrics::text::height/16);
 
-        int i = 0; str name;
-        for (auto s : palettes_data) {
+        str name;
+        for (auto [index, s] : enumerate(palettes_data))
+        {
+            int i = index % 21;
             RGBA* color = nullptr;
-            if (i%21 == 0) name = s; else
-            if (i%21 < 11) color = &palettes[name][i%21- 1].first; else
-            if (i%21 < 21) color = &palettes[name][i%21-11].second;
-            if (color) { *color = pix::ARGB(std::strtoul(s, nullptr, 16)); color->a = 255; }
-            i++;
+            if (i == 0) name = s; else
+            if (i < 11) color = &palettes[name][i- 1].first; else
+            if (i < 21) color = &palettes[name][i-11].second;
+            if (color) { *color = pix::ARGB(std::strtoul(s, nullptr, 16));
+                color->a = 255; }
         }
-        for (auto s : palettes_data) {
+        for (auto [index, s] : enumerate(palettes_data))
+        {
+            int i = index % 21;
             RGBA* color = nullptr;
-            if (i%21 == 0) name = s + str("+"); else
-            if (i%21 < 11) color = &palettes[name][9 - (i%21- 1)].first; else
-            if (i%21 < 21) color = &palettes[name][9 - (i%21-11)].second;
-            if (color) { *color = pix::ARGB(std::strtoul(s, nullptr, 16)); color->a = 255; }
-            i++;
+            if (i == 0) name = s + str("+"); else
+            if (i < 11) color = &palettes[name][9 - (i- 1)].first; else
+            if (i < 21) color = &palettes[name][9 - (i-11)].second;
+            if (color) { *color = pix::ARGB(std::strtoul(s, nullptr, 16));
+                color->a = 255; }
+        }
+        for (auto [index, s] : enumerate(palettes_data))
+        {
+            int i = index % 21;
+            if (i == 0) {
+                palettes_names += s;
+                palettes_names += s + str("+");
+            }
         }
 
         // for (int i=0; i<10; i++)

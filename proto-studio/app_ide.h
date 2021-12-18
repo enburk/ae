@@ -183,10 +183,7 @@ struct IDE : gui::widget<IDE>
 
         if (test_area.object.test_first.done) button_test.text.color = 
             test_area.object.test_first.ok ? RGBA::green : RGBA::error;
-    }
 
-    void on_notify (void* what) override
-    {
         if (what == &flist)
         {
             editor.flist.selected = flist.selected.now;

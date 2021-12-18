@@ -137,7 +137,7 @@ namespace gui
 
         struct group : widgetarium<button>
         {
-            void on_notify (void* w) override
+            void on_change (void* w) override
             {
                 int n = -1;
                 

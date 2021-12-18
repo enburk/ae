@@ -180,9 +180,8 @@ namespace gui::base
 
         ////////////////////////////////////////////////////////////////////////
 
-        void notify () { if (parent) parent->on_notify(this); }
-        void notify (void* w) { if (parent) parent->on_notify(w); }
-        virtual void on_notify (void*) {}
+        void notify () { if (parent) parent->on_change(this); }
+        void notify (void* w) { if (parent) parent->on_change(w); }
 
         ////////////////////////////////////////////////////////////////////////
 

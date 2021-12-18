@@ -85,6 +85,10 @@ namespace gui
                     notify();
                 }
             }
+            if (what == &up) top = top.now - step.now;
+            if (what == &down) top = top.now + step.now;
+            if (what == &page_up) top = top.now - coord.now.h;
+            if (what == &page_down) top = top.now + coord.now.h;
         }
 
         void refresh ()
@@ -108,14 +112,6 @@ namespace gui
             up.enabled = top.now > 0;
             down.enabled = top.now < span.now - real_page;
             runner.enabled = up.enabled.now or down.enabled.now;
-        }
-
-        void on_notify (void* what) override
-        {
-            if (what == &up) top = top.now - step.now;
-            if (what == &down) top = top.now + step.now;
-            if (what == &page_up) top = top.now - coord.now.h;
-            if (what == &page_down) top = top.now + coord.now.h;
         }
 
         void on_mouse_press (XY p, char button, bool down) override
@@ -210,6 +206,10 @@ namespace gui
                     notify();
                 }
             }
+            if (what == &left) top = top.now - step.now;
+            if (what == &right) top = top.now + step.now;
+            if (what == &page_left) top = top.now - coord.now.size.x;
+            if (what == &page_right) top = top.now + coord.now.size.x;
         }
 
         void refresh ()
@@ -233,14 +233,6 @@ namespace gui
             left.enabled = top.now > 0;
             right.enabled = top.now < span.now - real_page;
             runner.enabled = left.enabled.now or right.enabled.now;
-        }
-
-        void on_notify (void* what) override
-        {
-            if (what == &left) top = top.now - step.now;
-            if (what == &right) top = top.now + step.now;
-            if (what == &page_left) top = top.now - coord.now.size.x;
-            if (what == &page_right) top = top.now + coord.now.size.x;
         }
 
         void on_mouse_press (XY p, char button, bool down) override

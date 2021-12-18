@@ -12,7 +12,7 @@ struct Flist : gui::widget<Flist>
     {
         int selected = 0;
         gui::radio::group list;
-        void on_notify (void* w) override {
+        void on_change (void* w) override {
             selected = list.notifier_index;
             notify ();
         }
@@ -93,6 +93,15 @@ struct Flist : gui::widget<Flist>
 
             notify();
         }
+
+        if (what == &flist)
+        {
+            selected = root / std::string(flist.list(flist.selected).text.text);
+        }
+        if (what == &scroller) { XYWH r =
+            flist.list.coord; r.y = -scroller.top;
+            flist.list.coord = r;
+        }
     }
 
     void fill(path dir)
@@ -140,19 +149,6 @@ struct Flist : gui::widget<Flist>
             it.text.text = path.string();
             it.enabled = false;
             fill(path, num);
-        }
-    }
-
-    void on_notify (void* w) override
-    {
-        if (w == &flist)
-        {
-            selected = root / std::string(flist.list(flist.selected).text.text);
-        }
-        if (w == &scroller) {
-            XYWH r =
-            flist.list.coord; r.y = -scroller.top;
-            flist.list.coord = r;
         }
     }
 

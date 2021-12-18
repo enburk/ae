@@ -85,6 +85,15 @@ namespace gui::text
                     on_mouse_hover(select_point);
                 }
             }
+
+            if (what == &scroll.x) update(); // speed up redraw
+            if (what == &scroll.y) update(); // speed up redraw
+
+            if (what == &scroll.x) view.shift = XY(-scroll.x.top, view.shift.now.y);
+            if (what == &scroll.y) view.shift = XY(view.shift.now.x, -scroll.y.top);
+
+            if (what == &scroll.x) notify(what);
+            if (what == &scroll.y) notify(what);
         }
 
         void refresh ()
@@ -121,18 +130,6 @@ namespace gui::text
             if (scroll_y) size.x -= d;
 
             view.coord = XYWH(0,0,size.x, size.y);
-        }
-
-        void on_notify (void* what) override
-        {
-            if (what == &scroll.x) update(); // speed up redraw
-            if (what == &scroll.y) update(); // speed up redraw
-
-            if (what == &scroll.x) view.shift = XY(-scroll.x.top, view.shift.now.y);
-            if (what == &scroll.y) view.shift = XY(view.shift.now.x, -scroll.y.top);
-
-            if (what == &scroll.x) notify(what);
-            if (what == &scroll.y) notify(what);
         }
 
         bool on_mouse_wheel (XY p, int delta) override

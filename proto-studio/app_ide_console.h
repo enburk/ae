@@ -71,10 +71,7 @@ struct Console : gui::widget<Console>
                     RGBA::black };
             }
         }
-    }
 
-    void on_notify (void* what) override
-    {
         if (what == &buttons)
             for (int i=0; i<consoles.size(); i++)
                 consoles[i]->show(buttons(i).on.now);

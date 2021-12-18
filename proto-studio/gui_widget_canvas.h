@@ -80,12 +80,13 @@ namespace gui
                 frame3.coord = r; r.deflate(frame3.thickness.now);
                 object.coord = r;
             }
+            if (what == &object)
+                notify (&object);
         }
 
         void on_focus (bool on) override { object.on_focus(on); }
         void on_keyboard_input (str symbol) override { object.on_keyboard_input(symbol); }
         void on_key_pressed (str key, bool down) override { object.on_key_pressed(key,down); }
-        void on_notify (void* what) override { notify(what); }
     };
 
     struct splitter:

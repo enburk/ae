@@ -126,7 +126,7 @@ widget<TestTexts>
     gui::area<gui::console> console1;
     gui::area<gui::console> console2;
     gui::splitter splitter; int x = 40'00; int xx = 80;
-    TestTexts () { on_notify(&doubling); }
+    TestTexts () { on_change(&doubling); }
     str text = "<b>Lorem ipsum</b> dolor sit amet, consectetur adipiscing <i>elit</i>, "
     "sed do eiusmod tempor incididunt ut labore et dolore <b>magna <i>aliqua.</i></b> "
     "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip "
@@ -157,9 +157,6 @@ widget<TestTexts>
             splitter.lower = 20'00 * w / 100'00;
             splitter.upper = 80'00 * w / 100'00;
         }
-    }
-    void on_notify (void* what) override
-    {
         if (what == &doubling)
         {
             doubling.text.text = "double text";
@@ -221,12 +218,9 @@ widget<TestCoros>
 
             console1.object.page.scroll.y.top = max<int>();
             console2.object.page.scroll.y.top = max<int>();
-            console3.object.page.html = "press a button "
-            "------------------------------------------>";
+            console3.object.page.html = "press the button "
+            "------------------------------------------->";
         }
-    }
-    void on_notify (void* what) override
-    {
         if (what == &asyncs)
         {
             aux::unittest::test_coro3();
@@ -310,8 +304,8 @@ widget<TestColor>
         gui::radio::group buttons;
         gui::area<gui::text::page> page;
         str lorem = "<b>Lorem ipsum</b><br>"
-        "Lorem ipsum dolor sit amet, <font color=#008000>consectetur</font>"
-        "<font color=#000080>adipiscing</font> <i>elit</i>, sed do eiusmod tempor incididunt"
+        "Lorem ipsum dolor sit amet, <font color=#008000>consectetur</font> "
+        "<font color=#000080>adipiscing</font> <i>elit</i>, sed do eiusmod tempor incididunt "
         "<font color=#800000>ut labore et dolore</font> <b>magna <i>aliqua.</i></b> "
         "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip "
         "<font color=#008000><i>ex ea commodo</i></font> consequat. Duis aute irure dolor "
@@ -386,13 +380,12 @@ widget<TestColor>
 
             if (samples.size() == 0)
             {
-                for (auto [i, palette]: enumerate(gui::palettes)) {
-                    auto [name, colors] = palette;
+                for (auto [i, name]: enumerate(gui::palettes_names)) {
+                    auto& palette = gui::palettes[name];
                     for (int j=0; j<10; j++)
-                    samples(i).colors[j] = colors[j];
+                    samples(i).colors[j] = palette[j];
                     samples(i).schema = gui::skins[name];
-                    samples(i).name = name == "" ?
-                        "random" : name;
+                    samples(i).name = name;
                 }
             }
 
@@ -464,10 +457,7 @@ struct Test : gui::widget<Test>
 
             for (auto & test : tests) test->coord = XYWH(0, 0, W-w, H);
         }
-    }
 
-    void on_notify (void* what) override
-    {
         if (what == &buttons)
             for (int i=0; i<tests.size(); i++)
                 tests[i]->show(buttons(i).on.now);

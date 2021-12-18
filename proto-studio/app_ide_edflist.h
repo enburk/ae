@@ -52,6 +52,9 @@ struct edflist : gui::widget<edflist>
             }
             notify();
         }
+
+        if (what == &buttons) selected =
+            flist[buttons.notifier_index].path;
     }
 
     void refresh ()
@@ -92,11 +95,5 @@ struct edflist : gui::widget<edflist>
         selected = flist.size() > 0 ? 
             flist[0].path :
             path{};
-    }
-
-    void on_notify (void* what) override
-    {
-        if (what == &buttons) selected =
-            flist[buttons.notifier_index].path;
     }
 };
