@@ -45,7 +45,8 @@ namespace gui::base
             if (what == &coord && parent) parent->update(coord.was);
             if (what == &coord && parent) parent->update(coord.now);
             if (what == &alpha && parent) parent->update(coord.now);
-            if (what == &skin) for (auto child : children) child->skin = skin.now;
+            if (what == &skin) for (auto child : children)
+                child->skin = skin.now;
             on_change(what);
         }
 
@@ -221,7 +222,7 @@ namespace gui
             base::widget* p = nullptr;
             p = inholder(this); size_in_bytes = sizeof(T);
             if (p && parent && p != parent) throw std::runtime_error("widget: wrong parent");
-            if (p && !parent) { parent = p; parent->children += this; skin = parent->skin; }
+            if (p && !parent) { parent = p; parent->children += this; }
             if (!p) widgets.emplace(this);
         }
         widget (widget &&) = delete;

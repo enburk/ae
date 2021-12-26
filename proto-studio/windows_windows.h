@@ -460,8 +460,9 @@ void sys::window::render (XYWH r, uint8_t alpha, glyph g, XY offset, int x)
             std::move(color)).first;
     }
 
-    render(r, alpha, it->second.crop()
-        .from(3*offset.x, offset.y));
+    render(r, alpha, it->second.crop(XYWH(
+        3*offset.x, offset.y,
+        3*r.w, r.h)));
 }
 
 HWND MainWindowHwnd = nullptr;

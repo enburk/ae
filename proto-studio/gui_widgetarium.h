@@ -10,6 +10,7 @@ namespace gui
     {
         using widget = widget<widgetarium<T>>;
         using widget::children;
+        using widget::skin;
 
         array<int> holes;
         array<int> indices;
@@ -27,7 +28,8 @@ namespace gui
             children.reserve(n);
         }
 
-        void on_change (void* w) override {
+        void on_change (void* w) override
+        {
             for (int i = 0; i < size(); i++)
                 if (&(*this)(i) == w)
                 {
@@ -37,19 +39,22 @@ namespace gui
                 }
         }
 
-        const T & operator () (int pos) const {
+        const T& at (int pos) const {
             if (pos >= size()) throw std::out_of_range
-                ("widgetarium size = " + std::to_string(size())
-                    + ", accessed at " + std::to_string(pos));
+            ("widgetarium size = " + std::to_string(size())
+                + ", accessed at " + std::to_string(pos));
             return *deque[indices[pos]];
         }
-        /***/ T & operator () (int pos) /***/ {
+        /***/ T& at (int pos) /***/ {
             if (pos > size()) throw std::out_of_range
-                ("widgetarium size = " + std::to_string(size())
-                    + ", accessed at " + std::to_string(pos));
+            ("widgetarium size = " + std::to_string(size())
+                + ", accessed at " + std::to_string(pos));
             if (pos == size()) emplace_back();
             return *deque[indices[pos]];
         }
+
+        const T& operator () (int pos) const { return at(pos); }
+        /***/ T& operator () (int pos) /***/ { return at(pos); }
 
         const T & back () const { return *deque[indices.back()]; }
         /***/ T & back () /***/ { return *deque[indices.back()]; }
@@ -62,6 +67,8 @@ namespace gui
                 indices.emplace_back(size());
                 children += &t.value();
                 t.value().parent = this;
+                if (t.value().skin.now == "")
+                    t.value().skin = skin.now;
                 return t.value();
             } else {
                 int index = holes.back(); holes.pop_back(); auto & t =
@@ -69,6 +76,8 @@ namespace gui
                 indices += index;
                 children += &t;
                 t.parent = this;
+                if (t.skin.now == "")
+                    t.skin = skin.now;
                 return t;
             }
         }

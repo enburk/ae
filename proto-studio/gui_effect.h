@@ -122,11 +122,12 @@ namespace gui
             if (now != to)
                 now = transit (from, to,
                     std::min(time::now - notch, lapse).ms, lapse.ms);
-            if (now == to && receipt) { active_properties.erase(*receipt); receipt.reset(); }
-            if (now != to && !receipt) receipt = active_properties.append(this);
+            if (now == to and receipt) { active_properties.erase(*receipt); receipt.reset(); }
+            if (now != to and not receipt) receipt = active_properties.append(this);
             if (now != was) {
                 if (!widget) widget = inholder(this);
-                if (!widget) throw std::runtime_error("property: wrong inholder");
+                if (!widget) throw std::runtime_error
+                ("property: wrong inholder");
                 change(widget, this);
             }
         }
@@ -136,7 +137,7 @@ namespace gui
     {
         type now, was; base::widget* widget = nullptr;
 
-        binary_property (type value = type()) : now(value), was(value) {}
+        binary_property(type value = type()) : now(value), was(value) {}
 
         operator type const& () { return now; }
 
@@ -145,7 +146,8 @@ namespace gui
             now = value;
             if (now != was) {
                 if (!widget) widget = inholder(this);
-                if (!widget) throw std::runtime_error("property: wrong inholder");
+                if (!widget) throw std::runtime_error
+                ("property: wrong inholder");
                 change(widget, this);
             }
         }
@@ -163,7 +165,8 @@ namespace gui
             if (now != value) {
                 now  = value;
                 if (!widget) widget = inholder(this);
-                if (!widget) throw std::runtime_error("property: wrong inholder");
+                if (!widget) throw std::runtime_error
+                ("property: wrong inholder");
                 change(widget, this);
             }
         }

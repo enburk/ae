@@ -52,7 +52,8 @@ namespace gui
 
     template
     <class Object>
-    struct area : widget<area<Object>>
+    struct area :
+    widget<area<Object>>
     {
         frame  frame1;
         frame  frame2;
@@ -67,7 +68,7 @@ namespace gui
         {
             if (what == &skin)
             {
-                auto & style = gui::skins[skin.now];
+                auto & style = skins[skin.now];
                 frame1.color = style.light.first;
                 frame2.color = style.heavy.first;
                 frame3.color = style.light.first;

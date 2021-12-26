@@ -59,24 +59,28 @@ namespace gui
 
         void on_change (void* what) override
         {
-            if (what == &enter_pressed) on_change_state(); else
-            if (what == &mouse_pressed) on_change_state(); else
-            if (what == &mouse_hover) on_change_state(); else
-            if (what == &focused) on_change_state(); else
-            if (what == &enabled) on_change_state(); else
-            if (what == &coord) on_change_state(); else
-            if (what == &skin) on_change_state(); else
-            if (what == &on) on_change_state();
+            if (what == &enter_pressed
+            or  what == &mouse_pressed
+            or  what == &mouse_hover
+            or  what == &focused
+            or  what == &enabled
+            or  what == &coord
+            or  what == &skin
+            or  what == &on)
+                on_change_state();
 
-            if (what == &mouse_hover) if (notify_hover) notify();
-            if (what == &on) if (on.now or notify_off or kind == toggle)
+            if (what == &on)
+            if (on.now or notify_off or kind == toggle)
                 notify();
 
-            if (what == &timer) {
-                if (repeat_notch < time::now) {
-                    repeat_notch = time::now + repeat_lapse;
-                    if (mouse_pressed.now) notify();
-                }
+            if (what == &mouse_hover)
+            if (notify_hover)
+                notify();
+
+            if (what == &timer)
+            if (repeat_notch < time::now) {
+                repeat_notch = time::now + repeat_lapse;
+                if (mouse_pressed.now) notify();
             }
         }
 

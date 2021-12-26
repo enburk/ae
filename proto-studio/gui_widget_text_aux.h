@@ -18,7 +18,8 @@ namespace gui::text
 
         Opacity opacity () override { return semitransparent; }
 
-        void on_change (void* what) override {
+        void on_change (void* what) override
+        {
              if (what == &value) {
                  resize(XY(
                  value.now.width,
@@ -75,8 +76,6 @@ namespace gui::text
         property<double> breadth = 0.15;
         binary_property<bool> insert_mode = true;
         static inline time time_moved;
-
-        caret () { image.color = skins[skin].touched.first; }
 
         void on_change (void* what) override
         {

@@ -97,9 +97,9 @@ namespace pix
     {
         str text; text::style_index style_index;
 
-        explicit glyph () = default;
-        explicit glyph (str text, text::style_index);
-        explicit glyph (str text, text::style style):
+        glyph () = default;
+        glyph (str text, text::style_index);
+        glyph (str text, text::style style):
             glyph (text, text::style_index(style)) {}
 
         text::style style () const { return style_index.style(); }

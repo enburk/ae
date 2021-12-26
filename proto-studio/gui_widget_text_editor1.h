@@ -58,10 +58,6 @@ namespace gui::text
                 editor.model->set(doc::text::text(text));
                 editor.reset();
             }
-        }
-
-        void on_notify (void* what) override
-        {
             if (what == &editor)
             {
                 text.now = editor.model->string();
