@@ -28,7 +28,7 @@ namespace doc::view
 
     struct token
     {
-        str text; style_index style; str info;
+        str text; style_index style; str info, link;
         bool operator != (const token & d) const = default;
         bool operator == (const token & d) const = default;
     };

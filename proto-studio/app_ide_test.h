@@ -287,6 +287,58 @@ widget<TestMonad>
     }
 };
 
+struct TestWideo:
+widget<TestWideo>
+{
+    bool ok = true;
+    bool done = false;
+    gui::canvas canvas;
+    gui::area<gui::console> console;
+    void on_change(void* what) override
+    {
+        if (what == &coord && coord.was.size != coord.now.size)
+        {
+            int h = gui::metrics::text::height * 12 / 7;
+            int W = coord.now.w; if (W <= 0) return; int w = W / 3;
+            int H = coord.now.h; if (H <= 0) return;
+            console.coord = XYWH(w * 0, 0, w, H);
+
+            if (done) return; done = true;
+
+            auto style = pix::text::style{
+            sys::font{"Consolas"}, RGBA::black };
+            console.object.page.style = style;
+
+            using namespace aux::unittest;
+            try
+            {
+                test("widgets.size");
+                {
+                    auto canvas = gui::canvas{};
+                    auto glyph1 = gui::text::glyph{};
+                    auto token0 = gui::text::token_{};
+                    auto token1 = gui::text::token{};
+                    auto token2 = gui::text::token{};
+                    token2 = doc::view::token{ "0123456789", pix::text::style_index{}, "", ""};
+                    oops(out(sizeof canvas)) { "432" };
+                    oops(out(sizeof glyph1)) { "440" };
+                    oops(out(sizeof token0)) { "592" };
+                    oops(out(sizeof token1)) { "520" };
+                    oops(out(sizeof token2)) { "520" };
+                }
+            }
+            catch (assertion_failed) {}
+
+            aux::unittest::test("");
+            console.object.page.html =
+                aux::unittest::results; ok &=
+                aux::unittest::all_ok;
+
+            console.object.page.scroll.y.top = max<int>();
+        }
+    }
+};
+
 struct TestColor:
 widget<TestColor>
 {
@@ -424,6 +476,7 @@ struct Test : gui::widget<Test>
     TestCoros test_coros;
     TestMonad test_monad;
     TestColor test_color;
+    TestWideo test_wideo;
 
     Test ()
     {
@@ -432,6 +485,7 @@ struct Test : gui::widget<Test>
         tests += &test_texts; buttons.emplace_back().text.text = "test texts";
         tests += &test_coros; buttons.emplace_back().text.text = "coroutines";
         tests += &test_monad; buttons.emplace_back().text.text = "monadic";
+        tests += &test_wideo; buttons.emplace_back().text.text = "widgets";
         tests += &test_color; buttons.emplace_back().text.text = "colors";
 
         buttons(0).on = true;
@@ -453,9 +507,12 @@ struct Test : gui::widget<Test>
             canvas.coord = XYWH(0, 0, W, H);
             buttons.coord = XYWH(W-w, 0, w, H);
 
-            for (auto & button : buttons) { button.coord = XYWH(0, y, w, h); y += h; }
+            for (auto & button : buttons) {
+                button.coord = XYWH(0, y, w, h);
+                y += h; }
 
-            for (auto & test : tests) test->coord = XYWH(0, 0, W-w, H);
+            for (auto & test : tests)
+                test->coord = XYWH(0, 0, W-w, H);
         }
 
         if (what == &buttons)

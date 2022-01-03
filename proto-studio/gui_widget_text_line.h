@@ -122,7 +122,7 @@ namespace gui::text
             {
                 n++;
                 token & token = (*this)(n);
-                token.fill(lexeme.text, lexeme.info, lexeme.style);
+                token = lexeme;
 
                 unbreakable += &token;
                 if (token.text != " " &&

@@ -33,13 +33,13 @@ namespace gui::text
         }
     };
 
-    struct token final : widgetarium<glyph>, metrics
+    struct token_ final : widgetarium<glyph>, metrics
     {
         array<str> glyphs;
-        str text; str info; style_index style; void fill (
+        str text; str info; style_index style; void fill(
         str text, str info, style_index style)
         {
-                this->info =  info;
+            this->info = info;
             if (this->text == text && this->style == style) return;
                 this->text =  text;   this->style =  style;
 
@@ -47,17 +47,17 @@ namespace gui::text
 
             glyphs = aux::unicode::glyphs(text); reserve(glyphs.size());
 
-            for (int i=0; i<glyphs.size(); i++)
+            for (int i = 0; i < glyphs.size(); i++)
             {
-                glyph & glyph = (*this)(i);
+                glyph& glyph = (*this)(i);
                 glyph.value = sys::glyph(glyphs[i], style);
-                ascent  = max(ascent,  glyph.value.now.ascent);
+                ascent = max(ascent, glyph.value.now.ascent);
                 descent = max(descent, glyph.value.now.descent);
             }
 
             truncate(glyphs.size());
 
-            for (auto & glyph : *this)
+            for (auto& glyph : *this)
             {
                 glyph.move_to(XY(width + advance, ascent - glyph.value.now.ascent));
                 width = max(width, width + advance + glyph.value.now.width);
@@ -65,6 +65,72 @@ namespace gui::text
             }
 
             resize(XY(width, ascent + descent));
+        }
+    };
+
+    struct token final:
+    widget<token>, doc::view::token, metrics
+    {
+        struct glyph: pix::glyph
+        {
+            XY offset;
+            XYWH coord() const {
+                return XYWH(
+                    offset.x,
+                    offset.y,
+                    width,
+                    ascent + descent
+                );
+            }
+        };
+        array<glyph> glyphs;
+
+        void operator = (doc::view::token const& t)
+        {
+            bool same = text == t.text and style == t.style;
+
+            doc::view::token::operator = (t);
+            
+            if (same) return;
+
+            width = ascent = descent = advance = 0;
+
+            glyphs.clear();
+
+            for (str text: aux::unicode::glyphs(text))
+            {
+                auto g = pix::glyph(text, style);
+                ascent  = max(ascent,  g.ascent );
+                descent = max(descent, g.descent);
+                glyphs += glyph{ g, XY{} };
+            }
+
+            for (auto& g: glyphs)
+            {
+                g.offset.x = width + advance;
+                g.offset.y = ascent - g.ascent;
+                width = max(width, width + advance + g.width);
+                advance = g.advance;
+            }
+
+            resize(XY(width, ascent + descent));
+        }
+
+        int size() const { return glyphs.size(); }
+
+        void on_render(sys::window& window, XYWH r, XY offset, uint8_t alpha) override
+        {
+            for (auto& g : glyphs) {
+                XYWH child_global = g.coord() + r.origin - offset;
+                XYWH child_frame = r & child_global;
+                if (child_frame.size.x <= 0) continue;
+                if (child_frame.size.y <= 0) continue;
+                window.render(
+                    child_frame, alpha, g,
+                    child_frame.origin -
+                    child_global.origin,
+                    g.offset.x);
+            }
         }
     };
 

@@ -90,9 +90,9 @@ namespace gui::text
                         continue;
                     }
 
-                    for (auto & glyph : token)
+                    for (auto & glyph : token.glyphs)
                     {
-                        XY gp = tp - glyph.coord.now.origin;
+                        XY gp = tp - glyph.offset;
                         if (gp.x < 0) return point;
                         point.from.offset = point.upto.offset;
                         point.upto.offset++;
@@ -133,9 +133,9 @@ namespace gui::text
                         continue;
                     }
 
-                    for (auto & glyph : token)
+                    for (auto & glyph : token.glyphs)
                     {
-                        XY gp = tp - glyph.coord.now.origin;
+                        XY gp = tp - glyph.offset;
                         if (gp.x < 0) return &token;
                         point.from.offset = point.upto.offset;
                         point.upto.offset++;
@@ -172,13 +172,13 @@ namespace gui::text
                         int from_glyph = max(from_offset - offset, 0);
                         int upto_glyph = min(upto_offset - offset, token.size());
 
-                        auto & g1 = token(from_glyph);
-                        auto & g2 = token(upto_glyph-1);
+                        auto & g1 = token.glyphs[from_glyph];
+                        auto & g2 = token.glyphs[upto_glyph-1];
                         bars += XYXY (
-                            g1.coord.now.x,
-                            g1.coord.now.y,
-                            g2.coord.now.x + g2.coord.now.w,
-                            g2.coord.now.y + g2.coord.now.h
+                            g1.offset.x,
+                            g1.offset.y,
+                            g2.offset.x + g2.width,
+                            g2.offset.y + g2.ascent + g2.descent
                         )
                         + token.coord.now.origin
                         + (*this)(from.line).coord.now.origin;
@@ -203,7 +203,7 @@ namespace gui::text
             for (auto & token : (*this)(place.line))
             {
                 if (place.offset - offset < token.size())
-                    return token(place.offset - offset).coord.now
+                    return token.glyphs[place.offset - offset].coord()
                     + token.coord.now.origin
                     + (*this)(place.line).coord.now.origin;
 

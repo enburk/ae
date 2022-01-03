@@ -140,9 +140,10 @@ namespace gui::text
                             int from_glyph = max(from_offset - offset, 0);
                             int upto_glyph = min(upto_offset - offset, token.size());
 
-                            s += str(token.glyphs
+                            for (auto& g: token.glyphs
                                 .from(from_glyph)
-                                .upto(upto_glyph), "");
+                                .upto(upto_glyph))
+                                s += g.text;
                         }
                         offset += token.size();
                     }
