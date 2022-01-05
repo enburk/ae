@@ -452,8 +452,8 @@ void sys::window::render (XYWH r, uint8_t alpha, glyph g, XY offset, int x)
         for (int x=0; x<w; x++)
         {
             color(3*x+0,y).a = alpha(x,y).r;
-            color(3*x+1,y).a = alpha(x,y).g;
-            color(3*x+2,y).a = alpha(x,y).b;
+            color(3*x+1,y).a = alpha(x,y).r; // g; - worse
+            color(3*x+2,y).a = alpha(x,y).r; // b; - worse
         }
 
         it = cache.emplace(key,

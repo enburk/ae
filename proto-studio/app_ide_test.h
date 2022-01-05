@@ -325,6 +325,12 @@ widget<TestWideo>
                     oops(out(sizeof token0)) { "592" };
                     oops(out(sizeof token1)) { "520" };
                     oops(out(sizeof token2)) { "520" };
+                    oops(out(gui::metrics::text::height)) { "0" };
+                    oops(out(gui::metrics::line::width)) { "0" };
+                    oops(out(token2.coord.now.w/10)) { "0" };
+                    oops(out(token2.coord.now.h)) { "0" };
+                    oops(out(coord.now.w)) { "0" };
+                    oops(out(coord.now.h)) { "0" };
                 }
             }
             catch (assertion_failed) {}
