@@ -22,7 +22,7 @@ namespace gui::text
         {
              if (what == &value) {
                  resize(XY(
-                 value.now.width,
+                 value.now.advance,
                  value.now.ascent +
                  value.now.descent));
                  update();
@@ -30,41 +30,6 @@ namespace gui::text
         }
         void on_render (sys::window& window, XYWH r, XY offset, uint8_t alpha) override {
              window.render(r, alpha, value.now, offset, coord.now.x);
-        }
-    };
-
-    struct token_ final : widgetarium<glyph>, metrics
-    {
-        array<str> glyphs;
-        str text; str info; style_index style; void fill(
-        str text, str info, style_index style)
-        {
-            this->info = info;
-            if (this->text == text && this->style == style) return;
-                this->text =  text;   this->style =  style;
-
-            width = ascent = descent = advance = 0;
-
-            glyphs = aux::unicode::glyphs(text); reserve(glyphs.size());
-
-            for (int i = 0; i < glyphs.size(); i++)
-            {
-                glyph& glyph = (*this)(i);
-                glyph.value = sys::glyph(glyphs[i], style);
-                ascent = max(ascent, glyph.value.now.ascent);
-                descent = max(descent, glyph.value.now.descent);
-            }
-
-            truncate(glyphs.size());
-
-            for (auto& glyph : *this)
-            {
-                glyph.move_to(XY(width + advance, ascent - glyph.value.now.ascent));
-                width = max(width, width + advance + glyph.value.now.width);
-                advance = glyph.value.now.advance;
-            }
-
-            resize(XY(width, ascent + descent));
         }
     };
 
@@ -79,39 +44,49 @@ namespace gui::text
                     offset.x,
                     offset.y,
                     width,
-                    ascent + descent
+                    ascent+
+                    descent
                 );
             }
         };
         array<glyph> glyphs;
 
+        XY offset; // for external formatting
+
         void operator = (doc::view::token const& t)
         {
             bool same = text == t.text and style == t.style;
 
-            doc::view::token::operator = (t);
-            
-            if (same) return;
+            doc::view::token::operator = (t); if (same) return;
 
-            width = ascent = descent = advance = 0;
+            pix::text::metrics::operator = (pix::text::metrics{});
 
             glyphs.clear();
 
             for (str text: aux::unicode::glyphs(text))
             {
                 auto g = pix::glyph(text, style);
-                ascent  = max(ascent,  g.ascent );
-                descent = max(descent, g.descent);
+                ascent  = max(ascent,   g.ascent);
+                ascent_ = max(ascent_,  g.ascent_);
+                descent = max(descent,  g.descent);
+                descent_= max(descent_, g.descent_);
                 glyphs += glyph{ g, XY{} };
+            }
+
+            if (glyphs.size() > 0) {
+                lpadding = glyphs.front().lpadding;
+                rpadding = glyphs.back ().rpadding;
             }
 
             for (auto& g: glyphs)
             {
-                g.offset.x = width + advance;
+                g.offset.x = advance;
                 g.offset.y = ascent - g.ascent;
-                width = max(width, width + advance + g.width);
-                advance = g.advance;
+                width = advance + g.width;
+                advance += g.advance;
             }
+
+            bearing = style.style().shift.x;
 
             resize(XY(width, ascent + descent));
         }

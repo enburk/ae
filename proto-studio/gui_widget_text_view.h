@@ -43,12 +43,12 @@ namespace gui::text
         void refresh ()
         {
             format format;
-            format.width = coord.now.size.x;
-            format.margin_right = margin_right.now;
-            format.margin_left = margin_left.now;
             format.alignment = alignment.now;
-            format.word_wrap = word_wrap.now;
-            format.ellipsis = ellipsis.now; if (ellipsis.now)
+            format.rpadding = margin_right.now;
+            format.lpadding = margin_left.now;
+            format.wordwrap = word_wrap.now;
+            format.ellipsis = ellipsis.now;
+            format.width  = coord.now.size.x; if (ellipsis.now)
             format.height = coord.now.size.y;
 
             model->set(style.now, format);

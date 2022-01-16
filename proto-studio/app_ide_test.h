@@ -109,11 +109,11 @@ widget<TestFonts>
             for (char c : alnum) {
                 auto glyph = sys::glyph(str(c), style);
                 auto w = glyph.width;
-                auto h = glyph.ascent+glyph.descent;
+                auto h = glyph.ascent + glyph.descent;
                 auto frame = image.crop(XYWH(x, y, w, h));
                 frame.blend(RGBA::white, 200);
                 glyph.render(frame, XY(), 200, x);
-                x += glyph.width + glyph.advance + gap;
+                x += glyph.advance + gap;
             }
         }
     }
@@ -316,21 +316,19 @@ widget<TestWideo>
                 {
                     auto canvas = gui::canvas{};
                     auto glyph1 = gui::text::glyph{};
-                    auto token0 = gui::text::token_{};
                     auto token1 = gui::text::token{};
                     auto token2 = gui::text::token{};
                     token2 = doc::view::token{ "0123456789", pix::text::style_index{}, "", ""};
                     oops(out(sizeof canvas)) { "432" };
                     oops(out(sizeof glyph1)) { "440" };
-                    oops(out(sizeof token0)) { "592" };
                     oops(out(sizeof token1)) { "520" };
                     oops(out(sizeof token2)) { "520" };
-                    oops(out(gui::metrics::text::height)) { "0" };
-                    oops(out(gui::metrics::line::width)) { "0" };
-                    oops(out(token2.coord.now.w/10)) { "0" };
-                    oops(out(token2.coord.now.h)) { "0" };
-                    oops(out(coord.now.w)) { "0" };
-                    oops(out(coord.now.h)) { "0" };
+                    oops(out(gui::metrics::text::height)) { "24" };
+                    oops(out(gui::metrics::line::width)) { "1" };
+                    oops(out(token2.coord.now.w/10)) { "13" };
+                    oops(out(token2.coord.now.h)) { "32" };
+                    oops(out(coord.now.w)) { "3594" };
+                    oops(out(coord.now.h)) { "1972" };
                 }
             }
             catch (assertion_failed) {}

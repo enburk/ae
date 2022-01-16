@@ -170,8 +170,8 @@ namespace doc::html
             else
             if (entity.name == "blockquote")
             {
-                int x = 3 * height + format.margin_left.x;
-                format.margin_left = pix::XY(x, max<int>());
+                int x = 3 * height + format.lpadding.x;
+                format.lpadding = pix::XY(x, max<int>());
             }
             else
             if (entity.name == "div")
@@ -179,7 +179,7 @@ namespace doc::html
                 for (auto [key, val] : attr_style)
                 {
                     if (key == "margin-left") {
-                        format.margin_left = pix::XY(heights(val), max<int>());
+                        format.lpadding = pix::XY(heights(val), max<int>());
                     }
 
                     if (key == "line-height")

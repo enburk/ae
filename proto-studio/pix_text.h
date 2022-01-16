@@ -7,20 +7,21 @@ namespace pix
 
     struct font
     {
-        str face; int size; bool bold; bool italic;
+        str face; int size = 0; bool bold = false; bool italic = false;
 
         bool operator == (font const&) const = default;
         bool operator != (font const&) const = default;
 
         struct metrics
         {
-             int height;  // ascent + descent
-             int ascent;  // units above the base line
-             int descent; // units below the base line (positive value)
-             int linegap; // baseline-to-baseline distance = ascent + descent + linegap
-             int average_char_width; // usually the width of 'x'
-             int maximum_char_width;
-             int minimum_char_width;
+             int height  = 0; // ascent + descent
+             int ascent  = 0; // units above the base line
+             int descent = 0; // units below the base line (positive value)
+             int linegap = 0; // baseline-to-baseline distance = ascent + descent + linegap
+             int chargap = 0; // extra space between characters
+             int average_char_width = 0; // usually the width of 'x'
+             int maximum_char_width = 0;
+             int minimum_char_width = 0;
         };
     };
 
@@ -66,11 +67,15 @@ namespace pix
 
         struct metrics
         {
-            int  width   = 0; // units
-            int  ascent  = 0; // units above the base line
-            int  descent = 0; // units below the base line (positive value)
-            int  advance = 0; // the pen position increment = width + advance
-            XYWH outlines;    // boundaries of the actual image
+            int ascent   = 0; // pixels above the base line (font based)
+            int ascent_  = 0; // pixels above the base line (actual)
+            int descent  = 0; // pixels below the base line (font based)
+            int descent_ = 0; // pixels below the base line (actual)
+            int bearing  = 0; // horizontal displacement
+            int advance  = 0; // pen position increment
+            int lpadding = 0; // from begin to first pixel
+            int rpadding = 0; // from last pixel to advance (negative for italic)
+            int width    = 0; // max(advance, advance - rpadding)
 
             bool operator == (metrics const&) const = default;
             bool operator != (metrics const&) const = default;
@@ -82,10 +87,10 @@ namespace pix
             int height = max<int>();
 
             XY alignment = XY{center, center};
-            XY margin_left;
-            XY margin_right;
+            XY lpadding;
+            XY rpadding;
 
-            bool word_wrap = true;
+            bool wordwrap = true;
             bool ellipsis = false;
 
             bool operator == (const format & f) const = default;

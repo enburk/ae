@@ -103,7 +103,7 @@ struct Console : gui::widget<Console>
 
                 while (ln >= 0)
                 {
-                    auto & tokens = column(ln).data_copy.tokens;
+                    auto & tokens = column(ln).tokens;
                     str line; for (auto & t : tokens) line += t.text;
                     line.replace_all("\n", "");
 
@@ -120,7 +120,7 @@ struct Console : gui::widget<Console>
 
                 while (ln >= 0)
                 {
-                    auto & tokens = column(ln).data_copy.tokens;
+                    auto & tokens = column(ln).tokens;
                     str line; for (auto & t : tokens) line += t.text;
                     line.replace_all("\n", "");
 

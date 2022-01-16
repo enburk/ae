@@ -288,7 +288,7 @@ namespace aux
              trimr(e); triml(e); }
 
         void truncate () { if (size() > 0)
-             container::resize(size()-1); }
+             container::pop_back(); }
 
         void deduplicate () {
             sort(std::less{});

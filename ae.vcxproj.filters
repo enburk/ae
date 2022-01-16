@@ -99,9 +99,6 @@
     <ClInclude Include="proto-studio\gui_widget_text_editor1.h">
       <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\gui_widget_text_line.h">
-      <Filter>gui</Filter>
-    </ClInclude>
     <ClInclude Include="proto-studio\gui_widget_text_page.h">
       <Filter>gui</Filter>
     </ClInclude>
@@ -272,6 +269,9 @@
     </ClInclude>
     <ClInclude Include="proto-studio\aux_unittest_coro.h">
       <Filter>aux</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\gui_widget_text_aux_line.h">
+      <Filter>gui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

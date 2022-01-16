@@ -1,5 +1,5 @@
 #pragma once
-#include "gui_widget_text_line.h"
+#include "gui_widget_text_aux_line.h"
 namespace gui::text
 {
     struct column : widgetarium<line>
@@ -16,12 +16,12 @@ namespace gui::text
                 {
                     if (size() <= n) return true;
 
-                    if ((*this)(n).data_copy == data) return false;
+                    if ((*this)(n) == data) return false;
 
                     if (size() == datae.size()) return true;
 
                     // style could be changed by syntax highlighting
-                    const auto & tt1 = (*this)(n).data_copy.tokens;
+                    const auto & tt1 = (*this)(n).tokens;
                     const auto & tt2 = data.tokens;
                     bool same_text = tt1.size() == tt2.size();
                     if (same_text)
@@ -33,7 +33,7 @@ namespace gui::text
 
                     if (size() < datae.size())
                     { // lines were inserted
-                        emplace_back().fill(std::move(data));
+                        emplace_back() = std::move(data);
                         rotate(n, size()-1, size());
                         return false;
                     }
@@ -41,12 +41,12 @@ namespace gui::text
                     { // lines were removed
                         rotate(n, size()-datae.size()+n, size());
                         truncate(datae.size());
-                        return (*this)(n).data_copy != data;
+                        return (*this)(n) != data;
                     }
                 };
 
                 if (refill())
-                    (*this)(n).fill(std::move(data));
+                    (*this)(n) = std::move(data);
 
                 line & line = (*this)(n);
                 line.move_to(XY(0, height));
@@ -177,7 +177,7 @@ namespace gui::text
                         bars += XYXY (
                             g1.offset.x,
                             g1.offset.y,
-                            g2.offset.x + g2.width,
+                            g2.offset.x + g2.advance,
                             g2.offset.y + g2.ascent + g2.descent
                         )
                         + token.coord.now.origin
@@ -219,8 +219,8 @@ namespace gui::text
             sys::glyph space (" ", style);
 
             XYWH r = (*this)(place.line).coord.now;
-            r.x = r.x + r.w + (place.offset - offset) * space.width;
-            r.w = space.width;
+            r.x = r.x + r.w + (place.offset - offset) * space.advance;
+            r.w = space.advance;
             return r;
         }
     };

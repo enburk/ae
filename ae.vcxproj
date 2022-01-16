@@ -207,10 +207,10 @@
     <ClInclude Include="proto-studio\gui_widget_player.h" />
     <ClInclude Include="proto-studio\gui_widget_scroller.h" />
     <ClInclude Include="proto-studio\gui_widget_text_aux.h" />
+    <ClInclude Include="proto-studio\gui_widget_text_aux_line.h" />
     <ClInclude Include="proto-studio\gui_widget_text_column.h" />
     <ClInclude Include="proto-studio\gui_widget_text_editor.h" />
     <ClInclude Include="proto-studio\gui_widget_text_editor1.h" />
-    <ClInclude Include="proto-studio\gui_widget_text_line.h" />
     <ClInclude Include="proto-studio\gui_widget_text_page.h" />
     <ClInclude Include="proto-studio\gui_widget_text_view.h" />
     <ClInclude Include="proto-studio\pix_color.h" />

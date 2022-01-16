@@ -103,26 +103,89 @@ namespace gui
             indices.erase(indices.begin()+pos);
         }
         void truncate (int pos) { while (size() > pos) erase(size()-1); }
+        void truncate () { if (size() > 0) truncate(size()-1); }
         void clear () { truncate (0); }
 
-        template<class U> struct iterator
+        struct iterator
         {
-            widgetarium<U>* that; int index;
+            widgetarium& that; int index;
             void operator ++ () { ++index; }
             void operator -- () { --index; }
             void operator += (int n) { index += n; }
             void operator -= (int n) { index -= n; }
             bool operator == (iterator i) { return index == i.index; }
             bool operator != (iterator i) { return index != i.index; }
-            const U & operator * () const { return (*that)(index); }
-            /***/ U & operator * () /***/ { return (*that)(index); }
+            const T & operator * () const { return that(index); }
+            /***/ T & operator * () /***/ { return that(index); }
             friend iterator operator + (iterator i, int n) { i.index += n; return i; }
             friend iterator operator - (iterator i, int n) { i.index -= n; return i; }
             friend int operator - (iterator i, iterator j) { return i.index - j.index; }
+            friend int operator < (iterator i, iterator j) { return i.index < j.index; }
         };
-        iterator<T> begin () { return iterator<T>{this, 0}; }
-        iterator<T> end   () { return iterator<T>{this, size()}; }
-        const iterator<T> begin () const { return iterator<T>{const_cast<widgetarium*>(this), 0}; }
-        const iterator<T> end   () const { return iterator<T>{const_cast<widgetarium*>(this), size()}; }
+        iterator begin () { return iterator{*this, 0}; }
+        iterator end   () { return iterator{*this, size()}; }
+        const iterator begin () const { return iterator{*const_cast<widgetarium*>(this), 0}; }
+        const iterator end   () const { return iterator{*const_cast<widgetarium*>(this), size()}; }
+
+        struct range_type
+        {
+            widgetarium& host; int begin_, end_;
+            auto range_(iterator i, iterator j) -> range_type {
+                return range_type {host,
+                    int(i-host.begin()),
+                    int(j-host.begin())};
+            }
+
+            iterator begin () { return host.begin() + begin_; }
+            iterator end   () { return host.begin() + end_; }
+
+            auto size   () { return (int)(end() - begin()); }
+            auto offset () { return (int)(begin() - host.begin()); }
+            bool empty  () { return size() == 0; }
+            explicit operator bool () {
+                return not empty(); }
+
+            auto clip (iterator i) { return std::min(std::max(begin(),i), end()); }
+            auto from (iterator i) { return range_(clip(i), end  ()); }
+            auto upto (iterator i) { return range_(begin(), clip(i)); }
+
+            auto upto (int n) { return range_(begin(), host.clip(host.begin() + n)); }
+            auto span (int n) { return range_(begin(), host.clip(     begin() + n)); }
+
+            auto operator () (iterator i, iterator j) { return from(i).upto(j); }
+            auto operator () (int b, int e) { return from(begin()+b).upto(begin()+e); }
+            auto operator () (int i) -> T& { return *(begin() + i); }
+
+            auto& front() { return host.at(begin_); }
+            auto& back () { return host.at(end_-1); }
+
+            int rotate (int f, int m, int l) {
+                return host.rotate(
+                    begin_+ f,
+                    begin_+ m,
+                    begin_+ l) -
+                    begin_; }
+
+            void erase(int pos) { host.erase(begin_ + pos); end_--; }
+            void truncate (int pos) { while (size() > pos) erase(size()-1); }
+            void truncate () { if (size() > 0) truncate(size()-1); }
+            void clear () { truncate (0); }
+        };
+
+        auto range_(range_type r) { return from(r.offset()).span(r.size()); }
+        auto range_(iterator  i, iterator  j) -> range_type {
+            return range_type {*this,
+                int(i-begin()),
+                int(j-begin())}; }
+
+        auto clip (iterator i) { return std::min(std::max(begin(),i), end()); }
+        auto from (iterator i) { return range_(clip(i), end  ()); }
+        auto upto (iterator i) { return range_(begin(), clip(i)); }
+        auto from (int n) { return from(begin() + n); }
+        auto upto (int n) { return upto(begin() + n); }
+        auto whole () { return range_(begin(), end()); }
+
+        auto operator () (iterator i, iterator j) { return from(i).upto(j); }
+        auto operator () (int b, int e) { return from(begin()+b).upto(begin()+e); }
     };
 }

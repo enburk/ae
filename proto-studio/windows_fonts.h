@@ -138,8 +138,8 @@ pix::glyph::glyph (str text, text::style_index i) : text(text), style_index(i)
         advance = Size.cx;
         ascent  = context.font.metrics.ascent;
         descent = context.font.metrics.descent;
-        width   = advance*2; // italics are wider
-
+        
+        width = 2*advance; // italics are wider
         static pix::image<RGBA> image;
         image.resize(XY(width, ascent+descent));
         image.fill(RGBA::white);
@@ -152,23 +152,42 @@ pix::glyph::glyph (str text, text::style_index i) : text(text), style_index(i)
         simple_glyph.style_index = text::style_index(simple_style);
         simple_glyph.render(image);
 
+        XYXY r = XYWH(0, 0, image.size.x, image.size.y);
+
+//        for (bool stop = false; !stop && r.yh > 0; r.yh--)
+//            for (int x = 0; x < r.xh; x++)
+//                if (image(x, r.yh-1) != RGBA::white)
+//                { stop = true; break; }
+//
+//        for (bool stop = false; !stop && r.yl < r.yh; r.yl++)
+//            for (int x = 0; x < r.xh; x++)
+//                if (image(x, r.yl) != RGBA::white)
+//                { stop = true; break; }
+
         for (bool stop = false; !stop && width > 0; width--)
             for (int y = 0; y < image.size.y; y++)
                 if (image(width-1, y) != RGBA::white)
-                    { stop = true; break; }
+                { stop = true; break; }
 
-        if (width < advance) // could be 0 for spaces
-            width = advance; // for continuity of strike/under-lines
+        ascent_  = ascent;
+        descent_ = descent;
 
-        advance -= width; // the pen position increment = width + advance
+        rpadding = advance - width; // negative for italic
 
-        if (text == "\n") width = max(1, (ascent+descent)/16); // for text editor
+        width = max(advance, advance - rpadding);
+
+        // for text editor
+        if (width == 0 and text == "\n")
+            width = max(1, (ascent+descent)/16);
 
         cache_metrics.emplace(key, *this);
     }
 
     ascent  -= style.shift.y;
+    ascent_ -= style.shift.y;
     descent += style.shift.y;
+    descent_+= style.shift.y;
+    bearing += style.shift.x;
 
     // adapt metrics for style.outline/undeline/shadow here
 }
@@ -213,15 +232,6 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
     RGBA fore = style.color;
     RGBA back;
 
-    int w = width;
-    int h = ascent + descent;
-    if (w <= 0 or h <= 0) return;
-
-    if (false) { // test for rendering speed
-        frame.blend(RGBA::random(), alpha);
-        return;
-    }
-
     bool solid_color_background = back.a == 255;
     if (!solid_color_background)
     {
@@ -237,8 +247,8 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
     cacheable_style.color = style.color;
 
     bool cacheable =
-        text.size() <= 4 &&
-        solid_color_background &&
+        text.size() <= 4 and
+        solid_color_background and
         style == cacheable_style;
 
     if (cacheable)
@@ -251,6 +261,15 @@ void sys::glyph::render (pix::frame<RGBA> frame, XY offset, uint8_t alpha, int x
             return;
         }
     }
+
+    if (false) { // test for rendering speed
+        frame.blend(RGBA::random(), alpha);
+        return;
+    }
+
+    int w = 2*advance; // italics are wider
+    int h = ascent + descent;
+    if (w <= 0 or h <= 0) return;
 
     GDI_CONTEXT context(font);
 
