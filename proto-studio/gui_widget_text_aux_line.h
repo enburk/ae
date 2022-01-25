@@ -83,23 +83,32 @@ namespace gui::text
     {
         XY offset;
         array<solid> solids;
-        pix::text::format format;
+        doc::view::format format;
         bool the_last_row = true;
 
         bool add (solid solid)
         {
+            int height =
+                max(ascent,  solid.ascent) +
+                max(descent, solid.descent);
+
             int max_width =
                 format.width -
-                format.lpadding.x -
-                format.rpadding.x;
+                format.lpadding.max(height) -
+                format.rpadding.max(height);
 
-            if (format.wordwrap
+            if ((format.wordwrap or format.ellipsis)
             and advance + solid.width > max_width
             and not solids.empty()) // at least one should be accepted
             {
                 the_last_row = false;
                 return false;
             }
+
+            if (format.ellipsis
+            and advance + solid.width > max_width
+            and solids.empty())
+                solid.ellipt(max_width);
 
             ascent  = max(ascent,   solid.ascent);
             ascent_ = max(ascent_,  solid.ascent_);
@@ -116,8 +125,8 @@ namespace gui::text
         {
             int max_width =
                 format.width -
-                format.lpadding.x -
-                format.rpadding.x;
+                format.lpadding.max(ascent+descent) -
+                format.rpadding.max(ascent+descent);
 
             the_last_row = true;
 
@@ -155,9 +164,8 @@ namespace gui::text
             int align = format.alignment.x;
             int Width =
                 format.width -
-                format.lpadding.x -
-                format.rpadding.x;
-
+                format.lpadding.max(ascent+descent) -
+                format.rpadding.max(ascent+descent);
 
             if (align == pix::left or
                (align == pix::justify_left and the_last_row)) {
@@ -194,7 +202,7 @@ namespace gui::text
             
     struct line final : widgetarium<token>, doc::view::line
     {
-        array<row> rows;
+        array<row> rows; int length = 0;
 
         void operator = (doc::view::line data)
         {
@@ -249,18 +257,19 @@ namespace gui::text
                         int h =                         
                             rows.back().ascent +
                             rows.back().descent;
-                        if (height + h >= fmt.height)
+
+                        if (height + h >= fmt.height
+                            or not format.wordwrap)
                             break; // emplaced tokens wouldn't be accepted
 
                         height += h;
-                        fmt.height     = max(0, fmt.height     - h);
-                        fmt.lpadding.y = max(0, fmt.lpadding.y - h);
-                        fmt.rpadding.y = max(0, fmt.rpadding.y - h);
+                        fmt.height -= h;
+                        fmt.lpadding.skip(h);
+                        fmt.rpadding.skip(h);
                     }
 
                     rows += row{};
                     rows.back().format = fmt;
-                    rows.back().offset.x = fmt.lpadding.x;
                     rows.back().offset.y = height;
                     rows.back().add(emplaced);
                     // at least one solid would be accepted
@@ -281,35 +290,29 @@ namespace gui::text
                 rows.back().ascent +
                 rows.back().descent;
 
-            int width = 0;
+            int width = 0; length = 0;
 
             for (auto& row: rows)
             {
                 row.align();
+                row.offset.x += row.format.lpadding.max(
+                    row.ascent +
+                    row.descent);
                 width = max (width,
                     row.offset.x +
                     row.width);
 
                 for (auto& solid: row.solids)
+                for (auto& token: solid.tokens)
                 {
-                    for (auto& token : solid.tokens)
-                    {
-                        token.move_to(XY(
-                        row.offset.x + solid.offset.x + token.offset.x,
-                        row.offset.y + solid.offset.y + token.offset.y));
-                    }
-
+                    token.move_to(XY(
+                    row.offset.x + solid.offset.x + token.offset.x,
+                    row.offset.y + solid.offset.y + token.offset.y));
+                    length += token.size();
                 }
             }
 
             resize(XY(width, height));
-        }
-
-        int length () const
-        {
-            int length = 0;
-            for (const auto & token : *this) length += token.size();
-            return length;
         }
     };
 } 

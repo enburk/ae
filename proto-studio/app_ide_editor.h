@@ -26,13 +26,14 @@ struct Editor : gui::widget<Editor>
 
             lineup.canvas.color = gui::skins[skin].ultralight.first;
             lineup.alignment = XY{pix::right, pix::top};
-            lineup.word_wrap = false;
+            lineup.rpadding.now = h / 4;
+            lineup.wordwrap = false;
             lineup.style = pix::text::style{
                 sys::font{"Consolas", h},
                 RGBA::teal};
 
             editor.virtual_space = true;
-            editor.page.view.word_wrap = false;
+            editor.page.view.wordwrap = false;
             editor.page.scroll.x.mode = gui::scroll::mode::none;
             editor.page.view.current_line_frame.color = pix::ARGB(0x40909090);
             editor.page.view.canvas.color = RGBA::white;
@@ -115,7 +116,7 @@ struct Editor : gui::widget<Editor>
     }
 
     void on_focus (bool on) override { editor.on_focus(on); }
-    void on_keyboard_input (str symbol) override { editor.on_keyboard_input(symbol); }
+    void on_key_input (str symbol) override { editor.on_key_input(symbol); }
     void on_key_pressed (str key, bool down) override { editor.on_key_pressed(key,down); }
     bool on_mouse_wheel (XY p, int delta) override
     {

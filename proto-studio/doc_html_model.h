@@ -1,5 +1,6 @@
 #pragma once
 #include "doc.h"
+#include "doc_view.h"
 #include "doc_html_utils.h"
 namespace doc::html
 {
@@ -36,6 +37,7 @@ namespace doc::html
         void proceed (entity const& entity, style style, format format, str link)
         {
             std::map<str,str> attr_style;
+
             for (auto [attr, value] : entity.attr)
             {
                 if (attr == "hidden")
@@ -54,6 +56,7 @@ namespace doc::html
             }
 
             int height = sys::metrics(style.font).height;
+
             auto heights = [height](str val)
             {
                 double h = 0;
@@ -170,8 +173,7 @@ namespace doc::html
             else
             if (entity.name == "blockquote")
             {
-                int x = 3 * height + format.lpadding.x;
-                format.lpadding = pix::XY(x, max<int>());
+                format.lpadding += 3*height;
             }
             else
             if (entity.name == "div")
@@ -179,7 +181,7 @@ namespace doc::html
                 for (auto [key, val] : attr_style)
                 {
                     if (key == "margin-left") {
-                        format.lpadding = pix::XY(heights(val), max<int>());
+                        format.lpadding = heights(val);
                     }
 
                     if (key == "line-height")

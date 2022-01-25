@@ -104,7 +104,7 @@ namespace sys
              on_timing();
         }
         void keyboard_on_input(str symbol) override { if (symbol != "")
-             widget.on_keyboard_input(symbol);
+             widget.on_key_input(symbol);
              on_timing();
         }
         void mouse_on_press(XY p, char button, bool down) override {

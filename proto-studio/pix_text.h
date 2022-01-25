@@ -80,22 +80,6 @@ namespace pix
             bool operator == (metrics const&) const = default;
             bool operator != (metrics const&) const = default;
         };
-
-        struct format
-        {
-            int width  = max<int>();
-            int height = max<int>();
-
-            XY alignment = XY{center, center};
-            XY lpadding;
-            XY rpadding;
-
-            bool wordwrap = true;
-            bool ellipsis = false;
-
-            bool operator == (const format & f) const = default;
-            bool operator != (const format & f) const = default;
-        };
     }
 
     struct glyph : text::metrics

@@ -12,15 +12,15 @@ namespace gui::text
         binary_property<sys::font> font;
         binary_property<style> style;
         binary_property<XY> alignment = XY{center, center};
-        binary_property<XY> margin_right;
-        binary_property<XY> margin_left;
+        binary_property<padding> lpadding;
+        binary_property<padding> rpadding;
         binary_property<bool> insert_mode = true;
         binary_property<bool> virtual_space = false;
 
         one_line_editor ()
         {
             editor.page.view.ellipsis = false;
-            editor.page.view.word_wrap = false;
+            editor.page.view.wordwrap = false;
             editor.page.scroll.x.mode = gui::scroll::mode::none;
             editor.page.scroll.y.mode = gui::scroll::mode::none;
         }
@@ -36,8 +36,8 @@ namespace gui::text
             CHANGE(color)
             CHANGE(style)
             CHANGE(alignment)
-            CHANGE(margin_right)
-            CHANGE(margin_left)
+            CHANGE(lpadding)
+            CHANGE(rpadding)
             #undef CHANGE
             #define CHANGE(p)     \
             if (what == &p) {     \
@@ -101,9 +101,9 @@ namespace gui::text
 
             editor.on_key_pressed(key, down);
         }
-        void on_keyboard_input (str symbol) override
+        void on_key_input (str symbol) override
         {
-            editor.on_keyboard_input(symbol);
+            editor.on_key_input(symbol);
         }
         void on_focus (bool on) override
         {

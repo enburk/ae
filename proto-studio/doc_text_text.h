@@ -46,19 +46,18 @@ namespace doc::text
         void error (str what) { error(nullptr, what); }
 
         void debug (token* token, str what) {
-            messages += message{token, "debug", what};
-        }
+            messages += message{token, "debug", what}; }
+
         void info  (token* token, str what) {
-            messages += message{token, "info", what};
-        }
+            messages += message{token, "info", what}; }
+
         void error (token* token, str what) {
             messages += message{token, "error", what};
             errors   += message{token, "error", what};
-            if (token) token->kind = "error";
-            if (token) token->info =
-            "<font color=#B00020>" + what +
-            "</font>";
-        }
+            if (token) { token->kind = "error";
+                token->info = "<font color=#B00020>"
+                    + what + "</font>"; } }
+
         void operator += (report report)
         {
             messages += report.messages;

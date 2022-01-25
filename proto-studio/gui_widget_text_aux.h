@@ -7,7 +7,8 @@ namespace gui::text
     using pix::text::style;
     using pix::text::style_index;
     using pix::text::metrics;
-    using pix::text::format;
+    using doc::view::padding;
+    using doc::view::format;
     using doc::place;
     using doc::range;
 

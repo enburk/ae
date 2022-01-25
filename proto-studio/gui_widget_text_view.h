@@ -18,12 +18,11 @@ namespace gui::text
         property<RGBA> color;
         binary_property<font> font;
         binary_property<style> style;
-        binary_property<bool> word_wrap = true;
+        binary_property<padding> lpadding;
+        binary_property<padding> rpadding;
+        binary_property<bool> wordwrap = true;
         binary_property<bool> ellipsis = false;
         binary_property<XY> alignment = XY{center, center};
-        binary_property<XY> margin_right;
-        binary_property<XY> margin_left;
-        binary_property<XY> padding;
         binary_property<XY> shift;
 
         unary_property<array<range>> highlights;
@@ -38,15 +37,13 @@ namespace gui::text
         doc::html::model _model;
         doc::view::model* model = &_model;
 
-        view () { on_change(&skin); }
-
         void refresh ()
         {
             format format;
             format.alignment = alignment.now;
-            format.rpadding = margin_right.now;
-            format.lpadding = margin_left.now;
-            format.wordwrap = word_wrap.now;
+            format.lpadding = lpadding.now;
+            format.rpadding = rpadding.now;
+            format.wordwrap = wordwrap.now;
             format.ellipsis = ellipsis.now;
             format.width  = coord.now.size.x; if (ellipsis.now)
             format.height = coord.now.size.y;
@@ -127,7 +124,7 @@ namespace gui::text
                     if (from.line >= column.size()) break;
                     int from_offset = from.offset;
                     int upto_offset = from.line == upto.line ?
-                        upto.offset : column(from.line).length();
+                        upto.offset : column(from.line).length;
                     if (from_offset >= upto_offset) continue;
 
                     int offset = 0;
@@ -185,7 +182,7 @@ namespace gui::text
                 style = pix::text::style
                 {
                     skins[skin.now].font,
-                    skins[skin.now].normal.second
+                    skins[skin.now].light.second
                 };
             }
             if (what == &font)
@@ -208,11 +205,11 @@ namespace gui::text
                 color.now = style.now.color;
                 refresh();
             }
-            if (what == &word_wrap
-            ||  what == &padding
-            ||  what == &margin_right
-            ||  what == &margin_left
-            ||  what == &alignment)
+            if (what == &wordwrap
+            or  what == &ellipsis
+            or  what == &lpadding
+            or  what == &rpadding
+            or  what == &alignment)
             {
                 refresh();
             }
@@ -222,17 +219,22 @@ namespace gui::text
             }
             if (what == &highlights)
             {
-                highlight(highlights.now, highlight_bars,
-                    skins[skin.now].highlight.first);
+                highlight(
+                    highlights.now,
+                    highlight_bars, skins[skin.now].
+                    highlight.first);
             }
             if (what == &selections)
             {
-                highlight(selections.now, selection_bars,
-                    skins[skin.now].selection.first);
+                highlight(
+                    selections.now,
+                    selection_bars, skins[skin.now].
+                    selection.first);
 
                 refresh_carets ();
             }
-            if (what == &focused || what == &insert_mode)
+            if (what == &focused ||
+                what == &insert_mode)
             {
                 refresh_carets();
             }

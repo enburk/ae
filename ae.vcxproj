@@ -196,6 +196,7 @@
     <ClInclude Include="proto-studio\doc_text_model_b.h" />
     <ClInclude Include="proto-studio\doc_text_repo.h" />
     <ClInclude Include="proto-studio\doc_text_text.h" />
+    <ClInclude Include="proto-studio\doc_view.h" />
     <ClInclude Include="proto-studio\gui_colors.h" />
     <ClInclude Include="proto-studio\gui_effect.h" />
     <ClInclude Include="proto-studio\gui_widget.h" />

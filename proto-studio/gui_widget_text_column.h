@@ -74,7 +74,7 @@ namespace gui::text
                 point.from.offset = 0;
                 point.upto = point.from;
                 if (lp.y >= line.coord.now.size.y) {
-                    point.from.offset += line.length();
+                    point.from.offset += line.length;
                     point.upto = point.from;
                     continue;
                 }
@@ -117,7 +117,7 @@ namespace gui::text
                 point.from.offset = 0;
                 point.upto = point.from;
                 if (lp.y >= line.coord.now.size.y) {
-                    point.from.offset += line.length();
+                    point.from.offset += line.length;
                     point.upto = point.from;
                     continue;
                 }
@@ -159,7 +159,7 @@ namespace gui::text
                 if (from.line >= size()) break;
                 int from_offset = from.offset;
                 int upto_offset = from.line == upto.line ?
-                    upto.offset : (*this)(from.line).length();
+                    upto.offset : (*this)(from.line).length;
                 if (from_offset >= upto_offset) continue;
 
                 int offset = 0;

@@ -260,10 +260,10 @@ struct IDE : gui::widget<IDE>
     }
 
     void on_focus (bool on) override { editor.on_focus(on); }
-    void on_keyboard_input (str symbol) override
+    void on_key_input (str symbol) override
     {
         console.active()->page.view.selections = array<gui::text::range>();
-        editor.on_keyboard_input(symbol);
+        editor.on_key_input(symbol);
     }
     void on_key_pressed (str key, bool down) override
     {

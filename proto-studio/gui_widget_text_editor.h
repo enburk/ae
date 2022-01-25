@@ -367,7 +367,7 @@ namespace gui::text
 
             {}
         }
-        void on_keyboard_input (str symbol) override
+        void on_key_input (str symbol) override
         {
             if (!touch) insert(symbol);
         }

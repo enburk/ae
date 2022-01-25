@@ -14,12 +14,12 @@ namespace gui::text
         property<RGBA> color;
         binary_property<sys::font> font;
         binary_property<style> style;
-        binary_property<bool> word_wrap = true;
+        binary_property<bool> wordwrap = true;
         binary_property<bool> ellipsis = false;
         binary_property<bool> infotip = false;
         binary_property<XY> alignment = XY{center, center};
-        binary_property<XY> margin_right;
-        binary_property<XY> margin_left;
+        binary_property<padding> lpadding;
+        binary_property<padding> rpadding;
         scroll scroll;
 
         gui::text::view info;
@@ -32,11 +32,11 @@ namespace gui::text
             CHANGE(font)
             CHANGE(color)
             CHANGE(style)
-            CHANGE(word_wrap)
+            CHANGE(wordwrap)
             CHANGE(ellipsis)
             CHANGE(alignment)
-            CHANGE(margin_right)
-            CHANGE(margin_left)
+            CHANGE(lpadding)
+            CHANGE(rpadding)
             #undef CHANGE
 
             if (what == &text
@@ -65,9 +65,10 @@ namespace gui::text
             or  what == &html
             or  what == &font
             or  what == &style
-            or  what == &word_wrap
-            or  what == &margin_right
-            or  what == &margin_left)
+            or  what == &wordwrap
+            or  what == &ellipsis
+            or  what == &lpadding
+            or  what == &rpadding)
                 refresh();
 
             if (what == &timer) {
@@ -270,7 +271,7 @@ namespace gui::text
             }
             if (key == "shift+right")
             {
-                int n = view.column(from.line).length();
+                int n = view.column(from.line).length;
                 if (upto.offset < n) {
                     upto.offset++;
                     select();
@@ -287,7 +288,7 @@ namespace gui::text
             if (key == "ctrl+right" or
                 key == "ctrl+shift+right")
             {
-                int n = view.column(from.line).length();
+                int n = view.column(from.line).length;
                 if (from.offset < n) {
                     from.offset++;
                     select();

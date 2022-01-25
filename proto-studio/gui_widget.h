@@ -176,13 +176,14 @@ namespace gui::base
         ////////////////////////////////////////////////////////////////////////
 
         virtual void on_focus (bool) {}
+        virtual void on_key_input (str) {}
         virtual void on_key_pressed (str, bool) {}
-        virtual void on_keyboard_input (str) {}
 
         ////////////////////////////////////////////////////////////////////////
 
-        void notify () { if (parent) parent->on_change(this); }
-        void notify (void* w) { if (parent) parent->on_change(w); }
+        void notify (void* what = nullptr) {
+            if (parent) parent->on_change(
+                what ? what : this); }
 
         ////////////////////////////////////////////////////////////////////////
 

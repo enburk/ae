@@ -273,6 +273,9 @@
     <ClInclude Include="proto-studio\gui_widget_text_aux_line.h">
       <Filter>gui</Filter>
     </ClInclude>
+    <ClInclude Include="proto-studio\doc_view.h">
+      <Filter>doc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="proto-studio\!main.cpp">

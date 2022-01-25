@@ -21,8 +21,9 @@ namespace gui
         void on_change (void* what) override
         {
             if (what == &color)
-                if (color.was.a != 0 ||
-                    color.now.a != 0 ) update();
+                if (color.was.a != 0 or
+                    color.now.a != 0 )
+                    update();
         }
     };
 
@@ -51,18 +52,17 @@ namespace gui
     };
 
     template
-    <class Object>
+    <class X>
     struct area :
-    widget<area<Object>>
+    widget<area<X>>
     {
-        frame  frame1;
-        frame  frame2;
-        frame  frame3;
-        Object object;
+        frame frame1;
+        frame frame2;
+        frame frame3; X object;
 
-        using widget<area<Object>>::skin;
-        using widget<area<Object>>::coord;
-        using widget<area<Object>>::notify;
+        using widget<area<X>>::skin;
+        using widget<area<X>>::coord;
+        using widget<area<X>>::notify;
 
         void on_change (void* what) override
         {
@@ -86,7 +86,7 @@ namespace gui
         }
 
         void on_focus (bool on) override { object.on_focus(on); }
-        void on_keyboard_input (str symbol) override { object.on_keyboard_input(symbol); }
+        void on_key_input (str symbol) override { object.on_key_input(symbol); }
         void on_key_pressed (str key, bool down) override { object.on_key_pressed(key,down); }
     };
 
