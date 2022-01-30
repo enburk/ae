@@ -65,7 +65,7 @@ namespace gui
     }
     template<> bool inline transit<bool>
         (bool from, bool to, int64_t mul, int64_t div) {
-        return div == 0 || mul >= div ? to : from;
+        return div == 0 or mul >= div ? to : from;
     }
     template<> RGBA inline transit<RGBA>
         (RGBA from, RGBA to, int64_t mul, int64_t div) { return RGBA(
@@ -106,9 +106,9 @@ namespace gui
 
         operator type const& () { return now; }
 
-        void operator = (type value) { go (value, time(0)); }
+        template<typename X> void operator = (X value) { go(value, time(0)); }
 
-        void go (type to_) { go (to_, transition_time); }
+        void go (type to_) { go(to_, transition_time); }
 
         void go (type to_, time lapse_) {
             from = now; to = to_;
@@ -118,7 +118,8 @@ namespace gui
         }
 
         void tick () override { 
-            was = now; notch += time::pause;
+            was = now;
+            notch += time::pause;
             if (now != to)
                 now = transit (from, to,
                     std::min(time::now - notch, lapse).ms, lapse.ms);
@@ -137,13 +138,14 @@ namespace gui
     {
         type now, was; base::widget* widget = nullptr;
 
-        binary_property(type value = type()) : now(value), was(value) {}
+        binary_property(type value = type()) : now(std::move(value)) {}
 
         operator type const& () { return now; }
 
-        void operator = (type value) {
-            was = now;
-            now = value;
+        template<typename X>
+        void operator = (X value) {
+            was = std::move(now);
+            now = std::move(value);
             if (now != was) {
                 if (!widget) widget = inholder(this);
                 if (!widget) throw std::runtime_error
@@ -157,13 +159,14 @@ namespace gui
     {
         type now; base::widget* widget = nullptr;
 
-        unary_property (type value = type()) : now(value) {}
+        unary_property (type value = type()) : now(std::move(value)) {}
 
         operator type const& () { return now; }
 
-        void operator = (type value) {
+        template<typename X>
+        void operator = (X value) {
             if (now != value) {
-                now  = value;
+                now = std::move(value);
                 if (!widget) widget = inholder(this);
                 if (!widget) throw std::runtime_error
                 ("property: wrong inholder");

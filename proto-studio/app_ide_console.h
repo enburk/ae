@@ -91,7 +91,7 @@ struct Console : gui::widget<Console>
 
             auto & console = *consoles[i];
             std::lock_guard guard{console.mutex};
-            auto & column = console.page.view.column;
+            auto & column = console.page.view.cell.column;
 
             p -= console.coord.now.origin;
 

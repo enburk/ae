@@ -17,18 +17,17 @@ namespace gui::text
 
         editor ()
         {
-            page.view.model = this;
-            page.alignment = XY{pix::left, pix::top};
+            page.view.cell.model = this;
+            page.alignment = XY{left, top};
         }
         void reset ()
         {
             update(); // speed up rectifier
-            page.view.column.clear(); // reset cache
+            page.view.cell.column.clear(); // reset cache
             update_view();
         }
         void update_view ()
         {
-            page.view.refresh();
             page.refresh();
             refresh();
             notify();
@@ -250,7 +249,9 @@ namespace gui::text
             if (touch) return; // mouse
             if (key == "space" ) return;
             if (key.size() <= 1) return; // "", "0", "A", ...
-            if (key.size() <= 7 && key.starts_with("shift+")) return; // shift+0, shift+A, ...
+            if (key.size() <= 7 and
+                key.starts_with("shift+"))
+                return; // shift+0, shift+A, ...
 
             if (key == "ctrl+C") key = "ctrl+insert"; else // copy
             if (key == "ctrl+V") key = "shift+insert"; else // paste

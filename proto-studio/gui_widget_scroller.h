@@ -52,7 +52,8 @@ namespace gui
 
         void on_change (void* what) override
         {
-            if (what == &coord || what == &ratio)
+            if (what == &coord or
+                what == &ratio)
             {
                 int w = coord.now.w;
                 int h = coord.now.h;
@@ -173,7 +174,8 @@ namespace gui
 
         void on_change (void* what) override
         {
-            if (what == &coord || what == &ratio)
+            if (what == &coord or
+                what == &ratio)
             {
                 int w = coord.now.w;
                 int h = coord.now.h;

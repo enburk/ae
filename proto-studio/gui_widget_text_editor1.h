@@ -69,7 +69,7 @@ namespace gui::text
         {
             editor.go(gui::text::editor::TEXT_BEGIN, false);
             editor.go(gui::text::editor::TEXT_END, true);
-            editor.page.view.refresh();
+            editor.page.view.refresh = true;
             editor.page.refresh();
             editor.refresh();
         }

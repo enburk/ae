@@ -27,7 +27,7 @@ namespace gui
         canvas canvas;
         image image;
         icon icon;
-        text::view text;
+        text::cell text;
 
         std::function<void(void)> on_change_state = [this]()
         {

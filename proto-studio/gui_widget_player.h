@@ -116,7 +116,7 @@ namespace gui
             {
                 frames[current_frame].hide();
                 current_frame = (current_frame + 1) % 2;
-                frames[current_frame].source = sources[current_frame];
+                frames[current_frame].source = sources[current_frame].crop();
                 frames[current_frame].coord = coord.now.local() + padding;
                 frames[current_frame].show();
                 frame_ready = false;

@@ -73,7 +73,9 @@ namespace gui
                 frame2.color = style.heavy.first;
                 frame3.color = style.light.first;
             }
-            if (what == &coord && coord.was.size != coord.now.size)
+            if (what == &coord and
+                coord.was.size !=
+                coord.now.size)
             {
                 auto r = coord.now.local();
                 frame1.coord = r; r.deflate(frame1.thickness.now);
@@ -101,7 +103,7 @@ namespace gui
 
         void on_change (void* what) override
         {
-            if (what == &coord && coord.was.size != coord.now.size )
+            if (what == &coord and coord.was.size != coord.now.size )
                 mouse_image = coord.now.size.x > coord.now.size.y ?
                     "horizontal splitter" : "vertical splitter";
         }

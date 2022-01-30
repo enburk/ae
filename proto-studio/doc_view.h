@@ -46,6 +46,9 @@ namespace doc::view
         int width  = max<int>();
         int height = max<int>();
 
+        int columns = 1;
+        int gutter = -1;
+
         XY alignment = XY{pix::center, pix::center};
 
         padding lpadding;
@@ -60,20 +63,28 @@ namespace doc::view
 
     struct token
     {
-        str text; style_index style; str info, link;
+        str text;
+        style_index style;
+        str info, link;
+        
         bool operator != (const token & d) const = default;
         bool operator == (const token & d) const = default;
     };
 
     struct line
     {
-        format format; array<token> tokens;
+        format format;
+        int indent = 0;
+        array<token> tokens;
+
         bool operator != (const line & d) const = default;
         bool operator == (const line & d) const = default;
     };
 
     struct model : polymorphic
     {
+        //virtual generator<line> lines (style s, format f) = 0;
+
         array<line> lines;
         virtual void set (style s, format f) = 0;
     };

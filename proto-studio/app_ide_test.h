@@ -78,7 +78,7 @@ widget<TestFonts>
 
         image.resize(coord.now.size); image.fill(RGBA::red);
         gui_image.coord = coord.now.local();
-        gui_image.source = image;
+        gui_image.source = image.crop();
 
         str digit = "0123456789";
         str Latin = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";

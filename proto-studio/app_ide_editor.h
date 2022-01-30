@@ -93,7 +93,7 @@ struct Editor : gui::widget<Editor>
         {
             doc::text::repo::edit(path.now);
 
-            int n1 = lineup.model->lines.size();
+            int n1 = lineup.cell.model->lines.size();
             int n2 = editor.model->lines.size();
             if (n1 != n2) {
                 str text;
@@ -129,7 +129,7 @@ struct Editor : gui::widget<Editor>
             editor.model->log();
             //auto t0 = doc::ae::syntax::analysis::now();
             editor.page.view.update();
-            editor.page.view.refresh();
+            editor.page.view.refresh = true;
             editor.page.refresh();
             editor.refresh();
             //auto t1 = doc::ae::syntax::analysis::now();
