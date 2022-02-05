@@ -5,52 +5,37 @@ namespace gui::text
     struct one_line_editor:
     widget<one_line_editor>
     {
-        canvas canvas;
         editor editor;
-        unary_property<str> text;
-        property<RGBA> color;
-        binary_property<sys::font> font;
-        binary_property<style> style;
-        binary_property<XY> alignment = XY{center, center};
-        binary_property<padding> lpadding;
-        binary_property<padding> rpadding;
-        binary_property<bool> insert_mode = true;
-        binary_property<bool> virtual_space = false;
+        canvas& canvas = editor.canvas;
+        property<RGBA>& color = editor.color;
+        unary_property<str>& text = editor.text;
+        binary_property<font>& font = editor.font;
+        binary_property<style>& style = editor.style;
+        binary_property<XY>& alignment = editor.alignment;
+        binary_property<int>& lpadding = editor.lpadding;
+        binary_property<int>& rpadding = editor.rpadding;
+        binary_property<array<XY>>& lwrap = editor.lwrap;
+        binary_property<array<XY>>& rwrap = editor.rwrap;
+        unary_property<array<range>>& highlights = editor.highlights;
+        unary_property<array<range>>& selections = editor.selections;
+        binary_property<bool>& wordwrap = editor.wordwrap;
+        binary_property<bool>& ellipsis = editor.ellipsis;
+        binary_property<bool>& virtual_space = editor.virtual_space;
+        binary_property<bool>& insert_mode = editor.insert_mode;
+        binary_property<bool>& focused = editor.focused;
 
         one_line_editor ()
         {
-            editor.page.view.ellipsis = false;
-            editor.page.view.wordwrap = false;
+            ellipsis = false;
+            wordwrap = false;
             editor.page.scroll.x.mode = gui::scroll::mode::none;
             editor.page.scroll.y.mode = gui::scroll::mode::none;
         }
 
         void on_change (void* what) override
         {
-            #define CHANGE(p)          \
-            if (what == &p) {          \
-                editor.page.p = p.now; \
-                p.now = editor.page.p; \
-            }
-            CHANGE(font)
-            CHANGE(color)
-            CHANGE(style)
-            CHANGE(alignment)
-            CHANGE(lpadding)
-            CHANGE(rpadding)
-            #undef CHANGE
-            #define CHANGE(p)     \
-            if (what == &p) {     \
-                editor.p = p.now; \
-                p.now = editor.p; \
-            }
-            CHANGE(insert_mode)
-            CHANGE(virtual_space)
-            #undef CHANGE
-
             if (what == &coord)
             {
-                canvas.coord = coord.now.local();
                 editor.coord = coord.now.local();
             }
             if (what == &text)

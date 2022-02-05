@@ -86,6 +86,27 @@ namespace gui::text
         doc::view::format format;
         bool the_last_row = true;
 
+        int lpadding (int height)
+        {
+            int d = 0;
+            for (auto bar: format.lwrap) {
+                d = aux::max(d, bar.x);
+                height -= bar.y;
+                if (height <= 0)
+                    break; }
+            return d + format.lpadding;
+        }
+        int rpadding (int height)
+        {
+            int d = 0;
+            for (auto bar: format.rwrap) {
+                d = aux::max(d, bar.x);
+                height -= bar.y;
+                if (height <= 0)
+                    break; }
+            return d + format.rpadding;
+        }
+
         bool add (solid solid)
         {
             int height =
@@ -94,8 +115,8 @@ namespace gui::text
 
             int max_width =
                 format.width -
-                format.lpadding.max(height) -
-                format.rpadding.max(height);
+                lpadding(height) -
+                rpadding(height);
 
             if ((format.wordwrap or format.ellipsis)
             and advance + solid.width > max_width
@@ -125,8 +146,8 @@ namespace gui::text
         {
             int max_width =
                 format.width -
-                format.lpadding.max(ascent+descent) -
-                format.rpadding.max(ascent+descent);
+                lpadding(ascent+descent) -
+                rpadding(ascent+descent);
 
             the_last_row = true;
 
@@ -164,8 +185,8 @@ namespace gui::text
             int align = format.alignment.x;
             int Width =
                 format.width -
-                format.lpadding.max(ascent+descent) -
-                format.rpadding.max(ascent+descent);
+                lpadding(ascent+descent) -
+                rpadding(ascent+descent);
 
             if (align == pix::left or
                (align == pix::justify_left and the_last_row)) {
@@ -236,13 +257,25 @@ namespace gui::text
                     co_yield tokens(i, j);
                     i = j;
                 }
-            }();
+            };
+
+            auto skip = [](array<XY>& bars, int height)
+            {
+                while (not bars.empty()) {
+                    auto& bar = bars.front();
+                    bar.y -= height;
+                    if (bar.y >= 0)
+                        break;
+                    height = -bar.y;
+                    bars.erase(0);
+                }
+            };
 
             int total = 0; int accepted = 0; int height = 0;
 
             auto fmt = format; // current row format 
 
-            for (auto solid: solids)
+            for (auto solid: solids())
             {
                 for (auto token : solid)
                     at(total++) = token;
@@ -264,8 +297,8 @@ namespace gui::text
 
                         height += h;
                         fmt.height -= h;
-                        fmt.lpadding.skip(h);
-                        fmt.rpadding.skip(h);
+                        skip(fmt.lwrap, h);
+                        skip(fmt.rwrap, h);
                     }
 
                     rows += row{};
@@ -295,7 +328,7 @@ namespace gui::text
             for (auto& row: rows)
             {
                 row.align();
-                row.offset.x += row.format.lpadding.max(
+                row.offset.x += row.lpadding(
                     row.ascent +
                     row.descent);
                 width = max (width,

@@ -147,9 +147,10 @@ namespace gui::base
                 mouse_hover_child->mouse_leave();
 
             mouse_hover_child = hover;
-            if (mouse_hover_child) {
-            on_mouse_hover_child(p); return; }
-            on_mouse_hover(p); // every mouse_move
+            mouse_hover_child ?
+            // every mouse_move:
+            on_mouse_hover_child(p):
+            on_mouse_hover(p);
 
             sys::mouse::image(mouse_image.now);
         }

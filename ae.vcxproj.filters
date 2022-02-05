@@ -90,13 +90,7 @@
     <ClInclude Include="proto-studio\gui_widget_text_aux.h">
       <Filter>gui</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\gui_widget_text_column.h">
-      <Filter>gui</Filter>
-    </ClInclude>
     <ClInclude Include="proto-studio\gui_widget_text_editor.h">
-      <Filter>gui</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\gui_widget_text_editor1.h">
       <Filter>gui</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\gui_widget_text_page.h">
@@ -277,6 +271,12 @@
       <Filter>doc</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\gui_widget_text_cell.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\gui_widget_text_aux_lines.h">
+      <Filter>gui</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\gui_widget_text_editline.h">
       <Filter>gui</Filter>
     </ClInclude>
   </ItemGroup>

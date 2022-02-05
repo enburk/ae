@@ -10,27 +10,30 @@ namespace gui
     constexpr orientation operator ~ (orientation orientation)
     { return orientation == horizontal ? vertical : horizontal; }
 
+    struct runner : button
+    {
+        void on_mouse_hover (XY p) override
+        {
+            button::on_mouse_hover(p);
+            parent->on_mouse_hover(p +
+                coord.now.origin);
+        }
+        void on_mouse_press (XY p, char button, bool down) override
+        {
+            button::on_mouse_press(p, button, down);
+            parent->on_mouse_press(p + 
+                coord.now.origin,
+                button, down);
+        }
+    };
+
     template<orientation>
     struct scroller;template<>
     struct scroller<vertical>:
     widget<scroller<vertical>>
     {
-        struct Runner : button
-        {
-            void on_mouse_hover (XY p) override
-            {
-                button::on_mouse_hover(p);
-                parent->on_mouse_hover(p + coord.now.origin);
-            }
-            void on_mouse_press (XY p, char button, bool down) override
-            {
-                button::on_mouse_press(p, button, down);
-                parent->on_mouse_press(p + coord.now.origin, button, down);
-            }
-        };
-
         canvas canvas;
-        Runner runner;
+        runner runner;
         button up, down, page_up, page_down;
         property<double> ratio = 1;
         property<int> span = 0, top = 0, step = 1;
@@ -102,7 +105,7 @@ namespace gui
             int fake_span = coord.now.h - 2*up.coord.now.h;
             int fake_page = fake_span * real_page / max(1, span.now);
             int fake_top  = fake_span * top.now   / max(1, span.now);
-            fake_page = min(fake_span, fake_page);
+            fake_page = min(fake_span, max(fake_page, up.coord.now.h/4));
             int w = up.coord.now.w;
             int d = up.coord.now.h;
 
@@ -137,22 +140,8 @@ namespace gui
     struct scroller<horizontal>:
     widget<scroller<horizontal>>
     {
-        struct Runner : button
-        {
-            void on_mouse_hover (XY p) override
-            {
-                button::on_mouse_hover(p);
-                parent->on_mouse_hover(p + coord.now.origin);
-            }
-            void on_mouse_press (XY p, char button, bool down) override
-            {
-                button::on_mouse_press(p, button, down);
-                parent->on_mouse_press(p + coord.now.origin, button, down);
-            }
-        };
-
         canvas canvas;
-        Runner runner;
+        runner runner;
         button left, right, page_left, page_right;
         property<double> ratio = 1;
         property<int> span = 0, top = 0, step = 1;
@@ -224,7 +213,7 @@ namespace gui
             int fake_span = coord.now.w - 2*left.coord.now.w;
             int fake_page = fake_span * real_page / max(1, span.now);
             int fake_top  = fake_span * top.now   / max(1, span.now);
-            fake_page = min(fake_span, fake_page);
+            fake_page = min(fake_span, max(fake_page, left.coord.now.h/4));
             int h = left.coord.now.h;
             int d = left.coord.now.w;
 

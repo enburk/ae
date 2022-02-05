@@ -8,8 +8,24 @@ namespace gui::text
     widget<editor>, doc::view::model
     {
         page page;
-        binary_property<bool> insert_mode = true;
-        binary_property<bool> virtual_space = false;
+        //lines& lines = page.lines;
+        canvas& canvas = page.canvas;
+        property<RGBA>& color = page.color;
+        unary_property<str>& text = page.text;
+        binary_property<font>& font = page.font;
+        binary_property<style>& style = page.style;
+        binary_property<XY>& alignment = page.alignment;
+        binary_property<int>& lpadding = page.lpadding;
+        binary_property<int>& rpadding = page.rpadding;
+        binary_property<array<XY>>& lwrap = page.lwrap;
+        binary_property<array<XY>>& rwrap = page.rwrap;
+        unary_property<array<range>>& highlights = page.highlights;
+        unary_property<array<range>>& selections = page.selections;
+        binary_property<bool>& wordwrap = page.wordwrap;
+        binary_property<bool>& ellipsis = page.ellipsis;
+        binary_property<bool>& virtual_space = page.virtual_space;
+        binary_property<bool>& insert_mode = page.insert_mode;
+        binary_property<bool>& focused = page.focused;
 
         doc::text::model _model;
         doc::text::model* model = &_model;
@@ -17,18 +33,18 @@ namespace gui::text
 
         editor ()
         {
-            page.view.cell.model = this;
+            page.view.model = this;
             page.alignment = XY{left, top};
         }
         void reset ()
         {
             update(); // speed up rectifier
-            page.view.cell.column.clear(); // reset cache
+            page.lines.clear(); // reset cache
             update_view();
         }
         void update_view ()
         {
-            page.refresh();
+            page.refresh = true;
             refresh();
             notify();
         }
@@ -38,7 +54,7 @@ namespace gui::text
         void backspace   () { if (model->backspace()) update_view(); }
         void insert (str s) { if (model->insert  (s)) update_view(); }
 
-        void set (style s, format f) override
+        void set (pix::text::style s, format f) override
         {
             lines = {doc::view::line{f}};
 
@@ -67,11 +83,11 @@ namespace gui::text
 
         void refresh ()
         {
-            page.view.selections = model->selections;
+            page.selections = model->selections;
 
-            if (page.view.carets.size() == 0) return;
-            
-            XYXY r = page.view.carets.back().coord.now;
+            if (page.view.cell.carets.size() == 0) return;
+            XYXY r = page.view.cell.carets.back().coord.now +
+                     page.view.cell.coord.now.origin;
 
             int d = gui::metrics::text::height;
             int w = coord.now.size.x, dx = 0;
@@ -86,17 +102,11 @@ namespace gui::text
 
         void on_change (void* what) override
         {
-            if (what == &coord && coord.now.size != coord.was.size)
+            if (what == &coord and
+                coord.now.size !=
+                coord.was.size)
             {
                 page.coord = coord.now.local();
-            }
-            if (what == &virtual_space)
-            {
-                page.view.virtual_space = virtual_space.now;
-            }
-            if (what == &insert_mode)
-            {
-                page.view.insert_mode = insert_mode.now;
             }
             if (what == &page.scroll.x) notify(what);
             if (what == &page.scroll.y) notify(what);

@@ -12,18 +12,26 @@ namespace gui::text
         scroll scroll;
         gui::text::view info;
 
-        column& lines = view.lines;
+        lines& lines = view.lines;
+        canvas& canvas = view.canvas;
+        property<RGBA>& color = view.color;
         unary_property<str>& text = view.text;
         unary_property<str>& html = view.html;
-        property<RGBA>& color = view.color;
         binary_property<font>& font = view.font;
         binary_property<style>& style = view.style;
         binary_property<XY>& alignment = view.alignment;
-        binary_property<padding>& lpadding = view.lpadding;
-        binary_property<padding>& rpadding = view.rpadding;
+        binary_property<int>& lpadding = view.lpadding;
+        binary_property<int>& rpadding = view.rpadding;
+        binary_property<array<XY>>& lwrap = view.lwrap;
+        binary_property<array<XY>>& rwrap = view.rwrap;
+        unary_property<array<range>>& highlights = view.highlights;
+        unary_property<array<range>>& selections = view.selections;
         binary_property<bool>& wordwrap = view.wordwrap;
         binary_property<bool>& ellipsis = view.ellipsis;
-        //property<bool>& refresh = view.refresh;
+        binary_property<bool>& virtual_space = view.virtual_space;
+        binary_property<bool>& insert_mode = view.insert_mode;
+        binary_property<bool>& focused = view.focused;
+        property<bool>& refresh = view.refresh;
 
         binary_property<bool> infotip = false;
 
@@ -35,9 +43,42 @@ namespace gui::text
             {
                 view.coord = coord.now.local();
             }
-            if (what == &view.refresh)
+            if (what == &refresh)
             {
-                refresh();
+                XY size = coord.now.size;
+                bool
+                    scroll_x =
+                    scroll.x.mode == scroll::mode::permanent or (
+                    scroll.x.mode == scroll::mode::automatic and
+                        lines.coord.now.size.x > size.x );
+                bool
+                    scroll_y =
+                    scroll.y.mode == scroll::mode::permanent or (
+                    scroll.y.mode == scroll::mode::automatic and
+                        lines.coord.now.size.y > size.y );
+            
+                int d = gui::metrics::text::height +
+                    2 * gui::metrics::line::width;
+
+                int x = scroll_y ? size.x - d : size.x;
+                int y = scroll_x ? size.y - d : size.y;
+
+                scroll.x.show(scroll_x);
+                scroll.y.show(scroll_y);
+
+                scroll.x.coord = XYWH(0, size.y-d, x, d);
+                scroll.y.coord = XYWH(size.x-d, 0, d, y);
+
+                scroll.x.span = lines.coord.now.size.x;
+                scroll.y.span = lines.coord.now.size.y;
+
+                scroll.x.step = gui::metrics::text::height;
+                scroll.y.step = gui::metrics::text::height;
+
+                if (scroll_x) size.y -= d;
+                if (scroll_y) size.x -= d;
+
+                view.resize(size);
             }
             if (what == &timer)
             {
@@ -64,42 +105,8 @@ namespace gui::text
 
             if (what == &scroll.x) notify(what);
             if (what == &scroll.y) notify(what);
-        }
 
-        void refresh ()
-        {
-            XY size = coord.now.size;
-            bool
-                scroll_x =
-                scroll.x.mode == scroll::mode::permanent or (
-                scroll.x.mode == scroll::mode::automatic and
-                    lines.coord.now.size.x > size.x );
-            bool
-                scroll_y =
-                scroll.y.mode == scroll::mode::permanent or (
-                scroll.y.mode == scroll::mode::automatic and
-                    lines.coord.now.size.y > size.y );
-            
-            int d = gui::metrics::text::height + 2*gui::metrics::line::width;
-            int x = scroll_y ? size.x - d : size.x;
-            int y = scroll_x ? size.y - d : size.y;
-
-            scroll.x.show(scroll_x);
-            scroll.y.show(scroll_y);
-
-            scroll.x.coord = XYWH(0, size.y-d, x, d);
-            scroll.y.coord = XYWH(size.x-d, 0, d, y);
-
-            scroll.x.span = lines.coord.now.size.x;
-            scroll.y.span = lines.coord.now.size.y;
-
-            scroll.x.step = gui::metrics::text::height;
-            scroll.y.step = gui::metrics::text::height;
-
-            if (scroll_x) size.y -= d;
-            if (scroll_y) size.x -= d;
-
-            view.coord = XYWH(0,0,size.x, size.y);
+            notify(what);
         }
 
         bool on_mouse_wheel (XY p, int delta) override
@@ -127,13 +134,16 @@ namespace gui::text
                 lines.coord.now.origin);
         }
 
-        bool touch = false; XY touch_point; range touch_range; time touch_time;
+        bool  touch = false;
+        range touch_range;
+        time  touch_time;
+        XY    touch_point;
         
         property<time> timer;
-        time select_delay = time();
+        time select_delay = time{};
         time select_lapse = 100ms;
         time select_notch;
-        XY select_point;
+        XY   select_point;
 
         bool mouse_sensible (XY p) override { return true; }
 
@@ -188,16 +198,14 @@ namespace gui::text
                     range selection;
                     selection.from = touch_range.from;
                     selection.upto = point(p).from; // not point(p).upto !
-                    array<range> selections;
-                    selections += selection;
-                    view.selections = selections;
+                    selections = array<range>{selection};
                     info.hide();
                 }
                 else if (infotip.now)
                 {
                     if (auto token = target(p); token && token->info != "")
                     {
-                        XYWH r = view.cell.bar(point(p).from, false);
+                        XYWH r = view.cell.bar(point(p).from);
                         info.hide(); r.w = r.h*100;
                         info.alignment = XY{pix::left, pix::top};
                         info.coord = r;
@@ -240,7 +248,7 @@ namespace gui::text
             }
             if (key == "shift+right")
             {
-                int n = view.cell.column(from.line).length;
+                int n = lines(from.line).length;
                 if (upto.offset < n) {
                     upto.offset++;
                     select();
@@ -257,7 +265,7 @@ namespace gui::text
             if (key == "ctrl+right" or
                 key == "ctrl+shift+right")
             {
-                int n = view.cell.column(from.line).length;
+                int n = lines(from.line).length;
                 if (from.offset < n) {
                     from.offset++;
                     select();

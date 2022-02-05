@@ -2,11 +2,13 @@
 #include "gui_widget_text_aux_line.h"
 namespace gui::text
 {
-    struct column : widgetarium<line>
+    struct lines : widgetarium<line>
     {
         void fill (array<doc::view::line> datae)
         {
-            int n = 0; int width = 0; int height = 0;
+            int n = 0;
+            int width = 0;
+            int height = 0;
 
             reserve(datae.size());
 

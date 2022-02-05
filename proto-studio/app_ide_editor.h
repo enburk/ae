@@ -93,8 +93,8 @@ struct Editor : gui::widget<Editor>
         {
             doc::text::repo::edit(path.now);
 
-            int n1 = lineup.cell.model->lines.size();
-            int n2 = editor.model->lines.size();
+            int n1 = lineup.lines.size();
+            int n2 = editor.lines.size();
             if (n1 != n2) {
                 str text;
                 text.reserve(n2 * (int)(std::log10(n2))); for (int i = 0; i < n2; i++)
@@ -128,15 +128,12 @@ struct Editor : gui::widget<Editor>
         if (editor.model->ready()) { log =
             editor.model->log();
             //auto t0 = doc::ae::syntax::analysis::now();
-            editor.page.view.update();
-            editor.page.view.refresh = true;
-            editor.page.refresh();
+            editor.page.refresh = true;
             editor.refresh();
             //auto t1 = doc::ae::syntax::analysis::now();
             //auto ms = doc::ae::syntax::analysis::ms(t1-t0);
             //doc::ae::syntax::analysis::events.debug("syntax_ready " + ms + " ms");
-            return
-            true;
+            return true;
         }
 
         return false;

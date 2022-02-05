@@ -7,35 +7,35 @@ namespace gui::text
     struct view:
     widget<view>
     {
-        using color_bars = widgetarium<canvas>;
-
-        canvas canvas;
-        color_bars highlight_bars;
-        color_bars selection_bars; cell cell;
-        widgetarium<caret> carets;
+        canvas canvas; cell cell;
         frame current_line_frame;
         frame frame;
 
-        column& lines = cell.column;
-        unary_property<str>& text = cell.text;
-        unary_property<str>& html = cell.html;
-        property<RGBA>& color = cell.color;
-        binary_property<font>& font = cell.font;
-        binary_property<style>& style = cell.style;
-        binary_property<XY>& alignment = cell.alignment;
-        binary_property<XY>& shift = cell.shift;
-        binary_property<padding>& lpadding = cell.lpadding;
-        binary_property<padding>& rpadding = cell.rpadding;
-        binary_property<bool>& wordwrap = cell.wordwrap;
-        binary_property<bool>& ellipsis = cell.ellipsis;
-        property<bool>& refresh = cell.refresh;
+        unary_property<str> text;
+        unary_property<str> html;
 
-        unary_property<array<range>> highlights;
-        unary_property<array<range>> selections;
+        property<RGBA> color;
+        binary_property<font> font;
+        binary_property<style> style;
+        binary_property<int> lpadding;
+        binary_property<int> rpadding;
+        binary_property<array<XY>> lwrap;
+        binary_property<array<XY>> rwrap;
+        binary_property<XY> alignment = XY{center, center};
+        binary_property<XY> shift;
+        binary_property<bool> wordwrap = true;
+        binary_property<bool> ellipsis = false;
+        property<bool> refresh = false;
 
-        binary_property<bool> insert_mode = true;
-        binary_property<bool> virtual_space = false;
-        binary_property<bool> focused = false;
+        doc::html::model xmodel;
+        doc::view::model* model = &xmodel;
+
+        lines& lines = cell.lines;
+        unary_property<array<range>>& highlights = cell.highlights;
+        unary_property<array<range>>& selections = cell.selections;
+        binary_property<bool>& virtual_space = cell.virtual_space;
+        binary_property<bool>& insert_mode = cell.insert_mode;
+        binary_property<bool>& focused = cell.focused;
 
         void on_change (void* what) override
         {
@@ -44,139 +44,104 @@ namespace gui::text
                 coord.now.size)
             {
                 XYWH r = coord.now.local();
-                carets.coord = r;
                 canvas.coord = r;
-                highlight_bars.coord = r;
-                selection_bars.coord = r;
-                frame.coord = r;
-                cell.coord = r;
+                frame .coord = r;
+                refresh.go(true, time(1));
             }
-            if (what == &text
-            or  what == &html)
+            if (what == &text)
             {
+                xmodel.text(text.now);
+                html.now = xmodel.html();
                 highlights = array<range>{};
                 selections = array<range>{};
+                refresh.go(true, time(1));
             }
-            if (what == &shift)
+            if (what == &html)
             {
-                lines.move_to(shift);
-                align();
+                xmodel.html(html.now);
+                text.now = xmodel.text();
+                highlights = array<range>{};
+                selections = array<range>{};
+                refresh.go(true, time(1));
             }
-            if (what == &refresh)
+            if (what == &skin)
             {
-                align();
+                style = pix::text::style{
+                    skins[skin.now].font,
+                    skins[skin.now].light.second};
             }
-            if (what == &highlights)
+            if (what == &font)
             {
-                highlight(
-                    highlights.now,
-                    highlight_bars, skins[skin.now].
-                    highlight.first);
+                style.was = style.now;
+                style.now.font = font.now;
+                refresh.go(true, time(1));
+            }
+            if (what == &color)
+            {
+                style.was = style.now;
+                style.now.color = color.now;
+                refresh.go(true, time(1));
+            }
+            if (what == &style)
+            {
+                font.was = font.now;
+                font.now = style.now.font;
+                color.was = color.now;
+                color.now = style.now.color;
+                refresh.go(true, time(1));
+            }
+            if (what == &alignment
+            or  what == &wordwrap
+            or  what == &ellipsis
+            or  what == &lpadding
+            or  what == &rpadding
+            or  what == &lwrap
+            or  what == &rwrap)
+            {
+                refresh.go(true, time(1));
+            }
+            if (what == &refresh and refresh.now)
+            {
+                refresh.now = false;
+
+                format format;
+                format.alignment = alignment.now;
+                format.lpadding = lpadding.now;
+                format.rpadding = rpadding.now;
+                format.wordwrap = wordwrap.now;
+                format.ellipsis = ellipsis.now;
+                format.width  = coord.now.size.x; if (ellipsis.now)
+                format.height = coord.now.size.y;
+
+                model->set(style.now, format);
+                cell.fill(model->lines);
+            }
+            if (what == &refresh
+            or  what == &shift)
+            {
+                int H = coord.now.size.y;
+                int h = cell.coord.now.size.y;
+
+                cell.move_to(XY(0, H > h and
+                    alignment.now.y == center ? H/2 - h/2 :
+                    alignment.now.y == bottom ? H   - h   :
+                    0) + shift.now);
             }
             if (what == &selections)
             {
-                highlight(
-                    selections.now,
-                    selection_bars, skins[skin.now].
-                    selection.first);
-
-                refresh_carets ();
-            }
-            if (what == &focused ||
-                what == &insert_mode)
-            {
-                refresh_carets();
+                if (selections.now.size() == 1) {
+                XYWH r = cell.carets(0).coord.now;
+                r.x = 0; r.w = coord.now.w;
+                current_line_frame.coord = r;
+                current_line_frame.show(); } else
+                current_line_frame.hide();
             }
 
             notify(what);
         }
 
-        void align ()
-        {
-            highlight(highlights.now, highlight_bars, skins[skin.now].highlight.first);
-            highlight(selections.now, selection_bars, skins[skin.now].selection.first);
-            refresh_carets ();
-        }
+        void on_focus (bool on) override { cell.on_focus(on); }
 
-        void refresh_carets ()
-        {
-            int n = 0;
-
-            for (auto range : selections.now)
-                carets(n++).coord = cell.bar(
-                    range.upto, virtual_space.now);
-
-            carets.truncate(n);
-
-            for (auto & caret : carets) {
-                caret.insert_mode = insert_mode.now;
-                caret.show(focused.now);
-            }
-
-            if (n == 1) {
-                XYWH r = carets(0).coord.now;
-                r.x = 0; r.w = coord.now.w;
-                current_line_frame.coord = r;
-                current_line_frame.show(); } else
-                current_line_frame.hide();
-        }
-
-        void highlight (array<range> ranges, widgetarium<gui::canvas> & bars, RGBA color)
-        {
-            int n = 0;
-
-            for (auto range : ranges)
-            {
-                for (XYWH r : cell.bars(range))
-                {
-                    auto & bar = bars(n++);
-                    bar.color = color;
-                    bar.coord = r;
-                }
-            }
-
-            bars.truncate(n);
-        }
-
-        str selected () const
-        {
-            str s;
-
-            for (auto [from, upto] : selections.now)
-            {
-                if (from > upto) std::swap (from, upto);
-
-                for (; from.line <= upto.line; from.line++, from.offset = 0)
-                {
-                    if (from.line >= cell.column.size()) break;
-                    int from_offset = from.offset;
-                    int upto_offset = from.line == upto.line ?
-                        upto.offset : cell.column(from.line).length;
-                    if (from_offset >= upto_offset) continue;
-
-                    int offset = 0;
-
-                    for (auto & token : cell.column(from.line))
-                    {
-                        if (upto_offset <= offset) break;
-                        if (from_offset <= offset + token.size() - 1)
-                        {
-                            int from_glyph = max(from_offset - offset, 0);
-                            int upto_glyph = min(upto_offset - offset, token.size());
-
-                            for (auto& g: token.glyphs
-                                .from(from_glyph)
-                                .upto(upto_glyph))
-                                s += g.text;
-                        }
-                        offset += token.size();
-                    }
-                }
-            }
-
-            return s;
-        }
-
-        void on_focus (bool on) override { focused = on; }
+        auto selected () { return cell.selected(); }
     };
-} 
+}
