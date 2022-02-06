@@ -5,13 +5,14 @@
 namespace gui::text
 {
     struct editor:
-    widget<editor>, doc::view::model
+    widget<editor>
     {
         page page;
-        //lines& lines = page.lines;
+        lines& lines = page.lines;
         canvas& canvas = page.canvas;
+        view::text_type& text = page.text;
+        view::html_type& html = page.html;
         property<RGBA>& color = page.color;
-        unary_property<str>& text = page.text;
         binary_property<font>& font = page.font;
         binary_property<style>& style = page.style;
         binary_property<XY>& alignment = page.alignment;
@@ -26,78 +27,15 @@ namespace gui::text
         binary_property<bool>& virtual_space = page.virtual_space;
         binary_property<bool>& insert_mode = page.insert_mode;
         binary_property<bool>& focused = page.focused;
+        property<bool>& refresh = page.refresh;
 
-        doc::text::model _model;
-        doc::text::model* model = &_model;
-        std::map<str, style_index> styles;
+        doc::text::model model_;
+        doc::model*& model = page.view.model;
 
         editor ()
         {
-            page.view.model = this;
+            model = &model_;
             page.alignment = XY{left, top};
-        }
-        void reset ()
-        {
-            update(); // speed up rectifier
-            page.lines.clear(); // reset cache
-            update_view();
-        }
-        void update_view ()
-        {
-            page.refresh = true;
-            refresh();
-            notify();
-        }
-        void undo        () { if (model->undo     ()) update_view(); }
-        void redo        () { if (model->redo     ()) update_view(); }
-        void erase       () { if (model->erase    ()) update_view(); }
-        void backspace   () { if (model->backspace()) update_view(); }
-        void insert (str s) { if (model->insert  (s)) update_view(); }
-
-        void set (pix::text::style s, format f) override
-        {
-            lines = {doc::view::line{f}};
-
-            auto i = pix::text::style_index(s);
-        
-            for (const auto & t : model->tokens)
-            {
-                if (t.text == "\n")
-                {
-                    if (virtual_space.now)
-                    lines.back().tokens += doc::view::token{str(' ', 192), i}; // huge slowdown
-                    lines.back().tokens += doc::view::token{"\n", i};
-                    lines += {doc::view::line{f}};
-                }
-                else
-                {
-                    auto style = i;
-                    if (auto it = styles.find(t.kind);
-                        it != styles.end())
-                        style = it->second;
-            
-                    lines.back().tokens += doc::view::token{t.text, style, t.info};
-                }
-            }
-        }
-
-        void refresh ()
-        {
-            page.selections = model->selections;
-
-            if (page.view.cell.carets.size() == 0) return;
-            XYXY r = page.view.cell.carets.back().coord.now +
-                     page.view.cell.coord.now.origin;
-
-            int d = gui::metrics::text::height;
-            int w = coord.now.size.x, dx = 0;
-            int h = coord.now.size.y, dy = 0;
-
-            if (r.xl-d < 0) dx = r.xl-d; else if (r.xh+d > w) dx = r.xh+d-w;
-            if (r.yl-d < 0) dy = r.yl-d; else if (r.yh+d > h) dy = r.yh+d-h;
-
-            if (dx != 0) page.scroll.x.top = page.scroll.x.top.now + dx;
-            if (dy != 0) page.scroll.y.top = page.scroll.y.top.now + dy;
         }
 
         void on_change (void* what) override
@@ -108,9 +46,35 @@ namespace gui::text
             {
                 page.coord = coord.now.local();
             }
-            if (what == &page.scroll.x) notify(what);
-            if (what == &page.scroll.y) notify(what);
+            if (what == &selections and not selections.now.empty())
+            {
+                XYXY r = page.view.cell.carets.back().coord.now +
+                         page.view.shift.now;
+
+                int d = gui::metrics::text::height;
+                int w = coord.now.size.x, dx = 0;
+                int h = coord.now.size.y, dy = 0;
+
+                if (r.xl-d < 0) dx = r.xl-d; else if (r.xh+d > w) dx = r.xh+d-w;
+                if (r.yl-d < 0) dy = r.yl-d; else if (r.yh+d > h) dy = r.yh+d-h;
+
+                if (dx != 0) page.scroll.x.top = page.scroll.x.top.now + dx;
+                if (dy != 0) page.scroll.y.top = page.scroll.y.top.now + dy;
+            }
+                
+            notify(what);
         }
+
+        template<class F> void does (F f)
+        {
+            model->selections = selections; if (f()) { refresh = true;
+            selections = model->selections; }
+        }
+        void undo        () { does([=](){ return model->undo     (); }); }
+        void redo        () { does([=](){ return model->redo     (); }); }
+        void erase       () { does([=](){ return model->erase    (); }); }
+        void backspace   () { does([=](){ return model->backspace(); }); }
+        void insert (str s) { does([=](){ return model->insert  (s); }); }
 
         enum WHERE { THERE = 0,
              GLYPH, LINE, LINE_BEGIN, LINE_END, PAGE_TOP,
@@ -119,29 +83,32 @@ namespace gui::text
 
         void go (int where, bool selective = false)
         {
-            auto & ss = model->selections;
+            auto ss = selections.now;
             int n = ss.size();
-            if (n >= 2 && not selective) {
+            if (n >= 2 and not selective) {
                 auto b = ss[0].from; // begin of multiline caret
                 auto e = ss[n-1].from; // end of multiline caret
-                if((b < e && (where == +GLYPH || where == +LINE))
-                || (b > e && (where == -GLYPH || where == -LINE))) ss[0] = ss[n-1];
+                if ((b < e and (where == +GLYPH or where == +LINE))
+                or  (b > e and (where == -GLYPH or where == -LINE)))
+                ss[0] = ss[n-1];
                 ss.resize(1);
             }
 
-            for (auto & caret : model->selections)
+            for (auto& caret: ss)
                 go(caret, where, selective);
 
-            refresh();
+            selections = ss;
         }
-        void go (range & caret, int where, bool selective)
+        void go (range& caret, int where, bool selective)
         {
+            if (lines.empty()) return;
+
             auto & [from, upto] = caret;
             auto & [line, offset] = upto;
-            auto & lines = model->lines;
 
-            int lines_on_page = page.view.coord.now.h /
-                sys::metrics(page.view.font.now).height;
+            int lines_on_page =
+                page.view.coord.now.h /
+                sys::metrics(font.now).height;
 
             switch(where){
             case THERE: from = upto; break;
@@ -149,13 +116,13 @@ namespace gui::text
             case-GLYPH:
                 offset--;
                 if (!virtual_space.now)
-                if (offset < 0 && line > 0)
-                    offset = lines[--line].size();
+                if (offset < 0 and line > 0)
+                    offset = lines[--line].length;
                 break;
             case+GLYPH:
                 offset++;
                 if (!virtual_space.now)
-                if (offset > lines[line].size() &&
+                if (offset > lines[line].length and
                     line < lines.size()-1) {
                     line++; offset = 0; }
                 break;
@@ -166,14 +133,14 @@ namespace gui::text
             case-LINE: line--; break;
             case+LINE: line++; break;
 
-            case LINE_END  : offset = lines[line].size(); break;
-            case LINE_BEGIN: {
-                    int n = (int)(
-                    lines[line].find_if([](auto s){ return s != " "; }) -
-                    lines[line].begin());
-                    offset = offset != n ? n : 0;
-                }
-                break;
+            case LINE_END  : offset = lines[line].length; break;
+            //case LINE_BEGIN: {
+            //        int n = (int)(
+            //        lines[line].find_if([](auto s){ return s != " "; }) -
+            //        lines[line].begin());
+            //        offset = offset != n ? n : 0;
+            //    }
+            //    break;
 
             //case PAGE_TOP   : break;
             //case PAGE_BOTTOM: break;
@@ -181,8 +148,11 @@ namespace gui::text
             case-PAGE: line -= lines_on_page; break;
             case+PAGE: line += lines_on_page; break;
 
-            case TEXT_BEGIN: upto = model->front(); break;
-            case TEXT_END  : upto = model->back(); break;
+            case TEXT_BEGIN: upto = place{}; break;
+            case TEXT_END  : upto = place{
+                lines.size()-1,
+                lines.back().length};
+                break;
             }
 
             if (line > lines.size()-1)
@@ -190,8 +160,8 @@ namespace gui::text
             if (line < 0)
                 line = 0;
 
-            if (offset > lines[line].size() && !virtual_space.now)
-                offset = lines[line].size();
+            if (offset > lines[line].length && !virtual_space.now)
+                offset = lines[line].length;
             if (offset < 0)
                 offset = 0;
 
@@ -200,63 +170,46 @@ namespace gui::text
 
         void go (place place)
         {
-            model->selections.resize(1);
-            model->selections.back().from = 
-            model->selections.back().upto = place;
+            page.scroll.y.top = place.line *
+                sys::metrics(font.now).height -
+                    page.view.coord.now.h / 2;
 
-            page.scroll.y.top = 
-            sys::metrics(page.view.font.now).height * place.line
-            - page.view.coord.now.h / 2;
-
-            refresh();
+            selections = array<range>{
+                range{place, place}};
         }
 
         void show (int where)
         {
+            int h = sys::metrics(font.now).height;
+
             switch(where){
             case-LINE:
-                page.scroll.y.top = page.scroll.y.top.now
-                - sys::metrics(page.view.font.now).height;
+                page.scroll.y.top =
+                page.scroll.y.top.now - h;
                 break;
             case+LINE:
-                page.scroll.y.top = page.scroll.y.top.now
-                + sys::metrics(page.view.font.now).height;
+                page.scroll.y.top =
+                page.scroll.y.top.now + h;
                 break;
             case-PAGE:
-                page.scroll.y.top = page.scroll.y.top.now - page.view.coord.now.h
-                / sys::metrics(page.view.font.now).height
-                * sys::metrics(page.view.font.now).height;
+                page.scroll.y.top =
+                page.scroll.y.top.now -
+                page.view.coord.now.h/h*h;
                 break;
             case+PAGE:
-                page.scroll.y.top = page.scroll.y.top.now + page.view.coord.now.h
-                / sys::metrics(page.view.font.now).height
-                * sys::metrics(page.view.font.now).height;
+                page.scroll.y.top =
+                page.scroll.y.top.now +
+                page.view.coord.now.h/h*h;
                 break;
             }
         }
 
-        str selected () const
-        {
-            array<str> ss;
-
-            for (auto [from, upto] : page.view.selections.now)
-            {
-                if (from > upto) std::swap (from, upto);
-
-                for (place p = from; p <= upto; p.offset = 0, p.line++) {
-                    ss += doc::text::string(p.line == upto.line ?
-                        model->lines[p.line].from(p.offset).upto(upto.offset) :
-                        model->lines[p.line].from(p.offset));
-                }
-            }
-
-            return str(ss);
-        }
+        auto selected () { return page.selected(); }
 
         void on_key_pressed (str key, bool down) override
         {
             if (!down) return;
-            if (touch) return; // mouse
+            if (page.touch) return; // mouse
             if (key == "space" ) return;
             if (key.size() <= 1) return; // "", "0", "A", ...
             if (key.size() <= 7 and
@@ -277,7 +230,7 @@ namespace gui::text
 
             if (key == "alt+shift+up")
             {
-                auto & ss = model->selections;
+                auto ss = selections.now;
                 int n = ss.size();
                 if (n >= 2 &&
                     ss[n-2].upto.line == 
@@ -290,12 +243,12 @@ namespace gui::text
                     ss += range{{from.line-1, from.offset},
                                 {upto.line-1, upto.offset}};
                 }
-                refresh();
+                selections = ss;
             }
             else
             if (key == "alt+shift+down")
             {
-                auto & ss = model->selections;
+                auto ss = selections.now;
                 int n = ss.size();
                 if (n >= 2 &&
                     ss[n-2].upto.line == 
@@ -304,11 +257,11 @@ namespace gui::text
                 else
                 if (n >= 1) {
                     auto [from, upto] = ss[n-1];
-                    if (upto.line >= model->lines.size()-1) return;
+                    if (upto.line >= lines.size()-1) return;
                     ss += range{{from.line+1, from.offset},
                                 {upto.line+1, upto.offset}};
                 }
-                refresh();
+                selections = ss;
             }
             else
 
@@ -380,72 +333,11 @@ namespace gui::text
         }
         void on_key_input (str symbol) override
         {
-            if (!touch) insert(symbol);
+            if (!page.touch) insert(symbol);
         }
         void on_focus (bool on) override
         {
             page.view.on_focus(on);
-        }
-
-        bool touch = false;  XY touch_point; time touch_time;
-
-        bool mouse_sensible (XY p) override { return true; }
-
-        void on_mouse_press (XY p, char button, bool down) override
-        {
-            if (button != 'L') return;
-            bool drag_and_drop = false;
-            if (drag_and_drop)
-            {
-            }
-            if (down && !touch)
-            {
-                if (touch_point == p && time::now - touch_time < 1000ms)
-                {
-                    go(-TOKEN); go(+TOKEN, true);
-                }
-                else
-                {
-                }
-            }
-            touch = down;
-        }
-        void on_mouse_hover (XY p) override
-        {
-            bool drag_and_drop = false;
-
-            bool inside_selection = false;
-
-            mouse_image = drag_and_drop ?
-            inside_selection ? "noway" : "arrow" :
-            inside_selection ? "arrow" : "editor";
-
-            if (drag_and_drop)
-            {
-            }
-            else
-            {
-                if (touch)
-                {
-                    int n = page.view.selections.now.size();
-                    model->selections.resize(n);
-                    for (int i=0; i<n; i++) {
-                        auto r = page.view.selections.now[i];
-                        model->selections[i] = range{
-                            place{r.from.line, r.from.offset},
-                            place{r.upto.line, r.upto.offset}};
-
-                        // hack to prevent focus hiding:
-                        auto & [from, upto] = model->selections[i];
-                        from = clamp(from, model->front(), model->back());
-                        upto = clamp(upto, model->front(), model->back());
-                        page.view.selections.now[i] = range{
-                            place{from.line, from.offset},
-                            place{upto.line, upto.offset}};
-                    }
-                    refresh();
-                }
-            }
         }
     };
 } 

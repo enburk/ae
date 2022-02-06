@@ -8,13 +8,13 @@ namespace doc::view
 
     struct format
     {
-        int width  = max<int>();
+        int width = max<int>();
         int height = max<int>();
 
         int columns = 1;
-        int gutter  = 0;
+        int gutter = 0;
 
-        XY alignment = XY{pix::center, pix::center};
+        XY alignment = XY{ pix::center, pix::center };
 
         int lpadding = 0;
         int rpadding = 0;
@@ -34,7 +34,7 @@ namespace doc::view
         str text;
         style_index style;
         str info, link;
-        
+
         bool operator != (token const&) const = default;
         bool operator == (token const&) const = default;
     };
@@ -50,13 +50,35 @@ namespace doc::view
         bool operator != (line const&) const = default;
         bool operator == (line const&) const = default;
     };
+}
 
-    struct model : polymorphic
+namespace doc
+{
+   struct model : polymorphic
     {
         //virtual generator<line> lines (style s, format f) = 0;
 
-        array<line> lines;
-        virtual void set (style s, format f) = 0;
+        array<range> selections;
+        array<view::line> view_lines;
+        static inline std::map<str,
+            view::style_index>
+            styles;
+
+        virtual void set_text (str) {}
+        virtual void set_html (str) {}
+        virtual void add_text (str) {}
+        virtual void add_html (str) {}
+        virtual str  get_text () { return ""; }
+        virtual str  get_html () { return ""; }
+
+        virtual void set (view::style s, view::format f) {}
+
+        virtual bool undo        () { return false; }
+        virtual bool redo        () { return false; }
+        virtual bool erase       () { return false; }
+        virtual bool backspace   () { return false; }
+        virtual bool insert (str s) { return false; }
+        virtual bool ready       () { return false; }
     };
 }
 

@@ -16,6 +16,7 @@ struct Editor : gui::widget<Editor>
     gui::text::view lineup;
     gui::text::editor editor;
     gui::binary_property<path> path;
+    doc::text::model* model = nullptr;
     doc::text::report log;
 
     void on_change (void* what) override
@@ -47,21 +48,23 @@ struct Editor : gui::widget<Editor>
                 sys::font{"Consolas", h},
                 gui::skins[skin].dark.first};
 
+            using pix::text::style_index;
             auto s = editor.page.style.now;
-            s.color = RGBA::black;   editor.styles["name"     ] = pix::text::style_index(s);
-            s.color = RGBA::blue;    editor.styles["keyword"  ] = pix::text::style_index(s);
-            s.color = RGBA::teal;    editor.styles["keyname"  ] = pix::text::style_index(s);
-            s.color = RGBA::blue;    editor.styles["pragma"   ] = pix::text::style_index(s);
-            s.color = RGBA::purple;  editor.styles["macros"   ] = pix::text::style_index(s);
-            s.color = RGBA::purple;  editor.styles["module"   ] = pix::text::style_index(s);
-            s.color = RGBA::navy;    editor.styles["number"   ] = pix::text::style_index(s);
-            s.color = RGBA::white;   editor.styles["space"    ] = pix::text::style_index(s); 
-            s.color = RGBA::navy;    editor.styles["literal"  ] = pix::text::style_index(s); 
-            s.color = RGBA::navy;    editor.styles["char"     ] = pix::text::style_index(s); 
-            s.color = RGBA::maroon;  editor.styles["symbol"   ] = pix::text::style_index(s);
-            s.color = RGBA::maroon;  editor.styles["semicolon"] = pix::text::style_index(s);
-            s.color = RGBA::fuchsia; editor.styles["comment"  ] = pix::text::style_index(s);
-            s.color = RGBA::red;     editor.styles["error"    ] = pix::text::style_index(s);
+            auto& ss = doc::model::styles;
+            s.color = RGBA::black;   ss["name"     ] = style_index(s);
+            s.color = RGBA::blue;    ss["keyword"  ] = style_index(s);
+            s.color = RGBA::teal;    ss["keyname"  ] = style_index(s);
+            s.color = RGBA::blue;    ss["pragma"   ] = style_index(s);
+            s.color = RGBA::purple;  ss["macros"   ] = style_index(s);
+            s.color = RGBA::purple;  ss["module"   ] = style_index(s);
+            s.color = RGBA::navy;    ss["number"   ] = style_index(s);
+            s.color = RGBA::white;   ss["space"    ] = style_index(s); 
+            s.color = RGBA::navy;    ss["literal"  ] = style_index(s); 
+            s.color = RGBA::navy;    ss["char"     ] = style_index(s); 
+            s.color = RGBA::maroon;  ss["symbol"   ] = style_index(s);
+            s.color = RGBA::maroon;  ss["semicolon"] = style_index(s);
+            s.color = RGBA::fuchsia; ss["comment"  ] = style_index(s);
+            s.color = RGBA::red;     ss["error"    ] = style_index(s);
         }
         if (what == &coord && coord.was.size != coord.now.size)
         {
@@ -82,14 +85,14 @@ struct Editor : gui::widget<Editor>
             ||  ext == ".c++" || ext == ".h++"  || ext == ".h" ) ext = "cpp"; else
             if (ext == ".ae!" || ext == ".ae!!" || ext == ".ae") ext = "ae";
 
-            editor.model = 
+            editor.model = model = 
                 ext == "ae"  ? doc::text::repo::load<doc::ae::model>(path.now):
                 ext == "cpp" ? doc::text::repo::load<doc::cpp::model>(path.now):
                                doc::text::repo::load<doc::text::model>(path.now);
-            editor.reset();
+            editor.refresh = true;
         }
 
-        if (what == &editor)
+        if (what == &editor.text)
         {
             doc::text::repo::edit(path.now);
 
@@ -125,11 +128,11 @@ struct Editor : gui::widget<Editor>
 
     bool syntax_ready ()
     {
-        if (editor.model->ready()) { log =
-            editor.model->log();
+        if (model and
+            model->ready()) { log =
+            model->log();
             //auto t0 = doc::ae::syntax::analysis::now();
-            editor.page.refresh = true;
-            editor.refresh();
+            editor.refresh = true;
             //auto t1 = doc::ae::syntax::analysis::now();
             //auto ms = doc::ae::syntax::analysis::ms(t1-t0);
             //doc::ae::syntax::analysis::events.debug("syntax_ready " + ms + " ms");

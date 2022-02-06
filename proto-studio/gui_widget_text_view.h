@@ -11,8 +11,18 @@ namespace gui::text
         frame current_line_frame;
         frame frame;
 
-        unary_property<str> text;
-        unary_property<str> html;
+        struct text_type { view& v; text_type(view& v) : v(v) {}
+            void operator  = (str text) { v.model->set_text(text); v.on_change(this); }
+            void operator += (str text) { v.model->add_text(text); v.on_change(this); }
+            operator str() const { return v.model->get_text(); } };
+
+        struct html_type { view& v; html_type(view& v) : v(v) {}
+            void operator  = (str html) { v.model->set_html(html); v.on_change(this); }
+            void operator += (str html) { v.model->add_html(html); v.on_change(this); }
+            operator str() const { return v.model->get_html(); } };
+
+        text_type text{*this};
+        html_type html{*this};
 
         property<RGBA> color;
         binary_property<font> font;
@@ -27,8 +37,8 @@ namespace gui::text
         binary_property<bool> ellipsis = false;
         property<bool> refresh = false;
 
-        doc::html::model xmodel;
-        doc::view::model* model = &xmodel;
+        doc::html::model model_;
+        doc::model* model = &model_;
 
         lines& lines = cell.lines;
         unary_property<array<range>>& highlights = cell.highlights;
@@ -46,23 +56,16 @@ namespace gui::text
                 XYWH r = coord.now.local();
                 canvas.coord = r;
                 frame .coord = r;
-                refresh.go(true, time(1));
+                //refresh.go(true, time(1));
+                refresh = true;
             }
-            if (what == &text)
+            if (what == &text
+            or  what == &html)
             {
-                xmodel.text(text.now);
-                html.now = xmodel.html();
                 highlights = array<range>{};
-                selections = array<range>{};
-                refresh.go(true, time(1));
-            }
-            if (what == &html)
-            {
-                xmodel.html(html.now);
-                text.now = xmodel.text();
-                highlights = array<range>{};
-                selections = array<range>{};
-                refresh.go(true, time(1));
+                selections = model->selections;
+                //refresh.go(true, time(1));
+                refresh = true;
             }
             if (what == &skin)
             {
@@ -74,13 +77,15 @@ namespace gui::text
             {
                 style.was = style.now;
                 style.now.font = font.now;
-                refresh.go(true, time(1));
+                //refresh.go(true, time(1));
+                refresh = true;
             }
             if (what == &color)
             {
                 style.was = style.now;
                 style.now.color = color.now;
-                refresh.go(true, time(1));
+                //refresh.go(true, time(1));
+                refresh = true;
             }
             if (what == &style)
             {
@@ -88,7 +93,8 @@ namespace gui::text
                 font.now = style.now.font;
                 color.was = color.now;
                 color.now = style.now.color;
-                refresh.go(true, time(1));
+                //refresh.go(true, time(1));
+                refresh = true;
             }
             if (what == &alignment
             or  what == &wordwrap
@@ -98,7 +104,8 @@ namespace gui::text
             or  what == &lwrap
             or  what == &rwrap)
             {
-                refresh.go(true, time(1));
+                //refresh.go(true, time(1));
+                refresh = true;
             }
             if (what == &refresh and refresh.now)
             {
@@ -114,7 +121,7 @@ namespace gui::text
                 format.height = coord.now.size.y;
 
                 model->set(style.now, format);
-                cell.fill(model->lines);
+                cell.fill(model->view_lines);
             }
             if (what == &refresh
             or  what == &shift)
@@ -129,6 +136,7 @@ namespace gui::text
             }
             if (what == &selections)
             {
+                model->selections = selections.now;
                 if (selections.now.size() == 1) {
                 XYWH r = cell.carets(0).coord.now;
                 r.x = 0; r.w = coord.now.w;

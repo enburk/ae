@@ -20,7 +20,7 @@ namespace gui
         int notifier_index = 0;
 
         int size () const { return indices.size(); }
-
+        bool empty() const { return size() == 0; }
         void reserve (int n)
         {
             holes.reserve(n);
@@ -53,11 +53,17 @@ namespace gui
             return *deque[indices[pos]];
         }
 
+        const T& operator [] (int pos) const { return at(pos); }
+        /***/ T& operator [] (int pos) /***/ { return at(pos); }
+
         const T& operator () (int pos) const { return at(pos); }
         /***/ T& operator () (int pos) /***/ { return at(pos); }
 
-        const T & back () const { return *deque[indices.back()]; }
-        /***/ T & back () /***/ { return *deque[indices.back()]; }
+        const T & front () const { return *deque[indices.front()]; }
+        /***/ T & front () /***/ { return *deque[indices.front()]; }
+
+        const T & back  () const { return *deque[indices.back()]; }
+        /***/ T & back  () /***/ { return *deque[indices.back()]; }
 
         template<class... Args>
         T & emplace_back (Args&&... args)

@@ -2,10 +2,8 @@
 #include "doc_text_text.h"
 namespace doc::text::a
 {
-    struct model : text
+    struct model : text, doc::model
     {
-        array<range> selections;
-
         explicit model (text t) : text(t)
         {
             for (auto & line : lines) line.trimr(glyph(" "));
@@ -25,7 +23,8 @@ namespace doc::text::a
         array<reundo> redoes;
 
         place front () const { return place{}; }
-        place back  () const { return place{lines.size()-1, lines.back().size()}; }
+        place back  () const { return place{
+            lines.size()-1, lines.back().size()}; }
 
         bool perform (array<replace> ordered_replaces, int dir = 1 )
         {

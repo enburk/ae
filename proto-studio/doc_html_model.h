@@ -5,17 +5,17 @@
 namespace doc::html
 {
     using namespace doc::view;
-    struct model : doc::view::model
+    struct model : doc::model
     {
         str source;
         array<entity> entities;
-    /// array<line> lines; /// doc::view::model ///
+        array<line>& lines = view_lines;
 
-        str text () const { return untagged(source); }
-        str html () const { return source; }
+        str  get_text () override { return untagged(source); }
+        str  get_html () override { return source; }
 
-        void text (str text) { html(encoded(text)); }
-        void html (str text)
+        void set_text (str text) override { set_html(encoded(text)); }
+        void set_html (str text) override 
         {
             source = std::move(text);
             entities = html::entities(source);
@@ -26,6 +26,9 @@ namespace doc::html
                 entities.back().head = tokens;
             }
         }
+
+        void add_text (str text) override { set_html(source + encoded(text)); }
+        void add_html (str text) override { set_html(source + text); }
 
         void set (style s, format f) override
         {

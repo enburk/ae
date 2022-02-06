@@ -7,8 +7,9 @@ namespace gui::text
     {
         editor editor;
         canvas& canvas = editor.canvas;
+        view::text_type& text = editor.text;
+        view::html_type& html = editor.html;
         property<RGBA>& color = editor.color;
-        unary_property<str>& text = editor.text;
         binary_property<font>& font = editor.font;
         binary_property<style>& style = editor.style;
         binary_property<XY>& alignment = editor.alignment;
@@ -38,25 +39,15 @@ namespace gui::text
             {
                 editor.coord = coord.now.local();
             }
-            if (what == &text)
-            {
-                editor.model->set(doc::text::text(text));
-                editor.reset();
-            }
-            if (what == &editor)
-            {
-                text.now = editor.model->string();
-                notify();
-            }
+
+            notify(what);
         }
 
         void select ()
         {
             editor.go(gui::text::editor::TEXT_BEGIN, false);
             editor.go(gui::text::editor::TEXT_END, true);
-            editor.page.view.refresh = true;
-            editor.page.refresh();
-            editor.refresh();
+            editor.refresh = true;
         }
 
         void on_key_pressed (str key, bool down) override

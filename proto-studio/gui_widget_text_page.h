@@ -14,9 +14,9 @@ namespace gui::text
 
         lines& lines = view.lines;
         canvas& canvas = view.canvas;
+        view::text_type& text = view.text;
+        view::html_type& html = view.html;
         property<RGBA>& color = view.color;
-        unary_property<str>& text = view.text;
-        unary_property<str>& html = view.html;
         binary_property<font>& font = view.font;
         binary_property<style>& style = view.style;
         binary_property<XY>& alignment = view.alignment;
@@ -97,14 +97,8 @@ namespace gui::text
                 }
             }
 
-            if (what == &scroll.x) update(); // speed up redraw
-            if (what == &scroll.y) update(); // speed up redraw
-
             if (what == &scroll.x) view.shift = XY(-scroll.x.top, view.shift.now.y);
             if (what == &scroll.y) view.shift = XY(view.shift.now.x, -scroll.y.top);
-
-            if (what == &scroll.x) notify(what);
-            if (what == &scroll.y) notify(what);
 
             notify(what);
         }
@@ -133,6 +127,8 @@ namespace gui::text
             return lines.target(p - 
                 lines.coord.now.origin);
         }
+
+        auto selected () { return view.selected(); }
 
         bool  touch = false;
         range touch_range;
@@ -229,21 +225,16 @@ namespace gui::text
         {
             if (!down) return;
             if (touch) return; // mouse
-            if (view.selections.now.size() != 1) return;
-            auto selection = view.selections.now[0];
+            if (selections.now.size() != 1) return;
+            auto selection = selections.now[0];
             auto & [from, upto] = selection;
-            auto select = [this, &selection]() {
-                array<range> selections;
-                selections += selection;
-                view.selections =
-                     selections;
-            };
 
             if (key == "shift+left")
             {
                 if (upto.offset > 0) {
                     upto.offset--;
-                    select();
+                    selections = array<range>{
+                    selection};
                 }
             }
             if (key == "shift+right")
@@ -251,7 +242,8 @@ namespace gui::text
                 int n = lines(from.line).length;
                 if (upto.offset < n) {
                     upto.offset++;
-                    select();
+                    selections = array<range>{
+                    selection};
                 }
             }
             if (key == "ctrl+left" or
@@ -259,7 +251,8 @@ namespace gui::text
             {
                 if (from.offset > 0) {
                     from.offset--;
-                    select();
+                    selections = array<range>{
+                    selection};
                 }
             }
             if (key == "ctrl+right" or
@@ -268,13 +261,14 @@ namespace gui::text
                 int n = lines(from.line).length;
                 if (from.offset < n) {
                     from.offset++;
-                    select();
+                    selections = array<range>{
+                    selection};
                 }
             }
 
             if (key == "ctrl+C" or
                 key == "ctrl+insert") {
-                sys::clipboard::set(view.selected());
+                sys::clipboard::set(selected());
             }
         }
     };

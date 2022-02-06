@@ -55,7 +55,7 @@ struct Flist : gui::widget<Flist>
         on_change(&root);
         for (auto& button : flist.list)
             button.on = root.now / std::string(
-            button.text.text.now) ==
+            button.text.text) ==
             selected.now;
     }
 
@@ -88,7 +88,7 @@ struct Flist : gui::widget<Flist>
         {
             for (auto& button : flist.list)
                 button.on = root.now / std::string(
-                button.text.text.now) ==
+                button.text.text) ==
                 selected.now;
 
             notify();
