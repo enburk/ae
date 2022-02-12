@@ -128,16 +128,16 @@ namespace gui::base
             sys::mouse::image(mouse_image.now);
         }
 
-        void mouse_move (XY p)
+        void mouse_move(XY p)
         {
             if (mouse_press_child) {
-                mouse_press_child->mouse_move (p - 
-                mouse_press_child->coord.now.origin);
+                mouse_press_child->mouse_move(p -
+                    mouse_press_child->coord.now.origin);
                 return;
             }
             widget* hover = nullptr;
             for (auto w : children)
-                if (w->mouse_sense (p - w->coord.now.origin))
+                if (w->mouse_sense(p - w->coord.now.origin))
                     hover = w; // last sibling wins
 
             if (hover) hover->mouse_move(p - hover->coord.now.origin);
@@ -147,12 +147,12 @@ namespace gui::base
                 mouse_hover_child->mouse_leave();
 
             mouse_hover_child = hover;
-            mouse_hover_child ?
             // every mouse_move:
-            on_mouse_hover_child(p):
-            on_mouse_hover(p);
-
-            sys::mouse::image(mouse_image.now);
+            if (mouse_hover_child)
+                on_mouse_hover_child(p); else {
+                on_mouse_hover(p);
+                sys::mouse::image(
+                mouse_image.now); }
         }
 
         void mouse_leave ()

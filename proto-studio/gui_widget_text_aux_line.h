@@ -85,6 +85,8 @@ namespace gui::text
         array<solid> solids;
         doc::view::format format;
         bool the_last_row = true;
+        int length = 0;
+        int start = -1;
 
         int lpadding (int height)
         {
@@ -223,7 +225,9 @@ namespace gui::text
             
     struct line final : widgetarium<token>, doc::view::line
     {
-        array<row> rows; int length = 0;
+        array<row> rows;
+        int length = 0;
+        int start = -1;
 
         void operator = (doc::view::line data)
         {
@@ -323,7 +327,7 @@ namespace gui::text
                 rows.back().ascent +
                 rows.back().descent;
 
-            int width = 0; length = 0;
+            int width = 0; length = 0; start = -1;
 
             for (auto& row: rows)
             {
@@ -341,8 +345,26 @@ namespace gui::text
                     token.move_to(XY(
                     row.offset.x + solid.offset.x + token.offset.x,
                     row.offset.y + solid.offset.y + token.offset.y));
+
+                    if (token.text != " ")
+                    {
+                        if (start == -1)
+                            start = length;
+
+                        if (row.start == -1)
+                            row.start = row.length;
+                    }
+
+                    row.
+                    length += token.size();
                     length += token.size();
                 }
+
+                if (start == -1)
+                    start = 0;
+
+                if (row.start == -1)
+                    row.start = 0;
             }
 
             resize(XY(width, height));

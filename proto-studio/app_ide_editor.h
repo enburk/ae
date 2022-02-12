@@ -89,7 +89,7 @@ struct Editor : gui::widget<Editor>
                 ext == "ae"  ? doc::text::repo::load<doc::ae::model>(path.now):
                 ext == "cpp" ? doc::text::repo::load<doc::cpp::model>(path.now):
                                doc::text::repo::load<doc::text::model>(path.now);
-            editor.refresh = true;
+            editor.update_text = true;
         }
 
         if (what == &editor.text)
@@ -121,10 +121,6 @@ struct Editor : gui::widget<Editor>
     void on_focus (bool on) override { editor.on_focus(on); }
     void on_key_input (str symbol) override { editor.on_key_input(symbol); }
     void on_key_pressed (str key, bool down) override { editor.on_key_pressed(key,down); }
-    bool on_mouse_wheel (XY p, int delta) override
-    {
-        return editor.page.on_mouse_wheel(p - editor.coord.now.origin, delta);
-    }
 
     bool syntax_ready ()
     {
@@ -132,7 +128,7 @@ struct Editor : gui::widget<Editor>
             model->ready()) { log =
             model->log();
             //auto t0 = doc::ae::syntax::analysis::now();
-            editor.refresh = true;
+            editor.update_colors = true;
             //auto t1 = doc::ae::syntax::analysis::now();
             //auto ms = doc::ae::syntax::analysis::ms(t1-t0);
             //doc::ae::syntax::analysis::events.debug("syntax_ready " + ms + " ms");

@@ -5,6 +5,7 @@ namespace doc::text::b
     struct model : a::model
     {
         using base = a::model;
+        using base::base;
 
         int tab = 4;
 

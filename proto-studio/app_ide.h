@@ -93,7 +93,7 @@ struct IDE : gui::widget<IDE>
                 flist.reload();
                 editor.flist.reload(); // before repo delete something
                 doc::text::repo::reload(); // triggers recompiling
-                editor.editor.refresh = true;
+                editor.editor.update_text = true;
                 syntax_run = true;
                 syntax_ok = false;
             }

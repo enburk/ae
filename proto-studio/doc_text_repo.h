@@ -30,9 +30,9 @@ namespace doc::text::repo
             if (s.starts_with("\xEF" "\xBB" "\xBF"))
                 s.upto(3).erase(); // UTF-8 BOM
 
-            saved_text = text{s};
             edittime = filetime; // prevents recursive load
-            model->set(saved_text); // triggers compiling
+            model->set_text(s); // triggers compiling
+            saved_text = *model;
             return nothing{};
         }
         catch (const std::exception & e) {

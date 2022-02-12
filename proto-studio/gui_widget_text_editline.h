@@ -24,6 +24,9 @@ namespace gui::text
         binary_property<bool>& virtual_space = editor.virtual_space;
         binary_property<bool>& insert_mode = editor.insert_mode;
         binary_property<bool>& focused = editor.focused;
+        property<bool>& update_text = editor.update_text;
+        property<bool>& update_colors = editor.update_colors;
+        property<bool>& update_layout = editor.update_layout;
 
         one_line_editor ()
         {
@@ -47,7 +50,6 @@ namespace gui::text
         {
             editor.go(gui::text::editor::TEXT_BEGIN, false);
             editor.go(gui::text::editor::TEXT_END, true);
-            editor.refresh = true;
         }
 
         void on_key_pressed (str key, bool down) override

@@ -27,7 +27,9 @@ namespace gui::text
         binary_property<bool>& virtual_space = page.virtual_space;
         binary_property<bool>& insert_mode = page.insert_mode;
         binary_property<bool>& focused = page.focused;
-        property<bool>& refresh = page.refresh;
+        property<bool>& update_text = page.update_text;
+        property<bool>& update_colors = page.update_colors;
+        property<bool>& update_layout = page.update_layout;
 
         doc::text::model model_;
         doc::model*& model = page.view.model;
@@ -65,11 +67,10 @@ namespace gui::text
             notify(what);
         }
 
-        template<class F> void does (F f)
-        {
-            model->selections = selections; if (f()) { refresh = true;
-            selections = model->selections; }
-        }
+        template<class F> void does (F f) {
+            model->selections = selections;
+            if (f()) update_text = true; }
+
         void undo        () { does([=](){ return model->undo     (); }); }
         void redo        () { does([=](){ return model->redo     (); }); }
         void erase       () { does([=](){ return model->erase    (); }); }
@@ -134,13 +135,10 @@ namespace gui::text
             case+LINE: line++; break;
 
             case LINE_END  : offset = lines[line].length; break;
-            //case LINE_BEGIN: {
-            //        int n = (int)(
-            //        lines[line].find_if([](auto s){ return s != " "; }) -
-            //        lines[line].begin());
-            //        offset = offset != n ? n : 0;
-            //    }
-            //    break;
+            case LINE_BEGIN: offset = offset !=
+                lines[line].start ?
+                lines[line].start : 0;
+                break;
 
             //case PAGE_TOP   : break;
             //case PAGE_BOTTOM: break;

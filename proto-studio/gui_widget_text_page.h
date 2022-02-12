@@ -31,7 +31,9 @@ namespace gui::text
         binary_property<bool>& virtual_space = view.virtual_space;
         binary_property<bool>& insert_mode = view.insert_mode;
         binary_property<bool>& focused = view.focused;
-        property<bool>& refresh = view.refresh;
+        property<bool>& update_text = view.update_text;
+        property<bool>& update_colors = view.update_colors;
+        property<bool>& update_layout = view.update_layout;
 
         binary_property<bool> infotip = false;
 
@@ -43,7 +45,8 @@ namespace gui::text
             {
                 view.coord = coord.now.local();
             }
-            if (what == &refresh)
+            if (what == &update_text
+            or  what == &update_layout)
             {
                 XY size = coord.now.size;
                 bool
@@ -118,16 +121,6 @@ namespace gui::text
             return true;
         }
 
-        range point (XY p) {
-            return lines.point(p - 
-                lines.coord.now.origin);
-        }
-
-        token* target (XY p) {
-            return lines.target(p - 
-                lines.coord.now.origin);
-        }
-
         auto selected () { return view.selected(); }
 
         bool  touch = false;
@@ -149,7 +142,8 @@ namespace gui::text
             if (button != 'L') return;
             if (down && !touch)
             {
-                if (touch_point == p && time::now - touch_time < 1000ms)
+                if (touch_point == p and time::now -
+                    touch_time < 1000ms) // double click
                 {
                     //go(-TOKEN); go(+TOKEN, true); // select token
                     //while (caret_upto > 0 &&
@@ -160,7 +154,7 @@ namespace gui::text
                 else
                 {
                     select_point = p;
-                    touch_range = point(p);
+                    touch_range = view.point(p);
                 }
                 touch_point = p;
                 touch_time = time::now;
@@ -170,11 +164,6 @@ namespace gui::text
             select_notch = time::now + select_delay;
             timer.go (down ? time::infinity : time(),
                       down ? time::infinity : time());
-
-            if (parent)
-                parent->on_mouse_press (
-                    p + coord.now.origin,
-                    button, down);
         }
 
         void on_mouse_hover (XY p) override
@@ -193,15 +182,15 @@ namespace gui::text
                     select_point = p;
                     range selection;
                     selection.from = touch_range.from;
-                    selection.upto = point(p).from; // not point(p).upto !
+                    selection.upto = view.point(p).from; // not point(p).upto !
                     selections = array<range>{selection};
                     info.hide();
                 }
                 else if (infotip.now)
                 {
-                    if (auto token = target(p); token && token->info != "")
+                    if (auto token = view.target(p); token && token->info != "")
                     {
-                        XYWH r = view.cell.bar(point(p).from);
+                        XYWH r = view.cell.bar(view.point(p).from);
                         info.hide(); r.w = r.h*100;
                         info.alignment = XY{pix::left, pix::top};
                         info.coord = r;
@@ -215,10 +204,6 @@ namespace gui::text
                     else info.hide();
                 }
             }
-
-            if (parent)
-                parent->on_mouse_hover (
-                    p + coord.now.origin);
         }
 
         void on_key_pressed (str key, bool down) override

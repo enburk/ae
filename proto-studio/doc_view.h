@@ -79,6 +79,11 @@ namespace doc
         virtual bool backspace   () { return false; }
         virtual bool insert (str s) { return false; }
         virtual bool ready       () { return false; }
+
+        virtual place front () const { return place{}; }
+        virtual place back  () const { return place{}; }
+
+
     };
 }
 

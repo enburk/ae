@@ -12,14 +12,14 @@ namespace gui::text
         frame frame;
 
         struct text_type { view& v; text_type(view& v) : v(v) {}
-            void operator  = (str text) { v.model->set_text(text); v.on_change(this); }
-            void operator += (str text) { v.model->add_text(text); v.on_change(this); }
-            operator str() const { return v.model->get_text(); } };
+        void operator  = (str text) { v.model->set_text(std::move(text)); v.on_change(this); }
+        void operator += (str text) { v.model->add_text(std::move(text)); v.on_change(this); }
+        operator str() const { return v.model->get_text(); } };
 
         struct html_type { view& v; html_type(view& v) : v(v) {}
-            void operator  = (str html) { v.model->set_html(html); v.on_change(this); }
-            void operator += (str html) { v.model->add_html(html); v.on_change(this); }
-            operator str() const { return v.model->get_html(); } };
+        void operator  = (str html) { v.model->set_html(std::move(html)); v.on_change(this); }
+        void operator += (str html) { v.model->add_html(std::move(html)); v.on_change(this); }
+        operator str() const { return v.model->get_html(); } };
 
         text_type text{*this};
         html_type html{*this};
@@ -35,7 +35,10 @@ namespace gui::text
         binary_property<XY> shift;
         binary_property<bool> wordwrap = true;
         binary_property<bool> ellipsis = false;
-        property<bool> refresh = false;
+
+        property<bool> update_colors = false;
+        property<bool> update_layout = false;
+        property<bool> update_text   = false;
 
         doc::html::model model_;
         doc::model* model = &model_;
@@ -49,6 +52,8 @@ namespace gui::text
 
         void on_change (void* what) override
         {
+            const int l = 0; // lazy or eager ?
+
             if (what == &coord and
                 coord.was.size !=
                 coord.now.size)
@@ -56,16 +61,12 @@ namespace gui::text
                 XYWH r = coord.now.local();
                 canvas.coord = r;
                 frame .coord = r;
-                //refresh.go(true, time(1));
-                refresh = true;
+                update_layout.go(true, time(l));
             }
             if (what == &text
             or  what == &html)
             {
-                highlights = array<range>{};
-                selections = model->selections;
-                //refresh.go(true, time(1));
-                refresh = true;
+                update_text.go(true, time(l));
             }
             if (what == &skin)
             {
@@ -77,15 +78,13 @@ namespace gui::text
             {
                 style.was = style.now;
                 style.now.font = font.now;
-                //refresh.go(true, time(1));
-                refresh = true;
+                update_layout.go(true, time(l));
             }
             if (what == &color)
             {
                 style.was = style.now;
                 style.now.color = color.now;
-                //refresh.go(true, time(1));
-                refresh = true;
+                update_colors.go(true, time(l));
             }
             if (what == &style)
             {
@@ -93,8 +92,8 @@ namespace gui::text
                 font.now = style.now.font;
                 color.was = color.now;
                 color.now = style.now.color;
-                //refresh.go(true, time(1));
-                refresh = true;
+                update_layout.go(true, time(l));
+                update_colors.go(true, time(l));
             }
             if (what == &alignment
             or  what == &wordwrap
@@ -104,12 +103,16 @@ namespace gui::text
             or  what == &lwrap
             or  what == &rwrap)
             {
-                //refresh.go(true, time(1));
-                refresh = true;
+                update_layout.go(true, time(l));
             }
-            if (what == &refresh and refresh.now)
+
+            if (what == &update_text   and update_text  .now
+            or  what == &update_colors and update_colors.now
+            or  what == &update_layout and update_layout.now)
             {
-                refresh.now = false;
+                update_text  .now = false;
+                update_colors.now = false;
+                update_layout.now = false;
 
                 format format;
                 format.alignment = alignment.now;
@@ -123,7 +126,9 @@ namespace gui::text
                 model->set(style.now, format);
                 cell.fill(model->view_lines);
             }
-            if (what == &refresh
+
+            if (what == &update_text
+            or  what == &update_layout
             or  what == &shift)
             {
                 int H = coord.now.size.y;
@@ -134,9 +139,33 @@ namespace gui::text
                     alignment.now.y == bottom ? H   - h   :
                     0) + shift.now);
             }
+            if (what == &update_text)
+            {
+                highlights = array<range>{};
+                selections = model->selections;
+            }
+
             if (what == &selections)
             {
-                model->selections = selections.now;
+                //model->selections = selections.now;
+                int n = selections.now.size();
+                model->selections.resize(n);
+                for (int i=0; i<n; i++) {
+                    auto r = selections.now[i];
+                    model->selections[i] = range{
+                        place{r.from.line, r.from.offset},
+                        place{r.upto.line, r.upto.offset}};
+
+                    // hack to prevent focus hiding:
+                    auto & [from, upto] = model->selections[i];
+                    from = clamp(from, model->front(), model->back());
+                    upto = clamp(upto, model->front(), model->back());
+                    selections.now[i] = range{
+                        place{from.line, from.offset},
+                        place{upto.line, upto.offset}};
+                }
+
+
                 if (selections.now.size() == 1) {
                 XYWH r = cell.carets(0).coord.now;
                 r.x = 0; r.w = coord.now.w;
@@ -151,5 +180,9 @@ namespace gui::text
         void on_focus (bool on) override { cell.on_focus(on); }
 
         auto selected () { return cell.selected(); }
+
+        range point (XY p) { return lines.point(p - shift.now); }
+
+        token* target (XY p) { return lines.target(p - shift.now); }
     };
 }

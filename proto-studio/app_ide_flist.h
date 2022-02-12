@@ -66,7 +66,9 @@ struct Flist : gui::widget<Flist>
             canvas.color = gui::skins[skin].light.first;
         }
 
-        if (what == &coord && coord.was.size != coord.now.size)
+        if (what == &coord and
+            coord.was.size !=
+            coord.now.size)
         {
             canvas.coord = coord.now.local();
 
