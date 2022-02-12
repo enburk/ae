@@ -1,11 +1,9 @@
 #pragma once
+#include "gui.h"
 #include "doc_ae_model.h"
 #include "doc_cpp_model.h"
 #include "doc_text_model.h"
 #include "doc_text_repo.h"
-#include "gui_widget_canvas.h"
-#include "gui_widget_button.h"
-#include "gui_widget_text_editor.h"
 #include "app_ide_edflist.h"
 using path = std::filesystem::path;
 using namespace pix;

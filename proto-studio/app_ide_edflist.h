@@ -1,7 +1,6 @@
 #pragma once
 #include <filesystem>
-#include "gui_widget_canvas.h"
-#include "gui_widget_button.h"
+#include "gui.h"
 using path = std::filesystem::path;
 using namespace pix;
 

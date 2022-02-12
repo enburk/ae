@@ -1,6 +1,5 @@
 ﻿#pragma once
-#include "doc_text_glyph.h"
-#include "doc_html_lexica.h"
+#include "doc_text_text.h"
 #include "doc_ae_syntax.h"
 namespace doc::ae
 {

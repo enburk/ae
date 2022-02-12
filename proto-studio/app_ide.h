@@ -1,8 +1,4 @@
 #pragma once
-#include "sys_aux.h"
-#include "sys_ui.h"
-#include "gui_widget.h"
-#include "gui_widget_canvas.h"
 #include "app_ide_compiler.h"
 #include "app_ide_console.h"
 #include "app_ide_editor.h"

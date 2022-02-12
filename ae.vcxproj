@@ -129,7 +129,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
+      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -150,22 +150,6 @@
     <ClInclude Include="proto-studio\app_ide_editor.h" />
     <ClInclude Include="proto-studio\app_ide_flist.h" />
     <ClInclude Include="proto-studio\app_ide_test.h" />
-    <ClInclude Include="proto-studio\aux_abc.h" />
-    <ClInclude Include="proto-studio\aux_algo.h" />
-    <ClInclude Include="proto-studio\aux_array.h" />
-    <ClInclude Include="proto-studio\aux_aux.h" />
-    <ClInclude Include="proto-studio\aux_coro.h" />
-    <ClInclude Include="proto-studio\aux_math.h" />
-    <ClInclude Include="proto-studio\aux_monad.h" />
-    <ClInclude Include="proto-studio\aux_registry.h" />
-    <ClInclude Include="proto-studio\aux_string.h" />
-    <ClInclude Include="proto-studio\aux_timing.h" />
-    <ClInclude Include="proto-studio\aux_unicode.h" />
-    <ClInclude Include="proto-studio\aux_unittest.h" />
-    <ClInclude Include="proto-studio\aux_unittest_array.h" />
-    <ClInclude Include="proto-studio\aux_unittest_coro.h" />
-    <ClInclude Include="proto-studio\aux_unittest_string.h" />
-    <ClInclude Include="proto-studio\doc.h" />
     <ClInclude Include="proto-studio\doc_ae_lexica.h" />
     <ClInclude Include="proto-studio\doc_ae_model.h" />
     <ClInclude Include="proto-studio\doc_ae_syntax.h" />
@@ -185,49 +169,6 @@
     <ClInclude Include="proto-studio\doc_cpp_model.h" />
     <ClInclude Include="proto-studio\doc_cpp_syntax.h" />
     <ClInclude Include="proto-studio\doc_cpp_syntax_preprocessor.h" />
-    <ClInclude Include="proto-studio\doc_html.h" />
-    <ClInclude Include="proto-studio\doc_html_lexica.h" />
-    <ClInclude Include="proto-studio\doc_html_model.h" />
-    <ClInclude Include="proto-studio\doc_html_syntax.h" />
-    <ClInclude Include="proto-studio\doc_html_utils.h" />
-    <ClInclude Include="proto-studio\doc_text_glyph.h" />
-    <ClInclude Include="proto-studio\doc_text_model.h" />
-    <ClInclude Include="proto-studio\doc_text_model_a.h" />
-    <ClInclude Include="proto-studio\doc_text_model_b.h" />
-    <ClInclude Include="proto-studio\doc_text_repo.h" />
-    <ClInclude Include="proto-studio\doc_text_text.h" />
-    <ClInclude Include="proto-studio\doc_view.h" />
-    <ClInclude Include="proto-studio\gui_colors.h" />
-    <ClInclude Include="proto-studio\gui_effect.h" />
-    <ClInclude Include="proto-studio\gui_widget.h" />
-    <ClInclude Include="proto-studio\gui_widgetarium.h" />
-    <ClInclude Include="proto-studio\gui_widget_button.h" />
-    <ClInclude Include="proto-studio\gui_widget_canvas.h" />
-    <ClInclude Include="proto-studio\gui_widget_console.h" />
-    <ClInclude Include="proto-studio\gui_widget_image.h" />
-    <ClInclude Include="proto-studio\gui_widget_player.h" />
-    <ClInclude Include="proto-studio\gui_widget_scroller.h" />
-    <ClInclude Include="proto-studio\gui_widget_text_aux.h" />
-    <ClInclude Include="proto-studio\gui_widget_text_aux_line.h" />
-    <ClInclude Include="proto-studio\gui_widget_text_aux_lines.h" />
-    <ClInclude Include="proto-studio\gui_widget_text_cell.h" />
-    <ClInclude Include="proto-studio\gui_widget_text_editline.h" />
-    <ClInclude Include="proto-studio\gui_widget_text_editor.h" />
-    <ClInclude Include="proto-studio\gui_widget_text_page.h" />
-    <ClInclude Include="proto-studio\gui_widget_text_view.h" />
-    <ClInclude Include="proto-studio\pix_color.h" />
-    <ClInclude Include="proto-studio\pix_coord.h" />
-    <ClInclude Include="proto-studio\pix_image.h" />
-    <ClInclude Include="proto-studio\pix_process.h" />
-    <ClInclude Include="proto-studio\pix_sampling.h" />
-    <ClInclude Include="proto-studio\pix_text.h" />
-    <ClInclude Include="proto-studio\sys_aux.h" />
-    <ClInclude Include="proto-studio\sys_ui.h" />
-    <ClInclude Include="proto-studio\windows_aux.h" />
-    <ClInclude Include="proto-studio\windows_fonts.h" />
-    <ClInclude Include="proto-studio\windows_images.h" />
-    <ClInclude Include="proto-studio\windows_system.h" />
-    <ClInclude Include="proto-studio\windows_windows.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="proto-studio\!main.cpp" />

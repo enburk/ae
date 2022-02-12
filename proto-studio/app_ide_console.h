@@ -1,6 +1,5 @@
 #pragma once
-#include "gui_widget_canvas.h"
-#include "gui_widget_console.h"
+#include "gui.h"
 using namespace pix;
 
 struct Console : gui::widget<Console>
