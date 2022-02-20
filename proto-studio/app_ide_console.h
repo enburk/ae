@@ -90,7 +90,7 @@ struct Console : gui::widget<Console>
 
             auto & console = *consoles[i];
             std::lock_guard guard{console.mutex};
-            auto & column = console.page.lines;
+            auto & column = console.page.view.cell.lines;
 
             p -= console.coord.now.origin;
 

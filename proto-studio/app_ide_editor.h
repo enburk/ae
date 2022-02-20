@@ -94,8 +94,8 @@ struct Editor : gui::widget<Editor>
         {
             doc::text::repo::edit(path.now);
 
-            int n1 = lineup.lines.size();
-            int n2 = editor.lines.size();
+            int n1 = lineup.rows();
+            int n2 = editor.rows();
             if (n1 != n2) {
                 str text;
                 text.reserve(n2 * (int)(std::log10(n2))); for (int i = 0; i < n2; i++)

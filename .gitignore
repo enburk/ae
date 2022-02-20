@@ -2,6 +2,7 @@
 .astudio/
 .vstudio/
 packages/
+enc_temp_folder/
 ae.sln
 ae.vcxproj
 ae.vcxproj.filters
