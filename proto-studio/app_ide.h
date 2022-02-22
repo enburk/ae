@@ -1,9 +1,9 @@
 #pragma once
+#include "../../auxs/test.h"
 #include "app_ide_compiler.h"
 #include "app_ide_console.h"
 #include "app_ide_editor.h"
 #include "app_ide_flist.h"
-#include "app_ide_test.h"
 using namespace std::literals::chrono_literals;
 using namespace data;
 using namespace pix;
@@ -177,8 +177,8 @@ struct IDE : gui::widget<IDE>
                 std::stoi(console.pressed_char)-1});
         }
 
-        if (test_area.object.test_first.done) button_test.text.color = 
-            test_area.object.test_first.ok ? RGBA::green : RGBA::error;
+        if (test_area.object.test_aux_00.done) button_test.text.color = 
+            test_area.object.test_aux_00.ok ? RGBA::green : RGBA::error;
 
         if (what == &flist)
         {
@@ -255,7 +255,13 @@ struct IDE : gui::widget<IDE>
         }
     }
 
-    void on_focus (bool on) override { editor.on_focus(on); }
+    void on_focus (bool on) override
+    {
+        if (test_area.alpha.now == 255)
+            test_area.on_focus(on);
+        else editor.on_focus(on);
+    }
+
     void on_key_input (str symbol) override
     {
         console.active()->page.view.selections = array<gui::text::range>();

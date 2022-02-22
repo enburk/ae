@@ -69,9 +69,6 @@
     <ClInclude Include="proto-studio\app_ide_flist.h">
       <Filter>app</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\app_ide_test.h">
-      <Filter>app</Filter>
-    </ClInclude>
     <ClInclude Include="proto-studio\doc_cpp_lexica.h">
       <Filter>doc_cpp</Filter>
     </ClInclude>

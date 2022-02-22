@@ -149,7 +149,6 @@
     <ClInclude Include="proto-studio\app_ide_edflist.h" />
     <ClInclude Include="proto-studio\app_ide_editor.h" />
     <ClInclude Include="proto-studio\app_ide_flist.h" />
-    <ClInclude Include="proto-studio\app_ide_test.h" />
     <ClInclude Include="proto-studio\doc_ae_lexica.h" />
     <ClInclude Include="proto-studio\doc_ae_model.h" />
     <ClInclude Include="proto-studio\doc_ae_syntax.h" />
