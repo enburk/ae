@@ -32,22 +32,22 @@ struct Editor : gui::widget<Editor>
                 RGBA::teal};
 
             editor.virtual_space = true;
-            editor.page.view.wordwrap = false;
-            editor.page.scroll.x.mode = gui::scroll::mode::none;
-            editor.page.view.current_line_frame.color = pix::ARGB(0x40909090);
-            editor.page.view.canvas.color = RGBA::white;
-            editor.page.style = pix::text::style{
+            editor.view.wordwrap = false;
+            editor.scroll.x.mode = gui::scroll::mode::none;
+            editor.view.current_line_frame.color = pix::ARGB(0x40909090);
+            editor.view.canvas.color = RGBA::white;
+            editor.view.style = pix::text::style{
                 sys::font{"Consolas", h},
                 RGBA::black};
 
-            editor.page.info.canvas.color = gui::skins[skin].light.first;
-            editor.page.info.frame.color = gui::skins[skin].heavy.first;
-            editor.page.info.style = pix::text::style{
-                sys::font{"Consolas", h},
-                gui::skins[skin].dark.first};
+            //editor.page.info.canvas.color = gui::skins[skin].light.first;
+            //editor.page.info.frame.color = gui::skins[skin].heavy.first;
+            //editor.page.info.style = pix::text::style{
+            //    sys::font{"Consolas", h},
+            //    gui::skins[skin].dark.first};
 
             using pix::text::style_index;
-            auto s = editor.page.style.now;
+            auto s = editor.view.style.now;
             auto& ss = doc::model::styles;
             s.color = RGBA::black;   ss["name"     ] = style_index(s);
             s.color = RGBA::blue;    ss["keyword"  ] = style_index(s);
@@ -64,7 +64,9 @@ struct Editor : gui::widget<Editor>
             s.color = RGBA::fuchsia; ss["comment"  ] = style_index(s);
             s.color = RGBA::red;     ss["error"    ] = style_index(s);
         }
-        if (what == &coord && coord.was.size != coord.now.size)
+        if (what == &coord and
+            coord.was.size !=
+            coord.now.size)
         {
             int W = coord.now.w; if (W <= 0) return;
             int H = coord.now.h; if (H <= 0) return;
