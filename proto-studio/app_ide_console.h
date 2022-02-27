@@ -76,9 +76,9 @@ struct Console : gui::widget<Console>
                 consoles[i]->show(buttons(i).on.now);
     }
 
-    void on_mouse_press (XY p, char button, bool down) override
+    void on_mouse_press (XY p, str button, bool down) override
     {
-        if (button != 'L' or not down) return;
+        if (button != "left" or not down) return;
 
         pressed_file = "";
         pressed_line = "";

@@ -166,17 +166,6 @@ struct IDE : gui::widget<IDE>
             console_area.coord = XYWH(r, h, W-r, H-h);
         }
 
-        if (what == &console)
-        {
-            std::string source = console.pressed_file;
-            if (source != "" and std::filesystem::exists(source))
-                editor.path = source;
-
-            editor.editor.go(doc::place{
-                std::stoi(console.pressed_line)-1,
-                std::stoi(console.pressed_char)-1});
-        }
-
         if (test_area.object.test_aux_00.done) button_test.text.color = 
             test_area.object.test_aux_00.ok ? RGBA::green : RGBA::error;
 
@@ -185,12 +174,15 @@ struct IDE : gui::widget<IDE>
             editor.flist.selected = flist.selected.now;
             syntax_run = true;
             syntax_ok = false;
+            focus = &editor;
         }
+
         if (what == &editor.flist)
         {
             flist.selected = editor.flist.selected.now;
             syntax_run = true;
             syntax_ok = false;
+            focus = &editor;
         }
         if (what == &editor)
         {
@@ -198,6 +190,7 @@ struct IDE : gui::widget<IDE>
             syntax_run = true;
             syntax_ok = false;
         }
+
         if (what == &console)
         {
             if (syntax_run) return;
@@ -209,22 +202,10 @@ struct IDE : gui::widget<IDE>
             editor.editor.go(doc::place{
                 std::stoi(console.pressed_line)-1,
                 std::stoi(console.pressed_char)-1});
+
+            focus = &editor;
         }
 
-        if (what == &splitter_editor_l) {
-            sys::settings::save(
-                "splitter.editor.l.permyriad",
-                 splitter_editor_l.middle
-                * 100'00 / coord.now.w);
-            on_change(&coord);
-        }
-        if (what == &splitter_editor_r) {
-            sys::settings::save(
-                "splitter.editor.r.permyriad",
-                 splitter_editor_r.middle
-                * 100'00 / coord.now.w);
-            on_change(&coord);
-        }
         if (what == &button_test)
         {
             bool on = test_area.alpha.to != 0;
@@ -233,7 +214,12 @@ struct IDE : gui::widget<IDE>
             test_area.coord = turn_on ?
                 XYXY(0, toolbar.coord.now.h, coord.now.w, coord.now.h):
                 XYXY{};
+
+            if (turn_on)
+                focus = &test_area; else
+                focus = &editor_area;
         }
+
         if (what == &button_run)
         {
             console.activate(&console.output);
@@ -253,39 +239,21 @@ struct IDE : gui::widget<IDE>
                     console.output);
             });
         }
-    }
 
-    void on_focus (bool on) override
-    {
-        if (test_area.alpha.now == 255)
-            test_area.on_focus(on);
-        else editor.on_focus(on);
-    }
-
-    void on_key_input (str symbol) override
-    {
-        console.active()->page.view.selections = array<gui::text::range>();
-        editor.on_key_input(symbol);
-    }
-    void on_key_pressed (str key, bool down) override
-    {
-        if (key == "") return;
-        if((key == "ctrl+insert" or
-            key == "shift+left"  or
-            key == "shift+right" or
-            key == "ctrl+left"   or
-            key == "ctrl+right"  or
-            key == "ctrl+shift+left"  or
-            key == "ctrl+shift+right" or
-            key == "shift+up"    or
-            key == "shift+down") and
-            console.active()->page.view.selected() != "") {
-            console.active()->page.on_key_pressed(key,down);
-            return;
+        if (what == &splitter_editor_l) {
+            sys::settings::save(
+                "splitter.editor.l.permyriad",
+                 splitter_editor_l.middle
+                * 100'00 / coord.now.w);
+            on_change(&coord);
         }
-
-        console.active()->page.view.selections = array<gui::text::range>();
-        editor.on_key_pressed(key,down);
+        if (what == &splitter_editor_r) {
+            sys::settings::save(
+                "splitter.editor.r.permyriad",
+                 splitter_editor_r.middle
+                * 100'00 / coord.now.w);
+            on_change(&coord);
+        }
     }
 };
 sys::app<IDE> app("ae proto-studio");//, {0,0}, {100, 100});

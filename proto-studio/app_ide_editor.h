@@ -116,10 +116,6 @@ struct Editor : gui::widget<Editor>
             XY(0, -editor.page.scroll.y.top);
     }
 
-    void on_focus (bool on) override { editor.on_focus(on); }
-    void on_key_input (str symbol) override { editor.on_key_input(symbol); }
-    void on_key_pressed (str key, bool down) override { editor.on_key_pressed(key,down); }
-
     bool syntax_ready ()
     {
         if (model and
