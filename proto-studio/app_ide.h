@@ -166,8 +166,8 @@ struct IDE : gui::widget<IDE>
             console_area.coord = XYWH(r, h, W-r, H-h);
         }
 
-        if (test_area.object.test_aux_00.done) button_test.text.color = 
-            test_area.object.test_aux_00.ok ? RGBA::green : RGBA::error;
+        if (test_area.object.aux.done) button_test.text.color = 
+            test_area.object.aux.ok ? RGBA::green : RGBA::error;
 
         if (what == &flist)
         {
