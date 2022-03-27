@@ -54,20 +54,20 @@ struct Console : gui::widget<Console>
             int h = gui::metrics::text::height*12/7;
             int w = 4*h;
 
-            canvas .coord = XYWH(0, 0, W, h);
-            buttons.coord = XYWH(0, 0, W, h);
+            canvas .coord = xywh(0, 0, W, h);
+            buttons.coord = xywh(0, 0, W, h);
 
             for (int i=0; i<consoles.size(); i++)
             {
-                buttons(i).coord = XYWH(W - i*w - w, 0, w, h);
+                buttons(i).coord = xywh(W - i*w - w, 0, w, h);
 
                 auto & console = *consoles[i];
-                console.coord = XYXY(0, h, W, H);
+                console.coord = xyxy(0, h, W, H);
                 console.page.view.canvas.color = gui::skins[skin].ultralight.first;
-                console.page.alignment = XY{pix::left, pix::top};
+                console.page.alignment = xy{pix::left, pix::top};
                 console.page.style = pix::text::style{
-                    sys::font{"Consolas", gui::metrics::text::height},
-                    RGBA::black };
+                    pix::font{"Consolas", gui::metrics::text::height},
+                    rgba::black };
             }
         }
 
@@ -76,7 +76,7 @@ struct Console : gui::widget<Console>
                 consoles[i]->show(buttons(i).on.now);
     }
 
-    void on_mouse_press (XY p, str button, bool down) override
+    void on_mouse_press (xy p, str button, bool down) override
     {
         if (button != "left" or not down) return;
 

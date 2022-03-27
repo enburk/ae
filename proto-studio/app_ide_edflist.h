@@ -73,7 +73,7 @@ struct edflist : gui::widget<edflist>
         for (int i=0; i<buttons.size(); i++)
         {
             buttons(i).show(flist[i].ago < n);
-            buttons(i).coord = XYWH(i*w, 0, w, H);
+            buttons(i).coord = xywh(i*w, 0, w, H);
         }
     }
 

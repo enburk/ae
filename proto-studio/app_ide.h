@@ -5,8 +5,6 @@
 #include "app_ide_editor.h"
 #include "app_ide_flist.h"
 using namespace std::literals::chrono_literals;
-using namespace data;
-using namespace pix;
 
 struct IDE : gui::widget<IDE>
 {
@@ -38,11 +36,11 @@ struct IDE : gui::widget<IDE>
     {
         skin = "gray";
         gui::skins[skin].font =
-        sys::font{"Segoe UI", gui::metrics::text::height};
+        pix::font{"Segoe UI", gui::metrics::text::height};
         toolbar.color = gui::skins[skin].light.first;
         button_run .text.text = "run";
         button_test.text.text = "test";
-        canvas.color = RGBA::red;
+        canvas.color = rgba::red;
         console.activate(&console.events);
         test_area.hide();
 
@@ -148,26 +146,26 @@ struct IDE : gui::widget<IDE>
             int l = sys::settings::load("splitter.editor.l.permyriad", 18'00) * W / 100'00;
             int r = sys::settings::load("splitter.editor.r.permyriad", 70'00) * W / 100'00;
 
-            splitter_editor_l.coord = XYXY(l-d, h, l+d, H);
-            splitter_editor_r.coord = XYXY(r-d, h, r+d, H);
+            splitter_editor_l.coord = xyxy(l-d, h, l+d, H);
+            splitter_editor_r.coord = xyxy(r-d, h, r+d, H);
             splitter_editor_l.lower = 10'00 * W / 100'00;
             splitter_editor_l.upper = 35'00 * W / 100'00;
             splitter_editor_r.lower = 55'00 * W / 100'00;
             splitter_editor_r.upper = 85'00 * W / 100'00;
 
             canvas.coord = coord.now.local();
-            toolbar.coord = XYWH(0, 0, W, h);
-            button_run .coord = XYWH(0, 0, w, h);
-            button_test.coord = XYWH(W-w, 0, w, h);
+            toolbar.coord = xywh(0, 0, W, h);
+            button_run .coord = xywh(0, 0, w, h);
+            button_test.coord = xywh(W-w, 0, w, h);
 
-            test_area.coord = XYXY(0, h, W, H);
-            flist_area.coord = XYWH(0, h, l-0, H-h);
-            editor_area.coord = XYWH(l, h, r-l, H-h);
-            console_area.coord = XYWH(r, h, W-r, H-h);
+            test_area.coord = xyxy(0, h, W, H);
+            flist_area.coord = xywh(0, h, l-0, H-h);
+            editor_area.coord = xywh(l, h, r-l, H-h);
+            console_area.coord = xywh(r, h, W-r, H-h);
         }
 
         if (test_area.object.aux.done) button_test.text.color = 
-            test_area.object.aux.ok ? RGBA::green : RGBA::error;
+            test_area.object.aux.ok ? rgba::green : rgba::error;
 
         if (what == &flist)
         {
@@ -212,8 +210,8 @@ struct IDE : gui::widget<IDE>
             bool turn_on = not on;
             test_area.show(turn_on);
             test_area.coord = turn_on ?
-                XYXY(0, toolbar.coord.now.h, coord.now.w, coord.now.h):
-                XYXY{};
+                xyxy(0, toolbar.coord.now.h, coord.now.w, coord.now.h):
+                xyxy{};
 
             if (turn_on)
                 focus = &test_area; else

@@ -33,16 +33,16 @@ struct Flist : gui::widget<Flist>
 
         if (h + hh <= H) w = W;
 
-        dir.coord = XYXY(0, 0, W, h);
-        flist.coord = XYXY(0, h, w, H);
-        scroller.coord = XYXY(w, h, W, H);
+        dir.coord = xyxy(0, 0, W, h);
+        flist.coord = xyxy(0, h, w, H);
+        scroller.coord = xyxy(w, h, W, H);
 
         int y = 0;
         for (auto & line : flist.list) {
-        line.coord = XYWH(0, y, w, h); y += h; }
+        line.coord = xywh(0, y, w, h); y += h; }
 
         y = flist.list.coord.now.y;
-        flist.list.coord = XYWH(0, y, w, hh);
+        flist.list.coord = xywh(0, y, w, hh);
 
         scroller.span = hh;
         scroller.step = h;
@@ -98,7 +98,7 @@ struct Flist : gui::widget<Flist>
         {
             selected = root / std::string(flist.list(flist.selected).text.text);
         }
-        if (what == &scroller) { XYWH r =
+        if (what == &scroller) { xywh r =
             flist.list.coord; r.y = -scroller.top;
             flist.list.coord = r;
         }
@@ -138,21 +138,21 @@ struct Flist : gui::widget<Flist>
 
         for (auto [filename, path] : files) {
             auto & it = flist.list(num++);
-            it.text.alignment = XY(pix::left, pix::center);
+            it.text.alignment = xy(pix::left, pix::center);
             it.text.text = path.string();
             it.enabled = true;
         }
 
         for (auto [filename, path] : dirs) {
             auto & it = flist.list(num++);
-            it.text.alignment = XY(pix::left, pix::center);
+            it.text.alignment = xy(pix::left, pix::center);
             it.text.text = path.string();
             it.enabled = false;
             fill(path, num);
         }
     }
 
-    bool on_mouse_wheel (XY p, int delta) override
+    bool on_mouse_wheel (xy p, int delta) override
     {
         int h = scroller.step; if (h <= 0) h = gui::metrics::text::height;
         delta = delta/20 * h; if (delta == 0) delta = delta < 0 ? -h : h;

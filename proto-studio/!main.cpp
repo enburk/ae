@@ -2,4 +2,5 @@
 #include "../../auxs/windows_fonts.h"
 #include "../../auxs/windows_images.h"
 #include "../../auxs/windows_system.h"
+#include "../../auxs/windows_render.h"
 #include "../../auxs/windows_windows.h"

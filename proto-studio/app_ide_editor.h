@@ -24,21 +24,21 @@ struct Editor : gui::widget<Editor>
             int h = gui::metrics::text::height;
 
             lineup.canvas.color = gui::skins[skin].ultralight.first;
-            lineup.alignment = XY{pix::right, pix::top};
+            lineup.alignment = xy{pix::right, pix::top};
             lineup.rpadding.now = h / 4;
             lineup.wordwrap = false;
             lineup.style = pix::text::style{
-                sys::font{"Consolas", h},
-                RGBA::teal};
+                pix::font{"Consolas", h},
+                rgba::teal};
 
             editor.virtual_space = true;
             editor.view.wordwrap = false;
             editor.scroll.x.mode = gui::scroll::mode::none;
             editor.view.current_line_frame.color = pix::ARGB(0x40909090);
-            editor.view.canvas.color = RGBA::white;
+            editor.view.canvas.color = rgba::white;
             editor.view.style = pix::text::style{
-                sys::font{"Consolas", h},
-                RGBA::black};
+                pix::font{"Consolas", h},
+                rgba::black};
 
             //editor.page.info.canvas.color = gui::skins[skin].light.first;
             //editor.page.info.frame.color = gui::skins[skin].heavy.first;
@@ -49,20 +49,20 @@ struct Editor : gui::widget<Editor>
             using pix::text::style_index;
             auto s = editor.view.style.now;
             auto& ss = doc::model::styles;
-            s.color = RGBA::black;   ss["name"     ] = style_index(s);
-            s.color = RGBA::blue;    ss["keyword"  ] = style_index(s);
-            s.color = RGBA::teal;    ss["keyname"  ] = style_index(s);
-            s.color = RGBA::blue;    ss["pragma"   ] = style_index(s);
-            s.color = RGBA::purple;  ss["macros"   ] = style_index(s);
-            s.color = RGBA::purple;  ss["module"   ] = style_index(s);
-            s.color = RGBA::navy;    ss["number"   ] = style_index(s);
-            s.color = RGBA::white;   ss["space"    ] = style_index(s); 
-            s.color = RGBA::navy;    ss["literal"  ] = style_index(s); 
-            s.color = RGBA::navy;    ss["char"     ] = style_index(s); 
-            s.color = RGBA::maroon;  ss["symbol"   ] = style_index(s);
-            s.color = RGBA::maroon;  ss["semicolon"] = style_index(s);
-            s.color = RGBA::fuchsia; ss["comment"  ] = style_index(s);
-            s.color = RGBA::red;     ss["error"    ] = style_index(s);
+            s.color = rgba::black;   ss["name"     ] = style_index(s);
+            s.color = rgba::blue;    ss["keyword"  ] = style_index(s);
+            s.color = rgba::teal;    ss["keyname"  ] = style_index(s);
+            s.color = rgba::blue;    ss["pragma"   ] = style_index(s);
+            s.color = rgba::purple;  ss["macros"   ] = style_index(s);
+            s.color = rgba::purple;  ss["module"   ] = style_index(s);
+            s.color = rgba::navy;    ss["number"   ] = style_index(s);
+            s.color = rgba::white;   ss["space"    ] = style_index(s); 
+            s.color = rgba::navy;    ss["literal"  ] = style_index(s); 
+            s.color = rgba::navy;    ss["char"     ] = style_index(s); 
+            s.color = rgba::maroon;  ss["symbol"   ] = style_index(s);
+            s.color = rgba::maroon;  ss["semicolon"] = style_index(s);
+            s.color = rgba::fuchsia; ss["comment"  ] = style_index(s);
+            s.color = rgba::red;     ss["error"    ] = style_index(s);
         }
         if (what == &coord and
             coord.was.size !=
@@ -73,9 +73,9 @@ struct Editor : gui::widget<Editor>
             int h = gui::metrics::text::height*12/7;
             int d = 3*h;
 
-            flist .coord = XYXY(0, 0, W, h);
-            lineup.coord = XYXY(0, h, d, H);
-            editor.coord = XYXY(d, h, W, H);
+            flist .coord = xyxy(0, 0, W, h);
+            lineup.coord = xyxy(0, h, d, H);
+            editor.coord = xyxy(d, h, W, H);
         }
         if (what == &path)
         {
@@ -115,7 +115,7 @@ struct Editor : gui::widget<Editor>
         }
 
         if (what == &editor.page.scroll.y) lineup.shift =
-            XY(0, -editor.page.scroll.y.top);
+            xy(0, -editor.page.scroll.y.top);
     }
 
     bool syntax_ready ()
