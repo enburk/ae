@@ -22,7 +22,7 @@ struct Editor : gui::widget<Editor>
             lineup.scroll.x.mode = gui::scroll::mode::none;
             lineup.scroll.y.mode = gui::scroll::mode::none;
             lineup.canvas.color = gui::skins[skin].ultralight.first;
-            lineup.padding = xyxy{0,0,0,gui::metrics::line::width*3};
+            lineup.padding = xyxy{0,0,gui::metrics::line::width*5,0};
             lineup.alignment = xy{pix::right, pix::top};
             lineup.font = pix::font{"Consolas"};
             lineup.color = rgba::teal;
@@ -32,6 +32,7 @@ struct Editor : gui::widget<Editor>
             editor.view.wordwrap = false;
             editor.scroll.x.mode = gui::scroll::mode::none;
             editor.view.current_line_frame.color = rgba(150,150,150,64);
+            editor.padding = xyxy{gui::metrics::line::width*5,0,0,0};
             editor.font = pix::font{"Consolas"};
             editor.canvas.color = rgba::white;
             editor.color = rgba::black;
@@ -60,7 +61,7 @@ struct Editor : gui::widget<Editor>
         {
             int W = coord.now.w; if (W <= 0) return;
             int H = coord.now.h; if (H <= 0) return;
-            int h = gui::metrics::text::height*12/7;
+            int h = gui::metrics::text::height*12/10;
             int d = 3*h;
 
             flist .coord = xyxy(0, 0, W, h);
@@ -82,7 +83,7 @@ struct Editor : gui::widget<Editor>
             editor.update_text = true;
         }
 
-        if (what == &editor.text)
+        if (what == &editor.update_text)
         {
             doc::text::repo::edit(path.now);
 

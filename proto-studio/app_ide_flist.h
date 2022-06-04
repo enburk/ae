@@ -25,8 +25,9 @@ struct Flist : gui::widget<Flist>
     {
         int W = coord.now.w; if (W <= 0) return;
         int H = coord.now.h; if (H <= 0) return;
-        int d = gui::metrics::text::height + 2*gui::metrics::line::width;
-        int h = gui::metrics::text::height * 12/7;
+        int l = gui::metrics::line::width;
+        int d = gui::metrics::text::height*7/10 + 2*l;
+        int h = gui::metrics::text::height*12/10;
         int hh = h * flist.list.size();
         int w = W - d;
 
@@ -38,7 +39,8 @@ struct Flist : gui::widget<Flist>
 
         int y = 0;
         for (auto & line : flist.list) {
-        line.coord = xywh(0, y, w, h); y += h; }
+        line.coord = xywh(0, y, w, h);
+        y += h; }
 
         y = flist.list.coord.now.y;
         flist.list.coord = xywh(0, y, w, hh);
@@ -95,7 +97,9 @@ struct Flist : gui::widget<Flist>
 
         if (what == &flist)
         {
-            selected = root / std::string(flist.list(flist.selected).text.text);
+            selected = root / std::string(
+                flist.list(flist.selected)
+                .text.text);
         }
         if (what == &scroller) { xywh r =
             flist.list.coord; r.y = -scroller.top;
@@ -118,20 +122,25 @@ struct Flist : gui::widget<Flist>
         for (directory_iterator next(dir), end; next != end; ++next)
         {
             path p = next->path();
-            if (is_directory (p)) {
+            if (is_directory (p))
+            {
                 str name = p.filename().string();
                 if (name.starts_with(".")
-                ||  name.starts_with("_")
-                ||  name == "packages") continue;
-                dirs[p.filename().string()] = relative(p, root);
+                or  name.starts_with("_")
+                or  name == "packages") continue;
+                dirs[p.filename().string()] =
+                    relative(p, root);
             }
-            if (is_regular_file (p)) {
-                auto ext = p.extension();
-                if (ext != ".ae!" && ext != ".ae!!" && ext != ".ae"
-                &&  ext != ".cpp" && ext != ".hpp"
-                &&  ext != ".cxx" && ext != ".hxx"
-                &&  ext != ".c++" && ext != ".h++" && ext != ".h") continue;
-                files[p.filename().string()] = relative(p, root);
+            if (is_regular_file (p))
+            {
+               auto ext = p.extension();
+                if (ext != ".ae!" and ext != ".ae!!" and ext != ".ae"
+                and ext != ".cpp" and ext != ".hpp"
+                and ext != ".cxx" and ext != ".hxx"
+                and ext != ".c++" and ext != ".h++"
+                and ext != ".h") continue;
+                files[p.filename().string()] =
+                    relative(p, root);
             }
         }
 

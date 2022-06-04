@@ -51,7 +51,7 @@ struct Console : gui::widget<Console>
         {
             int W = coord.now.w; if (W <= 0) return;
             int H = coord.now.h; if (H <= 0) return;
-            int h = gui::metrics::text::height*12/7;
+            int h = gui::metrics::text::height*12/10;
             int w = 4*h;
 
             canvas .coord = xywh(0, 0, W, h);
@@ -70,14 +70,14 @@ struct Console : gui::widget<Console>
         for (int i=0; i<consoles.size(); i++)
         consoles[i]->show(buttons(i).on.now);
 
-        //for (auto c: consoles) if (what == &c->page.link)
-        //{
-        //    str s = c->page.link;
-        //    s.split_by("?", pressed_file, s);
-        //    s.split_by(":", pressed_line, s);
-        //    s.split_by(":", pressed_char, s);
-        //    notify();
-        //}
+        for (auto c: consoles) if (what == &c->page.link)
+        {
+            str s = c->page.link;
+            s.split_by("?", pressed_file, s);
+            s.split_by(":", pressed_line, s);
+            s.split_by(":", pressed_char, s);
+            notify();
+        }
     }
 };
  

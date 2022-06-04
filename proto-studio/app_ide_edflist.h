@@ -32,16 +32,16 @@ struct edflist : gui::widget<edflist>
                 it != flist.end())
             {
                 selected = it->path;
-                for (auto & d : flist) if (d.ago < it->ago) d.ago++; it->ago = 0;
-                for (auto & button : buttons) button.on = false;
+                for (auto& d: flist) if (d.ago < it->ago) d.ago++; it->ago = 0;
+                for (auto& button: buttons) button.on = false;
                 buttons((int)(it - flist.begin())).on = true;
                 on_change(&coord); // could be out of view now
             }
             else
             {
                 selected = path;
-                for (auto & d : flist) d.ago++;
-                for (auto & button : buttons) button.on = false;
+                for (auto& d: flist) d.ago++;
+                for (auto& button: buttons) button.on = false;
                 flist += data { path, 0 };
                 buttons.emplace_back();
                 buttons.back().text.text = path.filename().string();
