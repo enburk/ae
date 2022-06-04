@@ -1,8 +1,6 @@
 #pragma once
-#include "gui.h"
+#include "abc.h"
 #include "doc_ae_model.h"
-#include "doc_cpp_model.h"
-#include "doc_text_model.h"
 #include "doc_text_repo.h"
 #include "app_ide_edflist.h"
 using path = std::filesystem::path;
@@ -11,7 +9,7 @@ using namespace pix;
 struct Editor : gui::widget<Editor>
 {
     edflist flist;
-    gui::text::view lineup;
+    gui::text::page lineup;
     gui::text::editor editor;
     gui::binary_property<path> path;
     doc::text::model* model = nullptr;
@@ -21,30 +19,22 @@ struct Editor : gui::widget<Editor>
     {
         if (what == &skin)
         {
-            int h = gui::metrics::text::height;
-
+            lineup.scroll.x.mode = gui::scroll::mode::none;
+            lineup.scroll.y.mode = gui::scroll::mode::none;
             lineup.canvas.color = gui::skins[skin].ultralight.first;
+            lineup.padding = xyxy{0,0,0,gui::metrics::line::width*3};
             lineup.alignment = xy{pix::right, pix::top};
-            lineup.rpadding.now = h / 4;
+            lineup.font = pix::font{"Consolas"};
+            lineup.color = rgba::teal;
             lineup.wordwrap = false;
-            lineup.style = pix::text::style{
-                pix::font{"Consolas", h},
-                rgba::teal};
 
             editor.virtual_space = true;
             editor.view.wordwrap = false;
             editor.scroll.x.mode = gui::scroll::mode::none;
-            editor.view.current_line_frame.color = pix::ARGB(0x40909090);
-            editor.view.canvas.color = rgba::white;
-            editor.view.style = pix::text::style{
-                pix::font{"Consolas", h},
-                rgba::black};
-
-            //editor.page.info.canvas.color = gui::skins[skin].light.first;
-            //editor.page.info.frame.color = gui::skins[skin].heavy.first;
-            //editor.page.info.style = pix::text::style{
-            //    sys::font{"Consolas", h},
-            //    gui::skins[skin].dark.first};
+            editor.view.current_line_frame.color = rgba(150,150,150,64);
+            editor.font = pix::font{"Consolas"};
+            editor.canvas.color = rgba::white;
+            editor.color = rgba::black;
 
             using pix::text::style_index;
             auto s = editor.view.style.now;
@@ -86,9 +76,9 @@ struct Editor : gui::widget<Editor>
             if (ext == ".ae!" || ext == ".ae!!" || ext == ".ae") ext = "ae";
 
             editor.model = model = 
-                ext == "ae"  ? doc::text::repo::load<doc::ae::model>(path.now):
-                ext == "cpp" ? doc::text::repo::load<doc::cpp::model>(path.now):
-                               doc::text::repo::load<doc::text::model>(path.now);
+            ext == "ae" ? doc::text::repo::load<doc::ae::model>(path.now):
+            ext == "cpp"? doc::text::repo::load<doc::cpp::model>(path.now):
+                          doc::text::repo::load<doc::text::model>(path.now);
             editor.update_text = true;
         }
 
@@ -100,8 +90,8 @@ struct Editor : gui::widget<Editor>
             int n2 = editor.rows();
             if (n1 != n2) {
                 str text;
-                text.reserve(n2 * (int)(std::log10(n2))); for (int i = 0; i < n2; i++)
-                    text += std::to_string(i + 1) + (char*)(u8"\u00A0") + "\n"; // &nbsp;
+                text.reserve(n2*10); for (int i=0; i<n2; i++)
+                text += std::to_string(i+1) + "\n";
                 text.truncate();
                 lineup.text = text;
             }
@@ -111,11 +101,11 @@ struct Editor : gui::widget<Editor>
 
         if (what == &flist) {
             path = flist.selected.now;
-            notify(&flist);
-        }
+            notify(&flist); }
 
-        if (what == &editor.page.scroll.y) lineup.shift =
-            xy(0, -editor.page.scroll.y.top);
+        if (what == &editor.scroll.y)
+            lineup.view.shift = xy(0,
+                -editor.scroll.y.top);
     }
 
     bool syntax_ready ()

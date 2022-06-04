@@ -1,8 +1,7 @@
 #pragma once
-#include "gui.h"
+#include "abc.h"
 #include <filesystem>
 using path = std::filesystem::path;
-using namespace pix;
 
 struct Flist : gui::widget<Flist>
 {

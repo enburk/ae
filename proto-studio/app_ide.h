@@ -34,13 +34,10 @@ struct IDE : gui::widget<IDE>
 
     IDE()
     {
-        skin = "gray";
-        gui::skins[skin].font =
-        pix::font{"Segoe UI", gui::metrics::text::height};
+        canvas.color = rgba::red;
         toolbar.color = gui::skins[skin].light.first;
         button_run .text.text = "run";
         button_test.text.text = "test";
-        canvas.color = rgba::red;
         console.activate(&console.events);
         test_area.hide();
 
@@ -61,9 +58,8 @@ struct IDE : gui::widget<IDE>
             reload = true;
         };
         watcher.error = [this](aux::error error){
-            console.events << "<font color=#B00020>"
-                "watcher error: " + error + "</font>";
-        };
+        console.events << "<font color=#B00020>"
+       "watcher error: " + error + "</font>"; };
         watcher.watch();
     }
     ~IDE()
@@ -77,8 +73,8 @@ struct IDE : gui::widget<IDE>
     void on_change (void* what) override
     {
         if (timer.now == gui::time())
-            timer.go (gui::time::infinity,
-                      gui::time::infinity);
+            timer.go(gui::time::infinity,
+                     gui::time::infinity);
 
         if (what == &timer)
         {

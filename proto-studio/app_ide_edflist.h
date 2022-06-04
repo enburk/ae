@@ -1,8 +1,7 @@
 #pragma once
+#include "abc.h"
 #include <filesystem>
-#include "gui.h"
 using path = std::filesystem::path;
-using namespace pix;
 
 struct edflist : gui::widget<edflist>
 {

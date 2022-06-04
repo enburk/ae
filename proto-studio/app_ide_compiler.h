@@ -1,7 +1,7 @@
 #pragma once
 #include <fstream>
 #include <filesystem>
-#include "gui.h"
+#include "abc.h"
 #include "doc_ae_translator.h"
 #include "app_ide_console.h"
 namespace ide::compiler

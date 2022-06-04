@@ -48,7 +48,7 @@ namespace doc::ae
         {
             for (auto [s, c] : doc::html::lexica::symbols)
             {
-                auto glyphs = doc::text::glyph::parse((char*)(c));
+                auto glyphs = aux::unicode::array((char*)(c));
 
                 if (glyphs.size() == 1) symbols.emplace(glyphs.front(), s);
             }
@@ -56,7 +56,7 @@ namespace doc::ae
 
         str s;
 
-        for (auto glyph : doc::text::glyph::parse(name))
+        for (auto glyph : aux::unicode::glyphs(name))
         {
             if (not glyph.letter() and
                 not glyph.digit())

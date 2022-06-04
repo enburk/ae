@@ -1,9 +1,0 @@
-#pragma once
-#include "../../auxs/sys_ui.h"
-#include "../../auxs/sys_aux.h"
-#include "../../auxs/gui_widget.h"
-#include "../../auxs/gui_widget_canvas.h"
-#include "../../auxs/gui_widget_console.h"
-#include "../../auxs/gui_widget_button.h"
-#include "../../auxs/gui_widget_text_editor.h"
-#include "../../auxs/gui_widget_text_editline.h"

@@ -1,55 +1,52 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="doc_ae">
-      <UniqueIdentifier>{1b08c17e-5616-4df6-87b2-2bffc92490e6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="app">
       <UniqueIdentifier>{85013704-7325-4295-a14e-dbaef100f960}</UniqueIdentifier>
     </Filter>
-    <Filter Include="doc_cpp">
-      <UniqueIdentifier>{19c8af0b-a90f-4339-9d11-4784789d81d8}</UniqueIdentifier>
+    <Filter Include="doc">
+      <UniqueIdentifier>{1b08c17e-5616-4df6-87b2-2bffc92490e6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="proto-studio\doc_ae_lexica.h">
-      <Filter>doc_ae</Filter>
+      <Filter>doc</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\doc_ae_model.h">
-      <Filter>doc_ae</Filter>
+      <Filter>doc</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\doc_ae_syntax.h">
-      <Filter>doc_ae</Filter>
+      <Filter>doc</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\doc_ae_syntax_parser.h">
-      <Filter>doc_ae</Filter>
+      <Filter>doc</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\doc_ae_syntax_reader.h">
-      <Filter>doc_ae</Filter>
+      <Filter>doc</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\doc_ae_syntax_schema.h">
-      <Filter>doc_ae</Filter>
+      <Filter>doc</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\doc_ae_syntax_scopes.h">
-      <Filter>doc_ae</Filter>
+      <Filter>doc</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\doc_ae_synthesis.h">
-      <Filter>doc_ae</Filter>
+      <Filter>doc</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\doc_ae_translator.h">
-      <Filter>doc_ae</Filter>
+      <Filter>doc</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\doc_ae_syntax_analysis.h">
-      <Filter>doc_ae</Filter>
+      <Filter>doc</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\doc_ae_syntax_visitor.h">
-      <Filter>doc_ae</Filter>
+      <Filter>doc</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\doc_ae_transtr.h">
-      <Filter>doc_ae</Filter>
+      <Filter>doc</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\doc_ae_syntax_dependencies.h">
-      <Filter>doc_ae</Filter>
+      <Filter>doc</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\app_ide.h">
       <Filter>app</Filter>
@@ -69,27 +66,18 @@
     <ClInclude Include="proto-studio\app_ide_flist.h">
       <Filter>app</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\doc_cpp_lexica.h">
-      <Filter>doc_cpp</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc_cpp_model.h">
-      <Filter>doc_cpp</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc_cpp_syntax.h">
-      <Filter>doc_cpp</Filter>
-    </ClInclude>
-    <ClInclude Include="proto-studio\doc_cpp_syntax_preprocessor.h">
-      <Filter>doc_cpp</Filter>
-    </ClInclude>
     <ClInclude Include="proto-studio\doc_ae_syntax_expressions.h">
-      <Filter>doc_ae</Filter>
+      <Filter>doc</Filter>
     </ClInclude>
     <ClInclude Include="proto-studio\doc_ae_syntax_typing.h">
-      <Filter>doc_ae</Filter>
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\abc.h">
+      <Filter>app</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="proto-studio\!main.cpp">
+    <ClCompile Include="proto-studio\app.cpp">
       <Filter>app</Filter>
     </ClCompile>
   </ItemGroup>

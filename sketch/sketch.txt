@@ -1,3 +1,8 @@
+widget: type
+  visibility: real[0,1] = 1
+  visible = visibility > 0
+;; optimized to bool or uint8_t
+
 a = "abc"
 a = ["a", "b", "c"]
 
@@ -798,3 +803,4 @@ size.x ?= 1.5;
 size.x = size.x ? 1.5;
 XY xy = size; xy.x ?= 1.5; size = xy;
 
+Cyrillic and Greek chars has different colors from Latin
