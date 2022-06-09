@@ -10,50 +10,46 @@ namespace doc::ae
     {
         using base = doc::text::model;
 
-        syntax::analysis::data syntax;
+        ~model() { syntax::analysis::repo.erase(path); }
 
-        ~model() { syntax::analysis::remove(path); }
+        auto& syntax () { return syntax::analysis::repo[path]; }
 
         void tokenize () override
         {
-            syntax::analysis::abort(path);
+            syntax().abort();
             tokens = lexica::parse(*this);
-            syntax::analysis::start(path, syntax, tokens);
+            syntax().tokens = &tokens;
+            syntax().path = path;
+            syntax().start();
         }
 
-        void prereanalyze () override
-        {
-            syntax::analysis::prereanalize(path);
-        }
-
-        void reanalyze () override
-        {
-            syntax::analysis::reanalize(path);
-        }
-
+        bool ready () override { return syntax().ready(); }
+        void preanalize () override { syntax().preanalyze(); }
+        void analyze () override { syntax().analyze(); }
         void tick () override
         {
-            if (syntax::analysis::tick(path) ==
-                syntax::analysis::state::depend)
-            {
-                for (auto [name, path] : syntax.dependees)
-                    doc::text::repo::load<model>
-                        (path)->reanalyze();
+            if (
+            syntax().status == syntax::analysis::state::depend) {
+            syntax().status =  syntax::analysis::state::ready;
 
-                syntax::analysis::resume(path);
-            }
+                for (auto [name, path]: syntax().dependencies.dependees)
+                {
+                    doc::text::repo::load<model>(path)->analyze();
+                    if (not syntax::analysis::repo[path].log1.errors.empty()) return;
+                    syntax().scopes.outscope.emplace(std::pair{name,
+                        &syntax::analysis::repo[path].scope});
+                }
+
+            syntax().status = syntax::analysis::state::resume; }
+            syntax().tick();
         }
 
-        bool ready () override { return
-            syntax::analysis::tick(path) ==
-            syntax::analysis::state::ready;
-        }
-
-        report log () override { // don't ask until it's ready
+        report log () override  // don't ask until it's ready
+        {
             report log;
-            log += syntax.log1;
-            log += syntax.log2;
-            log += syntax.log3;
+            log += syntax().log1;
+            log += syntax().log2;
+            log += syntax().log3;
             return log;
         }
 

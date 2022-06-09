@@ -65,8 +65,10 @@ namespace doc::ae::syntax
         parameters args;
         expression expr;
         namepack type;
-        std::map<namepack, namepack> dependencies;
+        
         scope* scope;
+        std::map<namepack, namepack> dependencies;
+
         str schema;
         str source;
         str kind;

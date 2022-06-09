@@ -11,197 +11,137 @@ namespace doc::ae::syntax::analysis
     using path = std::filesystem::path;
     using time = std::filesystem::file_time_type;
 
+    enum class state { ready, pass1, pass2, pass3, depend, resume };
+
     report events;
-
-    enum class state { ready, running, depend };
-
-    auto now () { return std::chrono::high_resolution_clock::now(); }
-
-    auto ms (auto t) { return std::to_string(gui::time(t).ms); }
 
     struct data
     {
+        path path;
         scope scope;
         scopes scopes;
-        array<token> * tokens;
+        array<token>* tokens;
         array<statement> statements;
-        array<std::pair<str, path>> dependees;
-        array<token*> dependencies;
+        dependencies dependencies;
         report log1, log2, log3;
-        bool passed2 = false;
-        bool passed3 = false;
-        std::atomic<int> running = 0;
-        std::atomic<bool> done = false;
-        std::atomic<bool> stop = false;
-        std::thread thread;
+        sys::thread thread;
+        state status;
         time time;
-        path path;
 
-        void pass1 ()
+        void pass1 () // run after source changes
         {
-            // auto t0 = now();
-
             log1.clear();
-            statements =
-                schema(
-                parser(*tokens
-                , log1, stop).output
-                , log1, stop).output
-                ;
-            scope = decltype(scope)(
-                statements,
-                log1);
-            dependencies =
-            dependencies::collect(statements);
-            done = true;
-
-            // auto t1 = now(); log1.debug("pass1 " + ms(t1-t0) + " ms");
-        }
-
-        void pass2 ()
-        {
-            // auto t0 = now();
-
             log2.clear();
-            dependees =
-            dependencies::resolve(
-                path.parent_path(),
-                dependencies, log2);
-            done = true;
-
-            // auto t1 = now(); log2.debug("pass2 " + ms(t1-t0) + " ms");
-        }
-
-        void pass3 ()
-        {
-            // auto t0 = now();
-
             log3.clear();
-            typing::parse(statements, scopes, log3);
-            done = true;
+            status = state::pass1;
+            thread = [this](auto& cancel)
+            {
+                statements =
+                    schema(
+                    parser(*tokens
+                    , log1, cancel).output
+                    , log1, cancel).output
+                    ;
+                scope = decltype(scope)(log1, statements);
 
-            // auto t1 = now(); log3.debug("pass3 " + ms(t1-t0) + " ms");
+                dependencies.collect(statements);
+            };
         }
 
-        void run1 ()
+        void pass2 () // run after filesystem changes
         {
-            //events.debug("pass1 " + path.string());
-            stop = false; done = false; running = 1;
-            thread = std::thread([this]{ pass1(); });
-        }
-        void run2 ()
-        {
-            if (passed2) return; passed2 = true;
-            //events.debug("pass2 " + path.string());
-            stop = false; done = false; running = 2;
-            thread = std::thread([this]{ pass2(); });
-        }
-        void run3 ()
-        {
-            if (passed3) return; passed3 = true;
-            //events.debug("pass3 " + path.string());
-            stop = false; done = false; running = 3;
-            thread = std::thread([this]{ pass3(); });
+            log2.clear();
+            log3.clear();
+            status = state::pass2;
+            thread = [this](auto& cancel)
+            {
+                dependencies.resolve(path, log2);
+            };
         }
 
-        state tick ()
+        void pass3 () // run when dependencies scopes are ready
         {
-            if (running == 0) return state::ready;
-            if (not done) return state::running;
-            else thread.join();
+            log3.clear();
+            status = state::pass3;
+            thread = [this](auto& cancel)
+            {
+                typing::parse(statements, scopes, log3);
+            };
+        }
 
-            if (running == 1) {
-                running =  0;
-                passed2 = false;
-                passed3 = false; run2();
-                return state::running;
-            }
-            if (running == 2) {
-                running =  0;
-                return state::depend;
-            }
-            if (running == 3) { 
-                running =  0;
-                time = time::clock::now();
-                return state::ready;
-            }
+        void tick ()
+        {
+            try {
+            switch(status){ default:
+            break; case state::ready:
+            break; case state::pass1:
 
-            throw std::logic_error
-            ("nonsense");
+                if (thread.done) {
+                    thread.join();
+                    thread.check();
+                    if (not log1.errors.empty()) 
+                    status = state::ready;
+                    else pass2(); }
+
+            break; case state::pass2:
+
+                if (thread.done) {
+                    thread.join();
+                    thread.check();
+                    if (not log2.errors.empty()) 
+                    status = state::ready; else
+                    status = state::depend; }
+
+            break; case state::resume:
+
+                pass3();
+
+            break; case state::pass3:
+
+                if (thread.done) {
+                    thread.join();
+                    thread.check();
+                    status = state::ready;
+                }
+            }}
+            catch (std::exception const& e) {
+            events.error(e.what()); }
+        }
+
+        void abort ()
+        {
+            timing t0;
+            status = state::ready;
+            thread.stop = true;
+            thread.join();
+            thread.check();
+            timing t1;
+            if (t1-t0 > 25ms) events.debug(
+            "syntax::analysis::data::abort "
+            "took " + aux::ms(t1-t0) + " ms");
+        }
+
+        bool ready () { return status == state::ready; }
+
+        void start () { pass1(); }
+
+        void preanalyze () {}
+
+        void analyze ()
+        {
+            if (status == state::pass1) return;
+            if (status == state::pass2
+            or  status == state::pass3) {
+                thread.join();
+                thread.check(); }
+            pass2();
         }
     };
 
-    std::map<path, data*> datae;
+    std::unordered_map<path, data> repo;
 
-    void start (path path, data & data, array<token> & tokens)
-    {
-        datae[path] = &data;
-        data.tokens = &tokens;
-        data.path = path;
-        data.run1();
-    }
+            //events.debug("pass1 " + path.string());
+            // auto t1 = now(); log3.debug("pass3 " + ms(t1-t0) + " ms");
 
-    void abort (path path)
-    {
-        auto data = datae[path];
-        if (not data) return;
-        data->stop = true;
-        data->running = 0;
-        auto t0 = now();
-        if (data->thread.joinable())
-            data->thread.join();
-        auto t1 = now(); if (gui::time(t1-t0).ms > 25)
-        events.debug("syntax::analysis::abort took "
-        + ms(t1-t0) + " ms");
-    }
-
-    void prereanalize (path path)
-    {
-        auto data = datae[path];
-        if (not data) return;
-        data->passed2 = false;
-        data->passed3 = false;
-        if (data->running == 2 or
-            data->running == 3)
-            abort(path);
-    }
-
-    void reanalize (path path)
-    {
-        auto data = datae[path];
-        if (not data) return;
-        if (data->running != 0) return;
-        data->run2();
-    }
-
-    auto tick (path path)
-    {
-        auto data = datae[path];
-        if (not data) return state::ready;
-        return data->tick();
-    }
-
-    void resume (path path)
-    {
-        auto data = datae[path];
-        auto core = datae[std::filesystem::
-            current_path() / "library" / "core.ae"];
-
-        static scope coreless;
-        auto & scopes = data->scopes;
-        scopes.core = core ? &core->scope : &coreless;
-        scopes.scope = &data->scope;
-
-        for (auto [name, path] : data->dependees)
-            scopes.outscope.emplace(std::pair{
-                name, &datae[path]->scope});
-
-        data->run3();
-    }
-
-    void remove (path path)
-    {
-        datae.erase(path);
-    }
 }
 

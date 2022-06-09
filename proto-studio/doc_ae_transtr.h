@@ -80,7 +80,7 @@ namespace doc::ae
         return s;
     }
 
-    str print (const expression & e)
+    str print (expression const& e)
     {
         str s;
 
@@ -92,7 +92,7 @@ namespace doc::ae
             [&](operands v) {
 
                 if (v.list.empty()) return;
-                for (auto & o : v.list)
+                for (auto& o : v.list)
                 s += print(o) + " ";
                 s.truncate();
             },

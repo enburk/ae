@@ -10,7 +10,7 @@ namespace doc::ae::syntax
 
         scope* scope = nullptr;
 
-        void pass (array<statement> & statements)
+        void pass (array<statement>& statements)
         {
             for (auto & st : statements)
             {
@@ -30,17 +30,17 @@ namespace doc::ae::syntax
             }
         }
 
-        void pass (namepack & n)
+        void pass (namepack& n)
         {
             on_namepack(n);
 
-            for (auto & name : n.names)
-                for (auto & arg : name.args)
-                    for (auto & expr : arg.list)
-                        pass(expr);
+            for (auto& name: n.names)
+            for (auto& arg: name.args)
+            for (auto& expr: arg.list)
+            pass(expr);
         }
 
-        void pass (expression & e)
+        void pass (expression& e)
         {
             e.scope = scope;
 
@@ -50,8 +50,8 @@ namespace doc::ae::syntax
             {
                 [&](terminal & v) {},
                 [&](namepack & v) { pass(v); },
-                [&](brackets & v) { for (auto & o : v.list) pass(o); },
-                [&](operands & v) { for (auto & o : v.list) pass(o); },
+                [&](brackets & v) { for (auto& o: v.list) pass(o); },
+                [&](operands & v) { for (auto& o: v.list) pass(o); },
             },
             e.variant);
         }

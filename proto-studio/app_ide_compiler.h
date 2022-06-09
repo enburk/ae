@@ -8,14 +8,14 @@ namespace ide::compiler
 {
     using std::filesystem::path;
 
-    auto ext = [](path src, std::string ext){
+    auto ext (path src, std::string ext){
         src.replace_extension(
         src.extension().string() + ext);
-        return src;
-    };
-    auto cpp = [](path src){ return ext(src, ".cpp"); };
-    auto obj = [](path src){ return ext(src, ".obj"); };
-    auto exe = [](path src){ return ext(src, ".exe"); };
+        return src; }
+
+    auto cpp (path src){ return ext(src, ".cpp"); }
+    auto obj (path src){ return ext(src, ".obj"); }
+    auto exe (path src){ return ext(src, ".exe"); }
 
     str load (path path)
     {
@@ -27,11 +27,11 @@ namespace ide::compiler
         return text;
     }
 
-    bool translate (path src, gui::console & console)
+    bool translate (path src, gui::console& console)
     {
         console.clear();
-        auto & analysis =
-        *doc::ae::syntax::analysis::datae[src];
+        auto& analysis =
+        doc::ae::syntax::analysis::repo[src];
 
         if (std::filesystem::exists(cpp(src)) and
             std::filesystem::last_write_time(cpp(src)) >
@@ -47,7 +47,7 @@ namespace ide::compiler
         return true;
     }
 
-    bool compile (path src, gui::console & console)
+    bool compile (path src, gui::console& console)
     {
         console << "Build...";
 
@@ -75,12 +75,9 @@ namespace ide::compiler
 
         path cl = vc / "bin\\Hostx64\\x64\\cl.exe";
 
-        if (!std::filesystem::exists(cl)) {
-            console << "<font color=#B00020>"
-                "C++ compiler not found"
-                "</font>";
-            return false;
-        }
+        if (not std::filesystem::exists(cl)) {
+            console << red("C++ compiler not found");
+            return false; }
 
         std::filesystem::create_directories(".astudio");
 
@@ -90,9 +87,11 @@ namespace ide::compiler
 
         try
         {
+            str ext = src.extension().string();
+
             str flags = "/std:c++latest"; flags +=
-            src.extension() == ".ae!"  ? " /D \"SUBSYSTEM_CONSOLE\"" :
-            src.extension() == ".ae!!" ? " /D \"SUBSYSTEM_WINDOWS\"" : "";
+            ext == ".ae!"  ? " /D \"SUBSYSTEM_CONSOLE\"" :
+            ext == ".ae!!" ? " /D \"SUBSYSTEM_WINDOWS\"" : "";
             flags += " /EHsc /Fo\".astudio/\"";
             flags += " /I\"" + (vc/"include").string() + "\"";
             flags += " /I\"" + (sdk_include/"um").string() + "\"";
@@ -100,16 +99,19 @@ namespace ide::compiler
             flags += " /I\"" + (sdk_include/"shared").string() + "\"";
             flags += " /TP"; // treat all sources as c++
             //flags += " /O2";
+
             str links = "/link"; links += 
-            src.extension() == ".ae!"  ? " /SUBSYSTEM:CONSOLE" :
-            src.extension() == ".ae!!" ? " /SUBSYSTEM:WINDOWS /entry:mainCRTStartup" : "";
+            ext == ".ae!"  ? " /SUBSYSTEM:CONSOLE" :
+            ext == ".ae!!" ? " /SUBSYSTEM:WINDOWS /entry:mainCRTStartup" : "";
             links += " /LIBPATH:\"" + (vc/"lib/x64").string() + "\"";
             links += " /LIBPATH:\"" + (sdk_lib/"um/x64").string() + "\"";
             links += " /LIBPATH:\"" + (sdk_lib/"ucrt/x64").string() + "\"";
             links += " /OUT:\"" + exe(src).string() + "\"";
             links += " /ManifestFile:\".astudio/app.exe.intermediate.manifest\"";
-            links += " kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib";
-            links += " shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib";// odbccp32.lib";
+            links += " kernel32.lib user32.lib gdi32.lib winspool.lib";
+            links += " comdlg32.lib advapi32.lib shell32.lib";
+            links += " ole32.lib oleaut32.lib uuid.lib";
+            links += " odbc32.lib";// odbccp32.lib";
 
             str sources = "\"" + cpp(src).string() + "\"";
             sys::process compile(cl, flags + " " + sources + " " + links,
@@ -118,10 +120,8 @@ namespace ide::compiler
                 "Compilation takes too long.");
         }
         catch (const std::exception & e) {
-            console << "<font color=#B00020>"
-            + str(e.what()) + "</font>";
-            return false;
-        }
+            console << red(str(e.what()));
+            return false; }
 
         // "fatal error LNK1104:"
 
@@ -129,10 +129,8 @@ namespace ide::compiler
             sss.contains("error:") or sss.contains("warning:") or
             sss.contains("error ") or sss.contains("warning "))
         {
-            for (str s : sss.split_by("\n")) {
-                console << "<font color=#B00020>"
-                + doc::html::encoded(s)
-                + "</font>"; if (s != "")
+            for (str s: sss.split_by("\n")) {
+                console << red(doc::html::encoded(s)); if (s != "")
                 console << "<br>";
             }
             return false;
@@ -143,7 +141,7 @@ namespace ide::compiler
         return true;
     }
 
-    void run (path src, gui::console & console)
+    void run (path src, gui::console& console, auto& cancel)
     {
         if (not compile(src, console)) return;
         try
@@ -153,12 +151,9 @@ namespace ide::compiler
             sys::process::options{});
             console << "Done.";
         }
-        catch (const std::exception & e) {
-            console << "<font color=#B00020>"
-            + doc::html::encoded(e.what())
-            + "</font>";
-            return;
-        }
+        catch (std::exception const& e) {
+            console << red(doc::html::
+                encoded(e.what())); }
     }
 }
 

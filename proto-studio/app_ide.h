@@ -1,9 +1,10 @@
 #pragma once
-#include "../../auxs/test.h"
+#include "abc.h"
 #include "app_ide_compiler.h"
 #include "app_ide_console.h"
 #include "app_ide_editor.h"
 #include "app_ide_flist.h"
+#include "../../auxs/test.h"
 using namespace std::literals::chrono_literals;
 
 struct IDE : gui::widget<IDE>
@@ -24,7 +25,7 @@ struct IDE : gui::widget<IDE>
     Console& console = console_area.object;
     gui::area<Test> test_area; // very last
 
-    std::thread thread;
+    sys::thread thread;
     gui::property<gui::time> timer;
     sys::directory_watcher watcher;
     std::atomic<bool> reload = false;
@@ -50,9 +51,9 @@ struct IDE : gui::widget<IDE>
             if (s.contains("\\.astudio\\")) return;
             if (s.contains("\\.vstudio\\")) return;
             if (s.contains("\\enc_temp_folder\\")) return;
-            if (s.ends_with(".ae!.cpp") || s.ends_with(".ae!!.cpp")) return;
-            if (s.ends_with(".ae!.obj") || s.ends_with(".ae!!.obj")) return;
-            if (s.ends_with(".ae!.exe") || s.ends_with(".ae!!.exe")) return;
+            if (s.ends_with(".ae!.cpp") or s.ends_with(".ae!!.cpp")) return;
+            if (s.ends_with(".ae!.obj") or s.ends_with(".ae!!.obj")) return;
+            if (s.ends_with(".ae!.exe") or s.ends_with(".ae!!.exe")) return;
             if (s.ends_with("cl.log.txt")) return;
             console.events << "<font color=#9E9E9E>"
             + path.string() + " " + what + "</font>";
@@ -67,8 +68,6 @@ struct IDE : gui::widget<IDE>
     {
         watcher.cancel();
         doc::text::repo::save();
-        if (thread.joinable())
-            thread.join();
     }
 
     void on_change (void* what) override
@@ -95,7 +94,7 @@ struct IDE : gui::widget<IDE>
             }
 
             if ((gui::time::now - edittime) > 0s) {
-                auto & report = doc::text::repo::report;
+                auto& report = doc::text::repo::report;
                 if (report.errors.size() > 0) edittime = gui::time::now;
                 if (report.messages.size() > 0) {
                     console.activate(&console.events);
@@ -105,7 +104,7 @@ struct IDE : gui::widget<IDE>
             }
             
             if ((gui::time::now - edittime) > 10s) {
-                auto & report = doc::ae::syntax::analysis::events;
+                auto& report = doc::ae::syntax::analysis::events;
                 if (report.messages.size() > 0) {
                     console.events << report();
                     report.clear();
@@ -228,29 +227,27 @@ struct IDE : gui::widget<IDE>
                 console.output))
                 return;
 
-            if (thread.joinable())
-                thread.join();
-
-            thread = std::thread([this]()
+            thread = [this](auto& cancel)
             {
                 ide::compiler::run(
-                    editor.path.now,
-                    console.output);
-            });
+                editor.path.now,
+                console.output,
+                cancel);
+            };
         }
 
         if (what == &splitter_editor_l) {
             sys::settings::save(
             "splitter.editor.l.permyriad",
              splitter_editor_l.middle
-            * 100'00 / coord.now.w);
+            *100'00 / coord.now.w);
             on_change(&coord);
         }
         if (what == &splitter_editor_r) {
             sys::settings::save(
             "splitter.editor.r.permyriad",
              splitter_editor_r.middle
-            * 100'00 / coord.now.w);
+            *100'00 / coord.now.w);
             on_change(&coord);
         }
     }

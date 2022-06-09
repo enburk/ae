@@ -114,11 +114,7 @@ struct Editor : gui::widget<Editor>
         if (model and
             model->ready()) { log =
             model->log();
-            //auto t0 = doc::ae::syntax::analysis::now();
             editor.update_colors = true;
-            //auto t1 = doc::ae::syntax::analysis::now();
-            //auto ms = doc::ae::syntax::analysis::ms(t1-t0);
-            //doc::ae::syntax::analysis::events.debug("syntax_ready " + ms + " ms");
             return true;
         }
 

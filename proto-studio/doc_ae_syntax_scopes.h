@@ -16,40 +16,42 @@ namespace doc::ae::syntax
             parameters args;
             namepack type;
         };
-        std::multimap<str, member> members;
+        std::multimap
+        <str, member>
+            members;
 
         scope () = default;
         scope
         (
-            array<statement>& input, report& log,
+            report& log,
+            array<statement>& body,
             parameters args = {},
             scope* outer = nullptr
         ) : outer (outer)
         {
-            for (auto & arg : args.list) if (arg.name)
+            for (auto& arg: args.list) if (arg.name)
             {
                 if (members.contains(arg.name->text))
                     log.error(arg.name, "parameter " +
-                        arg.name->text + " already exists");
+                        arg.name->text +
+                        " already exists");
                 else
-                    members.emplace(
-                        arg.name->text, member{
-                        arg.name->text, "variable", {},
-                        arg.type});
+                members.emplace(
+                arg.name->text, member{
+                arg.name->text, "variable", {},
+                arg.type});
             }
 
-            for (auto & statement : input)
+            for (auto& statement: body)
             {
                 statement.scope = this;
 
-                if (statement.name)
-                
-                    members.emplace(
-                        statement.name->text, member{
-                        statement.name->text,
-                        statement.kind,
-                        statement.args,
-                        statement.type});
+                if (statement.name) members.emplace(
+                    statement.name->text, member{
+                    statement.name->text,
+                    statement.kind,
+                    statement.args,
+                    statement.type});
 
                 if (statement.name and
                    (statement.kind == "type" or
@@ -61,17 +63,17 @@ namespace doc::ae::syntax
                             " already defined");
                     else
                     named.emplace(
-                        statement.name->text, scope{
-                        statement.body, log,
-                        statement.args,
-                        this});
+                    statement.name->text, scope{log,
+                    statement.body,
+                    statement.args,
+                    this});
                 }
                 else
                 {
-                    unnamed.emplace_back( scope{
-                        statement.body, log,
-                        statement.args,
-                        this});
+                    unnamed.emplace_back( scope{log,
+                    statement.body,
+                    statement.args,
+                    this});
                 }
             }
         }
