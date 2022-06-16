@@ -64,8 +64,8 @@ namespace doc::ae::lexica
 
                     t = token {c, "", "", range{
                         {n, offset},
-                        {n, offset}}
-                    };
+                        {n, offset}}};
+
                     t.kind =
                         alpha (c) ? "name" :
                         digit (c) ? "number" :
@@ -78,12 +78,14 @@ namespace doc::ae::lexica
 
             if (t.text != "") tokens += t;
 
-            tokens += token {"\n", "", "", range{
-                {n, line.size()},
-                {n, line.size()}}
-            };
+            if (n != text.lines.size()-1)
+            {
+                tokens += token {"\n", "", "", range{
+                    {n, line.size()},
+                    {n, line.size()}}};
 
-            t = token{};
+                t = token{};
+            }
         }
 
         return tokens;

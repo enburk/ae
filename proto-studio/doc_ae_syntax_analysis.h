@@ -19,11 +19,12 @@ namespace doc::ae::syntax::analysis
     {
         path path;
         scope scope;
-        scopes scopes;
-        array<token>* tokens;
+        array<token>* tokens = nullptr;
         array<statement> statements;
         dependencies dependencies;
-        report log1, log2, log3;
+        report log1; str ms1 = "0";
+        report log2; str ms2 = "0";
+        report log3; str ms3 = "0";
         sys::thread thread;
         state status;
         time time;
@@ -44,7 +45,7 @@ namespace doc::ae::syntax::analysis
                     ;
                 scope = decltype(scope)(log1, statements);
 
-                dependencies.collect(statements);
+                dependencies.collect(statements, cancel);
             };
         }
 
@@ -55,7 +56,7 @@ namespace doc::ae::syntax::analysis
             status = state::pass2;
             thread = [this](auto& cancel)
             {
-                dependencies.resolve(path, log2);
+                dependencies.resolve(path, log2, cancel);
             };
         }
 
@@ -65,7 +66,7 @@ namespace doc::ae::syntax::analysis
             status = state::pass3;
             thread = [this](auto& cancel)
             {
-                typing::parse(statements, scopes, log3);
+                typing::parse(statements, scope, log3);
             };
         }
 
@@ -79,6 +80,7 @@ namespace doc::ae::syntax::analysis
                 if (thread.done) {
                     thread.join();
                     thread.check();
+                    ms1 = aux::ms(thread.duration);
                     if (not log1.errors.empty()) 
                     status = state::ready;
                     else pass2(); }
@@ -88,6 +90,7 @@ namespace doc::ae::syntax::analysis
                 if (thread.done) {
                     thread.join();
                     thread.check();
+                    ms2 = aux::ms(thread.duration);
                     if (not log2.errors.empty()) 
                     status = state::ready; else
                     status = state::depend; }
@@ -101,11 +104,14 @@ namespace doc::ae::syntax::analysis
                 if (thread.done) {
                     thread.join();
                     thread.check();
+                    ms3 = aux::ms(thread.duration);
                     status = state::ready;
                 }
             }}
             catch (std::exception const& e) {
-            events.error(e.what()); }
+                events.error(e.what());
+                status = state::ready;
+            }
         }
 
         void abort ()
@@ -125,23 +131,44 @@ namespace doc::ae::syntax::analysis
 
         void start () { pass1(); }
 
-        void preanalyze () {}
-
-        void analyze ()
+        void reanalyze ()
         {
-            if (status == state::pass1) return;
-            if (status == state::pass2
-            or  status == state::pass3) {
-                thread.join();
-                thread.check(); }
-            pass2();
+            if (status != state::pass1)
+            {
+                abort();
+                pass2();
+            }
         }
     };
 
     std::unordered_map<path, data> repo;
 
-            //events.debug("pass1 " + path.string());
-            // auto t1 = now(); log3.debug("pass3 " + ms(t1-t0) + " ms");
+    void tick (path path)
+    {
+        auto& data = repo[path];
+        if (data.status != state::resume) {
+            data.tick();
+            return; }
 
+        for (auto [dname, dpath]: data.dependencies.dependees)
+        {
+            auto& dependee = repo[dpath];
+            if (not dependee.ready()) return;
+            if (not dependee.log1.errors.empty()
+            or  not dependee.log2.errors.empty()
+            or  not dependee.log3.errors.empty()) {
+            data.status = state::ready;
+            return; }
+        }
+
+        for (auto [dname, dpath]: data.dependencies.dependees)
+        {
+            auto& dependee = repo[dpath];
+            data.scope.outscopes.emplace(
+                dname, &dependee.scope);
+        }
+
+        data.pass3();
+    }
 }
 

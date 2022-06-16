@@ -76,7 +76,7 @@ struct Editor : gui::widget<Editor>
             ||  ext == ".c++" || ext == ".h++"  || ext == ".h" ) ext = "cpp"; else
             if (ext == ".ae!" || ext == ".ae!!" || ext == ".ae") ext = "ae";
 
-            editor.model = model = 
+            editor.model = model =
             ext == "ae" ? doc::text::repo::load<doc::ae::model>(path.now):
             ext == "cpp"? doc::text::repo::load<doc::cpp::model>(path.now):
                           doc::text::repo::load<doc::text::model>(path.now);

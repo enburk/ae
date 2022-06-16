@@ -66,7 +66,7 @@ namespace doc::ae::syntax
         expression expr;
         namepack type;
         
-        scope* scope;
+        scope* scope = nullptr;
         std::map<namepack, namepack> dependencies;
 
         str schema;

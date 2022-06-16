@@ -134,12 +134,12 @@ namespace doc::ae::syntax
             {
                 if (stop) break;
 
-                array<cluster>* body = &output;
+                auto body = &output;
 
                 while (true)
                 {
                     if (stop) break;
-                    if (body->rbegin() != body->rend() &&
+                    if (body->rbegin() != body->rend() and
                         body->rbegin()->tab < line.tab) { body = &
                         body->rbegin()->clusters;
                         continue;

@@ -9,6 +9,7 @@ namespace doc::ae::syntax
         scope* outer = nullptr;
         std::list<scope> unnamed;
         std::map<str, scope> named;
+        std::map<str, scope*> outscopes;
 
         struct member
         {
@@ -171,10 +172,6 @@ namespace doc::ae::syntax
         */
     };
 
-    struct scopes
-    {
-        std::multimap<str, scope*> outscope; scope* core; scope* scope;
-    };
 
 
 

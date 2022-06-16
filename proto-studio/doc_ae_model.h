@@ -23,33 +23,40 @@ namespace doc::ae
             syntax().start();
         }
 
+        void reanalyze () override { syntax().reanalyze(); }
         bool ready () override { return syntax().ready(); }
-        void preanalize () override { syntax().preanalyze(); }
-        void analyze () override { syntax().analyze(); }
         void tick () override
         {
-            if (
-            syntax().status == syntax::analysis::state::depend) {
-            syntax().status =  syntax::analysis::state::ready;
+            if (syntax().status == syntax::analysis::state::depend) {
+                syntax().status =  syntax::analysis::state::resume;
 
-                for (auto [name, path]: syntax().dependencies.dependees)
-                {
-                    doc::text::repo::load<model>(path)->analyze();
-                    if (not syntax::analysis::repo[path].log1.errors.empty()) return;
-                    syntax().scopes.outscope.emplace(std::pair{name,
-                        &syntax::analysis::repo[path].scope});
-                }
-
-            syntax().status = syntax::analysis::state::resume; }
-            syntax().tick();
+                for (auto [name, path]:
+                syntax().dependencies.dependees)
+                doc::text::repo::load<model>(path);
+            }
+            syntax::analysis::tick(path);
         }
 
         report log () override  // don't ask until it's ready
         {
             report log;
+            log.path = path.string();
+            log.trace (path.string()
+                + light(italic(
+                " " + syntax().ms1 +
+                "+" + syntax().ms2 +
+                "+" + syntax().ms3 +
+                " ms")));
             log += syntax().log1;
             log += syntax().log2;
             log += syntax().log3;
+            log.trace("");
+            for (auto [name, path]:
+            syntax().dependencies.dependees) if (auto
+            it  = doc::text::repo::map.find(path);
+            it != doc::text::repo::map.end() and
+            it->second.model->ready()) log +=
+            it->second.model->log();
             return log;
         }
 

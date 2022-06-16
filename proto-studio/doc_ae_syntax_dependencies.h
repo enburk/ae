@@ -17,7 +17,7 @@ namespace doc::ae::syntax
         std::map<str, path>
             dependees;
 
-        void collect (array<statement>& statements)
+        void collect (array<statement>& statements, auto& cancel)
         {
             precedents.clear();
 
@@ -41,7 +41,7 @@ namespace doc::ae::syntax
             visitor.pass(statements);
         }
 
-        void resolve (path p, report& log)
+        void resolve (path p, report& log, auto& cancel)
         {
             dependees.clear();
             unresolved = precedents;
@@ -50,9 +50,9 @@ namespace doc::ae::syntax
             dir.replace_extension("");
             if (exists(dir) and
             is_directory(dir))
-            resolve_in(dir); else
-            resolve_in(p.parent_path());
-            resolve_in(current_path()/"library");
+            resolve_in(cancel, dir); else
+            resolve_in(cancel, p.parent_path());
+            resolve_in(cancel, current_path()/"library");
 
             for (auto token: unresolved)
             log.error(token, "module ::"
@@ -66,7 +66,7 @@ namespace doc::ae::syntax
                 + p.string());
         }
 
-        void resolve_in (path dir)
+        void resolve_in (auto& cancel, path dir)
         {
             if (unresolved.empty()) return;
 
@@ -75,11 +75,13 @@ namespace doc::ae::syntax
             for (directory_iterator
             next(dir), end; next != end; ++next)
             {
+                if (cancel) return;
+
                 auto p = next->path();
-                if (is_regular_file(p)
-                and p.extension()==".ae")
+                if (p.extension()==".ae"
+                and is_regular_file(p)) // can throw
                 {
-                    str name = p.filename().string();
+                    str name = p.stem().string();
                     auto it = unresolved.find_if([name]
                     (auto t){ return t->text == name; });
                     if (it == unresolved.end()) continue;
@@ -91,7 +93,8 @@ namespace doc::ae::syntax
             }
 
             if (dir.has_relative_path())
-            resolve_in(dir.parent_path());
+                resolve_in(cancel,
+                dir.parent_path());
         }
     };
 }

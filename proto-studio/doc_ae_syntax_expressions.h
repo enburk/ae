@@ -2,7 +2,7 @@
 #include "doc_ae_syntax_scopes.h"
 namespace doc::ae::syntax::expressions
 {
-    void parse (expression& e, scopes& scopes, report& log)
+    void parse (expression& e, scope& scope, report& log)
     {
         std::visit(overloaded
         {
