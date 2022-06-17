@@ -48,20 +48,19 @@ struct IDE : gui::widget<IDE>
         {
             str s = path.string();
             if (s.contains("\\.vs\\")) return;
-            if (s.contains("\\.astudio\\")) return;
-            if (s.contains("\\.vstudio\\")) return;
+            if (s.contains("\\.astudio")) return;
+            if (s.contains("\\.vstudio")) return;
             if (s.contains("\\enc_temp_folder\\")) return;
             if (s.ends_with(".ae!.cpp") or s.ends_with(".ae!!.cpp")) return;
             if (s.ends_with(".ae!.obj") or s.ends_with(".ae!!.obj")) return;
             if (s.ends_with(".ae!.exe") or s.ends_with(".ae!!.exe")) return;
             if (s.ends_with("cl.log.txt")) return;
-            console.events << "<font color=#9E9E9E>"
-            + path.string() + " " + what + "</font>";
+            if (what.ends_with("modified") and std::filesystem::is_directory(path)) return;
+            console.events << light(path.string() + " " + what);
             reload = true;
         };
         watcher.error = [this](aux::error error){
-        console.events << "<font color=#B00020>"
-       "watcher error: " + error + "</font>"; };
+        console.events << red("watcher error: " + error); };
         watcher.watch();
     }
     ~IDE()
@@ -80,6 +79,7 @@ struct IDE : gui::widget<IDE>
         {
             if (reload) {
                 reload = false;
+                console.events << "Reload...";
                 flist.reload();
                 editor.flist.reload(); // before repo delete something
                 doc::text::repo::reload(); // triggers recompiling
@@ -218,7 +218,7 @@ struct IDE : gui::widget<IDE>
             focus = &editor_area;
         }
 
-        if (what == &button_run)
+        if (what == &button_run) try
         {
             console.activate(&console.output);
 
@@ -235,6 +235,9 @@ struct IDE : gui::widget<IDE>
                 cancel);
             };
         }
+        catch (std::exception const& e) {
+            console.output << red(doc::html::
+                encoded(e.what())); }
 
         if (what == &splitter_editor_l) {
             sys::settings::save(

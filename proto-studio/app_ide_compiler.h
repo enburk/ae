@@ -47,7 +47,7 @@ namespace ide::compiler
         return true;
     }
 
-    bool compile (path src, gui::console& console)
+    bool compile (path src, gui::console& console, auto& cancel)
     {
         console << "Build...";
 
@@ -65,8 +65,8 @@ namespace ide::compiler
             if (next->is_directory())
                 sdk_lib = *next;
 
-        path vc = "c:\\Program Files (x86)"
-            "\\Microsoft Visual Studio\\2019\\Community\\VC"
+        path vc = "c:\\Program Files"
+            "\\Microsoft Visual Studio\\2022\\Community\\VC"
             "\\Tools\\MSVC";//\\14.26.28801";
         for (std::filesystem::directory_iterator next(vc),
             end; next != end; ++next)
@@ -129,10 +129,8 @@ namespace ide::compiler
             sss.contains("error:") or sss.contains("warning:") or
             sss.contains("error ") or sss.contains("warning "))
         {
-            for (str s: sss.split_by("\n")) {
-                console << red(doc::html::encoded(s)); if (s != "")
-                console << "<br>";
-            }
+            for (str s: sss.split_by("\n"))
+            console << red(doc::html::encoded(s));
             return false;
         }
 
@@ -143,9 +141,12 @@ namespace ide::compiler
 
     void run (path src, gui::console& console, auto& cancel)
     {
-        if (not compile(src, console)) return;
         try
         {
+            if (not compile(src,
+                console, cancel))
+                return;
+
             console << "Run...";
             sys::process run(exe(src), "",
             sys::process::options{});
