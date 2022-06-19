@@ -31,7 +31,6 @@ struct edflist : gui::widget<edflist>
                 { return d.path == path; });
                 it != flist.end())
             {
-                selected = it->path;
                 for (auto& d: flist) if (d.ago < it->ago) d.ago++; it->ago = 0;
                 for (auto& button: buttons) button.on = false;
                 buttons((int)(it - flist.begin())).on = true;
@@ -39,7 +38,6 @@ struct edflist : gui::widget<edflist>
             }
             else
             {
-                selected = path;
                 for (auto& d: flist) d.ago++;
                 for (auto& button: buttons) button.on = false;
                 flist += data { path, 0 };
@@ -82,6 +80,8 @@ struct edflist : gui::widget<edflist>
         {
             if (std::filesystem::exists(
             flist[i].path)) { i++; continue; }
+            int ago = flist[i].ago;
+            for (auto& f: flist) if (f.ago > ago) f.ago--;
             flist.erase(flist.begin()+i);
             buttons.erase(i);
         }

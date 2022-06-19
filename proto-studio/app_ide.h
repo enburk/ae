@@ -191,7 +191,7 @@ struct IDE : gui::widget<IDE>
 
             std::string source = console.pressed_file;
             if (source != "" and std::filesystem::exists(source))
-                editor.path = source;
+                flist.selected = source;
 
             editor.editor.go(doc::place{
                 std::stoi(console.pressed_line)-1,

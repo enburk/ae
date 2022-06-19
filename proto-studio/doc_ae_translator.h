@@ -10,7 +10,7 @@ namespace doc::ae::translator
 
         void proceed (const array<statement> & input)
         {
-            for (auto & st : input)
+            for (auto& st: input)
             {
                 str kind = st.kind;
                 str name = print(st.name->text);
@@ -22,12 +22,13 @@ namespace doc::ae::translator
                     str name = print(arg.name->text);
                     str type = print(arg.type);
                     if (type == "") template_ +=
-                        "typename type_" + name + ", ";
+                        "typename type_" +
+                            name + ", ";
                 }
                 template_.truncate();
                 template_.truncate();
-                if (template_ != "") template_ =
-                    "template<" + template_ + "> ";
+                if (template_ != "")
+                    template_ = "template<" + template_ + "> ";
 
                 body += entity{.info = "source: " + st.source};
                 body += entity{.info = "schema: " + st.schema};

@@ -55,8 +55,8 @@ namespace doc::ae
             syntax().dependencies.dependees) if (auto
             it  = doc::text::repo::map.find(path);
             it != doc::text::repo::map.end() and
-            it->second.model->ready()) log +=
-            it->second.model->log();
+            it->second.model->ready()) log.trace(
+            it->second.model->log()());
             return log;
         }
 

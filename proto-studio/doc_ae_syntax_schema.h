@@ -22,8 +22,8 @@ namespace doc::ae::syntax
     {
         array<statement> output;
         array<cluster> && input; report& log; schema(
-        array<cluster> && input, report& log, std::atomic<bool>& stop) :
-        reader(array<element>{}, log, stop),
+        array<cluster> && input, report& log, auto& cancel) :
+        reader(array<element>{}, log, cancel),
         input(std::move(input)), log(log)
         {
             statement s;
@@ -32,7 +32,7 @@ namespace doc::ae::syntax
 
             for (auto && cluster : input) try
             {
-                if (stop) break;
+                if (cancel) break;
 
                 reader::input = deque{std::move(cluster.elements)};
 
@@ -117,18 +117,15 @@ namespace doc::ae::syntax
                 auto replace = [&schema](str what, str with) {
                     if (schema.ends_with(str(" " + what)) or schema == what) {
                         schema.resize(schema.size() - what.size());
-                        schema += with;
-                    }
-                };
+                        schema += with; } };
 
-                replace("name , name", "names");
-                replace("names , name", "names");
-            
-                replace(":: name", "namepack");
-                replace("name ()", "namepack");
-                replace("name ::", "namepack::");
-                replace("namepack ()", "namepack");
-                replace("namepack ::", "namepack::");
+                replace("name , name",     "names");
+                replace("names , name",    "names");
+                replace(":: name",         "namepack");
+                replace("name ()",         "namepack");
+                replace("name ::",         "namepack::");
+                replace("namepack ()",     "namepack");
+                replace("namepack ::",     "namepack::");
                 replace("namepack:: name", "namepack");
             }
             schema.upto(1).erase(); // leading " "

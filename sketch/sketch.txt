@@ -804,3 +804,165 @@ size.x = size.x ? 1.5;
 XY xy = size; xy.x ?= 1.5; size = xy;
 
 Cyrillic and Greek chars has different colors from Latin
+
+if (time::now - notch - delay < lapse) - automatic integer overflow correctness
+
+
+a, b = s.split.by("=")
+if map["maybe"] = "ok" then
+editor: latin and non-latin symbols: different tint (A vs A)
+
+// names definition
+type sum = a or b
+  or c or d ; or f
+  or e
+  
+type payment.method =
+    or card : credit.card
+    or paypal : account
+    or cash
+    
+using method = payment.method
+ when method::cash then do(1)
+ when method::pyapal then do(method::paypal)
+ when method::card then do(method::card)
+whether or not
+
+players(current).stop();
+players(current).hide(instantly);
+current = (current-1+pp) % pp;
+players(current).show(instantly);
+players(current).play() if (playall);
+                        ^^^^^^^^^^^^^
+
+what type? "literal" 42 3.14 
+what type? while expr, if expr
+// expression define names:    
+function get = yield n-1 for n in [1..10] if n % 2 = 0
+// enum defines names
+
+range(int) a = [0, 1, 2, ...]
+a : array(int) = [0, 1, 2]; b := [0, 1, 2]
+range.i := [0, 2)
+range.r := (0.0, 1.0)
+range.i := integer[0, 2)
+range.r := real(0.0, 1.0)
+// names definition
+type enum.list = {a, b, c}
+type enum.list = ::core::set{a, b, c}
+enum.list case.var;
+case.var : {a, b, c}
+type set
+  constructor {args...}
+    for arg in args do
+       ::meta::add.field(or arg)
+pair.of.shoes : type = (left, rigth)
+pair.of.shoes = (right, left)
+
+
+type pair = (int a, int b)
+type record: int a, b; real c
+type record:
+    int a, b
+    real c
+
+    
+type cat : animal
+type integer : real // values are a subset, but it is not an inheritance
+type subclass : class // values are not a subset
+    extra field
+    extra method
+type iterator : ordered, 
+
+function f(a, b) = a + b
+function f(a, g(a) -> b) -> b = g(a)
+mutation m = i++; j--
+function abs(x) = x if x >= 0 else -x
+function abs(x) = if x >= 0 then x else -x
+function abs(x) = if x >= 0
+    then  x
+    else -x
+function total -> double = (a + c
+    + d + e + f
+    - g - h)
+function accum -> double
+    x += a
+    y += b
+    return x + y
+    
+x := a + c
+    + b +
+        e
+        
+if a = b 
+
+type predicate(args...) = function(args...) -> boolean
+predicate(args...) = function(args...) -> boolean
+
+while a + b > 0 do i++
+    m(x); m(y); m(z)
+    
+while (a < 0 and
+       b < 0) do
+
+
+
+-dir
+    -data
+        -algo
+             tree.ae
+         algo_tree.ae
+         algo.ae # type tree
+         [source2.ae] # ::algo::tree::up()
+         [source2.ae] # ::data::algo::tree::up() error?
+    [source.ae] # ::data::algo::tree::up()
+     data_algo_tree.ae
+     data.ae # algo::tree
+ data_algo_tree.ae
+-data
+    -algo
+         tree.ae
+     algo_tree.ae
+     
+     
+a
+    x
+    y
+    z
+b
+    u
+        f
+            e
+            f
+        g
+    v
+c
+    i
+    j
+    
+type foo(x, y)
+  a, b
+  function bar(u, v) ;; noname
+    i, j
+    function baz(s, t) ;; noname
+      x, y, i, a
+      bar::i <- i ;; error
+      foo::a <- a ;; ok
+      
+if..
+elif
+else
+
+for x = each value in range do ...
+for x = first value in range do ...
+for x = last value in range do ...
+
+hash(x) function should be called prehash
+
+nand
+0 0 1
+0 1 1
+1 0 1
+1 1 0
+not(x) = nand(x,x)
+and = not nand
