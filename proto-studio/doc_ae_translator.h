@@ -1,7 +1,7 @@
 #pragma once
-#include "doc_ae_syntax_analysis.h"
-#include "doc_ae_synthesis.h"
 #include "doc_ae_transtr.h"
+#include "doc_ae_synthesis.h"
+#include "doc_ae_syntax_analysis.h"
 namespace doc::ae::translator
 {
     struct context
@@ -13,14 +13,14 @@ namespace doc::ae::translator
             for (auto& st: input)
             {
                 str kind = st.kind;
-                str name = print(st.name->text);
-                str type = print(st.type);
+                str name = print(st.names);
+                str type = print(st.typexpr);
                 str args = print(st.args);
 
                 str template_;
                 for (auto & arg : st.args.list) {
                     str name = print(arg.name->text);
-                    str type = print(arg.type);
+                    str type = print(arg.typexpr);
                     if (type == "") template_ +=
                         "typename type_" +
                             name + ", ";
@@ -40,7 +40,7 @@ namespace doc::ae::translator
                 if (kind == "singleton")
                 {
                     e.kind = "class";
-                    e.head = "struct type_" + name;  body += e;
+                    e.head = "struct type_" + name; body += e;
                     body += entity {"type_" + name + " " + name};
                     continue;
                 }
@@ -109,7 +109,7 @@ namespace doc::ae::translator
     //     if (body.empty()) global.body.truncate();
     // }
 
-    array<str> proceed (syntax::analysis::data & data)
+    array<str> proceed (syntax::analysis::data& data)
     {
         array<entity> output;
         output += entity{"#include <span>"};

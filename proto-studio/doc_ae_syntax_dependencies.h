@@ -17,12 +17,12 @@ namespace doc::ae::syntax
         std::map<str, path>
             dependees;
 
-        void collect (array<statement>& statements, auto& cancel)
+        void collect (statement& module, auto& cancel)
         {
             precedents.clear();
 
             visitor visitor;
-            visitor.on_namepack = [this](namepack& n)
+            visitor.in_namepack = [this](namepack& n, statement*)
             {
                 if (n.names.size() > 0
                 and n.names.front().coloncolon
@@ -38,7 +38,7 @@ namespace doc::ae::syntax
                         precedents += t;
                 }
             };
-            visitor.pass(statements);
+            visitor.pass(module, cancel);
         }
 
         void resolve (path p, report& log, auto& cancel)
@@ -55,8 +55,8 @@ namespace doc::ae::syntax
             resolve_in(cancel, current_path()/"library");
 
             for (auto token: unresolved)
-            log.error(token, "module ::"
-                + token->text +
+            log.error(token, "module "
+                + bold(token->text) +
                 " not found");
 
             if (true)
@@ -99,3 +99,29 @@ namespace doc::ae::syntax
     };
 }
 
+// |
+// +- [ae]
+// |    | 
+// |    +-[library]
+// |    |    |
+// |    |    +- net.ae
+// |    |    +-[net]
+// |    |    |    |
+// |    |    |    +- tcp.ae
+// |    |    |    +- http.ae
+// |
+// +-[repo]
+// |    |
+// |    +-[libs]
+// |    |    |
+// |    |    +- lib1.ae
+// |    |    +- lib2.ae
+// |    |
+// |    +-[app]
+// |    |    |
+// |    |    +- app.ae!!
+// |    |    +- subsystem.ae
+// |    |    +-[subsystem]
+// |    |    |    |
+// |    |    |    + module1.ae
+// |    |    |    + module2.ae

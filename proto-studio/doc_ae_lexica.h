@@ -37,8 +37,8 @@ namespace doc::ae::lexica
                 if (t.kind == "number"   ) same = alpha(c) || digit(c) || c == "."; else
                 if (t.kind == "semicolon") same = c == ";"; else
                 if (t.kind == "symbol"   ) same =
-                    not alpha(c) and not brace(c) &&
-                    not digit(c) and not brace(t.text) &&
+                    not alpha(c) and not brace(c) and
+                    not digit(c) and not brace(t.text) and
                     not space(c) and
                     c != ","     and
                     c != ";"     and

@@ -91,7 +91,7 @@ namespace doc::ae::syntax
                 {
                     if (names.empty()) break;
                     if (names.back().identifier == nullptr) break;
-                    names.back().args += read_brackets();
+                    names.back().argss += read_brackets();
                     continue;
                 }
                 break;
@@ -132,13 +132,13 @@ namespace doc::ae::syntax
                 input[1].opening->text == ":")
             {
                 p.name = read_name(); read(":");
-                p.type = read_namepack();
+                p.typexpr = read_namepack();
                 if (next() == "=") { read("=");
                 p.value = read_expression(); }
                 return p;
             }
 
-            p.type = read_namepack();
+            p.typexpr = read_namepack();
 
             if (next_kind() == "name")
                 p.name = read_name();
@@ -200,7 +200,6 @@ namespace doc::ae::syntax
             return namepack{};
         }
 
-        auto read_expression () -> expression { return read_expression_until(""); }
         auto read_expression_until (str until) -> expression
         {
             operands o;
@@ -210,22 +209,24 @@ namespace doc::ae::syntax
                 if (next() == until) {
                     read(until);
                     until = "";
-                    break;
-                }
+                    break; }
 
                 if (next() == "::")
                     o.list += expression{
-                    read_namepack()}; else
+                    read_namepack()};
+                    else
 
                 if (next_kind() == "()")
                     o.list += expression{
-                    read_brackets()}; else
+                    read_brackets()};
+                    else
 
                 if (next_kind() == "number" or
                     next_kind() == "symbol" or
                     next_kind() == "literal")
                     o.list += expression{
-                    terminal{read(next())}}; else
+                    terminal{read(next())}};
+                    else
 
                     o.list += expression{
                     read_namepack()};
@@ -236,6 +237,8 @@ namespace doc::ae::syntax
             if (o.list.size() == 1) return o.list[0];
             return expression{o};
         }
+        auto read_expression () -> expression { return
+             read_expression_until(""); }
     };
 }
 

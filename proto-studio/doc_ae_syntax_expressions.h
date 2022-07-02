@@ -2,15 +2,29 @@
 #include "doc_ae_syntax_scopes.h"
 namespace doc::ae::syntax::expressions
 {
-    void parse (expression& e, scope& scope, report& log)
+    void parse (expression& e, statement* scope, report& log)
     {
         std::visit(overloaded
         {
             [&](terminal & v)
             {
-                if (!v.token) return;
-                e.typeline = v.token->kind;
-                v.token->info = e.typeline;
+                if (not v.token) return;
+                str kind = v.token->kind;
+                if (kind == "number")
+                {
+                    e.type.name = "integer";
+                }
+                else
+                if (kind == "literal")
+                {
+                    e.type.name = "byte[]";
+                }
+                else log.error(v.token,
+                "unknown kind of terminal: "
+                    + kind);
+
+                v.token->info =
+                e.type.name;
             },
             [&](namepack & v)
             {

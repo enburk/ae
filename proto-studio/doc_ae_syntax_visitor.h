@@ -1,50 +1,75 @@
 #pragma once
-#include "doc_ae_syntax.h"
+#include "doc_ae_syntax_scopes.h"
 namespace doc::ae::syntax
 {
     struct visitor
     {
-        std::function<void(namepack   &)> on_namepack   = [](namepack   &){};
-        std::function<void(expression &)> on_expression = [](expression &){};
-        std::function<void(statement  &)> on_statement  = [](statement  &){};
+        std::function<void(statement  &)> in_statement;
+        std::function<void(statement  &)> on_statement;
+        std::function<void(namepack   &, statement*)> in_namepack;
+        std::function<void(namepack   &, statement*)> on_namepack;
+        std::function<void(expression &, statement*)> in_expression;
+        std::function<void(expression &, statement*)> on_expression;
 
-        scope* scope = nullptr;
+        statement* scope = nullptr;
 
-        void pass (array<statement>& statements)
+        void pass (statement s, auto& cancel)
         {
-            for (auto & st : statements)
+            if (cancel)
+                return;
+
+            if (
+            in_statement)
+            in_statement(s);
+
+            scope = &s;
+
+            for (auto& arg : s.args.list)
             {
-                on_statement(st);
-
-                scope = st.scope;
-
-                for (auto & arg : st.args.list)
-                {
-                    pass(arg.type);
-                    pass(arg.value);
-                }
-
-                pass(st.type);
-                pass(st.expr);
-                pass(st.body);
+                pass(arg.typexpr);
+                pass(arg.value);
             }
+
+            pass(s.expr);
+            pass(s.typexpr);
+
+            for (auto& ss: s.body)
+            {
+                pass(ss, cancel);
+            }
+
+            if (
+            in_statement)
+            in_statement(s);
         }
 
         void pass (namepack& n)
         {
-            on_namepack(n);
+            if (n.names.empty())
+                return;
+
+            if (
+            in_namepack)
+            in_namepack(n,
+                scope);
 
             for (auto& name: n.names)
-            for (auto& arg: name.args)
-            for (auto& expr: arg.list)
+            for (auto& args: name.argss)
+            for (auto& expr: args.list)
             pass(expr);
+
+            if (
+            on_namepack)
+            on_namepack(n,
+                scope);
         }
 
         void pass (expression& e)
         {
-            e.scope = scope;
-
-            on_expression(e);
+            if (
+            in_expression)
+            in_expression(e,
+                scope);
 
             std::visit(overloaded
             {
@@ -54,6 +79,11 @@ namespace doc::ae::syntax
                 [&](operands & v) { for (auto& o: v.list) pass(o); },
             },
             e.variant);
+
+            if (
+            on_expression)
+            on_expression(e,
+                scope);
         }
     };
 }

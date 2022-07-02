@@ -966,3 +966,15 @@ nand
 1 1 0
 not(x) = nand(x,x)
 and = not nand
+
+
+if e1 then e2 else e3
+which is really short-hand for:
+case e1 of
+True  -> e2
+False -> e3
+From this expansion it should be clear that e1 must have type Bool, and e2 and e3 must have the same (but otherwise arbitrary) type.
+In other words, if-then-else when viewed as a function has type Bool->a->a->a.
+
+
+

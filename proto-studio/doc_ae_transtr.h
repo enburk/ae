@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include "doc_text_text.h"
 #include "doc_ae_syntax.h"
 namespace doc::ae
 {
@@ -10,6 +9,7 @@ namespace doc::ae
     str print (const namepack &);
     str print (const expression &);
     str print (const parameters &);
+    str print (const array<token*> &);
 
     str print (const brackets & b)
     {
@@ -35,7 +35,7 @@ namespace doc::ae
         {
             if (name.coloncolon) s += "::";
             if (name.identifier) s += print(name.identifier->text);
-            for (auto arg : name.args) s += print(arg);
+            for (auto args : name.argss) s += print(args);
         }
         return s;
     }

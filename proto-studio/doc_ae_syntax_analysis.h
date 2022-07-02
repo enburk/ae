@@ -18,10 +18,10 @@ namespace doc::ae::syntax::analysis
     struct data
     {
         path path;
-        scope scope;
-        array<token>* tokens = nullptr;
-        array<statement> statements;
+        token name;
+        statement module;
         dependencies dependencies;
+        array<token>* tokens = nullptr;
         report log1; str ms1 = "0";
         report log2; str ms2 = "0";
         report log3; str ms3 = "0";
@@ -37,15 +37,18 @@ namespace doc::ae::syntax::analysis
             status = state::pass1;
             thread = [this](auto& cancel)
             {
-                statements =
+                name.text = path.stem().string();
+                module.names += &name;
+                module.kind = "singleton";
+                module.body =
                     schema(
                     parser(*tokens
                     , log1, cancel).output
                     , log1, cancel).output
                     ;
-                scope = decltype(scope)(log1, statements);
+                scope (module, log1, cancel);
 
-                dependencies.collect(statements, cancel);
+                dependencies.collect(module, cancel);
             };
         }
 
@@ -66,7 +69,7 @@ namespace doc::ae::syntax::analysis
             status = state::pass3;
             thread = [this](auto& cancel)
             {
-                typing::parse(statements, scope, log3);
+                typing::parse(module, log3, cancel);
             };
         }
 
@@ -164,8 +167,8 @@ namespace doc::ae::syntax::analysis
         for (auto [dname, dpath]: data.dependencies.dependees)
         {
             auto& dependee = repo[dpath];
-            data.scope.outscopes.emplace(
-                dname, &dependee.scope);
+            data.module.modules.emplace(
+                dname, &dependee.module);
         }
 
         data.pass3();

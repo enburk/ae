@@ -140,7 +140,7 @@ namespace doc::ae::syntax
             if (schema == "name")
             {
                 s.kind = "singleton";
-                s.name = read_name();
+                s.names += read_name();
                 return s;
             }
             //if (schema == "name name" or
@@ -170,18 +170,18 @@ namespace doc::ae::syntax
             if (schema_starts_with("mutation name <-"))
             {
                 s.kind = read()->text;
-                s.name = read_name(); read((char*)(u8"←"));
-                s.type = read_namepack();
-                s.args.list += parameter{read_name()};
+                s.names += read_name(); read((char*)(u8"←"));
+                s.typexpr = read_namepack();
+                s.args.list += parameter{read_name()}; // ??
                 return s;
             }
             if (schema_starts_with("function")
             or  schema_starts_with("mutation"))
             {
                 s.kind = read()->text;
-                s.name = read_name();
+                s.names += read_name();
                 s.args = read_optional_args();
-                s.type = read_optional_type();
+                s.typexpr = read_optional_type();
                 return s;
             }
 
@@ -195,23 +195,23 @@ namespace doc::ae::syntax
                 {
                     s.kind = "binary operator";
                     s.args.list += read_one_parameter();
-                    s.name = read_name();
+                    s.names += read_name();
                     s.args.list += read_one_parameter();
                 }
                 else if (schema_starts_with("operator () x"))
                 {
                     s.kind = "postfix operator";
                     s.args.list += read_one_parameter();
-                    s.name = read_name();
+                    s.names += read_name();
                 }
                 else if (schema_starts_with("operator x ()"))
                 {
                     s.kind = "prefix operator";
-                    s.name = read_name();
+                    s.names += read_name();
                     s.args.list += read_one_parameter();
                 }
                 else read("operator name or parameter"); // throw
-                s.type = read_optional_type();
+                s.typexpr = read_optional_type();
                 return s;
             }
 

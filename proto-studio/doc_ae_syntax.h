@@ -5,9 +5,13 @@ namespace doc::ae::syntax
     using text::token;
     using text::report;
 
-    struct scope;
     struct statement;
     struct expression;
+    struct type
+    {
+        str name;
+        str kind;
+    };
 
     struct brackets
     {
@@ -20,14 +24,14 @@ namespace doc::ae::syntax
     {
         token* coloncolon = nullptr;
         token* identifier = nullptr;
-        array<brackets> args;
+        array<brackets> argss;
     };
 
-    struct namepack { array<nameunit> names; };
+    struct terminal { token* token = nullptr; type type; };
+
+    struct namepack { array<nameunit> names; type type; };
 
     struct operands { array<expression> list; };
-
-    struct terminal { token* token = nullptr; };
 
     struct expression
     {
@@ -39,16 +43,16 @@ namespace doc::ae::syntax
             operands
         >
         variant;
-        scope* scope;
-        str typeline;
+        type
+        type;
     };
 
     struct parameter
     {
         token* name = nullptr;
-        namepack type;
+        namepack typexpr;
         expression value;
-        str typeline;
+        type type;
     };
 
     struct parameters
@@ -60,18 +64,22 @@ namespace doc::ae::syntax
 
     struct statement
     {
-        token* name = nullptr;
-        array<statement> body;
+        str kind;
+        array<token*> names;
         parameters args;
         expression expr;
-        namepack type;
-        
-        scope* scope = nullptr;
-        std::map<namepack, namepack> dependencies;
+        namepack typexpr;
+        array<statement> body;
+        type type;
+
+        statement* outer = nullptr;
+        std::map<str, statement*> modules;
+        std::multimap<str, statement*> members;
+
+        //std::map<namepack, namepack> dependencies;
 
         str schema;
         str source;
-        str kind;
     };
 }
 
