@@ -69,7 +69,7 @@ namespace doc::ae::syntax::analysis
             status = state::pass3;
             thread = [this](auto& cancel)
             {
-                typing::parse(module, log3, cancel);
+                typing(log3).parse(module, cancel);
             };
         }
 

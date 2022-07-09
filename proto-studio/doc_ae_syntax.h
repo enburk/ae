@@ -11,6 +11,7 @@ namespace doc::ae::syntax
     {
         str name;
         str kind;
+        array<type> genealogy;
     };
 
     struct brackets
