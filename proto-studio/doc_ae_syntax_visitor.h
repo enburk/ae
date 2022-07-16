@@ -1,5 +1,5 @@
 #pragma once
-#include "doc_ae_syntax_scopes.h"
+#include "doc_ae_syntax.h"
 namespace doc::ae::syntax
 {
     struct visitor

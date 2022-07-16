@@ -112,11 +112,6 @@ namespace doc::ae::syntax
 // |
 // +-[repo]
 // |    |
-// |    +-[libs]
-// |    |    |
-// |    |    +- lib1.ae
-// |    |    +- lib2.ae
-// |    |
 // |    +-[app]
 // |    |    |
 // |    |    +- app.ae!!
@@ -125,3 +120,8 @@ namespace doc::ae::syntax
 // |    |    |    |
 // |    |    |    + module1.ae
 // |    |    |    + module2.ae
+// |    |
+// |    +-[libs]
+// |    |    |
+// |    |    +- lib1.ae
+// |    |    +- lib2.ae

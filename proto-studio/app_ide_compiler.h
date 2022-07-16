@@ -13,6 +13,8 @@ namespace ide::compiler
         src.extension().string() + ext);
         return src; }
 
+    auto hpp (path src){ return ext(src, ".hpp"); }
+    auto cxx (path src){ return ext(src, ".c++"); }
     auto cpp (path src){ return ext(src, ".cpp"); }
     auto obj (path src){ return ext(src, ".obj"); }
     auto exe (path src){ return ext(src, ".exe"); }
@@ -27,25 +29,92 @@ namespace ide::compiler
         return text;
     }
 
-    bool translate (path src, gui::console& console)
+    namespace analysis = doc::ae::syntax::analysis;
+
+    array<path> translate (analysis::data& data, gui::console& console, bool main) try
+    {
+        array<path> inners;
+        array<path> outers;
+        array<path> cxxs;
+
+        using namespace std::filesystem;
+
+        if (exists(cxx(data.path)))
+           cxxs += cxx(data.path);
+
+        for (auto [name, path]: data.dependencies.dependees)
+        {
+            cxxs += translate(analysis::repo[path], console, false);
+
+            if (path.parent_path() ==
+            data.path.parent_path() /
+            data.name.text.c_str())
+            inners += path; else
+            outers += path;
+        }
+
+        auto path = main ? 
+            cpp(data.path):
+            hpp(data.path);
+
+        // if (not exists(path)
+        // or last_write_time(path) < data.time)
+        {
+            console << data.path.string();
+
+            std::ofstream result(path);
+            result << "\xEF" "\xBB" "\xBF"; // UTF-8 BOM
+            result << "#pragma once\n";
+            result << "#include <span>\n";
+            result << "#include <cstdint>\n";
+
+            for (auto p: outers)
+            result << "#include \"" +
+            p.string() + "\"\n";
+
+            str name = main ? "ae" : data.name.text;
+            result << "namespace " + name + "\n";
+            result << "{\n";
+
+            for (auto p: inners)
+            result << "#include \"" +
+            p.string() + "\"\n";
+
+            for (auto&& line:
+            doc::ae::translator::proceed(data)) {
+                result << "    ";
+                result << line;
+                result << "\n";
+            }
+            result << "}\n";
+
+            if (main)
+            for (auto p: cxxs)
+            result << "#include \"" +
+            p.string() + "\"\n";
+        }
+        return cxxs;
+    }
+    catch(...)
+    {
+        auto path = main ? 
+            cpp(data.path):
+            hpp(data.path);
+        if (exists(path))
+            remove(path);
+        throw;
+    }
+
+    bool translate (path src, gui::console& console) try
     {
         console.clear();
-        auto& analysis =
-        doc::ae::syntax::analysis::repo[src];
-
-        if (std::filesystem::exists(cpp(src)) and
-            std::filesystem::last_write_time(cpp(src)) >
-            analysis.time)
-            return true;
-
-        std::ofstream result(cpp(src));
-        result << "\xEF" "\xBB" "\xBF"; // UTF-8 BOM
-        for (auto && line : doc::ae::translator::proceed(analysis)) {
-            result << line;
-            result << "\n";
-        }
+        translate(analysis::repo[src], console, true);
         return true;
     }
+    catch(std::exception const& e) {
+        console << red(doc::html::
+        encoded(e.what()));
+        return false; }
 
     bool compile (path src, gui::console& console, auto& cancel)
     {

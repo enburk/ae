@@ -42,9 +42,6 @@
     <ClInclude Include="proto-studio\doc_ae_syntax_visitor.h">
       <Filter>doc</Filter>
     </ClInclude>
-    <ClInclude Include="proto-studio\doc_ae_transtr.h">
-      <Filter>doc</Filter>
-    </ClInclude>
     <ClInclude Include="proto-studio\doc_ae_syntax_dependencies.h">
       <Filter>doc</Filter>
     </ClInclude>
@@ -74,6 +71,18 @@
     </ClInclude>
     <ClInclude Include="proto-studio\abc.h">
       <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_synthesis_in.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_synthesis_out.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_synthesis_out_aux.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_synthesis_out_out.h">
+      <Filter>doc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

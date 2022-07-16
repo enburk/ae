@@ -1,68 +1,64 @@
 #pragma once
 #include "doc_text_text.h"
-namespace doc::ae
+#include "doc_ae_syntax.h"
+namespace doc::ae::synthesis
 {
-    struct entity
+    using syntax::type;
+
+    struct expression;
+
+    struct brackets
     {
-        str head, kind, info;
-        array<entity> body;
-        array<str> infos;
+        str opening;
+        str closing;
+        array<expression> list;
+    };
 
-        void print (array<str> & lines, bool semicolon = true, int indent = 0)
-        {
-            str line = head;
+    struct terminal { str text; type type; };
 
-            semicolon &= body.empty() and
-                not line.starts_with("#");
+    struct nameunit { str identifier; array<brackets> argss; };
 
-            if (line != "" and semicolon) line += ";";
-            if (line != "" and info !="") line += " ";
-            if (info != "") line += "// " + info;
-            if (line != "") line = str(' ', indent) + line;
-            if (line != "") lines += line;
+    struct namepack { array<nameunit> names; type type; };
 
-            if (not infos.empty())
-                for (auto s : infos)
-                    lines += str(' ', indent)
-                        + "// " + s;
+    struct operands { array<expression> list; };
 
-            if (not body.empty())
-            {
-                bool inner_semicolon = kind != "enum" && kind != "declarator";
-                bool outer_semicolon = kind == "enum" or kind == "declarator"
-                    or kind == "class" or kind == "function"
-                    or kind == "union" or kind == "lambda";
+    struct namelist { array<str> list; };
 
-                int n0 = lines.size();
-                lines += str(' ', indent) + "{";
+    struct expression
+    {
+        std::variant
+        <
+            terminal,
+            namepack,
+            brackets,
+            operands
+        >
+        variant;
+        type
+        type;
+    };
 
-                    for (auto && e : body)
-                        e.print (lines, inner_semicolon,
-                            indent + 4);
+    struct parameter
+    {
+        str name;
+        namepack typexpr;
+        expression value;
+        type
+        type;
+    };
+    struct parameters { array<parameter> list; };
 
-                lines += str(' ', indent) + "}";
-                int n1 = lines.size();
-                
-                if (outer_semicolon)
-                    lines.back() += ";";
-
-                if (n1-n0 == 3 and n0 > 0
-                    and not lines[n1-4].contains("//")
-                    and not lines[n1-2].contains("//")) {
-                    lines[n1-3].strip(); lines[n1-4] += " " + lines[n1-3];
-                    lines[n1-2].strip(); lines[n1-4] += " " + lines[n1-2];
-                    lines[n1-1].strip(); lines[n1-4] += " " + lines[n1-1];
-                    lines.resize(n0);
-                }
-                else
-                if (n1-n0 == 2 and n0 > 0
-                    and not lines[n1-3].contains("//")) {
-                    lines[n1-2].strip(); lines[n1-3] += " " + lines[n1-2];
-                    lines[n1-1].strip(); lines[n1-3] += " " + lines[n1-1];
-                    lines.resize(n0);
-                }
-            }
-        }
+    struct statement
+    {
+        str kind;
+        namelist names;
+        parameters args;
+        expression expr;
+        namepack typexpr;
+        array<statement> body;
+        type type;
+        str schema;
+        str source;
     };
 }
 

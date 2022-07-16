@@ -39,7 +39,7 @@ namespace doc::ae::syntax::analysis
             {
                 name.text = path.stem().string();
                 module.names += &name;
-                module.kind = "singleton";
+                module.kind = "module";
                 module.body =
                     schema(
                     parser(*tokens
@@ -63,7 +63,7 @@ namespace doc::ae::syntax::analysis
             };
         }
 
-        void pass3 () // run when dependencies scopes are ready
+        void pass3 () // run when dependencies are ready
         {
             log3.clear();
             status = state::pass3;

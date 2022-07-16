@@ -163,8 +163,11 @@
     <ClInclude Include="proto-studio\doc_ae_syntax_typing.h" />
     <ClInclude Include="proto-studio\doc_ae_syntax_visitor.h" />
     <ClInclude Include="proto-studio\doc_ae_synthesis.h" />
+    <ClInclude Include="proto-studio\doc_ae_synthesis_in.h" />
+    <ClInclude Include="proto-studio\doc_ae_synthesis_out.h" />
+    <ClInclude Include="proto-studio\doc_ae_synthesis_out_aux.h" />
+    <ClInclude Include="proto-studio\doc_ae_synthesis_out_out.h" />
     <ClInclude Include="proto-studio\doc_ae_translator.h" />
-    <ClInclude Include="proto-studio\doc_ae_transtr.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="proto-studio\app.cpp" />

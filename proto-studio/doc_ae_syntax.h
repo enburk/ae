@@ -5,7 +5,6 @@ namespace doc::ae::syntax
     using text::token;
     using text::report;
 
-    struct statement;
     struct expression;
     struct type
     {
@@ -34,6 +33,8 @@ namespace doc::ae::syntax
 
     struct operands { array<expression> list; };
 
+    struct namelist { array<token*> list; };
+
     struct expression
     {
         std::variant
@@ -53,7 +54,8 @@ namespace doc::ae::syntax
         token* name = nullptr;
         namepack typexpr;
         expression value;
-        type type;
+        type
+        type;
     };
 
     struct parameters
