@@ -8,13 +8,13 @@ namespace doc::ae::synthesis
     {
         str kind = st.kind;
         str name = print(st.names);
-        str type = print(st.typexpr);
+        str type = print(st.typexpr, true);
         str args = print(st.args);
 
         str template_;
         for (auto& arg: st.args.list) {
             str name = print(arg.name);
-            str type = print(arg.typexpr);
+            str type = print(arg.typexpr, true);
             if (type == "") template_ +=
                 "typename type_" +
                     name + ", ";
@@ -26,6 +26,7 @@ namespace doc::ae::synthesis
 
         body += entity{.info = "source: " + st.source};
         body += entity{.info = "schema: " + st.schema};
+        body += entity{.info = "kind: "   + st.kind};
 
         entity e;
         for (auto& statement: st.body)
@@ -42,6 +43,7 @@ namespace doc::ae::synthesis
             e.kind = "function";
             e.head =  template_;
             e.head += "auto " + name + args + " const ";
+            if (type == "" and e.body.empty()) type = "void";
             if (type != "") e.head += " -> " + type;
             body += e;
         }
@@ -50,6 +52,7 @@ namespace doc::ae::synthesis
             e.kind = "function";
             e.head =  template_;
             e.head += "auto " + name + args;
+            if (type == "" and e.body.empty()) type = "void";
             if (type != "") e.head += " -> " + type;
             body += e;
         }

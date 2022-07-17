@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "doc_ae_syntax.h"
 namespace doc::ae::syntax::expressions
 {

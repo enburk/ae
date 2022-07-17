@@ -14,7 +14,7 @@ namespace doc::ae::synthesis
         array<expression> list;
     };
 
-    struct terminal { str text; type type; };
+    struct terminal { str text; str kind; type type; };
 
     struct nameunit { str identifier; array<brackets> argss; };
 

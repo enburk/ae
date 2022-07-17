@@ -40,7 +40,7 @@ struct IDE : gui::widget<IDE>
         toolbar.color = gui::skins[skin].light.first;
         button_run .text.text = "run";
         button_test.text.text = "test";
-        console.activate(&console.events);
+        console.activate(&console.editor);
         test_area.hide();
 
         watcher.dir = std::filesystem::current_path();
@@ -95,8 +95,8 @@ struct IDE : gui::widget<IDE>
 
             if ((gui::time::now - edittime) > 0s) {
                 auto& report = doc::text::repo::report;
-                if (report.errors.size() > 0) edittime = gui::time::now;
-                if (report.messages.size() > 0) {
+                if (not report.errors.empty()) edittime = gui::time::now;
+                if (not report.messages.empty()) {
                     console.activate(&console.events);
                     console.events << report();
                     report.clear();
@@ -116,13 +116,16 @@ struct IDE : gui::widget<IDE>
             if ((gui::time::now - edittime) > 500ms)
             if (syntax_run and editor.syntax_ready()) {
                 syntax_run = false;
-                syntax_ok = editor.log.errors.size() == 0;
+                syntax_ok = editor.
+                log.errors.empty();
+
                 console.editor.clear();
-                if (editor.log.messages.size() > 0) {
-                    console.activate(&console.editor);
-                    console.editor << editor.log();
-                    editor.log.clear();
-                }
+                if (not editor.log.messages.empty()) {
+                console.editor << editor.log();
+                editor.log.clear(); }
+
+                if (not editor.log.errors.empty())
+                console.activate(&console.editor);
             }
 
             button_run.enabled = (

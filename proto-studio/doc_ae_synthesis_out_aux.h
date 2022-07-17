@@ -4,10 +4,7 @@
 namespace doc::ae::synthesis
 {
     str print (const str &);
-    str print (const brackets &);
-    str print (const namepack &);
     str print (const expression &);
-    str print (const parameters &);
     str print (const namelist & names)
     {
         str s;
@@ -38,11 +35,31 @@ namespace doc::ae::synthesis
         return s;
     }
 
+    str print (const namepack & namepack, bool type = false)
+    {
+        str s;
+        for (auto name : namepack.names)
+        {
+            s += print(name.identifier);
+            for (auto args : name.argss)
+            s += print(args);
+            s += "::";
+        }
+        s.truncate();
+        s.truncate();
+
+
+        if (s == "type") s = "auto";
+        if (s == "byte[]") s = "std::span<uint8_t>";
+
+        return s;
+    }
+
     str print (const parameters & pp)
     {
         str es;
         for (auto& p: pp.list) {
-            es += print(p.type.name);
+            es += print(p.typexpr);
             es += " ";
             es += print(p.name);
         //  es += "=";
@@ -59,38 +76,31 @@ namespace doc::ae::synthesis
         return s;
     }
 
-    str print (const namepack & namepack)
-    {
-        str s;
-        for (auto name : namepack.names)
-        {
-            s += print(name.identifier);
-            for (auto args : name.argss)
-            s += print(args);
-            s += "::";
-        }
-        s.truncate();
-        return s;
-    }
-
     str print (expression const& e)
     {
         str s;
 
         std::visit(overloaded
         {
-            [&](terminal v) { s += " " + print(v.text); },
-            [&](namepack v) { s += " " + print(v); },
-            [&](brackets v) { s += " " + print(v); },
-            [&](operands v) {
-
+            [&](terminal v)
+            {
+                if (v.kind == "literal")
+                s += "std::span((uint8_t*)" + v.text + "," +
+                std::to_string(v.text.size()) + ")"; else
+                s += v.text;
+                s += " ";
+            },
+            [&](namepack v) { s += print(v) + " "; },
+            [&](brackets v) { s += print(v) + " "; },
+            [&](operands v)
+            {
                 for (auto& o: v.list)
                 s += print(o) + " ";
-                s.truncate();
             },
         },
         e.variant);
 
+        s.truncate();
         return s;
     }
 

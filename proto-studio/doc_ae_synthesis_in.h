@@ -7,8 +7,9 @@ namespace doc::ae::synthesis
 
     auto in (syntax::terminal const& x)
     {
-        terminal y; if (x.token)
+        terminal y; if (x.token) {
         y.text = x.token->text;
+        y.kind = x.token->kind; }
         y.type = x.type;
         return y;
     }
@@ -16,8 +17,12 @@ namespace doc::ae::synthesis
     auto in (syntax::brackets const& x)
     {
         brackets y;
-        y.opening = x.opening->text;
-        y.closing = x.closing->text;
+        y.opening = 
+        x.opening ?
+        x.opening->text : "(";
+        y.closing =
+        x.closing ?
+        x.closing->text : ")";
         for (auto& e: x.list)
         y.list += in(e);
         return y;

@@ -46,6 +46,8 @@ namespace ide::compiler
         {
             cxxs += translate(analysis::repo[path], console, false);
 
+            path = hpp(path);
+
             if (path.parent_path() ==
             data.path.parent_path() /
             data.name.text.c_str())
@@ -72,8 +74,7 @@ namespace ide::compiler
             result << "#include \"" +
             p.string() + "\"\n";
 
-            str name = main ? "ae" : data.name.text;
-            result << "namespace " + name + "\n";
+            result << "namespace ae\n";
             result << "{\n";
 
             for (auto p: inners)
@@ -81,7 +82,7 @@ namespace ide::compiler
             p.string() + "\"\n";
 
             for (auto&& line:
-            doc::ae::translator::proceed(data)) {
+            doc::ae::translator::proceed(data, main)) {
                 result << "    ";
                 result << line;
                 result << "\n";

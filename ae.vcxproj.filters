@@ -84,6 +84,12 @@
     <ClInclude Include="proto-studio\doc_ae_synthesis_out_out.h">
       <Filter>doc</Filter>
     </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_synthesis_proc.h">
+      <Filter>doc</Filter>
+    </ClInclude>
+    <ClInclude Include="proto-studio\doc_ae_synthesis_visitor.h">
+      <Filter>doc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="proto-studio\app.cpp">

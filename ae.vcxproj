@@ -167,6 +167,8 @@
     <ClInclude Include="proto-studio\doc_ae_synthesis_out.h" />
     <ClInclude Include="proto-studio\doc_ae_synthesis_out_aux.h" />
     <ClInclude Include="proto-studio\doc_ae_synthesis_out_out.h" />
+    <ClInclude Include="proto-studio\doc_ae_synthesis_proc.h" />
+    <ClInclude Include="proto-studio\doc_ae_synthesis_visitor.h" />
     <ClInclude Include="proto-studio\doc_ae_translator.h" />
   </ItemGroup>
   <ItemGroup>

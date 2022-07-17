@@ -74,7 +74,7 @@ namespace doc::ae::syntax
             return scope;
         }
 
-        void parse (statement& module, auto& cancel)
+        void parse (statement& module, std::atomic<bool>& cancel)
         {
             visitor visitor;
             visitor.on_statement = [&](statement& s)

@@ -203,6 +203,21 @@ namespace doc::ae::syntax
         auto read_expression_until (str until) -> expression
         {
             operands o;
+            namepack n;
+
+            if (next() == "::"
+            or  next_kind() == "name")
+            {
+                n = read_namepack();
+                if (not input.empty()
+                and next_kind() != "symbol")
+                {
+                    n.names.back().argss += brackets{};
+                    n.names.back().argss.back().list += 
+                    read_expression_until("");
+                }
+                o.list += expression{std::move(n)};
+            }
 
             while (not input.empty())
             {
