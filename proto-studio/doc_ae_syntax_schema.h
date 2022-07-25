@@ -3,107 +3,65 @@
 #include "doc_ae_syntax_reader.h"
 namespace doc::ae::syntax
 {
-    const std::set<str> keywords = 
-    {
-        "using",
-            
-        "if", "then", "else",
-
-        "for", "each", "in", "while", "until", "do",
-
-        "await", "yield", "return", "break", "continue", 
-
-        "operator", "type", "extension",
-        "function",
-        "mutation",
-    };
-
     struct schema : reader
     {
-        array<statement> output;
-        array<cluster> && input; report& log; schema(
-        array<cluster> && input, report& log, auto& cancel) :
-        reader(array<element>{}, log, cancel),
-        input(std::move(input)), log(log)
+        array<statement> output; report& log; std::atomic<bool>& cancel; schema(
+        array<element>&& input,  report& log, std::atomic<bool>& cancel) :
+        reader(std::move(input), log, cancel), log(log), cancel(cancel)
         {
-            statement s;
-
-            // if (not log.errors.empty()) return;
-
-            for (auto && cluster : input) try
-            {
-                if (cancel) break;
-
-                reader::input = deque{std::move(cluster.elements)};
-
-                s = read_statement();
-
-                if (s.kind == "")
-                {
-                    reader::input += read_clusters(std::move(cluster.clusters));
-                    if (not reader::input.empty()) s.expr = read_expression();
-                    output += std::move(s);
-                    continue;
-                }
-
-                if((s.kind == "type" or
-                    s.kind == "function" or
-                    s.kind == "function" or
-                    s.kind.contains("operator"))
-                    and reader::next() == "=")
-                {
-                    reader::input += read_clusters(std::move(cluster.clusters));
-                    read("="); s.expr = read_expression();
-                    output += std::move(s);
-                    continue;
-                }
-
-                if (not reader::input.empty())
-                s.body += read_statement();
-                s.body += schema(std::move(cluster.clusters), log, stop).output;
-                output += std::move(s);
-            }
-            catch (str const& what) { log.error(what
-            + gray("  kind: "  ) + green (s.kind  )
-            + gray(", scheme: ") + purple(s.schema)
-            + gray(", source: ") + dark  (s.source)); }
+            output = read_statements();
         }
 
-        deque<element> read_clusters (array<cluster> && clusters)
+        auto read_statements () -> array<statement>
         {
-            deque<element> elements; for (auto && cluster : clusters)
+            array<statement> ss; statement s;
+            try
             {
-                elements += deque<element>(std::move(cluster.elements));
-                elements += read_clusters (std::move(cluster.clusters));
+                while (not input.empty())
+                {
+                    if (cancel) break;
+                    read_statement(s);
+                    ss += std::move(s);
+                }
             }
-            return elements;
+            catch (str const&) { log.error(
+            gray("source: ") + dark(s.source) + "<br" +
+            gray("scheme: ") + blue(s.schema) + "<br" +
+            gray("kind: "  ) + dark(s.kind)); }
+            return ss;
         }
 
-        statement read_statement ()
+        auto read_body () -> array<statement>
         {
-            statement s;
+            if (next() == "") return array<statement>{};
+            if (next() != "{") expected("body");
+            auto statements = schema(std::move(
+            input.front().elements), log, cancel).output;
+            input.pop_front();
+            return statements;
+        }
+
+        void read_statement (statement& s)
+        {
+            str& schema = s.schema;
+            str& source = s.source;
             static token o {"(", "symbol"};
             static token c {")", "symbol"};
             s.args.opening = &o;
             s.args.closing = &c;
 
-            str & schema = s.schema;
-            str & source = s.source;
-
-            for (auto & e : reader::input)
+            for (auto& e: input)
             {
                 schema += " ";
-                source += " " + print(e);
+                source += " " + e.print();
 
-                if (e.opening and
-                    e.opening->kind == "name" and
-                    keywords.contains(e.opening->text))
-                    e.opening->kind = "keyword";
-
-                if (e.kind == "()") schema += "()"; else
-                if (e.opening->text == "=" ) schema += "=";  else
+                if (e.opening->text == "=" ) schema += "=";
+                if (e.opening->text == "=" ) break;
+                if (e.opening->text == ";" ) break;
+                if (e.opening->text == "{" ) break;
+                if (e.opening->text == "(" ) schema += "()"; else
+                if (e.opening->text == "[" ) schema += "[]"; else
                 if (e.opening->text == "," ) schema += ",";  else
-                if (e.opening->text == ":" ) schema += ":";  else
                 if (e.opening->text == "::") schema += "::"; else
                 if (e.opening->text == ":=") schema += ":="; else
                 if (e.opening->text == (char*)(u8"←")) schema += "<-"; else
@@ -115,9 +73,9 @@ namespace doc::ae::syntax
                 if (schema.starts_with(" operator ")) continue;
 
                 auto replace = [&schema](str what, str with) {
-                    if (schema.ends_with(str(" " + what)) or schema == what) {
-                        schema.resize(schema.size() - what.size());
-                        schema += with; } };
+                if (schema.ends_with(str(" " + what)) or schema == what) {
+                    schema.resize(schema.size() - what.size());
+                    schema += with; } };
 
                 replace("name , name",     "names");
                 replace("names , name",    "names");
@@ -134,46 +92,35 @@ namespace doc::ae::syntax
             auto schema_starts_with = [&schema](str s) { return
                  schema.starts_with(s) and (
                  schema.size() == s.size() or
-                 schema[s.size()] == ' ');
-            };
+                 schema[s.size()] == ' '); };
 
+            if (schema == "")
+            {
+                if (next() == "{") s.body = read_body(); else
+                if (next() != ";") unexpected(); else
+                read(";");
+                return;
+            }
             if (schema == "name")
             {
                 s.kind = "singleton";
                 s.names += read_name();
-                return s;
+                s.body += read_body();
+                return;
             }
-            //if (schema == "name name" or
-            //    schema == "name names" or
-            //    schema == "namepack name" or
-            //    schema == "namepack names")
-            //{
-            //    s.kind = "variable";
-            //    s.name = read_name();
-            //    return s;
-            //}
-            //if (schema == "name : name")
-            //{
-            //    s.kind = "singleton";
-            //    s.name = read_name();
-            //    return s;
-            //}
-            //if (schema_starts_with("name name ="))
-            //{
-            //    s.kind = read()->text;
-            //    s.name = read_name(); read((char*)(u8"←"));
-            //    s.type = read_namepack();
-            //    s.args.list += parameter{read_name()};
-            //    read("=");
-            //    return s;
-            //}
-            if (schema_starts_with("mutation name <-"))
+            if (schema_starts_with("type"))
             {
                 s.kind = read()->text;
-                s.names += read_name(); read((char*)(u8"←"));
-                s.typexpr = read_namepack();
-                s.args.list += parameter{read_name()}; // ??
-                return s;
+                s.names += read_name();
+                s.args = read_optional_args();
+                if (next() == "extends"
+                or  next() == "subset.of") {
+                s.kind += " " + read()->text;
+                s.typexpr = read_namepack(); }
+                if (next() == "=") { read("=");
+                s.expr = read_expression(); } else
+                s.body = read_body();
+                return;
             }
             if (schema_starts_with("function")
             or  schema_starts_with("mutation"))
@@ -182,9 +129,11 @@ namespace doc::ae::syntax
                 s.names += read_name();
                 s.args = read_optional_args();
                 s.typexpr = read_optional_type();
-                return s;
+                if (next() == "=") { read("=");
+                s.expr = read_expression(); } else
+                s.body = read_body();
+                return;
             }
-
             if (schema_starts_with("operator"))
             {
                 schema.replace_all(" name "  , " x ");
@@ -212,7 +161,10 @@ namespace doc::ae::syntax
                 }
                 else read("operator name or parameter"); // throw
                 s.typexpr = read_optional_type();
-                return s;
+                if (next() == "=") { read("=");
+                s.expr = read_expression(); } else
+                s.body = read_body();
+                return;
             }
 
             //if (schema_starts_with("for"))
@@ -235,8 +187,33 @@ namespace doc::ae::syntax
             //        s.body += std::move(ss);
             //    }
             //}
+            //if (schema == "name name" or
+            //    schema == "name names" or
+            //    schema == "namepack name" or
+            //    schema == "namepack names")
+            //{
+            //    s.kind = "variable";
+            //    s.name = read_name();
+            //    return s;
+            //}
+            //if (schema == "name : name")
+            //{
+            //    s.kind = "singleton";
+            //    s.name = read_name();
+            //    return s;
+            //}
+            //if (schema_starts_with("name name ="))
+            //{
+            //    s.kind = read()->text;
+            //    s.name = read_name(); read((char*)(u8"←"));
+            //    s.type = read_namepack();
+            //    s.args.list += parameter{read_name()};
+            //    read("=");
+            //    return s;
+            //}
 
-            return s;
+            s.kind = "expression";
+            s.expr = read_expression();
         }
     };
 }

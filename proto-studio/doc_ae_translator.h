@@ -27,7 +27,8 @@ namespace doc::ae::translator
                 statement.kind == "type" or
                 statement.kind == "singleton" or
                 statement.kind == "function" or
-                statement.kind == "mutation"?
+                statement.kind == "mutation" or
+                statement.kind.contains("operator")?
                 body.body:
                 main.body);
 

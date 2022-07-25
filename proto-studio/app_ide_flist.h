@@ -127,6 +127,7 @@ struct Flist : gui::widget<Flist>
                 str name = p.filename().string();
                 if (name.starts_with(".")
                 or  name.starts_with("_")
+                or  name == "enc_temp_folder"
                 or  name == "packages") continue;
                 dirs[p.filename().string()] =
                     relative(p, root);

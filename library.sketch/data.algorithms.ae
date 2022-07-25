@@ -1,12 +1,10 @@
-type predicate (args…)       = function (args…) → boolean
-type binary.predicate (x, y) = function (x, y) → boolean
-type unary.predicate (x)     = function (x) → boolean
+type: predicate (args…) = function: (args…) → boolean
 
-mutation swap (a, b) = { c := a; a ← b; b ← c }
+mutation swap (a, b) { c := a; a ← b; b ← c }
 
-type range(x) extension =
+type: range(x) extension:
 {
-    mutation remove.if (match: unary.predicate(x)) =
+    mutation: remove.if (match: unary.predicate(x)) =
     {
         i := begin;
         j := begin;
@@ -19,18 +17,54 @@ type range(x) extension =
     }
 }
 
-type bidirectional.range(x) extension =
+type: range(x) extension: =
 {
-    mutation bubble.sort (in.order: binary.predicate = ≤) =
+    mutation: remove.if (predicate(x) match) =
+    {
+        i := begin;
+        j := begin;
+        while: j ≠ end do: {
+            swap(i.value, j.value);
+            not match(i.value)? i++;
+            j++;
+        }
+        return: i;
+    }
+}
+
+type: range(x) extension: =
+{
+    mutation:
+    remove.if (unary.predicate(x) match) =
+    {
+        i := begin;
+        j := begin;
+        while: j ≠ end do: {
+        swap(i.value, j.value);
+        not match(i.value)? i++; j++; }
+        return: i;
+    }
+}
+
+mutation: swap.if.not.in.order(i,j,in.order) =
+                not in.order(
+                i::value, j::value)? swap(
+                i::value, j::value);
+
+
+type: bidirectional.range(x) extension: =
+{
+    mutation: bubble.sort (predicate(x,x) in.order = ≤) =
     {
         b := begin;
         e := end;
-        while b ≠ e do {
+        while: b ≠ e do: {
             i := b;
             j := b; j++;
-            while j ≠ e do {
-                if not in.order(i::value, j::value)
-                      then swap(i::value, j::value);
+            while: j ≠ e do: {
+                not in.order(
+                i::value, j::value)? swap(
+                i::value, j::value);
                 i++;
                 j++;
             }

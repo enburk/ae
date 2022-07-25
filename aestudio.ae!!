@@ -1,7 +1,26 @@
-::meta::import ::core ;; it's a call of a function
+::meta::import(::core); ;; it's a call of a function
 
-out = ::meta::out
-out := ::system::out
+app extends: ::system::app
+{
+    app.title = "ae studio";
+
+    ::gui::canvas canvas;
+    ::gui::canvas toolbar;
+    ::gui::button button_run;
+    ::gui::button button_test;
+
+    ::gui::area(::flist::flist) flist;
+    ::gui::area(::editor::editor) editor;
+    ::gui::area(::console::console) console;
+    ::gui::splitter splitter.editor.l;
+    ::gui::splitter splitter.editor.r;
+
+    canvas.color = ::gui::colors::light;
+
+    coords =
+    ::system::settings("app.window.coords",
+    .default = ::system::screen::coords);
+ }
 
 ;; system::window::coords =
 ;;     system::settings("window::coords",

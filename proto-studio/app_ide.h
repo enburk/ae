@@ -196,11 +196,10 @@ struct IDE : gui::widget<IDE>
             if (source != "" and std::filesystem::exists(source))
                 flist.selected = source;
 
+            focus = &editor;
             editor.editor.go(doc::place{
                 std::stoi(console.pressed_line)-1,
                 std::stoi(console.pressed_char)-1});
-
-            focus = &editor;
         }
 
         if (what == &button_test)

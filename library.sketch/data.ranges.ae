@@ -1,3 +1,12 @@
+range(type x): type =
+
+    iterator = forward.iterator(x);
+    sentinel : type;
+
+    function begin → iterator;
+    function end   → sentinel;
+    ;
+
 type range(x) =
 
     type iterator = forward.iterator(x);

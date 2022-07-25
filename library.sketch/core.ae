@@ -1,4 +1,20 @@
+contiguous.range (type x) : type
+    function data →
+    function size → int
+
+operator (type x) [] → contiguous.range(x);
+
 type boolean = {false, true}
+
+boolean: type = {true, false};
+integral: type = I or Z or Q or R or C;
+
+x = something;
+x = case1 ? do1:
+x = case2 ? do2:
+    otherwise;
+
+pair (type 1st, type 2nd) = { 1st 1st; 2nd 2nd }
 
 operator if (x) = (if x = true)
 operator (x) ?  = (if x = true)

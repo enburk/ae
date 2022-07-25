@@ -7,76 +7,64 @@ namespace doc::ae::syntax
     {
         token * last_token = nullptr;
 
-        auto error (str what) {
-            log.error(last_token, what);
-            throw what;
-        };
+        auto error(str what) {
+         log.error(last_token, what);
+         throw what; }
 
-        deque<element> input; report& log; std::atomic<bool>& stop; reader(
-        array<element> input, report& log, std::atomic<bool>& stop) :
-            input(deque(input)), log(log), stop(stop) {}
+        deque<element> input; report& log; std::atomic<bool>& cancel; reader(
+        array<element> input, report& log, std::atomic<bool>& cancel) :
+            input(deque(std::move(input))), log(log), cancel(cancel) {}
 
         str next () { return
             input.empty() ? "" :
-            input.front().opening->text;
-        }
+            input.front().opening->text; }
+
         str next_kind () { return
             input.empty() ? "" :
-            input.front().kind == "()" ? "()" :
-            input.front().opening->kind;
-        }
+            input.front().opening->text == "{" ? "()" :
+            input.front().opening->text == "(" ? "()" :
+            input.front().opening->text == "[" ? "()" :
+            input.front().opening->kind; }
 
-        auto read (str s = "") -> token*
-        {
-            if (stop) error("stopped");
+        void expected (str s) {
             if (input.empty()) error("next expected " + s);
-            token* token = last_token = input.front().opening; input.pop_front();
-            if (s != "" && s != token->text) error("expected " + s);
-            return token;
-        }
-        auto read_name () -> token*
-        {
-            if (stop) error("stopped");
+            last_token = input.front().opening; input.pop_front(); // next changed
+            error("expected " + bold(s)); }
+
+        void unexpected () {
+            if (input.empty()) error("unexpected: nosense");
+            last_token = input.front().opening; input.pop_front(); // next changed
+            error("unexpected " + bold(last_token->text)); }
+
+        auto read (str s = "") -> token* {
+            if (input.empty()) error("next expected " + s);
+            last_token = input.front().opening; input.pop_front(); // next changed
+            if (s != "" and s != last_token->text) error("expected " + bold(s));
+            return last_token; }
+
+        auto read_name () -> token* {
             if (input.empty()) error("next expected name");
-            token* token = last_token = input.front().opening; input.pop_front();
-            if (token->kind != "name" && token->kind != "symbol")
-            error("expected name or symbol, not " + token->kind);
-            return token;
-        }
+            last_token = input.front().opening; input.pop_front(); // next changed
+            if (last_token->kind != "name") error("expected name, not " + last_token->kind);
+            return last_token; }
 
-        auto read_brackets ()
-        {
-            if (stop) error("stopped");
-            if (input.empty() or
-                input.front().kind != "()")
-                error("expected brackets");
-
-            brackets brackets;
-            brackets.opening = input.front().opening;
-            brackets.closing = input.front().closing;
-
-            auto eee = std::move(
-            input.front().elements);
-            input.pop_front();
-            
-            for (auto && ee : eee)
-                brackets.list += reader(std::move(ee.elements), log, stop)
-                    .read_expression();
-
-            return brackets;
-        }
+        auto read_name_or_symbol () -> token* {
+            if (input.empty()) error("next expected name or symbol");
+            last_token = input.front().opening; input.pop_front(); // next changed
+            if (last_token->kind != "name" and last_token->kind != "symbol")
+            error("expected name or symbol, not " + last_token->kind);
+            return last_token; }
 
         auto read_namepack ()
         {
             array<nameunit> names;
-
             while (not input.empty())
             {
                 if (next() == "::")
                 {
-                    if (not names.empty() and
-                        not names.back().identifier)
-                        read("not ::"); // will throw
+                    if (not names.empty()
+                    and not names.back().identifier)
+                    expected("name, not ::"); // will throw
                     names += nameunit{.coloncolon = read("::")};
                     continue;
                 }
@@ -89,22 +77,34 @@ namespace doc::ae::syntax
                 }
                 if (next_kind() == "()")
                 {
-                    if (names.empty()) break;
+                    if (names.empty()) expected("name or ::");
                     if (names.back().identifier == nullptr) break;
                     names.back().argss += read_brackets();
                     continue;
                 }
                 break;
             }
-
-            if (names.empty() or
-                names.back().identifier == nullptr) {
-                read("name or ::"); // will throw
-                // on attempt to read next token and
-                // if there is one then highlight it
-            }
-
+            if (names.empty()
+            or  names.back().identifier == nullptr)
+            expected("name or ::"); // will throw
+            // on attempt to read next token and
+            // if there is one will highlight it
             return namepack{names};
+        }
+
+        auto read_brackets () -> brackets
+        {
+            if (next_kind() != "()")
+            error("expected brackets");
+
+            brackets brackets;
+            brackets.opening = input.front().opening;
+            brackets.closing = input.front().closing;
+            brackets.list = reader(std::move(
+            input.front().elements), log, cancel).
+            read_list_of_expressions();
+            input.pop_front();
+            return brackets;
         }
 
         auto read_list_of_names ()
@@ -126,52 +126,36 @@ namespace doc::ae::syntax
         parameter read_parameter ()
         {
             parameter p;
-
-            if (input.size() >= 2 and
-                input[0].opening->kind == "name" and
-                input[1].opening->text == ":")
-            {
-                p.name = read_name(); read(":");
-                p.typexpr = read_namepack();
-                if (next() == "=") { read("=");
-                p.value = read_expression(); }
-                return p;
-            }
-
             p.typexpr = read_namepack();
-
             if (next_kind() == "name")
-                p.name = read_name();
-
+            p.name = read_name();
             if (next() == "=") { read("=");
-                p.value = read_expression(); }
-
-            if (not input.empty()) { // will throw
-                if (p.name) read("default value");
-                else read("name or default value");
-            }
-
+            p.value = read_expression(); }
             return p;
+        }
+
+        auto read_list_of_parameters ()
+        {
+            array<parameter> parameters;
+            parameters += read_parameter(); while (next() == ",") { read(",");
+            parameters += read_parameter(); }
+            if (not input.empty())
+            expected("next parameter");
+            return parameters;
         }
 
         auto read_parameters ()
         {
-            if (input.empty() ||
-                input.front().kind != "()")
-                error("expected parameters");
+            if (next_kind() != "()")
+            error("expected parameters");
 
             parameters parameters;
             parameters.opening = input.front().opening;
             parameters.closing = input.front().closing;
-
-            auto eee = std::move(
-            input.front().elements);
+            parameters.list = reader(std::move(
+            input.front().elements), log, cancel).
+            read_list_of_parameters();
             input.pop_front();
-            
-            for (auto && ee : eee)
-                parameters.list += reader(std::move(ee.elements), log, stop)
-                    .read_parameter();
-
             return parameters;
         }
 
@@ -186,45 +170,37 @@ namespace doc::ae::syntax
         auto read_optional_args ()
         {
             return next_kind() == "()" ?
-                read_parameters() :
-                parameters{};
+            read_parameters() :
+            parameters{};
         }
 
         auto read_optional_type ()
         {
             if (next()
-                ==   (char*)(u8"→")) {
-                read((char*)(u8"→"));
-                return read_namepack();
-            }
+            ==   (char*)(u8"→")) {
+            read((char*)(u8"→"));
+            return read_namepack(); }
             return namepack{};
         }
 
         auto read_expression_until (str until) -> expression
         {
             operands o;
-            namepack n;
-
-            if (next() == "::"
-            or  next_kind() == "name")
-            {
-                n = read_namepack();
-                if (not input.empty()
-                and next_kind() != "symbol")
-                {
-                    n.names.back().argss += brackets{};
-                    n.names.back().argss.back().list += 
-                    read_expression_until("");
-                }
-                o.list += expression{std::move(n)};
-            }
-
             while (not input.empty())
             {
+                if (cancel) break;
+
+                if (next() == ";"
+                or  next() == ",")
+                    break;
+
                 if (next() == until) {
                     read(until);
                     until = "";
                     break; }
+
+                if (next_kind() == "keyword") { read();
+                error("unexpeted keyword in expression"); }
 
                 if (next() == "::")
                     o.list += expression{
@@ -246,7 +222,6 @@ namespace doc::ae::syntax
                     o.list += expression{
                     read_namepack()};
             }
-
             if (until != "") error("expected " + until);
             if (o.list.size() == 0) error("expected expression");
             if (o.list.size() == 1) return o.list[0];
@@ -254,6 +229,14 @@ namespace doc::ae::syntax
         }
         auto read_expression () -> expression { return
              read_expression_until(""); }
+
+        auto read_list_of_expressions () -> array<expression>
+        {
+            array<expression> expressions;
+            expressions += read_expression(); while (next() == ",") { read(",");
+            expressions += read_expression(); }
+            return expressions;
+        }
     };
 }
 

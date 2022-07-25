@@ -98,22 +98,6 @@ function visit (action) = {
 
 [0;1]
 
-function bubble.sort (in.order: binary.predicate = <) =
-    function (range : bidirectional.range) =
-        f := range::begin
-        l := range::end
-        while f ? l do
-            i := f
-            for each j in [f+1, l) do
-                if not in.order(*i, *j)
-                then swap(*i, *j)
-                i>>
-            l<<
-        return range;
-
-
-
-
 data
   operator (x) >>> (f) = f(x)
   operator (f) <<< (x) = f(x)
@@ -653,89 +637,6 @@ rectangle (x, y, w, h: integer);
 
 function swap (a, b) = { c := a; a < b; b < c }
 
-function bubble.sort (in.order: function (x, y) > boolean = <) =
-function bubble.sort (in.order: binary.predicate = <) =
-{
-    function (range : bidirectional.range) =
-    {
-        f := range::begin;
-        l := range::end;
-        while f ? l do {
-            i := f;
-            j := f; j++;
-            while j ? l do {
-                if not in.order(*i, *j)
-                      then swap(*i, *j);
-                i++;
-                j++;
-            }
-            l--;
-        }
-        return range;
-    }
-}
-    
-;;    while (f != l)
-;;    {
-;;        for (auto i=f, j=std::next(f); j!=l; ++i, ++j)
-;;            if (! compare(*i, *j))
-;;                std::swap(*i, *j);
-;;        --l;
-;;    }
-
-;;    while (f != l)
-;;    {
-;;        for (auto i=f, j=f+1; j!=l; ++i, ++j)
-;;            if (! compare(*i, *j))
-;;                std::swap(*i, *j);
-;;        --l;
-;;    }
-
-function bubble.sort (in.order: binary.predicate = <) =
-    function (range: bidirectional.range) =
-        end := range::end
-        while range::begin ? end do
-            i := range::begin
-            j := range::begin; >>j>>
-            while j ? end do
-                if not in.order(i.value, j.value) then
-                           swap(i.value, j.value)
-                >>i>>
-                >>j>>
-            <<end<<
-        return range;
-
-function bubble.sort (in.order: binary.predicate = <) =
-    function(range: bidirectional.range) =
-        f := range::begin
-        l := range::end
-        while f ? l do
-            i := f
-            j := f; j++
-            while j ? l do
-                if not in.order(*i, *j)
-                      then swap(*i, *j)
-                i++
-                j++
-            l--
-        return range;
-
-;; function bubble.sort (in.order: binary.predicate = <) =
-;;     function(range: bidirectional.range) =
-;;         f := range::begin
-;;         l := range::end
-;;         while f ? l do
-;;             i := f
-;;             for each j in [f+1, l) do
-;;                 if not in.order(*i, *j)
-;;                 then swap(*i, *j)
-;;                 i>>
-;;             l<<
-;;         return range;
-
-
-
-
 type field(x)
 {
 type point(x) = x;
@@ -752,44 +653,6 @@ operator (s.size) <=> (i:integer) = {...}
 
 operator (s.size) + (i:integer) > size = {...}
 operator (s.size) + (i:integer) > size = {...}
-}
-
-type iterator(x) =
-{
-    function value () > x  = {...}
-    operator ++ > iterator = {...}
-}
-type bidirectional.iterator(x) : iterator(x) =
-{
-    function value () > x  = {...}
-    operator ++ > void = {...}
-    operator -- > void = {...}
-;;  operator ++ > iterator = {...}
-;;  operator -- > iterator = {...}
-}
-
-range(x) : type =
-{
-    iterator : type = iterator(x);
-    sentinel : type = {...}
-    function begin () > iterator = {...}
-    function end   () > sentinel = {...}
-    ;; operator [f: interator, l: iterator) =
-}
-
-input.range(value.type) : type =
-{
-    function empty () > boolean = {...}
-    mutation pop () > value.type = {...}
-}
-
-common.range(value.type) : type input.range(value.type) =
-{
-    operator input.range = ;
-}
-
-bidirectional.range(value.type) : type range(value.type) =
-{
 }
 
 replace.all("no").by("yes");

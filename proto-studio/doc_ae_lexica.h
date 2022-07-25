@@ -4,22 +4,21 @@ namespace doc::ae::lexica
 {
 	using text::token;
 
-    inline constexpr bool ascii (char c) { return (c >= ' ' && c <= '~'); }
-    inline constexpr bool space (char c) { return (c == ' ' || c =='\t'); }
-    inline constexpr bool digit (char c) { return (c >= '0' && c <= '9'); }
-    inline constexpr bool alpha (char c) { return (c >= 'A' && c <= 'Z') ||
-                                                  (c >= 'a' && c <= 'z'); }
+    bool ascii (char c) { return (c >= ' ' && c <= '~'); }
+    bool space (char c) { return (c == ' ' || c =='\t'); }
+    bool digit (char c) { return (c >= '0' && c <= '9'); }
+    bool alpha (char c) { return (c >= 'A' && c <= 'Z') ||
+                                 (c >= 'a' && c <= 'z'); }
 
-    inline bool ascii (str c) { return c.size() == 1 && ascii(c[0]); }
-    inline bool space (str c) { return c.size() == 1 && space(c[0]); }
-    inline bool digit (str c) { return c.size() == 1 && digit(c[0]); }
-    inline bool alpha (str c) { return c.size() == 1 && alpha(c[0]); }
-    inline bool brace (str c) { return
-        c == "{" or c == "(" or c == "[" or
-        c == "}" or c == ")" or c == "]";
-    }
+    bool ascii (str c) { return c.size() == 1 && ascii(c[0]); }
+    bool space (str c) { return c.size() == 1 && space(c[0]); }
+    bool digit (str c) { return c.size() == 1 && digit(c[0]); }
+    bool alpha (str c) { return c.size() == 1 && alpha(c[0]); }
+    bool brace (str c) { return
+    c == "{" or c == "(" or c == "[" or
+    c == "}" or c == ")" or c == "]"; }
 
-    inline array<token> parse (const text::text & text)
+    array<token> parse (const text::text & text)
     {
         array<token> tokens; token t;
 
@@ -75,6 +74,9 @@ namespace doc::ae::lexica
                                     "symbol";
                 }
             }
+
+            // line termination,
+            // be aware of comments
 
             if (t.text != "") tokens += t;
 

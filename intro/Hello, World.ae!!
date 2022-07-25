@@ -1,5 +1,9 @@
-::system::out "Hello, World!"
+::system::app(window) app("Hello, World!");
 
-"Hello, World!" >>> ::system::out
+window: ::system::window
 
+app: ::system::app;
+app.title ← "Hello, World!";
+app.window:
 
+  

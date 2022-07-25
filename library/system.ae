@@ -1,5 +1,6 @@
-mutation out (byte[] data);
-mutation err (byte[] data);
+mutation: in → byte[];
+mutation: out (byte[]);
+mutation: err (byte[]);
 
 ;;mutation in  → byte[] = …
 ;;mutation out ← byte[] = …
