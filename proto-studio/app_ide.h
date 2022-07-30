@@ -12,6 +12,7 @@ struct IDE : gui::widget<IDE>
     gui::canvas canvas;
     gui::canvas toolbar;
     gui::button button_run;
+    gui::button button_rebuild;
     gui::button button_test;
 
     gui::area<Flist> flist_area;
@@ -39,23 +40,20 @@ struct IDE : gui::widget<IDE>
         canvas.color = rgba::red;
         toolbar.color = gui::skins[skin].light.first;
         button_run .text.text = "run";
+        button_rebuild.text.text = "rebuild";
         button_test.text.text = "test";
         console.activate(&console.editor);
+        console_area.show_focus = true;
+        editor_area.show_focus = true;
+        flist_area.show_focus = true;
         test_area.hide();
 
         watcher.dir = std::filesystem::current_path();
         watcher.action = [this](std::filesystem::path path, str what)
         {
-            str s = path.string();
-            if (s.contains("\\.vs\\")) return;
-            if (s.contains("\\.astudio")) return;
-            if (s.contains("\\.vstudio")) return;
-            if (s.contains("\\enc_temp_folder\\")) return;
-            if (s.ends_with(".ae!.cpp") or s.ends_with(".ae!!.cpp")) return;
-            if (s.ends_with(".ae!.obj") or s.ends_with(".ae!!.obj")) return;
-            if (s.ends_with(".ae!.exe") or s.ends_with(".ae!!.exe")) return;
-            if (s.ends_with("cl.log.txt")) return;
-            if (what.ends_with("modified") and std::filesystem::is_directory(path)) return;
+            str e = path.extension().string();
+            if (std::filesystem::is_directory(path)) return;
+            if (e != ".ae" and e != ".ae!" and e != "ae!!") return;
             console.events << light(path.string() + " " + what);
             reload = true;
         };
@@ -120,14 +118,17 @@ struct IDE : gui::widget<IDE>
                 log.errors.empty();
 
                 console.editor.clear();
+                if (not editor.log.errors.empty())
+                console.activate(&console.editor);
                 if (not editor.log.messages.empty()) {
                 console.editor << editor.log();
                 editor.log.clear(); }
-
-                if (not editor.log.errors.empty())
-                console.activate(&console.editor);
             }
 
+            button_rebuild.enabled =
+                editor.path.now.extension() == ".ae"  or
+                editor.path.now.extension() == ".ae!" or
+                editor.path.now.extension() == ".ae!!";
             button_run.enabled = (
                 editor.path.now.extension() == ".ae!" or
                 editor.path.now.extension() == ".ae!!")
@@ -154,7 +155,8 @@ struct IDE : gui::widget<IDE>
 
             canvas.coord = coord.now.local();
             toolbar.coord = xywh(0, 0, W, h);
-            button_run .coord = xywh(0, 0, w, h);
+            button_run.coord = xywh(0, 0, w, h);
+            button_rebuild.coord = xywh(w, 0, w, h);
             button_test.coord = xywh(W-w, 0, w, h);
 
             test_area.coord = xyxy(0, h, W, H);
@@ -169,17 +171,17 @@ struct IDE : gui::widget<IDE>
         if (what == &flist)
         {
             editor.flist.selected = flist.selected.now;
+            focus = &editor_area;
             syntax_run = true;
             syntax_ok = false;
-            focus = &editor;
         }
 
         if (what == &editor.flist)
         {
             flist.selected = editor.flist.selected.now;
+            focus = &editor_area;
             syntax_run = true;
             syntax_ok = false;
-            focus = &editor;
         }
         if (what == &editor)
         {
@@ -196,10 +198,10 @@ struct IDE : gui::widget<IDE>
             if (source != "" and std::filesystem::exists(source))
                 flist.selected = source;
 
-            focus = &editor;
+            focus = &editor_area;
             editor.editor.go(doc::place{
-                std::stoi(console.pressed_line)-1,
-                std::stoi(console.pressed_char)-1});
+            std::stoi(console.pressed_line)-1,
+            std::stoi(console.pressed_char)-1});
         }
 
         if (what == &button_test)
@@ -218,6 +220,11 @@ struct IDE : gui::widget<IDE>
             if (turn_on)
             focus = &test_area; else
             focus = &editor_area;
+        }
+
+        if (what == &button_rebuild)
+        {
+            doc::text::repo::map[editor.path.now].model->tokenize();
         }
 
         if (what == &button_run) try

@@ -5,29 +5,41 @@ namespace ae
 {
     namespace system
     {
-        // source: mutation out ()
-        // schema: mutation namepack
+        // source: mutation in → byte [] ;
+        // schema: mutation name -> name [] 
         // kind: mutation
-        auto out(std::span<uint8_t> data) -> void;
+        auto in() -> std::span<uint8_t>;
+        // kind: mutation
+        // name: in
+        // type: std::span<uint8_t>
+        // args: ()
+        // source: mutation out () ;
+        // schema: mutation namepack 
+        // kind: mutation
+        auto out(std::span<uint8_t> ) -> void;
         // kind: mutation
         // name: out
         // type: void
-        // args: (std::span<uint8_t> data)
-        // source: mutation err ()
-        // schema: mutation namepack
+        // args: (std::span<uint8_t> )
+        // source: mutation err () ;
+        // schema: mutation namepack 
         // kind: mutation
-        auto err(std::span<uint8_t> data) -> void;
+        auto err(std::span<uint8_t> ) -> void;
         // kind: mutation
         // name: err
         // type: void
-        // args: (std::span<uint8_t> data)
+        // args: (std::span<uint8_t> )
         void main_()
         {
-            // source: 
+            // source: ;
             // schema: 
             // kind: 
             // args: ()
-            // source: 
+            // source: ;
+            // schema: 
+            // kind: 
+            // args: ()
+            // source: ;
             // schema: 
             // kind: 
             // args: ()

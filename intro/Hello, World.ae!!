@@ -1,9 +1,2 @@
-::system::app(window) app("Hello, World!");
-
-window: ::system::window
-
-app: ::system::app;
-app.title ← "Hello, World!";
-app.window:
-
-  
+::system::app(::gui::text::view) app;
+app::window::text ← "Hello, World!";

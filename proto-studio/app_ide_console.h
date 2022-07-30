@@ -22,6 +22,8 @@ struct Console : gui::widget<Console>
         buttons(0).on = true;
         for (int i=1; i<consoles.size(); i++)
             consoles[i]->hide();
+
+        editor.focusable = false;
     }
 
     void activate (gui::console * console)

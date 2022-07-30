@@ -1,3 +1,5 @@
+::meta::import(::core); ;; it's a call of a function
+
 ;; function out (byte… data) → void = {...}
 ;; function err (byte… data) → void = {...}
 

@@ -1,36 +1,31 @@
-::meta::import(::core); ;; it's a call of a function
-
-app extends: ::system::app
+type: window extends: gui::widget =
 {
-    app.title = "ae studio";
+}
 
-    ::gui::canvas canvas;
-    ::gui::canvas toolbar;
-    ::gui::button button_run;
-    ::gui::button button_test;
+sys::app(window) app;
 
-    ::gui::area(::flist::flist) flist;
-    ::gui::area(::editor::editor) editor;
-    ::gui::area(::console::console) console;
-    ::gui::splitter splitter.editor.l;
-    ::gui::splitter splitter.editor.r;
-
-    canvas.color = ::gui::colors::light;
-
-    coords =
-    ::system::settings("app.window.coords",
-    .default = ::system::screen::coords);
- }
-
-;; system::window::coords =
-;;     system::settings("window::coords",
-;;         .default = system::screen::coords);
+;; gui = ::gui;
+;; sys = ::system;
 ;;
-;; system::window::changed = (what)
+;; type: window extends: gui::widget
 ;; {
-;;     if what = coords then
-;;     {
-;;         system::settings("window::coords") = coords;
-;;     }
+;;     gui::canvas canvas;
+;;     gui::canvas toolbar;
+;;     gui::button button.run;
+;;     gui::button button.test;
+;;
+;;     gui::area(::flist::flist) flist;
+;;     gui::area(::editor::editor) editor;
+;;     gui::area(::console::console) console;
+;;     gui::splitter splitter.editor.l;
+;;     gui::splitter splitter.editor.r;
+;;
+;;     canvas::color = gui::colors::light;
+;;
 ;; }
+;;
+;; sys::app(window) app;
+;; app::title ← "ae studio";
+;; sys::settings(app::coords,
+;; sys::screen::coords);
 

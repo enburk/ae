@@ -72,7 +72,7 @@ namespace doc::ae::synthesis
     auto in (syntax::parameter const& x)
     {
         parameter y;
-        y.name = x.name->text;
+        y.name = x.name? x.name->text : "";
         y.typexpr = in(x.typexpr);
         y.value = in(x.value);
         y.type = x.type;

@@ -183,7 +183,7 @@ namespace doc::ae::syntax
             return namepack{};
         }
 
-        auto read_expression_until (str until) -> expression
+        auto read_expression_until (str until, bool optional) -> expression
         {
             operands o;
             while (not input.empty())
@@ -199,8 +199,8 @@ namespace doc::ae::syntax
                     until = "";
                     break; }
 
-                if (next_kind() == "keyword") { read();
-                error("unexpeted keyword in expression"); }
+                if (next_kind() == "keyword")
+                    unexpected();
 
                 if (next() == "::")
                     o.list += expression{
@@ -222,19 +222,20 @@ namespace doc::ae::syntax
                     o.list += expression{
                     read_namepack()};
             }
-            if (until != "") error("expected " + until);
-            if (o.list.size() == 0) error("expected expression");
+            if (until != "") expected(until);
             if (o.list.size() == 1) return o.list[0];
+            if (o.list.size() == 0 and not optional)
+            expected("expression");
             return expression{o};
         }
         auto read_expression () -> expression { return
-             read_expression_until(""); }
+             read_expression_until("", false); }
 
         auto read_list_of_expressions () -> array<expression>
         {
             array<expression> expressions;
-            expressions += read_expression(); while (next() == ",") { read(",");
-            expressions += read_expression(); }
+            expressions += read_expression_until("", true); while (next() == ",") { read(",");
+            expressions += read_expression_until("", true); }
             return expressions;
         }
     };

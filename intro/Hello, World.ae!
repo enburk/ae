@@ -1,1 +1,1 @@
-::system::out "Hello, World!"
+::system::out("Hello, World!")

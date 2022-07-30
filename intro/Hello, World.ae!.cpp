@@ -8,9 +8,10 @@ namespace ae
     {
         void main_()
         {
-            // source: :: system :: out "Hello, World!"
-            // schema: namepack literal
-            // kind: 
+            // source: :: system :: out ()
+            // schema: namepack
+            // kind: expression
+            // kind: expression
             // args: ()
             system::out(std::span((uint8_t*)"Hello, World!",15));
         }

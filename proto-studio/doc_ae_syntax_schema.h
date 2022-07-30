@@ -27,17 +27,25 @@ namespace doc::ae::syntax
             catch (str const&) { log.error(
             gray("source: ") + dark(s.source) + "<br" +
             gray("scheme: ") + blue(s.schema) + "<br" +
+            gray("names: " ) + dark(print(s.names  )) + "<br" +
+            gray("args: "  ) + dark(print(s.args   )) + "<br" +
+            gray("type: "  ) + dark(print(s.typexpr)) + "<br" +
             gray("kind: "  ) + dark(s.kind)); }
             return ss;
         }
 
         auto read_body () -> array<statement>
         {
-            if (next() == "") return array<statement>{};
+            if (next() == ";") return array<statement>{};
             if (next() != "{") expected("body");
+
             auto statements = schema(std::move(
             input.front().elements), log, cancel).output;
             input.pop_front();
+
+            if (statements.empty())
+                statements +=
+                statement{};
             return statements;
         }
 

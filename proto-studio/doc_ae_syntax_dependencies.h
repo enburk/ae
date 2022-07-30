@@ -45,6 +45,8 @@ namespace doc::ae::syntax
         {
             dependees.clear();
             unresolved = precedents;
+            for (token* t: precedents)
+                t->kind = "module";
 
             auto dir = p;
             dir.replace_extension("");
