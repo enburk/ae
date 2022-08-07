@@ -57,6 +57,18 @@ namespace doc::ae::syntax
             return ss;
         }
 
+        auto read_expression_or_body () -> array<statement>
+        {
+            array<statement> ss;
+            if (next() == "{") return read_body();
+            if (next() == ";") { read(); return ss; }
+            if (next() != "=") expected("= and expression or body"); read("=");
+            ss += statement{};
+            ss.back().kind = "return";
+            ss.back().expr = read_expression();
+            return ss;
+        }
+
         void read_statement (statement& s)
         {
             str& schema = s.schema;
@@ -86,7 +98,16 @@ namespace doc::ae::syntax
                     schema += e.opening->text; else
                     schema += e.opening->kind;
 
-                if (schema.starts_with(" operator ")) continue;
+                if (e.opening->kind == "keyword")
+                if (e.opening->text == "import"
+                or  e.opening->text == "goto"
+                or  e.opening->text == "label"
+                or  e.opening->text == "yield"
+                or  e.opening->text == "return")
+                    break;
+
+                if (schema.starts_with(" operator "))
+                    continue;
 
                 auto replace = [&schema](str what, str with) {
                 if (schema.ends_with(str(" " + what)) or schema == what) {
@@ -115,6 +136,12 @@ namespace doc::ae::syntax
                 if (next() == "{") s.body = read_body(); else
                 if (next() != ";") unexpected(); else
                 read(";");
+                return;
+            }
+            if (schema == "import")
+            {
+                s.kind = read("import")->text;
+                //s.names = read_list_of_namepacks();
                 return;
             }
             if (schema == "name")
@@ -168,9 +195,7 @@ namespace doc::ae::syntax
                 or  next() == "subset.of") {
                 s.variety = read()->text;
                 s.typexpr = read_namepack(); }
-                if (next() == "=") { read("=");
-                s.expr = read_expression(); } else
-                s.body = read_body();
+                s.body = read_expression_or_body();
                 return;
             }
             if (schema_starts_with("property"))
@@ -181,9 +206,7 @@ namespace doc::ae::syntax
                 if (next() == (char*)(u8"←")) s.variety = "setter"; else
                 expected((char*)(u8"→ or ←")); read();
                 s.typexpr = read_namepack();
-                if (next() == "=") { read("=");
-                s.expr = read_expression(); } else
-                s.body = read_body();
+                s.body = read_expression_or_body();
                 return;
             }
             if (schema_starts_with("function")
@@ -193,9 +216,7 @@ namespace doc::ae::syntax
                 s.names += read_name();
                 s.args = read_optional_args();
                 s.typexpr = read_optional_type();
-                if (next() == "=") { read("=");
-                s.expr = read_expression(); } else
-                s.body = read_body();
+                s.body = read_expression_or_body();
                 return;
             }
             if (schema_starts_with("operator"))
@@ -225,9 +246,7 @@ namespace doc::ae::syntax
                 }
                 else expected("operator name or parameter");
                 s.typexpr = read_optional_type();
-                if (next() == "=") { read("=");
-                s.expr = read_expression(); } else
-                s.body = read_body();
+                s.body = read_expression_or_body();
                 return;
             }
 
@@ -264,6 +283,24 @@ namespace doc::ae::syntax
             {
                 s.kind = "else"; read("else");
                 s.body = read_statement_or_body();
+                return;
+            }
+
+            if (schema_starts_with("goto")
+            or  schema_starts_with("label"))
+            {
+                s.kind = read()->text;
+                s.names += read_name();
+                if (next() != "") {
+                if (next() == ";") read(";");
+                else unexpected(); }
+                return;
+            }
+            if (schema_starts_with("yield")
+            or  schema_starts_with("return"))
+            {
+                s.kind = read()->text;
+                s.expr = read_expression();
                 return;
             }
 

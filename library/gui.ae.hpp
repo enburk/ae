@@ -8,15 +8,12 @@ namespace ae
         // source: type widget {}
         // schema: type name 
         // kind: type
-        // kind: type
-        // name: widget
-        // args: ()
+        struct widget
         {
             // source: 
             // schema: 
-            // kind: 
-            // args: ()
-        }
+            // kind: empty
+        };
         void main_() { }
     }
 }

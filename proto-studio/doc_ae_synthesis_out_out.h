@@ -10,6 +10,8 @@ namespace doc::ae::synthesis
 
         void print (array<str>& lines, bool semicolon = true, int indent = 0)
         {
+            if (kind == "empty") return;
+
             str line = head;
 
             semicolon &= body.empty() and

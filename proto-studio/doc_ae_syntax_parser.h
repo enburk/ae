@@ -16,6 +16,8 @@ namespace doc::ae::syntax
         "let", "type", "extends", "subset.of", "extension", 
 
         "property", "function", "mutation", "operator",
+
+        "import",
     };
 
     struct element

@@ -13,6 +13,7 @@ namespace ide::compiler
         src.extension().string() + ext);
         return src; }
 
+    auto hxx (path src){ return ext(src, ".h++"); }
     auto hpp (path src){ return ext(src, ".hpp"); }
     auto cxx (path src){ return ext(src, ".c++"); }
     auto cpp (path src){ return ext(src, ".cpp"); }
@@ -88,6 +89,11 @@ namespace ide::compiler
                 result << "\n";
             }
             result << "}\n";
+
+            if (exists(hxx(data.path)))
+            result << "#include \"" +
+            hxx(data.path).string() +
+            "\"\n";
 
             if (main)
             for (auto p: cxxs)
