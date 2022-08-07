@@ -29,6 +29,24 @@ namespace ae
         // name: err
         // type: void
         // args: (std::span<uint8_t> )
+        // source: type app () {}
+        // schema: type namepack 
+        // kind: type
+        // kind: type
+        // name: app
+        // args: ( window)
+        {
+            // source: window window ;
+            // schema: name name 
+            // kind: expression
+            // kind: expression
+            // args: ()
+            window window;
+            // source: ;
+            // schema: 
+            // kind: 
+            // args: ()
+        }
         void main_()
         {
             // source: ;

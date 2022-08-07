@@ -4,17 +4,42 @@ contiguous.range (type x) : type
 
 operator (type x) [] → contiguous.range(x);
 
-type boolean = {false, true}
+type: boolean = {false, true}
 
 boolean: type = {true, false};
 integral: type = I or Z or Q or R or C;
 
+let:
 x = something;
-x = case1 ? do1:
-x = case2 ? do2:
+x = case1 ? do1 |
+x = case2 ? do2 |
     otherwise;
 
-pair (type 1st, type 2nd) = { 1st 1st; 2nd 2nd }
+let:
+x = something;
+x = case1 ? do1 else:
+x = case2 ? do2 else:
+    otherwise;
+
+let:
+x = something;
+x = case1 ?
+{
+    do1.1;
+    do1.2;
+}
+else:
+x = case2 ?
+{
+    do2.1;
+    do2.2;
+}
+else:
+{
+    otherwise;
+}
+
+type: pair (type: 1st, type: 2nd) = { 1st 1st; 2nd 2nd }
 
 operator if (x) = (if x = true)
 operator (x) ?  = (if x = true)
@@ -26,12 +51,6 @@ type integer.16
 type integer.32
 type integer.64
 
-using
-    type N = natural
-    type Z = integer
-    type Q = rational
-    type R = real
-    type C = complex
 
 type complex extension
 
@@ -42,47 +61,19 @@ integer : rational =
 
     mutation += (integer) = …
 
-operator (real) + (real) → real = …
-
-operator (Z) + (Z) → Z = …
-operator (R) + (R) → R = …
-
 operator (x) = (x) = …
-
-
-for x in {natural, integer, rational, real, complex}
-
-    operator (x) + (x) = …
-    operator (x) - (x) = …
-    operator (x) × (x) = …
-    operator (x) / (x) = …
 
 function Z (N) = …
 function Q (Z) = …
 function R (Q) = …
 function C (R) = …
 
-operator (N) / (N) → Q
-operator (Z) / (Z) → Q
-operator (N) - (N) → Z
-
 operator (N) mod (N) → N
 operator (Z) mod (Z) → Z
-
-operator (N) + (N) → N; operator (Z) + (Z) → Z;
-operator (N) - (N) → Z; operator (Z) - (Z) → Z;
-operator (N) × (N) → N; operator (Z) × (Z) → Z;
-operator (N) : (N) → Q; operator (Z) : (Z) → Q;
 
 operator (x) / (y) = (x) : (y)
 
 operator (numeric x) / (numeric y) = x : y
-
-operator -(N) → Z
-operator -(Z) → Z
-operator -(Q) → Q
-operator -(R) → R
-operator -(C) → C
 
 axiom (Z a, b, c): a + (b + c) = (a + b) + c
 

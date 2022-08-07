@@ -67,7 +67,7 @@ namespace doc::ae::syntax
 
     struct statement
     {
-        str kind;
+        str kind, variety;
         array<token*> names;
         parameters args;
         expression expr;

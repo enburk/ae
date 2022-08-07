@@ -5,12 +5,11 @@ namespace doc::ae::syntax
 {
     struct schema : reader
     {
-        array<statement> output; report& log; std::atomic<bool>& cancel; schema(
-        array<element>&& input,  report& log, std::atomic<bool>& cancel) :
-        reader(std::move(input), log, cancel), log(log), cancel(cancel)
-        {
-            output = read_statements();
-        }
+        schema (array<element>&& input,
+        report& log, std::atomic<bool>& cancel):
+        reader(std::move(input), log, cancel) {}
+
+        auto output () { return read_statements(); }
 
         auto read_statements () -> array<statement>
         {
@@ -39,14 +38,23 @@ namespace doc::ae::syntax
             if (next() == ";") return array<statement>{};
             if (next() != "{") expected("body");
 
-            auto statements = schema(std::move(
-            input.front().elements), log, cancel).output;
+            auto statements = schema{std::move(
+            input.front().elements), log, cancel}.output();
             input.pop_front();
 
             if (statements.empty())
                 statements +=
-                statement{};
+                statement{.kind = "empty"};
             return statements;
+        }
+
+        auto read_statement_or_body () -> array<statement>
+        {
+            if (next() == "{") return read_body();
+            array<statement> ss;
+            ss += statement{};
+            read_statement(ss.back());
+            return ss;
         }
 
         void read_statement (statement& s)
@@ -116,6 +124,41 @@ namespace doc::ae::syntax
                 s.body += read_body();
                 return;
             }
+            if (schema == "name :=")
+            {
+                s.kind = "variable";
+                s.names += read_name(); read("=");
+                s.expr = read_expression();
+                return;
+            }
+            if (schema == "name name =" or
+                schema == "name names =" or
+                schema == "namepack name =" or
+                schema == "namepack names =")
+            {
+                s.kind = "variable";
+                s.typexpr = read_namepack();
+                s.names = read_list_of_names(); read("=");
+                s.expr = read_expression();
+                return;
+            }
+            if (schema == "name name" or
+                schema == "name names" or
+                schema == "namepack name" or
+                schema == "namepack names")
+            {
+                s.kind = "variable";
+                s.typexpr = read_namepack();
+                s.names = read_list_of_names();
+                return;
+            }
+            if (schema_starts_with("let"))
+            {
+                s.kind = "alias"; read("let");
+                s.names += read_name(); read("=");
+                s.expr = read_expression();
+                return;
+            }
             if (schema_starts_with("type"))
             {
                 s.kind = read()->text;
@@ -123,8 +166,21 @@ namespace doc::ae::syntax
                 s.args = read_optional_args();
                 if (next() == "extends"
                 or  next() == "subset.of") {
-                s.kind += " " + read()->text;
+                s.variety = read()->text;
                 s.typexpr = read_namepack(); }
+                if (next() == "=") { read("=");
+                s.expr = read_expression(); } else
+                s.body = read_body();
+                return;
+            }
+            if (schema_starts_with("property"))
+            {
+                s.kind = read("property")->text;
+                s.names += read_name();
+                if (next() == (char*)(u8"→")) s.variety = "getter"; else
+                if (next() == (char*)(u8"←")) s.variety = "setter"; else
+                expected((char*)(u8"→ or ←")); read();
+                s.typexpr = read_namepack();
                 if (next() == "=") { read("=");
                 s.expr = read_expression(); } else
                 s.body = read_body();
@@ -146,28 +202,28 @@ namespace doc::ae::syntax
             {
                 schema.replace_all(" name "  , " x ");
                 schema.replace_all(" symbol ", " x ");
-                read("operator");
+                s.kind = read("operator")->text;
 
                 if (schema_starts_with("operator () x ()"))
                 {
-                    s.kind = "binary operator";
+                    s.variety = "binary";
                     s.args.list += read_one_parameter();
-                    s.names += read_name();
+                    s.names += read_name_or_symbol();
                     s.args.list += read_one_parameter();
                 }
                 else if (schema_starts_with("operator () x"))
                 {
-                    s.kind = "postfix operator";
+                    s.variety = "postfix";
                     s.args.list += read_one_parameter();
-                    s.names += read_name();
+                    s.names += read_name_or_symbol();
                 }
                 else if (schema_starts_with("operator x ()"))
                 {
-                    s.kind = "prefix operator";
-                    s.names += read_name();
+                    s.variety = "prefix";
+                    s.names += read_name_or_symbol();
                     s.args.list += read_one_parameter();
                 }
-                else read("operator name or parameter"); // throw
+                else expected("operator name or parameter");
                 s.typexpr = read_optional_type();
                 if (next() == "=") { read("=");
                 s.expr = read_expression(); } else
@@ -175,50 +231,41 @@ namespace doc::ae::syntax
                 return;
             }
 
-            //if (schema_starts_with("for"))
-            //{
-            //    read("for"); auto names = read_list_of_names();
-            //    read("in");  auto range = read_expression_until("do");
-            //    auto in = unique_id("in");
-            //    auto it = unique_id("it");
-            //    s.name = in; s.kind = "variable"; s.expr = ":=" + range;
-            //    output += std::move(s); s = statement{};
-            //    s.name = it; s.kind = "variable"; s.expr = token{":="} + it + "::" + "begin";
-            //    output += std::move(s); s = statement{};
-            //    s.kind = "while";
-            //    s.expr = it + u8"≠" + range + "::" + "end";
-            //    for (int i=1; auto name : names) {
-            //        statement ss;
-            //        ss.name = name;
-            //        ss.kind = "variable";
-            //        ss.expr = token{":="} + range + "::" + "value" + "::" + str(i++);
-            //        s.body += std::move(ss);
-            //    }
-            //}
-            //if (schema == "name name" or
-            //    schema == "name names" or
-            //    schema == "namepack name" or
-            //    schema == "namepack names")
-            //{
-            //    s.kind = "variable";
-            //    s.name = read_name();
-            //    return s;
-            //}
-            //if (schema == "name : name")
-            //{
-            //    s.kind = "singleton";
-            //    s.name = read_name();
-            //    return s;
-            //}
-            //if (schema_starts_with("name name ="))
-            //{
-            //    s.kind = read()->text;
-            //    s.name = read_name(); read((char*)(u8"←"));
-            //    s.type = read_namepack();
-            //    s.args.list += parameter{read_name()};
-            //    read("=");
-            //    return s;
-            //}
+            if (schema_starts_with("for"))
+            {
+                s.kind = "for"; read("for");
+                s.names = read_list_of_names(); read("in");
+                s.expr = read_expression_until("do"); read("do");
+                s.body = read_statement_or_body();
+                return;
+            }
+            if (schema_starts_with("while"))
+            {
+                s.kind = "while"; read("while");
+                s.expr = read_expression_until("do"); read("do");
+                s.body = read_statement_or_body();
+                return;
+            }
+            if (schema_starts_with("if"))
+            {
+                s.kind = "if"; read("if");
+                s.expr = read_expression_until("then"); read("then");
+                s.body = read_statement_or_body();
+                return;
+            }
+            if (schema_starts_with("else if"))
+            {
+                s.kind = "else if"; read("else"); read("if");
+                s.expr = read_expression_until("then"); read("then");
+                s.body = read_statement_or_body();
+                return;
+            }
+            if (schema_starts_with("else"))
+            {
+                s.kind = "else"; read("else");
+                s.body = read_statement_or_body();
+                return;
+            }
 
             s.kind = "expression";
             s.expr = read_expression();

@@ -6,10 +6,7 @@ namespace doc::ae::syntax
 {
     struct typing
     {
-        report& log; typing(
-        report& log):
-            log(log)
-            {}
+        report& log;
 
         int compatibility (type x, type y)
         {

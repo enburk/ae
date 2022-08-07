@@ -1,45 +1,59 @@
-type forward.iterator(x) =
+let: self = ::meta::self;
 
-    function value → x = {…}
-    mutation value ← x = {…}
-    operator ++ = {…}
+type: forward.iterator (type: x)
+{
+    function: value → x;
+    mutation: value ← x;
+    operator: ++;
+}
+type: bidirectional.iterator (type: x) extends: forward.iterator(x)
+{
+    operator: ++;
+    operator: --;
+}
+type: random.access.iterator (type: x) extends: bidirectional.iterator(x), ordered
+{
+    mutation: ++ { this += 1 }
+    mutation: -- { this -= 1 }
+    function: +  (integer n) { i := self; i += n; return i }
+    function: -  (integer n) { i := self; i -= n; return i }
+    mutation: += (integer n);
+    mutation: -= (integer n);
+    function: -  (same i) → integer;
+}
+type: pointer (type: x)
+{
+    address address;
+    property: value → x = value.of(x)::at(address);
+    property: value ← x = value.of(x)::at(address) ← value;
+}
+type: pointer (type: x) extends: address
+{
+    property: value → x = value.of(x)::at(address);
+    property: value ← x = value.of(x)::at(address) ← value;
+}
+type: contiguous.iterator (type: x) extends: pointer(x), random.access.iterator(x)
+{
+    operator: += (integer n) = address += n × meta::size.of(x);
+    operator: -= (integer n) = address -= n × meta::size.of(x);
+    operator: -  (same i) = (address - i.address) / meta::size.of(x);
+}
+type:  forward.contiguous.iterator (type: x) extends: contiguous.iterator(x) { delete: -=; }
+type: backward.contiguous.iterator (type: x) extends: contiguous.iterator(x) { delete: +=; }
 
-type bidirectional.iterator(x) : forward.iterator(x) =
+;; type integer.iterator : random.access.iterator(x) =
+;;
+;;     integer value;
+;;     operator: ++ = value++;
+;;     operator: -- = value--;
+;;     operator: += (integer n) = value += n;
+;;     operator: -= (integer n) = value -= n;
+;;     operator: -  (same i) = value - i.value;
 
-    function value → x = {…}
-    mutation value ← x = {…}
-    operator ++ = {…}
-    operator -- = {…}
+;;     requires:
+;;     invariant:
 
-type random.access.iterator(x) : bidirectional.iterator(x), ordered =
-
-    mutation ++ = { this += 1 }
-    mutation -- = { this -= 1 }
-    function +  (integer n) = { i := this; i += n; return i }
-    function -  (integer n) = { i := this; i -= n; return i }
-    mutation += (integer n) = {…}
-    mutation -= (integer n) = {…}
-    function -  (same i) → integer = {…}
-
-type contiguous.iterator(x) : random.access.iterator(x) =
-
-    address : meta::address;
-    function value = meta::value.of(x)::at(address);
-    mutation value(x v) = meta::value.of(x)::at(address) ← v; ;; value;
-    operator += (integer n) = address += n × meta::size.of(x);
-    operator -= (integer n) = address -= n × meta::size.of(x);
-    operator -  (same i) = (address - i.address) / meta::size.of(x);
-
-type integer.iterator : random.access.iterator(x) =
-
-    integer value;
-    operator ++ = value++;
-    operator -- = value--;
-    operator += (integer n) = value += n;
-    operator -= (integer n) = value -= n;
-    operator -  (same i) = value - i.value;
-
-
+;; a := f;
 
 
 

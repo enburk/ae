@@ -24,6 +24,16 @@ screens : ::gui::screen[];
 ;;
 ;; operator (type x) … =
 
+memory
+{
+    type: chunk = ::data::contigous.range(byte);
+    
+    function: acquire (integer bytes) → chunk
+    throws: exception;
+    
+    function: release (chunk)
+    throws: exception;
+}
 
 
 

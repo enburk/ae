@@ -1,11 +1,24 @@
-type size = {…};
-type address = {…};
+integer word = …;
 
-;; function size.of (x) → size = {…}
-;; function type.of (x) → type = {…}
-;; function name.of (x) → text = {…}
+operator: (type: x) [] → contiguous.range(x) = …;
+operator: (type: x) [] (x, x) → contiguous.range(x) = …;
 
-type value.of(x) = { function at (a: address) → x = {…} }
+for: x in: integer.range[0, 100) do: ;
+
+type: address = integer[0, 2^word); ;; range?
+type: size    = integer[0, 2^word);
+
+type: address subset.of: integer;
+type: size    subset.of: integer;
+
+function: size.of (x) → size;
+function: type.of (x) → type:;
+function: name.of (x) → text;
+
+type: value.of(x) 
+{
+    function: at (address) → x = …;
+}
 
 
 

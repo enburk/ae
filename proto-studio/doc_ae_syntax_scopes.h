@@ -40,9 +40,7 @@ namespace doc::ae::syntax
                 if (statement.kind != "type"
                 and statement.kind != "function"
                 and statement.kind != "mutation"
-                and statement.kind != "bynary operator"
-                and statement.kind != "prefix operator"
-                and statement.kind != "postfix operator") {
+                and statement.kind != "operator") {
                     log.error(name, "already exists " +
                         i->second + " " +
                         bold(name->text));

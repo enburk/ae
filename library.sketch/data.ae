@@ -69,21 +69,6 @@ type contiguous.collection.range(x) : contiguous.range(x) =
     ;; mutation replace.by (random.access.range x) =
 }
 
-system
-{
-    memory
-    {
-        function request (integer bytes) → contiguous.range(byte) = {…}
-        function release (range : contiguous.range(byte)) = {…}
-
-        ;; type chunk : contiguous.range(byte) =
-        ;; {
-        ;;     mutation size ← integer = {…}
-        ;;     destructor = {…}
-        ;; }
-    }
-}
-
 type array(x) : contiguous.collection(x) =
 {
     detail { integer size; data: contiguous.range(byte) }

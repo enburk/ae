@@ -1,4 +1,11 @@
-type: window extends: gui::widget =
+let: gui = ::gui;
+let: sys = ::system;
+
+;; import: ::core;
+;; ::meta::import(::core);
+let: core = ::core;
+
+type: window extends: gui::widget
 {
 }
 

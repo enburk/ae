@@ -21,7 +21,7 @@ namespace doc::ae::syntax
 
         str next_kind () { return
             input.empty() ? "" :
-            input.front().opening->text == "{" ? "()" :
+            input.front().opening->text == "{" ? "{}" :
             input.front().opening->text == "(" ? "()" :
             input.front().opening->text == "[" ? "()" :
             input.front().opening->kind; }
@@ -126,6 +126,8 @@ namespace doc::ae::syntax
         parameter read_parameter ()
         {
             parameter p;
+            if (next_kind() == "keyword")
+                read("type"); else
             p.typexpr = read_namepack();
             if (next_kind() == "name")
             p.name = read_name();
@@ -183,7 +185,7 @@ namespace doc::ae::syntax
             return namepack{};
         }
 
-        auto read_expression_until (str until, bool optional) -> expression
+        auto read_expression_until (str until, bool optional = false) -> expression
         {
             operands o;
             while (not input.empty())

@@ -6,6 +6,8 @@ namespace doc::ae::synthesis
 {
     void out (statement const& st, array<entity>& body)
     {
+        if (st.kind == "empty") return;
+
         str kind = st.kind;
         str name = print(st.names);
         str type = print(st.typexpr, true);

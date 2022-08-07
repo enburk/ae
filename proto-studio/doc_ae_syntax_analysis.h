@@ -41,11 +41,10 @@ namespace doc::ae::syntax::analysis
                 module.names += &name;
                 module.kind = "module";
                 module.body =
-                    schema(
-                    parser(tokens->whole()
-                    , log1, cancel).output
-                    , log1, cancel).output
-                    ;
+                    schema{
+                    parser{ tokens->whole()
+                    , log1, cancel}.output()
+                    , log1, cancel}.output();
 
                 scope (module, log1, cancel);
 

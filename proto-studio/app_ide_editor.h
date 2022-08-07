@@ -41,6 +41,7 @@ struct Editor : gui::widget<Editor>
             auto s = editor.view.style.now;
             auto& ss = doc::model::styles;
             s.color = rgba::black;   ss["name"     ] = style_index(s);
+            s.color = rgba::teal;    ss["type"     ] = style_index(s);
             s.color = rgba::blue;    ss["keyword"  ] = style_index(s);
             s.color = rgba::teal;    ss["keyname"  ] = style_index(s);
             s.color = rgba::blue;    ss["pragma"   ] = style_index(s);

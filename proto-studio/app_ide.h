@@ -53,7 +53,8 @@ struct IDE : gui::widget<IDE>
         {
             str e = path.extension().string();
             if (std::filesystem::is_directory(path)) return;
-            if (e != ".ae" and e != ".ae!" and e != "ae!!") return;
+            if (e != ".ae" and e != ".ae!" and e != ".ae!!"
+            and e != ".c++" and e != ".cpp" and e != ".hpp") return;
             console.events << light(path.string() + " " + what);
             reload = true;
         };

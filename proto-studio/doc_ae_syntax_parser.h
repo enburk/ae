@@ -5,13 +5,17 @@ namespace doc::ae::syntax
 {
     const std::set<str> keywords = 
     {
+        "goto", "label",
+
+        "if", "then", "else",
+
         "for", "in", "while", "do",
 
         "await", "yield", "return", "break", "continue", 
 
-        "type", "extends", "subset.of", "extension", 
+        "let", "type", "extends", "subset.of", "extension", 
 
-        "function", "mutation", "operator",
+        "property", "function", "mutation", "operator",
     };
 
     struct element
@@ -40,15 +44,11 @@ namespace doc::ae::syntax
 
     struct parser
     {
-        array<element> output;
-        array<token>::range_type input; report& log; std::atomic<bool>& cancel; parser (
-        array<token>::range_type input, report& log, std::atomic<bool>& cancel) :
-        input(input), log(log), cancel(cancel)
-        {
-            output = 
-            bracketing(
-            );
-        }
+        array<token>::range_type input;
+        
+        report& log; std::atomic<bool>& cancel;
+
+        auto output () { return bracketing(); }
 
         auto bracketing (str closing = "") -> array<element>
         {

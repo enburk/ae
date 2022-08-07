@@ -1,23 +1,10 @@
-type: predicate (args…) = function: (args…) → boolean
+type: predicate (args…) = function: (args…) → boolean;
 
-mutation swap (a, b) { c := a; a ← b; b ← c }
+mutation: swap (a, b) { c := a; a ← b; b ← c }
 
-type: range(x) extension:
-{
-    mutation: remove.if (match: unary.predicate(x)) =
-    {
-        i := begin;
-        j := begin;
-        while j ≠ end do {
-            swap(i.value, j.value);
-            if not match(i.value) then i++;
-            j++;
-        }
-        return i;
-    }
-}
+;; extension.of.type: range (type: x)
 
-type: range(x) extension: =
+type: range (type: x) extension:
 {
     mutation: remove.if (predicate(x) match) =
     {
@@ -32,24 +19,28 @@ type: range(x) extension: =
     }
 }
 
-type: range(x) extension: =
+type:
+range(x) extension: =
 {
     mutation:
-    remove.if (unary.predicate(x) match) =
+    remove.if (predicate(x) match) =
     {
         i := begin;
         j := begin;
+
         while: j ≠ end do: {
         swap(i.value, j.value);
-        not match(i.value)? i++; j++; }
+        not match(i.value)? i++;
+        j++; }
+
         return: i;
     }
 }
 
-mutation: swap.if.not.in.order(i,j,in.order) =
-                not in.order(
-                i::value, j::value)? swap(
-                i::value, j::value);
+mutation:
+swap.if.not.in.order(i, j, in.order) =
+    not in.order(i::value, j::value)?
+            swap(i::value, j::value);
 
 
 type: bidirectional.range(x) extension: =
