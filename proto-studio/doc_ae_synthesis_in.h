@@ -85,6 +85,7 @@ namespace doc::ae::synthesis
 
         y.kind = x.kind;
         y.type = x.type;
+        y.variety = x.variety;
 
         for (auto& name: x.names)
         y.names.list += name->text;

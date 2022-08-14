@@ -28,7 +28,7 @@ namespace doc::ae
         void tick () override
         {
             if (syntax().status == syntax::analysis::state::depend) {
-                syntax().status =  syntax::analysis::state::resume;
+                syntax().status =  syntax::analysis::state::check;
 
                 for (auto [name, path]:
                 syntax().dependencies.dependees)

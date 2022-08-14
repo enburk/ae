@@ -13,12 +13,12 @@ namespace ae
         // source: type value.of () {}
         // schema: type namepack 
         // kind: type
-        template<typename type_x> struct value.of
+        template<typename type_x> struct value_of
         {
             // source: function at () → x ;
             // schema: function namepack -> name 
             // kind: function
-            auto at(address ) const  -> x;
+            auto at(address) const  -> x;
         };
         // source: type pointer () {}
         // schema: type namepack 
@@ -29,9 +29,6 @@ namespace ae
             // schema: name name 
             // kind: expression
             address address;
-            // source: ;
-            // schema: 
-            // kind: 
             // source: property value → x =
             // schema: property name -> name =
             // kind: property
@@ -39,11 +36,8 @@ namespace ae
                 // source: 
                 // schema: 
                 // kind: return
-                return value.of(x)::at(address);
+                return value_of(x)::at(address);
             }
-            // source: ;
-            // schema: 
-            // kind: 
             // source: property value ← x =
             // schema: property name <- name =
             // kind: property
@@ -51,11 +45,8 @@ namespace ae
                 // source: 
                 // schema: 
                 // kind: return
-                return value.of(x)::at(address) ← value;
+                return value_of(x)::at(address) ← value;
             }
-            // source: ;
-            // schema: 
-            // kind: 
         };
         void main_()
         {
@@ -63,9 +54,6 @@ namespace ae
             // schema: namepack 
             // kind: expression
             import(abc);
-            // source: ;
-            // schema: 
-            // kind: 
         }
     }
 }

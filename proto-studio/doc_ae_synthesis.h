@@ -36,6 +36,10 @@ namespace doc::ae::synthesis
         variant;
         type
         type;
+
+        bool empty () const { return
+        aux::got<terminal>(variant) and
+        std::get<terminal>(variant).text == ""; }
     };
 
     struct parameter
@@ -51,6 +55,7 @@ namespace doc::ae::synthesis
     struct statement
     {
         str kind;
+        str variety;
         namelist names;
         parameters args;
         expression expr;

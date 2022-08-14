@@ -46,3 +46,5 @@ operator: (C) + (C) → C;
 operator: (C) - (C) → C;
 operator: (C) × (C) → C;
 operator: (C) / (C) → C;  ;; 0?
+
+let: x = ::system;

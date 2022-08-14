@@ -11,7 +11,7 @@ namespace doc::ae::syntax::analysis
     using path = std::filesystem::path;
     using time = std::filesystem::file_time_type;
 
-    enum class state { ready, pass1, pass2, pass3, depend, resume };
+    enum class state { ready, pass1, pass2, pass3, depend, check, resume };
 
     report events;
 
@@ -146,16 +146,70 @@ namespace doc::ae::syntax::analysis
 
     std::unordered_map<path, data> repo;
 
-    void tick (path path)
+    bool check(path module_path, array<path> visiting = {})
     {
-        auto& data = repo[path];
-        if (data.status != state::resume) {
+        visiting += module_path;
+
+        auto& data = repo[module_path];
+        auto& deps = data.dependencies;
+        
+        for (auto [name, path]: deps.dependees)
+        {
+            if (visiting.contains(path))
+            {
+                str s;
+                s += path.string() + "<br>";
+                for (auto p: std::ranges::views::reverse(visiting)) {
+                s += p.string() + "<br>"; if (p == path) break; }
+                data.log2.error("circular dependency: <br>" + s);
+                return false;
+            }
+
+            if (repo[path].status == state::resume
+            and not check(path, visiting))
+                return false;
+        }
+        return true;
+    }
+
+    void tick (path module_path)
+    {
+        auto& data = repo[module_path];
+        if (data.status != state::check
+        and data.status != state::resume) {
             data.tick();
             return; }
 
-        for (auto [dname, dpath]: data.dependencies.dependees)
+        auto& deps = data.dependencies;
+
+        if (data.status == state::check)
         {
-            auto& dependee = repo[dpath];
+            for (auto [name, path]: deps.dependees)
+            {
+                auto& dependee = repo[path];
+                if (dependee.status != state::ready
+                and dependee.status != state::check
+                and dependee.status != state::resume) return;
+                if (not dependee.log1.errors.empty()
+                or  not dependee.log2.errors.empty()
+                or  not dependee.log3.errors.empty()) {
+                data.status = state::ready;
+                return; }
+            }
+            data.status = state::resume;
+        }
+
+        // do check right now
+        // because in case of circular dependency
+        // waiting for readiness of dependees will be infinite
+        if (not check(module_path)) {
+            data.status = state::ready;
+            deps.dependees.clear();
+            return; }
+
+        for (auto [name, path]: deps.dependees)
+        {
+            auto& dependee = repo[path];
             if (not dependee.ready()) return;
             if (not dependee.log1.errors.empty()
             or  not dependee.log2.errors.empty()
@@ -164,11 +218,39 @@ namespace doc::ae::syntax::analysis
             return; }
         }
 
-        for (auto [dname, dpath]: data.dependencies.dependees)
+        deps.inners.clear();
+        deps.outers.clear();
+        for (auto [name, path]: deps.dependees)
         {
-            auto& dependee = repo[dpath];
+            if (path.parent_path() ==
+            data.path.parent_path() /
+            data.name.text.c_str())
+            deps.inners += path; else
+            deps.outers += path;
+        }
+
+        auto dir = module_path;
+        dir.replace_extension("");
+
+        aux::graph<path> dag;
+        dag.vertices = deps.inners;
+
+        for (auto source: deps.inners)
+        for (auto target: repo[source].dependencies.outers)
+            if (target.parent_path() == dir)
+                dag.add(source, target); else
+                deps.outers.try_emplace(target);
+
+        auto dfs = dag.dfs();
+        deps.inners.clear();
+        for (int i: dfs.finished)
+        deps.inners += dag.vertices[i];
+
+        for (auto [name, path]: deps.dependees)
+        {
+            auto& dependee = repo[path];
             data.module.modules.emplace(
-                dname, &dependee.module);
+                name, &dependee.module);
         }
 
         data.pass3();

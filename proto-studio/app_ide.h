@@ -12,6 +12,7 @@ struct IDE : gui::widget<IDE>
     gui::canvas canvas;
     gui::canvas toolbar;
     gui::button button_run;
+    gui::button button_build;
     gui::button button_rebuild;
     gui::button button_test;
 
@@ -40,6 +41,7 @@ struct IDE : gui::widget<IDE>
         canvas.color = rgba::red;
         toolbar.color = gui::skins[skin].light.first;
         button_run .text.text = "run";
+        button_build.text.text = "build";
         button_rebuild.text.text = "rebuild";
         button_test.text.text = "test";
         console.activate(&console.editor);
@@ -126,14 +128,18 @@ struct IDE : gui::widget<IDE>
                 editor.log.clear(); }
             }
 
-            button_rebuild.enabled =
-                editor.path.now.extension() == ".ae"  or
-                editor.path.now.extension() == ".ae!" or
-                editor.path.now.extension() == ".ae!!";
             button_run.enabled = (
                 editor.path.now.extension() == ".ae!" or
                 editor.path.now.extension() == ".ae!!")
                 and syntax_ok;
+            button_build.enabled = (
+                editor.path.now.extension() == ".ae!" or
+                editor.path.now.extension() == ".ae!!")
+                and syntax_ok;
+            button_rebuild.enabled =
+                editor.path.now.extension() == ".ae"  or
+                editor.path.now.extension() == ".ae!" or
+                editor.path.now.extension() == ".ae!!";
         }
 
         if (what == &coord)
@@ -156,8 +162,9 @@ struct IDE : gui::widget<IDE>
 
             canvas.coord = coord.now.local();
             toolbar.coord = xywh(0, 0, W, h);
-            button_run.coord = xywh(0, 0, w, h);
-            button_rebuild.coord = xywh(w, 0, w, h);
+            button_run.coord = xywh(0*w, 0, w, h);
+            button_build.coord = xywh(1*w, 0, w, h);
+            button_rebuild.coord = xywh(2*w, 0, w, h);
             button_test.coord = xywh(W-w, 0, w, h);
 
             test_area.coord = xyxy(0, h, W, H);
@@ -228,8 +235,11 @@ struct IDE : gui::widget<IDE>
             doc::text::repo::map[editor.path.now].model->tokenize();
         }
 
-        if (what == &button_run) try
+        if (what == &button_run
+        or  what == &button_build) try
         {
+            bool run = what == &button_run;
+
             console.activate(&console.output);
 
             if (not ide::compiler::translate(
@@ -237,12 +247,12 @@ struct IDE : gui::widget<IDE>
                 console.output))
                 return;
 
-            thread = [this](auto& cancel)
+            thread = [this,run](auto& cancel)
             {
                 ide::compiler::run(
                 editor.path.now,
                 console.output,
-                cancel);
+                cancel, run);
             };
         }
         catch (std::exception const& e) {

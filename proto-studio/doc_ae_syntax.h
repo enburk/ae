@@ -79,8 +79,6 @@ namespace doc::ae::syntax
         std::map<str, statement*> modules;
         std::multimap<str, statement*> members;
 
-        //std::map<namepack, namepack> dependencies;
-
         str schema;
         str source;
     };

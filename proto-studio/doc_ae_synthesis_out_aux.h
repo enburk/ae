@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "doc_html_lexica.h"
 #include "doc_ae_synthesis.h"
 namespace doc::ae::synthesis
@@ -59,11 +59,11 @@ namespace doc::ae::synthesis
     {
         str es;
         for (auto& p: pp.list) {
-            es += print(p.typexpr);
+            es += print(p.typexpr); if (p.name != "")
             es += " ";
-            es += print(p.name);
-        //  es += "=";
-        //  es += print(p.value);
+            es += print(p.name); if (not p.value.empty())
+            es += " = ";
+            es += print(p.value);
             es += ",";
             es += " ";
         }
@@ -104,6 +104,26 @@ namespace doc::ae::synthesis
         return s;
     }
 
+    const std::set<str> cpp_keywords = 
+    {
+        "alignas", "alignof", "and", "and_eq", "asm", "atomic_cancel",
+        "atomic_commit", "atomic_noexcept", "auto", "bitand", "bitor", "bool",
+        "break", "case", "catch", "char", "char8_t", "char16_t", "char32_t",
+        "class", "compl", "concept", "const", "consteval", "constexpr",
+        "constinit", "const_cast", "continue", "co_await", "co_return",
+        "co_yield", "decltype", "default", "delete", "do", "double",
+        "dynamic_cast", "else", "enum", "explicit", "export", "extern",
+        "false", "float", "for", "friend", "goto", "if", "inline", "int",
+        "long", "mutable", "namespace", "new", "noexcept", "not", "not_eq",
+        "nullptr", "operator", "or", "or_eq", "private", "protected", "public",
+        "reflexpr", "register", "reinterpret_cast", "requires", "return",
+        "short", "signed", "sizeof", "static", "static_assert", "static_cast",
+        "struct", "switch", "synchronized", "template", "this", "thread_local",
+        "throw", "true", "try", "typedef", "typeid", "typename", "union",
+        "unsigned", "using", "virtual", "void", "volatile", "wchar_t", "while",
+        "xor", "xor_eq",
+    };
+
     str print (const str & name)
     {
         static std::map<doc::text::glyph, str> symbols;
@@ -113,13 +133,14 @@ namespace doc::ae::synthesis
             for (auto [s, c] : doc::html::lexica::symbols)
             {
                 auto glyphs = aux::unicode::array((char*)(c));
-
                 if (glyphs.size() == 1) symbols.emplace(
                     glyphs.front(), s);
             }
         }
 
         str s;
+
+        if (name == (char*)(u8"×")) s = "*"; else
 
         for (auto glyph: aux::unicode::glyphs(name))
         {
@@ -135,9 +156,13 @@ namespace doc::ae::synthesis
             s += glyph;
         }
 
-        if (s.starts_with("_") or
-            s.starts_with("ae_"))
+        s.replace_all(".", "_");
+        if (s.starts_with("_")
+        or  s.starts_with("ae_"))
             s = "ae_" + s;
+
+        if (cpp_keywords.contains(s))
+            s += "_";
 
         s.replace_all("__", "_");
         return s;

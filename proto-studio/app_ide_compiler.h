@@ -68,8 +68,11 @@ namespace ide::compiler
             std::ofstream result(path);
             result << "\xEF" "\xBB" "\xBF"; // UTF-8 BOM
             result << "#pragma once\n";
+
+            if (main) {
             result << "#include <span>\n";
             result << "#include <cstdint>\n";
+            }
 
             for (auto p: outers)
             result << "#include \"" +
@@ -215,13 +218,15 @@ namespace ide::compiler
         return true;
     }
 
-    void run (path src, gui::console& console, auto& cancel)
+    void run (path src, gui::console& console, auto& cancel, bool run)
     {
         try
         {
             if (not compile(src,
                 console, cancel))
                 return;
+
+            if (not run) return;
 
             console << "Run...";
             sys::process run(exe(src), "",

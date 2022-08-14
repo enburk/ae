@@ -8,6 +8,68 @@ namespace doc::ae::translator
     using synthesis::entity;
     using synthesis::statement;
 
+    //struct module_data
+    //{
+    //    array<path> inners;
+    //    array<path> outers;
+    //    array<path> tailerscxxs;
+    //
+    //    module_data (syntax::analysis::data& data, bool exe)
+    //    {
+    //        statement module = 
+    //        synthesis::in(data.module);
+    //
+    //        std::atomic<bool> cancel;
+    //        synthesis::proceed(module, cancel);
+    //
+    //        entity body;
+    //        entity main;
+    //        main.head = "void main_()";
+    //
+    //        for (auto& statement: module.body)
+    //            synthesis::out(statement, not exe or
+    //            statement.kind == "type" or
+    //            statement.kind == "alias" or
+    //            statement.kind == "singleton" or
+    //            statement.kind == "function" or
+    //            statement.kind == "operator"?
+    //            body.body:
+    //            main.body);
+    //
+    //        if (exe)
+    //        {
+    //            if (main.body.empty())
+    //                main.body +=
+    //                entity{};
+    //
+    //            body.body += main;
+    //        }
+    //
+    //        if (exists(hxx(data.path)))
+    //        body.body += entity{"#include \"" +
+    //        hxx(data.path).string() + "\""};
+    //
+    //        array<str> lines;
+    //        body.print(lines);
+    //        return lines;
+    //    }
+    //};
+
+
+
+
+    using std::filesystem::path;
+
+    auto ext (path src, std::string ext){
+        src.replace_extension(
+        src.extension().string() + ext);
+        return src; }
+
+    auto hxx (path src){ return ext(src, ".h++"); }
+    auto hpp (path src){ return ext(src, ".hpp"); }
+    auto cxx (path src){ return ext(src, ".c++"); }
+    auto cpp (path src){ return ext(src, ".cpp"); }
+
     array<str> proceed (syntax::analysis::data& data, bool exe)
     {
         statement module = 
@@ -19,24 +81,39 @@ namespace doc::ae::translator
         entity body;
         entity main;
         str name = exe ? "ae" : data.name.text;
+        name.replace_all(".", "_");
         body.head = "namespace " + name;
         main.head = "void main_()";
 
+        for (auto [name, path]: data.dependencies.dependees)
+            if (path.parent_path() ==
+            data.path.parent_path() /
+            data.name.text.c_str()) // inner
+            body.body += entity{"#include \"" +
+            hpp(path).string() + "\""};
+
         for (auto& statement: module.body)
-            synthesis::out(statement,
-                statement.kind == "type" or
-                statement.kind == "singleton" or
-                statement.kind == "function" or
-                statement.kind == "mutation" or
-                statement.kind.contains("operator")?
-                body.body:
-                main.body);
+            synthesis::out(statement, not exe or
+            statement.kind == "type" or
+            statement.kind == "alias" or
+            statement.kind == "singleton" or
+            statement.kind == "function" or
+            statement.kind == "operator"?
+            body.body:
+            main.body);
 
-        if (main.body.empty())
-            main.body +=
-            entity{};
+        if (exe)
+        {
+            if (main.body.empty())
+                main.body +=
+                entity{};
 
-        body.body += main;
+            body.body += main;
+        }
+
+        if (exists(hxx(data.path)))
+        body.body += entity{"#include \"" +
+        hxx(data.path).string() + "\""};
 
         array<str> lines;
         body.print(lines);

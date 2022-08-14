@@ -42,6 +42,11 @@ namespace doc::ae::synthesis
             e.kind = "class";
             e.head = "struct type_" + name;
         }
+        if (kind == "alias")
+        {
+            e.kind = "directive";
+            e.head = "using " + name + " = " + expr;
+        }
         if (kind == "type")
         {
             e.kind = "class";
@@ -61,6 +66,17 @@ namespace doc::ae::synthesis
             e.kind = "function";
             e.head =  template_;
             e.head += "auto " + name + args;
+            if (type == "" and e.body.empty()) type = "void";
+            if (type != "") e.head += " -> " + type;
+        }
+        if (kind == "operator")
+        {
+            if (st.variety == "postfix")
+            if (args == "()") args = "(int)"; else
+            { args.truncate(); args += ", int)"; }
+            e.kind = "function";
+            e.head =  template_;
+            e.head += "auto operator " + name + args;
             if (type == "" and e.body.empty()) type = "void";
             if (type != "") e.head += " -> " + type;
         }

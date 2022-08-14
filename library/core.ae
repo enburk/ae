@@ -15,3 +15,4 @@ type: pointer (type: x)
     property: value → x = value.of(x)::at(address);
     property: value ← x = value.of(x)::at(address) ← value;
 }
+

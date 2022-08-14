@@ -17,6 +17,9 @@ namespace doc::ae::syntax
         std::map<str, path>
             dependees;
 
+        array<path> inners;
+        array<path> outers;
+
         void collect (statement& module, auto& cancel)
         {
             precedents.clear();
@@ -41,25 +44,36 @@ namespace doc::ae::syntax
             visitor.pass(module, cancel);
         }
 
-        void resolve (path p, report& log, auto& cancel)
+        void resolve (path path, report& log, auto& cancel)
         {
             dependees.clear();
             unresolved = precedents;
             for (token* t: precedents)
                 t->kind = "module";
 
-            auto dir = p;
+            auto dir = path;
             dir.replace_extension("");
             if (exists(dir) and
             is_directory(dir))
             resolve_in(cancel, dir); else
-            resolve_in(cancel, p.parent_path());
+            resolve_in(cancel, path.parent_path());
             resolve_in(cancel, current_path()/"library");
 
             for (auto token: unresolved)
             log.error(token, "module "
                 + bold(token->text) +
                 " not found");
+
+            // RIP dependency inversion
+            auto parent = path.parent_path();
+            parent.replace_extension(".ae");
+            for (auto [name, p]: dependees) if (parent == p)
+            for (auto t: precedents) if (t->text == name) {
+            log.error(t, "circular dependency: <br>"
+                "module " + bold(t->text) + " " +
+                "resolved to parent module:"
+                "<br>" + p.string());
+                dependees.clear(); }
 
             if (true)
             for (auto [name, p]: dependees)
@@ -106,11 +120,21 @@ namespace doc::ae::syntax
 // |    | 
 // |    +-[library]
 // |    |    |
+// |    |    +- core.ae
+// |    |    +-[core]
+// |    |    |    |
+// |    |    |    +- data.ae
+// |    |    |    +- math.ae
+// |    |    |
 // |    |    +- net.ae
 // |    |    +-[net]
 // |    |    |    |
+// |    |    |    +- url.ae
 // |    |    |    +- tcp.ae
 // |    |    |    +- http.ae
+// |    |    |    +-[http]
+// |    |    |    |    |
+// |    |    |    |    +- redirect.ae
 // |
 // +-[repo]
 // |    |

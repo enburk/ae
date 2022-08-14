@@ -19,8 +19,10 @@ namespace doc::ae::syntax
                 while (not input.empty())
                 {
                     if (cancel) break;
+                    if (next() == ";") 
+                    read(";"); else {
                     read_statement(s);
-                    ss += std::move(s);
+                    ss += std::move(s); }
                 }
             }
             catch (str const&) { log.error(
@@ -134,8 +136,8 @@ namespace doc::ae::syntax
             if (schema == "")
             {
                 if (next() == "{") s.body = read_body(); else
-                if (next() != ";") unexpected(); else
-                read(";");
+                if (next() != ";") unexpected(); else {
+                s.kind = "empty"; read(";"); }
                 return;
             }
             if (schema == "import")

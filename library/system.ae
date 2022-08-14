@@ -18,3 +18,5 @@ type: app (type: window)
 {
     window window;
 }
+
+::gui
