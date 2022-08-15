@@ -37,7 +37,7 @@ namespace doc::ae
             syntax::analysis::tick(path);
         }
 
-        report log () override  // don't ask until it's ready
+        report log (array<std::filesystem::path>& visited) override
         {
             report log;
             log.path = path.string();
@@ -51,13 +51,23 @@ namespace doc::ae
             log += syntax().log2;
             log += syntax().log3;
             log.trace("");
+
+            visited += path;
             for (auto [name, path]:
             syntax().dependencies.dependees) if (auto
             it  = doc::text::repo::map.find(path);
-            it != doc::text::repo::map.end() and
+            it != doc::text::repo::map.end()
+            and not visited.contains(
+            it->second.model->path) and
             it->second.model->ready()) log.trace(
-            it->second.model->log()());
+            it->second.model->log(visited)());
             return log;
+        }
+
+        report log () override  // don't ask until it's ready
+        {
+            array<std::filesystem::path> visited;
+            return log(visited);
         }
 
         bool insert (str s) override

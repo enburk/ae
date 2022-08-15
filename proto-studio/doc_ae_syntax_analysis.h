@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <chrono>
 #include <filesystem>
 #include "doc_ae_syntax_parser.h"
@@ -159,14 +159,18 @@ namespace doc::ae::syntax::analysis
             {
                 str s;
                 s += path.string() + "<br>";
-                for (auto p: std::ranges::views::reverse(visiting)) {
-                s += p.string() + "<br>"; if (p == path) break; }
+                for (auto p: reverse(visiting)) {
+                    s += p.string() + "<br>";
+                    if (p == path)
+                        break; }
+
                 data.log2.error("circular dependency: <br>" + s);
                 return false;
             }
 
-            if (repo[path].status == state::resume
-            and not check(path, visiting))
+            if (repo[path].status == state::check
+            or  repo[path].status == state::resume)
+            if (not check(path, visiting))
                 return false;
         }
         return true;
@@ -199,12 +203,14 @@ namespace doc::ae::syntax::analysis
             data.status = state::resume;
         }
 
+        if (data.status != state::resume)
+        throw std::logic_error("nonsense");
+
         // do check right now
         // because in case of circular dependency
         // waiting for readiness of dependees will be infinite
         if (not check(module_path)) {
             data.status = state::ready;
-            deps.dependees.clear();
             return; }
 
         for (auto [name, path]: deps.dependees)
@@ -245,6 +251,20 @@ namespace doc::ae::syntax::analysis
         deps.inners.clear();
         for (int i: dfs.finished)
         deps.inners += dag.vertices[i];
+
+        if (data.log2.errors.empty()) {
+            data.log2.clear();
+            for (auto path: deps.inners)
+            data.log2.debug("inner dependency: "
+                + path.stem().string()
+                + (char*)(u8" → ")
+                + path.string());
+            for (auto path: deps.outers)
+            data.log2.debug("outer dependency: "
+                + path.stem().string()
+                + (char*)(u8" → ")
+                + path.string());
+        }
 
         for (auto [name, path]: deps.dependees)
         {

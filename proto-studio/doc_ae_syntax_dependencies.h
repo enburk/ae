@@ -72,10 +72,8 @@ namespace doc::ae::syntax
             log.error(t, "circular dependency: <br>"
                 "module " + bold(t->text) + " " +
                 "resolved to parent module:"
-                "<br>" + p.string());
-                dependees.clear(); }
+                "<br>" + p.string()); }
 
-            if (true)
             for (auto [name, p]: dependees)
             log.debug("dependency: " + name
                 + (char*)(u8" → ")
