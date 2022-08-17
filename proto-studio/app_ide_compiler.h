@@ -32,29 +32,28 @@ namespace ide::compiler
 
     namespace analysis = doc::ae::syntax::analysis;
 
-    array<path> translate (analysis::data& data, gui::console& console, bool main) try
+    array<path> translate
+    (
+        analysis::data& data,
+        gui::console& console,
+        bool main, bool root
+    )
+    try
     {
-        array<path> inners;
-        array<path> outers;
         array<path> cxxs;
 
         using namespace std::filesystem;
 
         if (exists(cxx(data.path)))
-           cxxs += cxx(data.path);
+            cxxs += cxx(data.path);
 
-        for (auto [name, path]: data.dependencies.dependees)
-        {
-            cxxs += translate(analysis::repo[path], console, false);
+        for (auto path: data.dependencies.inners)
+            cxxs += translate(analysis::repo[path],
+                console, false, false);
 
-            path = hpp(path);
-
-            if (path.parent_path() ==
-            data.path.parent_path() /
-            data.name.text.c_str())
-            inners += path; else
-            outers += path;
-        }
+        for (auto path: data.dependencies.outers)
+            cxxs += translate(analysis::repo[path],
+                console, false, true);
 
         auto path = main ? 
             cpp(data.path):
@@ -74,29 +73,13 @@ namespace ide::compiler
             result << "#include <cstdint>\n";
             }
 
-            for (auto p: outers)
-            result << "#include \"" +
-            p.string() + "\"\n";
-
-            result << "namespace ae\n";
-            result << "{\n";
-
-            for (auto p: inners)
-            result << "#include \"" +
-            p.string() + "\"\n";
+            if (root)
+            for (auto p: data.dependencies.outers)
+            result << "#include \"" + hpp(p).string() + "\"\n";
 
             for (auto&& line:
-            doc::ae::translator::proceed(data, main)) {
-                result << "    ";
-                result << line;
-                result << "\n";
-            }
-            result << "}\n";
-
-            if (exists(hxx(data.path)))
-            result << "#include \"" +
-            hxx(data.path).string() +
-            "\"\n";
+            doc::ae::translator::proceed(data, main))
+            result << line << "\n";
 
             if (main)
             for (auto p: cxxs)
@@ -118,7 +101,7 @@ namespace ide::compiler
     bool translate (path src, gui::console& console) try
     {
         console.clear();
-        translate(analysis::repo[src], console, true);
+        translate(analysis::repo[src], console, true, true);
         return true;
     }
     catch(std::exception const& e) {

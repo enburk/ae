@@ -18,7 +18,7 @@ namespace ae::system
 #ifdef SUBSYSTEM_CONSOLE
 int main (int argc, char *argv[])
 {
-    ae::ae::main_();
+    ae::main_();
     std::puts("");
     std::puts("press Enter to close...");
     std::getc(stdin);
