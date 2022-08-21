@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <atomic>
 #include "doc_ae_syntax.h"
 namespace doc::ae::syntax
@@ -13,12 +13,21 @@ namespace doc::ae::syntax
 
         "await", "yield", "return", "break", "continue", 
 
-        "let", "type", "extends", "subset.of", "extension", 
+        "let", "type", "extends", "implements", "subset.of", "extension", 
 
         "property", "function", "mutation", "operator",
 
-        "import",
+        "import", "self", "same",
+
+        "or", "and", "xor", "not",
     };
+
+    array<str> subsup = {
+    u8"₀", u8"₁", u8"₂", u8"₃", u8"₄", u8"₅", u8"₆", u8"₇", u8"₈", u8"₉", 
+    u8"⁰", u8"¹", u8"²", u8"³", u8"⁴", u8"⁵", u8"⁶", u8"⁷", u8"⁸", u8"⁹"};
+    array<str> digits = {"0","1","2","3","4","5","6","7","8","9"};
+    array<str> hexadecimals = {"0","1","2","3","4","5","6","7","8","9",
+    "A","B","C","D","E","F", "a","b","c","d","e","f"};
 
     struct element
     {
@@ -83,6 +92,37 @@ namespace doc::ae::syntax
                 or  token.kind == "comment"
                 or  token.text == "\n")
                     continue;
+
+                if (token.kind == "number")
+                {
+                    int dots = 0;
+                    int base = 10;
+                    if (token.text.ends_with(str(u8"₁₆"))) {
+                        token.text.resize(token.text.size() -
+                        str(u8"₁₆").size());
+                        base = 16; }
+                    if (token.text.ends_with(str(u8"₂"))) {
+                        token.text.resize(token.text.size() -
+                        str(u8"₂").size());
+                        base = 2; }
+
+                    for (auto c: aux::unicode::glyphs(token.text))
+                    {
+                        if (c == ".") {
+                        if (++dots > 1 or base != 10) {
+                        log.error(&token, "invalid number");
+                        break; } else continue; }
+
+                        if (base == 10 and not digits.contains(c)) {
+                        token.kind = "name";
+                        break; }
+
+                        if (base ==  2 and c != "0" and c != "1"
+                        or  base == 16 and not hexadecimals.contains(c)) {
+                        log.error(&token, "invalid number");
+                        break; }
+                    }
+                }
 
                 if (token.text == ":")
                 {

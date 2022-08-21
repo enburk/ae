@@ -4,16 +4,25 @@ namespace doc::ae::lexica
 {
 	using text::token;
 
+    array<str> subsup = {
+    u8"₀", u8"₁", u8"₂", u8"₃", u8"₄", u8"₅", u8"₆", u8"₇", u8"₈", u8"₉", 
+    u8"⁰", u8"¹", u8"²", u8"³", u8"⁴", u8"⁵", u8"⁶", u8"⁷", u8"⁸", u8"⁹"};
+
     bool ascii (char c) { return (c >= ' ' && c <= '~'); }
     bool space (char c) { return (c == ' ' || c =='\t'); }
     bool digit (char c) { return (c >= '0' && c <= '9'); }
     bool alpha (char c) { return (c >= 'A' && c <= 'Z') ||
                                  (c >= 'a' && c <= 'z'); }
 
+    bool international (str s)
+    {
+        return false;
+    }
+
     bool ascii (str c) { return c.size() == 1 && ascii(c[0]); }
     bool space (str c) { return c.size() == 1 && space(c[0]); }
-    bool digit (str c) { return c.size() == 1 && digit(c[0]); }
-    bool alpha (str c) { return c.size() == 1 && alpha(c[0]); }
+    bool digit (str c) { return c.size() == 1 && digit(c[0]) or subsup.contains(c); }
+    bool alpha (str c) { return c.size() == 1 && alpha(c[0]) or international(c); }
     bool brace (str c) { return
     c == "{" or c == "(" or c == "[" or
     c == "}" or c == ")" or c == "]"; }

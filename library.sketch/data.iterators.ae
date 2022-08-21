@@ -1,42 +1,69 @@
 let: self = ::meta::self;
+let: same = ::meta::same;
+                        
 
-type: forward.iterator (type: x)
+type: reference (type: x)
 {
-    function: value → x;
-    mutation: value ← x;
-    operator: ++;
+    property: ! → x;
+    property: ! ← x;
 }
-type: bidirectional.iterator (type: x) extends: forward.iterator(x)
+type: pointer (type: x) implements: reference(x)
 {
+    address address;
+    property: ! → x = value.of(x)::at(address);
+    property: ! ← x = value.of(x)::at(address) ← !;
+}
+type: random.access.iterator (type: x) extends: iterator(x)
+{
+    operator: +  (int n) → same;
+    operator: -  (int n) → same;
+    operator: += (int n) {self! ← self! + n}
+    operator: -= (int n) {self! ← self! - n}
+    operator: ++ {self! += 1}
+    operator: -- {self! -= 1}
+    operator: -  (same) → int;
+    operator: <  (same) → boolean;
+}
+
+
+type: iterator (type: x)
+{
+    property: value → x;
+    property: value ← x;
     operator: ++;
     operator: --;
 }
-type: random.access.iterator (type: x) extends: bidirectional.iterator(x), ordered
+type:  forward.iterator (type: x) extends: iterator(x) { delete: -=; }
+type: backward.iterator (type: x) extends: iterator(x) { delete: +=; }
+
+type: random.access.iterator (type: x) extends: iterator(x)
 {
-    mutation: ++ { this += 1 }
-    mutation: -- { this -= 1 }
-    function: +  (integer n) { i := self; i += n; return i }
-    function: -  (integer n) { i := self; i -= n; return i }
-    mutation: += (integer n);
-    mutation: -= (integer n);
-    function: -  (same i) → integer;
+    operator: >> (int n = 1) → same:;
+    operator: << (int n = 1) → same:;
+    operator: -  (same:) → int;
+    operator: <  (same:) → boolean;
 }
-type: pointer (type: x)
+type: random.access.iterator (type: x) extends: iterator(x) ;;, ordered
+{
+    operator: +  (integer n);
+    operator: -  (integer n);
+    operator: += (integer n){ self: ← self: + n }
+    operator: -= (integer n){ self: ← self: - n }
+    operator: ++ { self: += 1 }
+    operator: -- { self: -= 1 }
+    operator: -  (same:) → integer;
+    operator: <  (same:) → boolean;
+}
+;;type: contiguous.iterator (type: x) extends: pointer(x), implements: random.access.iterator(x)
+type: contiguous.iterator (type: x) implements: random.access.iterator(x)
 {
     address address;
     property: value → x = value.of(x)::at(address);
     property: value ← x = value.of(x)::at(address) ← value;
-}
-type: pointer (type: x) extends: address
-{
-    property: value → x = value.of(x)::at(address);
-    property: value ← x = value.of(x)::at(address) ← value;
-}
-type: contiguous.iterator (type: x) extends: pointer(x), random.access.iterator(x)
-{
-    operator: += (integer n) = address += n × meta::size.of(x);
-    operator: -= (integer n) = address -= n × meta::size.of(x);
-    operator: -  (same i) = (address - i.address) / meta::size.of(x);
+    operator: < (same: i) = (address < i.address);
+    operator: - (same: i) = (address - i.address) / size.of(x);
+    operator: + (int n) = address + n × size.of(x);
+    operator: - (int n) = address - n × size.of(x);
 }
 type:  forward.contiguous.iterator (type: x) extends: contiguous.iterator(x) { delete: -=; }
 type: backward.contiguous.iterator (type: x) extends: contiguous.iterator(x) { delete: +=; }
@@ -54,15 +81,5 @@ type: backward.contiguous.iterator (type: x) extends: contiguous.iterator(x) { d
 ;;     invariant:
 
 ;; a := f;
-
-
-
-
-
-
-
-
-
-
 
 

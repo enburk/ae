@@ -201,9 +201,6 @@ namespace doc::ae::syntax
                     until = "";
                     break; }
 
-                if (next_kind() == "keyword")
-                    unexpected();
-
                 if (next() == "::")
                     o.list += expression{
                     read_namepack()};
@@ -214,9 +211,10 @@ namespace doc::ae::syntax
                     read_brackets()};
                     else
 
-                if (next_kind() == "number" or
-                    next_kind() == "symbol" or
-                    next_kind() == "literal")
+                if (next_kind() == "number"
+                or  next_kind() == "symbol"
+                or  next_kind() == "literal"
+                or  next_kind() == "keyword")
                     o.list += expression{
                     terminal{read(next())}};
                     else

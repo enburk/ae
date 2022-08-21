@@ -1,1 +1,4 @@
-::abc
+import: ::abc;
+
+type: pair (type: 1st, type: 2nd) { 1st 1st; 2nd 2nd }
+

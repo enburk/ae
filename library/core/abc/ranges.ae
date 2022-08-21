@@ -1,0 +1,38 @@
+import: ::iterators;
+
+type: sequence (type: x)
+{
+    property: begin → forward.iterator(x);
+    property: end   → sentinel;
+
+
+    type: iterator = forward.iterator(x);
+    type: sentinel = abstract.sentinel;
+}
+type: range(x)
+{
+    type: iterator = forward.iterator(x);
+    type: sentinel;
+
+    function: begin → iterator;
+    function: end   → sentinel;
+}
+type: random.access.range(x) extends: sequence(x)
+{
+    type: iterator = random.access.iterator;
+    type: sentinel;
+
+    function: from (iterator i) → same = …
+    function: upto (iterator i) → same = …
+    operator: [iterator i, iterator j] = from(i).upto(j+1);
+    operator: [iterator i, iterator j) = from(i).upto(j);
+
+    function: from (int n) = from(begin+n);
+    function: upto (int n) = upto(begin+n);
+    operator: [int b, int e] = from(b).upto(e-b+1);
+    operator: [int b, int e) = from(b).upto(e-b);
+
+    operator: [int i] = (begin+i)::value;
+    operator: (int i) = (begin+i)::value;
+}
+

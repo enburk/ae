@@ -10,6 +10,11 @@ namespace doc::ae::syntax::expressions
             {
                 if (not v.token) return;
                 str kind = v.token->kind;
+                if (kind == "keyword")
+                {
+                    //e.type.name = "integer";
+                }
+                else
                 if (kind == "symbol")
                 {
                     //e.type.name = "integer";

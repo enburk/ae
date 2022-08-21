@@ -9,6 +9,24 @@ type: boolean = {false, true}
 boolean: type = {true, false};
 integral: type = I or Z or Q or R or C;
 
+let: int  = integer;
+let: bool = boolean;
+
+x₀ 1.25×10⁵
+
+1010003111₂₂
+AF456₁₆ a₁₆
+AF456:16
+
+type: ordered
+{
+    operator: < (same: x);
+    operator: ≤ (same: x) = not
+    operator: > (same: x)
+    operator: ≥ (same: x)
+}
+
+
 let:
 x = something;
 x = case1 ? do1 |
@@ -38,8 +56,6 @@ else:
 {
     otherwise;
 }
-
-type: pair (type: 1st, type: 2nd) = { 1st 1st; 2nd 2nd }
 
 operator if (x) = (if x = true)
 operator (x) ?  = (if x = true)

@@ -1,0 +1,44 @@
+import: ::numerals;
+
+property: word.length → natural;
+
+type: address subset.of: natural;
+
+
+
+type: pointer (type: x) implements: reference(x)
+{
+    address address;
+    property: value → x = value.of(x)::at(address);
+    property: value ← x = value.of(x)::at(address) ← value;
+}
+type: iterator (type: x) extends: pointer implements: random.access.iterator(x)
+{
+    operator: < (same: i) = (address < i.address);
+    operator: - (same: i) = (address - i.address) / size.of(x);
+    operator: + (int n) = address + n × size.of(x);
+    operator: - (int n) = address - n × size.of(x);
+}
+type: range (type: x) implements: random.access.range(x) =
+{
+    override: iterator = contiguous.iterator;
+    override: sentinel = contiguous.iterator;
+
+    override: iterator =  forward.contiguous.iterator;
+    override: sentinel = backward.contiguous.iterator;
+
+    iterator .begin;
+    sentinel .end;
+
+    override: begin = .begin;
+    override: end   = .end;
+
+    invariant: begin ≤ end;
+    disable: iterator::--;
+    disable: sentinel::++;
+
+    function: size = end - begin;
+    function: clip (iterator i) = min(max(begin,i),end);
+    function: from (iterator i) = same(clip(i), end);
+    override: upto (iterator i) = same(begin, clip(i));
+}

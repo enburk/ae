@@ -19,10 +19,25 @@ type: range (type: x) extension:
     }
 }
 
+type: range (type: x) extension:
+{
+    function: remove.if (predicate(x) match) =
+    {
+        i := begin;
+        j := begin;
+        while: j ≠ end do: {
+            swap(i!, j!);
+            not match(i!)? i++;
+            j++;
+        }
+        return: i;
+    }
+}
+
 type:
 range(x) extension: =
 {
-    mutation:
+    function:
     remove.if (predicate(x) match) =
     {
         i := begin;
@@ -43,7 +58,7 @@ swap.if.not.in.order(i, j, in.order) =
             swap(i::value, j::value);
 
 
-type: bidirectional.range(x) extension: =
+type: bidirectional.range (type: x) extension:
 {
     mutation: bubble.sort (predicate(x,x) in.order = ≤) =
     {

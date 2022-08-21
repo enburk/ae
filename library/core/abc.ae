@@ -1,50 +1,27 @@
-type: complex;
-type: real     subset.of: complex;
-type: rational subset.of: real;
-type: integer  subset.of: rational;
-type: natural  subset.of: integer;
+import: ::numerals;
+import: ::ranges;
 
-let: N = natural;
-let: Z = integer;
-let: Q = rational;
-let: R = real;
-let: C = complex;
+let: memory = ::memory;
 
-operator: +(N) → N;
-operator: +(Z) → Z;
-operator: +(Q) → Q;
-operator: +(R) → R;
-operator: +(C) → C;
 
-operator: -(N) → Z;
-operator: -(Z) → Z;
-operator: -(Q) → Q;
-operator: -(R) → R;
-operator: -(C) → C;
+;; meta
 
-operator: (N) + (N) → N;
-operator: (N) - (N) → Z;
-operator: (N) × (N) → N;
-operator: (N) / (N) → Q;  ;; 0?
+function: size.of (type: x) → natural;
+function: type.of (type: x) → type:;
 
-operator: (Z) + (Z) → Z;
-operator: (Z) - (Z) → Z;
-operator: (Z) × (Z) → Z;
-operator: (Z) / (Z) → Q;  ;; 0?
+type: value.of(type: x)
+{
+    function: at (address) → x;
+}
 
-operator: (Q) + (Q) → Q;
-operator: (Q) - (Q) → Q;
-operator: (Q) × (Q) → Q;
-operator: (Q) / (Q) → Q;  ;; 0?
+type: x extension:
+{
+    property: self → pointer(x);
+    property: same → type.of(self.value);
+}
 
-operator: (R) + (R) → R;
-operator: (R) - (R) → R;
-operator: (R) × (R) → R;
-operator: (R) / (R) → R;  ;; 0?
 
-operator: (C) + (C) → C;
-operator: (C) - (C) → C;
-operator: (C) × (C) → C;
-operator: (C) / (C) → C;  ;; 0?
 
-;;let: x = ::gui;
+
+
+

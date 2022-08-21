@@ -1,0 +1,6 @@
+import: ::array.on.heap;
+import: ::array.on.stack;
+
+type: array (type: x) implements: contiguous.range(x)
+{
+}

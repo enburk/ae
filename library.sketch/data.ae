@@ -2,13 +2,6 @@ min = ::math::min
 max = ::math::max
 abs = ::math::abs
 
-type pointer(x) : ordered =
-
-    address : meta::address;
-;;  constructor(x) = address ← meta::address.of(x);
-    function value = meta::value.of(x)::at(address);
-
-
 type collection(x) : range(x) =
 {
     function size → integer = {…}

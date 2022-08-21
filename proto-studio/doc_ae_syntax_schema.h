@@ -94,8 +94,8 @@ namespace doc::ae::syntax
                 if (e.opening->text == "," ) schema += ",";  else
                 if (e.opening->text == "::") schema += "::"; else
                 if (e.opening->text == ":=") schema += ":="; else
-                if (e.opening->text == (char*)(u8"←")) schema += "<-"; else
-                if (e.opening->text == (char*)(u8"→")) schema += "->"; else
+                if (e.opening->text == str(u8"←")) schema += "<-"; else
+                if (e.opening->text == str(u8"→")) schema += "->"; else
                 if (e.opening->kind == "keyword")
                     schema += e.opening->text; else
                     schema += e.opening->kind;
@@ -194,6 +194,7 @@ namespace doc::ae::syntax
                 s.names += read_name();
                 s.args = read_optional_args();
                 if (next() == "extends"
+                or  next() == "implements"
                 or  next() == "subset.of") {
                 s.variety = read()->text;
                 s.typexpr = read_namepack(); }
@@ -204,9 +205,9 @@ namespace doc::ae::syntax
             {
                 s.kind = read("property")->text;
                 s.names += read_name();
-                if (next() == (char*)(u8"→")) s.variety = "getter"; else
-                if (next() == (char*)(u8"←")) s.variety = "setter"; else
-                expected((char*)(u8"→ or ←")); read();
+                if (next() == str(u8"→")) s.variety = "getter"; else
+                if (next() == str(u8"←")) s.variety = "setter"; else
+                expected(u8"→ or ←"); read();
                 s.typexpr = read_namepack();
                 s.body = read_expression_or_body();
                 return;
@@ -232,6 +233,7 @@ namespace doc::ae::syntax
                     s.variety = "binary";
                     s.args.list += read_one_parameter();
                     s.names += read_name_or_symbol();
+                    s.names.front()->kind = "operator";
                     s.args.list += read_one_parameter();
                 }
                 else if (schema_starts_with("operator () x"))
@@ -239,12 +241,20 @@ namespace doc::ae::syntax
                     s.variety = "postfix";
                     s.args.list += read_one_parameter();
                     s.names += read_name_or_symbol();
+                    s.names.front()->kind = "operator";
                 }
                 else if (schema_starts_with("operator x ()"))
                 {
                     s.variety = "prefix";
                     s.names += read_name_or_symbol();
+                    s.names.front()->kind = "operator";
                     s.args.list += read_one_parameter();
+                }
+                else if (schema_starts_with("operator x"))
+                {
+                    s.variety = "self";
+                    s.names += read_name_or_symbol();
+                    s.names.front()->kind = "operator";
                 }
                 else expected("operator name or parameter");
                 s.typexpr = read_optional_type();

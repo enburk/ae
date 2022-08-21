@@ -94,7 +94,7 @@ namespace doc::ae
 
             if (c1 == "." && c2 == "." && s == ".") { base::insert(".");
                 for (auto & sel : selections) sel.from.offset -= 3;
-                base::insert((char*)(u8"…"));
+                base::insert(u8"…");
                 return true;
             }
 

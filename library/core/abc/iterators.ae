@@ -1,0 +1,34 @@
+import: ::numerals;
+
+type: reference (type: x)
+{
+    property: value → x;
+    property: value ← x;
+}
+type: forward.iterator (type: x) extends: reference(x)
+{
+    operator: ++;
+}
+type: bidirectional.iterator (type: x) extends: forward.iterator(x)
+{
+    operator: --;
+}
+type: random.access.iterator (type: x) extends: bidirectional.iterator(x)
+{
+    operator: +  (int n) → same;
+    operator: -  (int n) → same;
+    operator: += (int n) {self::value ← self::value + n}
+    operator: -= (int n) {self::value ← self::value - n}
+    operator: ++ {self::value += 1}
+    operator: -- {self::value -= 1}
+    operator: -  (same) → int;
+    operator: <  (same) → boolean;
+}
+
+type: sentinel
+{
+}
+
+operator: (iterator) ≠ (sentinel);
+operator: (sentinel) = (iterator);
+

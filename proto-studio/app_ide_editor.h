@@ -52,6 +52,7 @@ struct Editor : gui::widget<Editor>
             s.color = rgba::navy;    ss["literal"  ] = style_index(s); 
             s.color = rgba::navy;    ss["char"     ] = style_index(s); 
             s.color = rgba::maroon;  ss["symbol"   ] = style_index(s);
+            s.color = rgba::maroon;  ss["operator" ] = style_index(s);
             s.color = rgba::maroon;  ss["semicolon"] = style_index(s);
             s.color = rgba::fuchsia; ss["comment"  ] = style_index(s);
             s.color = rgba::red;     ss["error"    ] = style_index(s);
