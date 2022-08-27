@@ -13,7 +13,7 @@ namespace doc::ae::syntax
 
         "await", "yield", "return", "break", "continue", 
 
-        "let", "type", "extends", "implements", "subset.of", "extension", 
+        "let", "type", "extends", "narrows", "implements", "extension", 
 
         "property", "function", "mutation", "operator",
 

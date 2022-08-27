@@ -47,6 +47,7 @@ struct Editor : gui::widget<Editor>
             s.color = rgba::blue;    ss["pragma"   ] = style_index(s);
             s.color = rgba::purple;  ss["macros"   ] = style_index(s);
             s.color = rgba::purple;  ss["module"   ] = style_index(s);
+            s.color = rgba::purple;  ss["singleton"] = style_index(s);
             s.color = rgba::navy;    ss["number"   ] = style_index(s);
             s.color = rgba::white;   ss["space"    ] = style_index(s); 
             s.color = rgba::navy;    ss["literal"  ] = style_index(s); 

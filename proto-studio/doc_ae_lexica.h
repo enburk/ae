@@ -75,11 +75,12 @@ namespace doc::ae::lexica
                         {n, offset}}};
 
                     t.kind =
-                        alpha (c) ? "name" :
-                        digit (c) ? "number" :
-                        space (c) ? "space" : 
-                        c == "\"" ? "literal" : 
-                        c == ";"  ? "semicolon" : 
+                        c == "."  ? "name": 
+                        alpha (c) ? "name":
+                        digit (c) ? "number":
+                        space (c) ? "space": 
+                        c == "\"" ? "literal": 
+                        c == ";"  ? "semicolon": 
                                     "symbol";
                 }
             }

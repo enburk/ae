@@ -1,10 +1,10 @@
-import: ::numerals;
+import: ::ranges;
 
 property: word.length → natural;
 
+function: size (type: x) → natural;
+
 type: address subset.of: natural;
-
-
 
 type: pointer (type: x) implements: reference(x)
 {
@@ -21,24 +21,20 @@ type: iterator (type: x) extends: pointer implements: random.access.iterator(x)
 }
 type: range (type: x) implements: random.access.range(x) =
 {
-    override: iterator = contiguous.iterator;
-    override: sentinel = contiguous.iterator;
+    let: iterator = contiguous.iterator;
+    let: sentinel = contiguous.iterator;
 
-    override: iterator =  forward.contiguous.iterator;
-    override: sentinel = backward.contiguous.iterator;
+    iterator b; property: begin = b;
+    sentinel e; property: end   = e;
 
-    iterator .begin;
-    sentinel .end;
+    function: size = e - b;
+    function: clip (iterator i) = min(max(b,i),e);
+    function: from (iterator i) = same(clip(i),e);
+    function: upto (iterator i) = same(b,clip(i));
+}
 
-    override: begin = .begin;
-    override: end   = .end;
-
-    invariant: begin ≤ end;
-    disable: iterator::--;
-    disable: sentinel::++;
-
-    function: size = end - begin;
-    function: clip (iterator i) = min(max(begin,i),end);
-    function: from (iterator i) = same(clip(i), end);
-    override: upto (iterator i) = same(begin, clip(i));
+type: chunk extends: range(byte)
+{
+    constructor: (int n) { b = acquire(n); e = b + n; }
+    destructor: { release(b) }
 }

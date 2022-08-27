@@ -14,11 +14,6 @@ type: value.of(type: x)
     function: at (address) → x;
 }
 
-type: x extension:
-{
-    property: self → pointer(x);
-    property: same → type.of(self.value);
-}
 
 
 

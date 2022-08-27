@@ -58,15 +58,24 @@ namespace doc::ae::syntax
         auto read_namepack ()
         {
             array<nameunit> names;
+            token* ellipsis = nullptr;
             while (not input.empty())
             {
                 if (next() == "::")
                 {
                     if (not names.empty()
                     and not names.back().identifier)
-                    expected("name, not ::"); // will throw
+                    expected("name, not " + bold("::"));
                     names += nameunit{.coloncolon = read("::")};
                     continue;
+                }
+                if (next() == str(u8"…"))
+                {
+                    if (not names.empty()
+                    and not names.back().identifier)
+                    expected("name, not " + bold(u8"…"));
+                    ellipsis = read(u8"…");
+                    break;
                 }
                 if (next_kind() == "name")
                 {
@@ -84,12 +93,12 @@ namespace doc::ae::syntax
                 }
                 break;
             }
-            if (names.empty()
+            if (names.empty() and ellipsis == nullptr
             or  names.back().identifier == nullptr)
             expected("name or ::"); // will throw
             // on attempt to read next token and
             // if there is one will highlight it
-            return namepack{names};
+            return namepack{names, ellipsis};
         }
 
         auto read_brackets () -> brackets
@@ -126,8 +135,7 @@ namespace doc::ae::syntax
         parameter read_parameter ()
         {
             parameter p;
-            if (next_kind() == "keyword")
-                read("type"); else
+            if (next_kind() == "keyword") read("type"); else
             p.typexpr = read_namepack();
             if (next_kind() == "name")
             p.name = read_name();

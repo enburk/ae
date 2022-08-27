@@ -1,0 +1,47 @@
+import: ::numerals;
+
+type: rational
+{
+    int p; let: numerator   = p;
+    int q; let: denominator = q;
+
+    invariant: q ≠ 0;
+
+    function: real = real(same(p,1)) / real(same(q,1));
+
+    operator: = (same: x) = p × x.q = q × x.p;
+    operator: < (same: x) =
+        q > 0 and x.q > 0 or
+        q < 0 and x.q < 0 ?
+        p × x.q < q × x.p |
+        p × x.q > q × x.p;
+
+    operator: + (same: x) = same:(p × x.q + q × x.p, q × x.q);
+    operator: - (same: x) = same:(p × x.q - q × x.p, q × x.q);
+    operator: × (same x) = .same(p × x.p,  q × x.q);
+    operator: / (same x) = .same(p × x.q,  q × x.p);
+
+    operator: ^ (int n) = n < 0 ? .same(q^n, p^n) | .same(p^n, q^n);
+
+    function: canonicalize
+    {
+        x := gcd(p, q);
+        p /= x, q /= x;
+        if: q < 0 then:
+        p ← -p, q ← -q;
+        return: void;
+    }
+    property: canonical
+    {
+        x := .self;
+        x.canonicalize();
+        return: x;
+    }
+}
+
+operator: - (rational x) = rational(-x.p, x.q);
+
+type: integer extension:
+{
+    property: rational = rational(self::value, 1);
+}

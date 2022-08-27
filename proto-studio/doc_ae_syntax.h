@@ -29,7 +29,7 @@ namespace doc::ae::syntax
 
     struct terminal { token* token = nullptr; type type; };
 
-    struct namepack { array<nameunit> names; type type; };
+    struct namepack { array<nameunit> names; token* ellipsis = nullptr; type type; };
 
     struct operands { array<expression> list; };
 

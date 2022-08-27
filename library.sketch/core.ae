@@ -68,15 +68,6 @@ type integer.32
 type integer.64
 
 
-type complex extension
-
-    function re → real
-    function im → real
-
-integer : rational =
-
-    mutation += (integer) = …
-
 operator (x) = (x) = …
 
 function Z (N) = …

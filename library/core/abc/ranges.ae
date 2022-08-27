@@ -11,7 +11,7 @@ type: sequence (type: x)
 }
 type: range(x)
 {
-    type: iterator = forward.iterator(x);
+    type: iterator = bidirectional.iterator(x);
     type: sentinel;
 
     function: begin → iterator;
@@ -24,15 +24,15 @@ type: random.access.range(x) extends: sequence(x)
 
     function: from (iterator i) → same = …
     function: upto (iterator i) → same = …
-    operator: [iterator i, iterator j] = from(i).upto(j+1);
-    operator: [iterator i, iterator j) = from(i).upto(j);
+    function: [iterator i, iterator j] = from(i).upto(j+1);
+    function: [iterator i, iterator j) = from(i).upto(j);
 
     function: from (int n) = from(begin+n);
     function: upto (int n) = upto(begin+n);
-    operator: [int b, int e] = from(b).upto(e-b+1);
-    operator: [int b, int e) = from(b).upto(e-b);
+    function: [int b, int e] = from(b).upto(e-b+1);
+    function: [int b, int e) = from(b).upto(e-b);
 
-    operator: [int i] = (begin+i)::value;
-    operator: (int i) = (begin+i)::value;
+    function: [int i] = (begin+i)::value;
+    function: (int i) = (begin+i)::value;
 }
 

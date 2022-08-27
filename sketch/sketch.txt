@@ -840,4 +840,7 @@ From this expansion it should be clear that e1 must have type Bool, and e2 and e
 In other words, if-then-else when viewed as a function has type Bool->a->a->a.
 
 
+If function has no side effects => it's [nodiscard]
 
+Function differs only by return type - ok;
+Overloading with changing arity - ?

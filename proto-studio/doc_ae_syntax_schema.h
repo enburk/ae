@@ -125,9 +125,8 @@ namespace doc::ae::syntax
                 replace("namepack ::",     "namepack::");
                 replace("namepack:: name", "namepack");
             }
-            schema.upto(1).erase(); // leading " "
-            source.upto(1).erase(); // leading " "
 
+            schema.strip();
             auto schema_starts_with = [&schema](str s) { return
                  schema.starts_with(s) and (
                  schema.size() == s.size() or
@@ -192,12 +191,18 @@ namespace doc::ae::syntax
             {
                 s.kind = read()->text;
                 s.names += read_name();
+                s.names.back()->kind = "type";
                 s.args = read_optional_args();
+
+                if (next() == "extension")
+                s.variety = read()->text;
+                else
                 if (next() == "extends"
-                or  next() == "implements"
-                or  next() == "subset.of") {
+                or  next() == "narrows"
+                or  next() == "implements") {
                 s.variety = read()->text;
                 s.typexpr = read_namepack(); }
+
                 s.body = read_expression_or_body();
                 return;
             }
@@ -209,6 +214,15 @@ namespace doc::ae::syntax
                 if (next() == str(u8"←")) s.variety = "setter"; else
                 expected(u8"→ or ←"); read();
                 s.typexpr = read_namepack();
+                s.body = read_expression_or_body();
+                return;
+            }
+            if (schema_starts_with("function ()")
+            or  schema_starts_with("function []"))
+            {
+                s.kind = read()->text;
+                s.args = read_optional_args();
+                s.typexpr = read_optional_type();
                 s.body = read_expression_or_body();
                 return;
             }
@@ -228,35 +242,41 @@ namespace doc::ae::syntax
                 schema.replace_all(" symbol ", " x ");
                 s.kind = read("operator")->text;
 
-                if (schema_starts_with("operator () x ()"))
+                if (schema_starts_with("operator () x ()")
+                or  schema_starts_with("operator () ="))
                 {
-                    s.variety = "binary";
+                    s.variety = "infix";
                     s.args.list += read_one_parameter();
                     s.names += read_name_or_symbol();
                     s.names.front()->kind = "operator";
                     s.args.list += read_one_parameter();
                 }
-                else if (schema_starts_with("operator () x"))
+                else
+                if (schema_starts_with("operator () x"))
                 {
                     s.variety = "postfix";
                     s.args.list += read_one_parameter();
                     s.names += read_name_or_symbol();
                     s.names.front()->kind = "operator";
                 }
-                else if (schema_starts_with("operator x ()"))
+                else
+                if (schema_starts_with("operator x ()")
+                or  schema_starts_with("operator ="))
                 {
                     s.variety = "prefix";
                     s.names += read_name_or_symbol();
                     s.names.front()->kind = "operator";
                     s.args.list += read_one_parameter();
                 }
-                else if (schema_starts_with("operator x"))
+                else
+                if (schema_starts_with("operator x"))
                 {
                     s.variety = "self";
                     s.names += read_name_or_symbol();
                     s.names.front()->kind = "operator";
                 }
-                else expected("operator name or parameter");
+                else
+                expected("operator name or parameter");
                 s.typexpr = read_optional_type();
                 s.body = read_expression_or_body();
                 return;

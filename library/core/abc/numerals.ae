@@ -1,8 +1,8 @@
 type: complex;
-type: real     subset.of: complex;
-type: rational subset.of: real;
-type: integer  subset.of: rational;
-type: natural  subset.of: integer;
+type: real     narrows: complex;
+type: rational narrows: real;
+type: integer  narrows: rational;
+type: natural  narrows: integer;
 
 let: int = integer;
 
@@ -27,35 +27,24 @@ operator: -(C) → C;
 operator: (N) + (N) → N;
 operator: (N) - (N) → Z;
 operator: (N) × (N) → N;
-operator: (N) / (N) → Q;  ;; 0?
+operator: (N) / (N) → Q;
 
 operator: (Z) + (Z) → Z;
 operator: (Z) - (Z) → Z;
 operator: (Z) × (Z) → Z;
-operator: (Z) / (Z) → Q;  ;; 0?
+operator: (Z) / (Z) → Q;
 
 operator: (Q) + (Q) → Q;
 operator: (Q) - (Q) → Q;
 operator: (Q) × (Q) → Q;
-operator: (Q) / (Q) → Q;  ;; 0?
+operator: (Q) / (Q) → Q;
 
 operator: (R) + (R) → R;
 operator: (R) - (R) → R;
 operator: (R) × (R) → R;
-operator: (R) / (R) → R;  ;; 0?
+operator: (R) / (R) → R;
 
 operator: (C) + (C) → C;
 operator: (C) - (C) → C;
 operator: (C) × (C) → C;
-operator: (C) / (C) → C;  ;; 0?
-
-
-type: boolean = true or: false;
-
-operator: not (boolean);
-operator: (boolean) or  (boolean);
-operator: (boolean) and (boolean);
-operator: (boolean) xor (boolean);
-
-operator: (x a) ≤ (x b) = a = b or a < b;
-operator: (x a) ≥ (x b) = a = b or a > b;
+operator: (C) / (C) → C;

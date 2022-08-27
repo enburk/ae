@@ -15,20 +15,16 @@ type: bidirectional.iterator (type: x) extends: forward.iterator(x)
 }
 type: random.access.iterator (type: x) extends: bidirectional.iterator(x)
 {
-    operator: +  (int n) → same;
-    operator: -  (int n) → same;
-    operator: += (int n) {self::value ← self::value + n}
-    operator: -= (int n) {self::value ← self::value - n}
-    operator: ++ {self::value += 1}
-    operator: -- {self::value -= 1}
-    operator: -  (same) → int;
-    operator: <  (same) → boolean;
+    operator: +  (int n) → .same;
+    operator: -  (int n) → .same;
+    operator: ++ {.self += 1}
+    operator: -- {.self -= 1}
+    operator: -  (.same) → int;
+    operator: <  (.same) → boolean;
 }
 
-type: sentinel
+type: sentinel (type: x)
 {
+    operator: = (forward.iterator(x));
 }
-
-operator: (iterator) ≠ (sentinel);
-operator: (sentinel) = (iterator);
 
