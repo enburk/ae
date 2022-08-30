@@ -1,0 +1,44 @@
+type: boolean = false | true; ;; ordered?
+
+let: false = boolean::false;
+let: true  = boolean::true;
+
+type: predicate (args…) = function: (args…) → boolean;
+
+operator: <=> precede: <, ≤, ≥, >;
+
+operator: < precede: =, ≠;
+operator: ≤ precede: =, ≠;
+operator: ≥ precede: =, ≠;
+operator: > precede: =, ≠;
+
+operator: = precede: and;
+operator: ≠ precede: and;
+
+operator: and precede: xor; ;; (exclusive or)
+operator: xor precede: or;  ;; (inclusive or)
+
+operator: (boolean if) ? (x then) | (x else) → x; ;; lazy
+
+operator: not (boolean x) = x = false;
+operator: (boolean x) or  (boolean y) = x ? true | y;
+operator: (boolean x) and (boolean y) = x ? y | false;
+operator: (boolean x) xor (boolean y) = x and not y or y and not x;
+
+;; non-associative ?
+operator: (x a) = (x b); ;; element-wise by default
+operator: (x a) < (x b); ;; lexicographical by default
+operator: (x a) ≠ (x b) = not (a = b);
+operator: (x a) > (x b) = not (a ≤ b);
+operator: (x a) ≤ (x b) = a < b or a = b;
+operator: (x a) ≥ (x b) = a > b or a = b;
+
+operator: (x a) < (x b) < (x c) = a < b and b < c;
+operator: (x a) < (x b) ≤ (x c) = a < b and b ≤ c;
+operator: (x a) ≤ (x b) < (x c) = a ≤ b and b < c;
+operator: (x a) ≤ (x b) ≤ (x c) = a ≤ b and b ≤ c;
+
+operator: (x a) > (x b) > (x c) = a > b and b > c;
+operator: (x a) > (x b) ≥ (x c) = a > b and b ≥ c;
+operator: (x a) ≥ (x b) > (x c) = a ≥ b and b > c;
+operator: (x a) ≥ (x b) ≥ (x c) = a ≥ b and b ≥ c;

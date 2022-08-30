@@ -173,5 +173,7 @@ namespace doc::ae::syntax
         s.truncate();
         return s;
     }
+
+    str bold (str s) { return "<b>" + doc::html::encoded(s) + "</b>"; }
 }
 

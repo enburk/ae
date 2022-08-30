@@ -1,34 +1,34 @@
 import: ::numerals;
 
-type: rational
+type: rational narrows: real
 {
-    int p; let: numerator   = p;
-    int q; let: denominator = q;
+    int a; let: numerator   = a;
+    int b; let: denominator = b;
 
-    invariant: q ≠ 0;
+    invariant: b ≠ 0;
 
-    function: real = real(same(p,1)) / real(same(q,1));
+    property: real;
 
-    operator: = (same: x) = p × x.q = q × x.p;
-    operator: < (same: x) =
-        q > 0 and x.q > 0 or
-        q < 0 and x.q < 0 ?
-        p × x.q < q × x.p |
-        p × x.q > q × x.p;
+    operator: = (.same x) = a × x.b = b × x.a;
+    operator: < (.same x) =
+        b > 0 and x.b > 0 or
+        b < 0 and x.b < 0 ?
+        a × x.b < b × x.a |
+        a × x.b > b × x.a;
 
-    operator: + (same: x) = same:(p × x.q + q × x.p, q × x.q);
-    operator: - (same: x) = same:(p × x.q - q × x.p, q × x.q);
-    operator: × (same x) = .same(p × x.p,  q × x.q);
-    operator: / (same x) = .same(p × x.q,  q × x.p);
+    operator: + (.same x) = .same(a × x.b + b × x.a, b × x.b);
+    operator: - (.same x) = .same(a × x.b - b × x.a, b × x.b);
+    operator: × (.same x) = .same(a × x.a,  b × x.b);
+    operator: / (.same x) = .same(a × x.b,  b × x.a);
 
-    operator: ^ (int n) = n < 0 ? .same(q^n, p^n) | .same(p^n, q^n);
+    operator: ^ (int n) = n < 0 ? .same(b^n, a^n) | .same(a^n, b^n);
 
     function: canonicalize
     {
-        x := gcd(p, q);
-        p /= x, q /= x;
-        if: q < 0 then:
-        p ← -p, q ← -q;
+        x := gcd(a, b);
+        a /= x, b /= x;
+        if: b < 0 then:
+        a ← -a, b ← -b;
         return: void;
     }
     property: canonical
@@ -39,7 +39,7 @@ type: rational
     }
 }
 
-operator: - (rational x) = rational(-x.p, x.q);
+operator: - (rational x) = rational(-x.a, x.b);
 
 type: integer extension:
 {

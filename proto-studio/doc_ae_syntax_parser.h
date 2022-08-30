@@ -11,13 +11,17 @@ namespace doc::ae::syntax
 
         "for", "in", "while", "do",
 
-        "await", "yield", "return", "break", "continue", 
+        "await", "yield", "return", "break", "continue", "throw", 
+
+        "try", "throw", "catch", 
 
         "let", "type", "extends", "narrows", "implements", "extension", 
 
-        "property", "function", "mutation", "operator",
+        "property", "function", "mutation", "operator", "precede", "succeed",
 
         "import", "self", "same",
+        
+        "assert", "invariant",
 
         "or", "and", "xor", "not",
     };

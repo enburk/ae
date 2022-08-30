@@ -124,6 +124,14 @@ namespace doc::ae::syntax
             return names;
         }
 
+        auto read_list_of_names_or_symbols ()
+        {
+            array<token*> names;
+            names += read_name_or_symbol(); while (next() == ",") { read(",");
+            names += read_name_or_symbol(); }
+            return names;
+        }
+
         auto read_list_of_namepacks ()
         {
             array<namepack> names;
@@ -186,11 +194,9 @@ namespace doc::ae::syntax
 
         auto read_optional_type ()
         {
-            if (next()
-            ==   (char*)(u8"→")) {
-            read((char*)(u8"→"));
-            return read_namepack(); }
-            return namepack{};
+            if (next() != str(u8"→"))
+            return namepack{}; read();
+            return read_namepack(); 
         }
 
         auto read_expression_until (str until, bool optional = false) -> expression

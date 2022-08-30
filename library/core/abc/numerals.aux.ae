@@ -1,8 +1,8 @@
 import: ::numerals;
 import: ::auxiliary;
 
-operator: +(N) → N = self::value;
-operator: +(Z) → Z = self::value;
-operator: +(Q) → Q = self::value;
-operator: +(R) → R = self::value;
-operator: +(C) → C = self::value;
+operator: +(N) → N = .self;
+operator: +(Z) → Z = .self;
+operator: +(Q) → Q = .self;
+operator: +(R) → R = .self;
+operator: +(C) → C = .self;

@@ -1,16 +1,12 @@
-contiguous.range (type x) : type
-    function data →
-    function size → int
+type: type;
+
+operation: (boolean q) ? {x} | {y};
 
 operator (type x) [] → contiguous.range(x);
 
 type: boolean = {false, true}
 
-boolean: type = {true, false};
 integral: type = I or Z or Q or R or C;
-
-let: int  = integer;
-let: bool = boolean;
 
 x₀ 1.25×10⁵
 
@@ -26,6 +22,9 @@ type: ordered
     operator: ≥ (same: x)
 }
 
+break!
+continue!
+break:break:
 
 let:
 x = something;
@@ -57,18 +56,10 @@ else:
     otherwise;
 }
 
-operator if (x) = (if x = true)
-operator (x) ?  = (if x = true)
+operator: (boolean x) nand (boolean y) = x ? true | y ? false | true;
+operator: not (boolean x) = nand(x,x);
+operator: (boolean x) and (boolean y) = not (x nand y);
 
-type integral
-
-type integer.8
-type integer.16
-type integer.32
-type integer.64
-
-
-operator (x) = (x) = …
 
 function Z (N) = …
 function Q (Z) = …

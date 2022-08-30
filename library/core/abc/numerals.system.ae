@@ -1,0 +1,44 @@
+import: ::numerals;
+
+type: byte;
+
+type: integer.16;
+type: integer.32;
+type: integer.64;
+
+type: natural.16;
+type: natural.32;
+type: natural.64;
+
+type: integer.16.be;
+type: integer.32.be;
+type: integer.64.be;
+
+type: integer.16.le;
+type: integer.32.le;
+type: integer.64.le;
+
+type: natural.16.be;
+type: natural.32.be;
+type: natural.64.be;
+
+type: natural.16.le;
+type: natural.32.le;
+type: natural.64.le;
+
+operator: (integer.16) bit.or  (integer.16);
+operator: (integer.16) bit.and (integer.16);
+operator: (integer.16) bit.xor (integer.16);
+
+operator: (integer.16) << (int);
+operator: (integer.16) >> (int);
+
+operator: << precede: bit.and;
+operator: >> precede: bit.and;
+operator: bit.and succeed: ^;
+operator: bit.and precede: ×, /;
+operator: bit.and precede: bit.xor;
+operator: bit.xor precede: bit.or;
+operator: bit.or  precede: +, -;
+
+

@@ -1,15 +1,15 @@
 nothing {}
 ;; - also known as "unit type"
 ;; - singleton (type and value)
-;; - all other types extends it
-;; - nothing ≠ any: nothing also
-;;   can be constructed from any type
+;; - all other types implicitly extends it
+;; - functions without return implicitly return nothing
+;; - nothing ≠ any: nothing also can be constructed from any type
 ;;   but only by slicing (to nothing)
 
 type: void;
 ;; - also known as "bottom type"
 ;; - no value can be instantiated
-;; - inherits all other types
+;; - subclass of all other types
 
 function: absurd (void) → x;
 ;; since void values logically don't exist,
@@ -17,47 +17,24 @@ function: absurd (void) → x;
 ;; of "ex falso quodlibet"
 ;; (Haskell)
 
+function: error (message) → void { throw: message }
+;; can be used in ternary "elvis" operator:
+;; x = ok? value.of.some.type | error("oops");
+;; because void can be coerced to any type
+;; (but error will never return a value)
 
-type: boolean = false | true; ;; ordered?
-
-let: false = boolean::false;
-let: true  = boolean::true;
-
-operator: not (boolean x) = x = true;
-operator: (boolean x) or  (boolean y) = x ? true | y;
-operator: (boolean x) and (boolean y) = x ? y | false;
-operator: (boolean x) xor (boolean y) = x and not y or y and not x; 
-
-operator: (x a) = (x b); ;; element-wise by default
-operator: (x a) < (x b); ;; lexicographical by default
-operator: (x a) ≠ (x b) = not (a = b);
-operator: (x a) > (x b) = not (a ≤ b);
-operator: (x a) ≤ (x b) = a < b or a = b;
-operator: (x a) ≥ (x b) = a > b or a = b;
-
-type: predicate (args…) = function: (args…) → boolean;
-
-type: x extension:
+type: x extension: ;; meta
 {
     property: .self → x;
     property: .self ← x;
     property: .same → type: x;
 }
 
+;; binary operators precede ternary operators
 ;; unary operators precede binary operators
 ;; postfix operators precede prefix operators
 ;; postfix operators are left associative
 ;; prefix operators are right associative
-;; infix operators are left associative (by default?)
+;; infix operators are left associative by default
 ;; infix operators have precedence
 
-operator: ^ precede: ×, /;
-operator: × precede: +, -;
-operator: / precede: +, -;
-
-operator: (x) += (y) { x ← x + y }
-operator: (x) -= (y) { x ← x - y }
-operator: (x) ×= (y) { x ← x × y }
-operator: (x) /= (y) { x ← x / y }
-
-;; bitand bitor bitxor

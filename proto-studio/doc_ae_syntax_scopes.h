@@ -45,12 +45,6 @@ namespace doc::ae::syntax
                         i->second + " " +
                         bold(name->text));
                         break; }
-
-                if (statement.args.list.empty()) {
-                    log.error(name, "already exists " +
-                        i->second + " " +
-                        bold(name->text));
-                        break; }
             }
         }
     }

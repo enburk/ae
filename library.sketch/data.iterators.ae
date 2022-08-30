@@ -1,6 +1,12 @@
 let: self = ::meta::self;
 let: same = ::meta::same;
-                        
+
+          in
+           ^
+left < iterator > right
+           v
+          out
+
 
 type: reference (type: x)
 {

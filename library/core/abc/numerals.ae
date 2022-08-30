@@ -12,6 +12,12 @@ let: Q = rational;
 let: R = real;
 let: C = complex;
 
+operator: ^ precede: ×, /;
+operator: × precede: +, -;
+operator: / precede: +, -;
+operator: + precede: <=>;
+operator: - precede: <=>;
+
 operator: +(N) → N;
 operator: +(Z) → Z;
 operator: +(Q) → Q;
@@ -48,3 +54,9 @@ operator: (C) + (C) → C;
 operator: (C) - (C) → C;
 operator: (C) × (C) → C;
 operator: (C) / (C) → C;
+
+operator: (x) += (y) { x ← x + y }
+operator: (x) -= (y) { x ← x - y }
+operator: (x) ×= (y) { x ← x × y }
+operator: (x) /= (y) { x ← x / y }
+

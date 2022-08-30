@@ -1,3 +1,10 @@
+type dir = in | out;
+type: reference (type: x, dir)
+{
+    if: dir = out property: value → x;
+    if: dir = in  property: value ← x;
+}
+
 range(type x): type =
 
     iterator = forward.iterator(x);

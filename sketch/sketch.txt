@@ -844,3 +844,7 @@ If function has no side effects => it's [nodiscard]
 
 Function differs only by return type - ok;
 Overloading with changing arity - ?
+
+Not to mention "second argument polymorphism"; a function like Int -> a -> Bool is, by currying, actually Int -> (a -> Bool) and there you go, polymorphism in the return value again. If you allow it anywhere it has to be everywhere. – 
+Ryan Reich
+
