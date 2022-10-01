@@ -41,7 +41,6 @@ namespace doc::ae::syntax
 
                 if (statement.kind != "type"
                 and statement.kind != "function"
-                and statement.kind != "mutation"
                 and statement.kind != "operator") {
                     log.error(name, "already exists " +
                         i->second + " " +

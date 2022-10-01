@@ -54,8 +54,8 @@ namespace doc::ae::syntax
         {
             if (next() == "{") return read_body();
             array<statement> ss;
-            ss += statement{};
-            read_statement(ss.back());
+            ss += statement{}; read_statement(ss.back()); while (next() == ",") { read(",");
+            ss += statement{}; read_statement(ss.back()); }
             return ss;
         }
 
@@ -227,13 +227,20 @@ namespace doc::ae::syntax
                 s.body = read_expression_or_body();
                 return;
             }
-            if (schema_starts_with("function")
-            or  schema_starts_with("mutation"))
+            if (schema_starts_with("function"))
             {
                 s.kind = read()->text;
                 s.names += read_name();
                 s.args = read_optional_args();
                 s.typexpr = read_optional_type();
+                s.body = read_expression_or_body();
+                return;
+            }
+            if (schema_starts_with("coercion"))
+            {
+                s.kind = read()->text;
+                s.args.list += read_one_parameter(); read(u8"→");
+                s.typexpr = read_namepack();
                 s.body = read_expression_or_body();
                 return;
             }
@@ -309,28 +316,28 @@ namespace doc::ae::syntax
             {
                 s.kind = "for"; read("for");
                 s.names = read_list_of_names(); read("in");
-                s.expr = read_expression_until("do"); read("do");
+                s.expr = read_expression_until("do");
                 s.body = read_statement_or_body();
                 return;
             }
             if (schema_starts_with("while"))
             {
                 s.kind = "while"; read("while");
-                s.expr = read_expression_until("do"); read("do");
+                s.expr = read_expression_until("do");
                 s.body = read_statement_or_body();
                 return;
             }
             if (schema_starts_with("if"))
             {
                 s.kind = "if"; read("if");
-                s.expr = read_expression_until("then"); read("then");
+                s.expr = read_expression_until("then");
                 s.body = read_statement_or_body();
                 return;
             }
             if (schema_starts_with("else if"))
             {
                 s.kind = "else if"; read("else"); read("if");
-                s.expr = read_expression_until("then"); read("then");
+                s.expr = read_expression_until("then");
                 s.body = read_statement_or_body();
                 return;
             }

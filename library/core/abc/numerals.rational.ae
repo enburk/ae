@@ -1,14 +1,11 @@
 import: ::numerals;
 
-type: rational narrows: real
+type: rational
 {
-    int a; let: numerator   = a;
-    int b; let: denominator = b;
+    int a := 0; let: numerator   = a;
+    int b := 1; let: denominator = b;
 
     invariant: b ≠ 0;
-
-    property: real;
-    coerse:; ;; rational → real
 
     operator: = (.same x) = a × x.b = b × x.a;
     operator: < (.same x) =
@@ -22,17 +19,20 @@ type: rational narrows: real
     operator: × (.same x) = .same(a × x.a,  b × x.b);
     operator: / (.same x) = .same(a × x.b,  b × x.a);
 
-    operator: ^ (int n) = n < 0 ? .same(b^n, a^n) | .same(a^n, b^n);
+    operator: ^ (int n) = n < 0 ?
+        .same(b^n, a^n) |
+        .same(a^n, b^n);
 
     function: canonicalize
     {
         x := gcd(a, b);
-        a /= x, b /= x;
+        a ← a div x;
+        b ← b div x;
         if: b < 0 then:
-        a ← -a, b ← -b;
-        return: void;
+        a ← -a,
+        b ← -b;
     }
-    property: canonical
+    property: canonical → rational
     {
         x := .self;
         x.canonicalize();
@@ -42,7 +42,6 @@ type: rational narrows: real
 
 operator: - (rational x) = rational(-x.a, x.b);
 
-type: integer extension:
-{
-    property: rational = rational(self::value, 1);
-}
+coercion: (rational x) → real = real(x.a) / real(x.b);
+
+coercion: (int x) → rational = rational(x, 1);

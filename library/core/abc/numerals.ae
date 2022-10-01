@@ -18,6 +18,9 @@ precedence:
     + -,
     <>;
 
+;; −2^2 = (-2)^2 = 4
+;; a^b^c = (a^b)^c
+
 operator: +(N) → N;
 operator: +(Z) → Z;
 operator: +(Q) → Q;

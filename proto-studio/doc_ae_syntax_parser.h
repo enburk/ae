@@ -17,7 +17,7 @@ namespace doc::ae::syntax
 
         "let", "type", "extends", "narrows", "implements", "extension", 
 
-        "property", "function", "mutation", "operator", "precedence",
+        "property", "function", "coercion", "operator", "precedence",
 
         "import", "self", "same",
         

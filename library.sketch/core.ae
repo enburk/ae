@@ -47,40 +47,14 @@ operator: (Z) ←≈ (R);
 
 operator: (R) ≈ (R) → boolean;
 
+type: rational narrows: real narrowed.by: int
+{
+    int a := 0; let: numerator   = a;
+    int b := 1; let: denominator = b;
 
-operator: <> precede: <, ≤, ≥, >;
-
-operator: < precede: =, ≠;
-operator: ≤ precede: =, ≠;
-operator: ≥ precede: =, ≠;
-operator: > precede: =, ≠;
-
-operator: = precede: and;
-operator: ≠ precede: and;
-
-operator: and precede: xor; ;; (exclusive or)
-operator: xor precede: or;  ;; (inclusive or)
-
-operator: ^ precede: ×, /;
-operator: × precede: +, -;
-operator: / precede: +, -;
-operator: + precede: <>;
-operator: - precede: <>;
-
-operator: mod precede: +, -;
-operator: div precede: +, -;
-
-operator: ^ succeed: mod;
-operator: ^ succeed: div;
-
-operator: << precede: bit.and;
-operator: >> precede: bit.and;
-operator: bit.and succeed: ^;
-operator: bit.and precede: ×, /;
-operator: bit.and precede: bit.xor;
-operator: bit.xor precede: bit.or;
-operator: bit.or  precede: +, -;
-
+    coercion: → real = real(a) / real(b);
+    coercion: ← int x = { a ← x; b ← 1 };
+}
 
 type: ordered
 {
