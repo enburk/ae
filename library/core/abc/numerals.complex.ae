@@ -18,21 +18,6 @@ type: complex
     operator: / (.same c) = .same(x × c.y,  y × c.x);
 
     operator: ^ (int n) = n < 0 ? .same(y^n, x^n) | .same(x^n, y^n);
-
-    function: canonicalize
-    {
-        c := gcd(x, y);
-        x /= c, y /= c;
-        if: y < 0 then:
-        x ← -x, y ← -y;
-        return: void;
-    }
-    property: canonical
-    {
-        c := .self;
-        c.canonicalize();
-        return: c;
-    }
 }
 
 operator: - (rational c) = rational(-c.x, c.y);

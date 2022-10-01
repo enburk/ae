@@ -1,1 +1,8 @@
 import: ::abc;
+
+operator: (x a) = (x b) ;; element-wise by default
+{
+}
+operator: (x a) < (x b) ;; lexicographical by default
+{
+}

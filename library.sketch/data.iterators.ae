@@ -8,6 +8,18 @@ left < iterator > right
           out
 
 
+type: readable.reference (type: x) abstract: { property: value → x }
+type: writable.reference (type: x) abstract: { property: value ← x }
+type: reference (type: x)
+    extends: readable.reference 
+    extends: writable.reference 
+    abstract: {}
+
+readable.forward.iterator
+writable.backward.iterator
+total: 7
+problem: memory::iterator (virtual inheritance?)
+
 type: reference (type: x)
 {
     property: ! → x;

@@ -6,6 +6,99 @@ operator (type x) [] → contiguous.range(x);
 
 type: boolean = {false, true}
 
+operator: (x a) = (y b) = b = a;
+operator: (x a) < (y b) = b > a;
+operator: (x a) ≠ (y b) = b ≠ a;
+operator: (x a) > (y b) = b < a;
+operator: (x a) ≤ (y b) = b ≥ a;
+operator: (x a) ≥ (y b) = b ≤ a;
+
+operator: (x a) = (y b) requires: x ≠ y = b = a;
+operator: (x a) < (y b) requires: x ≠ y = b > a;
+operator: (x a) ≠ (y b) requires: x ≠ y = b ≠ a;
+operator: (x a) > (y b) requires: x ≠ y = b < a;
+operator: (x a) ≤ (y b) requires: x ≠ y = b ≥ a;
+operator: (x a) ≥ (y b) requires: x ≠ y = b ≤ a;
+
+assert: (a = b) <=> (b = a);
+assert: (a < b) <=> (b > a);
+assert: (a ≠ b) <=> (b ≠ a);
+assert: (a > b) <=> (b < a);
+assert: (a ≤ b) <=> (b ≥ a);
+assert: (a ≥ b) <=> (b ≤ a);
+
+assert: (a = b) ⇔ (b = a);
+assert: (a < b) ⇔ (b > a);
+assert: (a ≠ b) ⇔ (b ≠ a);
+assert: (a > b) ⇔ (b < a);
+assert: (a ≤ b) ⇔ (b ≥ a);
+assert: (a ≥ b) ⇔ (b ≤ a);
+
+assert: (a = b) ↔ (b = a);
+assert: (a < b) ↔ (b > a);
+assert: (a ≠ b) ↔ (b ≠ a);
+assert: (a > b) ↔ (b < a);
+assert: (a ≤ b) ↔ (b ≥ a);
+assert: (a ≥ b) ↔ (b ≤ a);
+
+operator: (Z) ←= (Q);
+operator: (Z) ←= (R);
+operator: (Z) ←≈ (R);
+
+operator: (R) ≈ (R) → boolean;
+
+
+operator: <> precede: <, ≤, ≥, >;
+
+operator: < precede: =, ≠;
+operator: ≤ precede: =, ≠;
+operator: ≥ precede: =, ≠;
+operator: > precede: =, ≠;
+
+operator: = precede: and;
+operator: ≠ precede: and;
+
+operator: and precede: xor; ;; (exclusive or)
+operator: xor precede: or;  ;; (inclusive or)
+
+operator: ^ precede: ×, /;
+operator: × precede: +, -;
+operator: / precede: +, -;
+operator: + precede: <>;
+operator: - precede: <>;
+
+operator: mod precede: +, -;
+operator: div precede: +, -;
+
+operator: ^ succeed: mod;
+operator: ^ succeed: div;
+
+operator: << precede: bit.and;
+operator: >> precede: bit.and;
+operator: bit.and succeed: ^;
+operator: bit.and precede: ×, /;
+operator: bit.and precede: bit.xor;
+operator: bit.xor precede: bit.or;
+operator: bit.or  precede: +, -;
+
+
+type: ordered
+{
+    operator: = (.same x) = .self <=> x = strong.order::equivalent;
+    …
+}
+
+type: shelter (type: x extends: animal)
+{
+    function: get → x;
+    function: put(x);
+}
+type: cat_shelter extends: shelter(cat)
+{
+    function: get → cat;
+    function: put(cat);
+}
+
 integral: type = I or Z or Q or R or C;
 
 x₀ 1.25×10⁵

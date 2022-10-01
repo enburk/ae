@@ -1,22 +1,17 @@
-type: boolean = false | true; ;; ordered?
+type: boolean = false | true; ;; ordered!
 
 let: false = boolean::false;
 let: true  = boolean::true;
 
 type: predicate (args…) = function: (args…) → boolean;
 
-operator: <=> precede: <, ≤, ≥, >;
-
-operator: < precede: =, ≠;
-operator: ≤ precede: =, ≠;
-operator: ≥ precede: =, ≠;
-operator: > precede: =, ≠;
-
-operator: = precede: and;
-operator: ≠ precede: and;
-
-operator: and precede: xor; ;; (exclusive or)
-operator: xor precede: or;  ;; (inclusive or)
+precedence:
+    <>,
+    < ≤ ≥ >,
+    = ≠,
+    and,
+    xor,
+    or;
 
 operator: (boolean if) ? (x then) | (x else) → x; ;; lazy
 
@@ -42,3 +37,10 @@ operator: (x a) > (x b) > (x c) = a > b and b > c;
 operator: (x a) > (x b) ≥ (x c) = a > b and b ≥ c;
 operator: (x a) ≥ (x b) > (x c) = a ≥ b and b > c;
 operator: (x a) ≥ (x b) ≥ (x c) = a ≥ b and b ≥ c;
+
+operator: (boolean a) = (boolean b) ;; element-wise by default
+{
+}
+operator: (boolean a) < (boolean b) ;; lexicographical by default
+{
+}

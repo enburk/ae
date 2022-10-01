@@ -848,3 +848,81 @@ Overloading with changing arity - ?
 Not to mention "second argument polymorphism"; a function like Int -> a -> Bool is, by currying, actually Int -> (a -> Bool) and there you go, polymorphism in the return value again. If you allow it anywhere it has to be everywhere. – 
 Ryan Reich
 
+str and std::string - pre-order?
+str: std::string  (str is subclass of string, extends, string can be constructed from str)
+str (std::string) (string is subclass of str, narrows (?), str can be constructed from string)
+type extension - alternative
+strong typedef - ?
+
+If T1 > T2 is a function type, then a subtype of it is any function type S1 > S2 with the property that T1 <: S1 and S2 <: T2.
+The type coercion for function types may be given by f'(s) = coerceS2 > T2(f(coerceT1 > S1(t))), reflecting the contravariance of parameter values and covariance of return values.
+Subtyping and inheritance are independent (orthogonal) relationships:
+1. S is neither a subtype nor a derived type of T
+2. S is a subtype but is not a derived type of T
+3. S is not a subtype but is a derived type of T
+4. S is both a subtype and a derived type of T
+The third case is a consequence of function subtyping input contravariance. Assume a super class of type T having a method m returning an object of the same type (i.e. the type of m is T > T, also note that the first parameter of m is this/self) and a derived class type S from T. By inheritance, the type of m in S is S > S. In order for S to be a subtype of T the type of m in S must be a subtype of the type of m in T, in other words: S > S ?: T > T. By bottom-up application of the function subtyping rule, this means: S ?: T and T ?: S, which is only possible if S and T are the same. Since inheritance is an irreflexive relation, S can't be a subtype of T.
+
+There are several common ways of formalizing weak orderings, that are different from each other but cryptomorphic (interconvertable with no loss of information): they may be axiomatized as strict weak orderings (partially ordered sets in which incomparability is a transitive relation), as total preorders (transitive binary relations in which at least one of the two possible relations exists between every pair of elements), or as ordered partitions (partitions of the elements into disjoint subsets, together with a total order on the subsets). In many cases another representation called a preferential arrangement based on a utility function is also possible.
+
+narrowing implies coersion: real r = 1;
+extension doesn't imply coersion:
+type: A extends: B {...}
+A a;
+B b = B(a); // call auto generated constructor explicitly, preventing implicit slicing
+
+function parameters - references (results are values)
+covariant if in
+contravariant if out
+invariant if in/out
+
+
+Unique isomorphism between empty singletons: are they terminal objects?
+That's because they are called units.
+But implicit subtyping is only from one of them?
+Otherwise there be a loop.
+
+fmap = apply
+
+(a -> b) -> (fa -> fb) = (a, b, fa) -> fb
+
+type: range (type: x) extension:
+{
+	function: apply ((function: x -> x) f) { for: a in: .self do: a = f(a) }
+	
+	function: apply ((function: x -> type: y) f) -> array(y);
+}
+
+
+function: div(a,b) throws: error
+{
+	return: a/b;
+	catch: division.by.zero do:
+	throw: error("division by zero");
+}
+
+class zip_vector
+{
+	void push_back(a, b)
+	{
+		aa += a;
+		try: bb += b;
+		catch: aa.pop_back; throw;
+	}
+}
+
+print("i is {i} and j is {j});
+
+// think-cell
+type: border (type: x)
+{
+	property: element_before -> element<x>
+	property: element_after -> element<x>
+}
+type: element (type: x)
+{
+	property: border_before -> border<x>
+	property: border_after -> border<x>
+}
+[x] singleton list
+

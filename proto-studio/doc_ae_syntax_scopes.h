@@ -22,6 +22,8 @@ namespace doc::ae::syntax
         {
             statement.outer = &s;
 
+            if (statement.kind == "precedence") continue;
+
             for (token* name: statement.names)
             {
                 s.members.emplace(name->text, &statement);

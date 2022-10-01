@@ -8,6 +8,7 @@ type: rational narrows: real
     invariant: b ≠ 0;
 
     property: real;
+    coerse:; ;; rational → real
 
     operator: = (.same x) = a × x.b = b × x.a;
     operator: < (.same x) =

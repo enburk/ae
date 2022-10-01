@@ -12,11 +12,11 @@ let: Q = rational;
 let: R = real;
 let: C = complex;
 
-operator: ^ precede: ×, /;
-operator: × precede: +, -;
-operator: / precede: +, -;
-operator: + precede: <=>;
-operator: - precede: <=>;
+precedence:
+    ^,
+    × / div mod,
+    + -,
+    <>;
 
 operator: +(N) → N;
 operator: +(Z) → Z;
@@ -55,8 +55,60 @@ operator: (C) - (C) → C;
 operator: (C) × (C) → C;
 operator: (C) / (C) → C;
 
+operator: (Z) div (Z) → Z;
+operator: (Z) mod (Z) → Z;
+
+operator: (N) ^ (N) → N;
+operator: (N) ^ (Z) → Q;
+operator: (N) ^ (Q) → R;
+operator: (N) ^ (R) → R;
+operator: (N) ^ (C) → C;
+
+operator: (Z) ^ (N) → Z;
+operator: (Z) ^ (Z) → Q;
+operator: (Z) ^ (Q) → C;
+operator: (Z) ^ (R) → C;
+operator: (Z) ^ (C) → C;
+
+operator: (Q) ^ (N) → Q;
+operator: (Q) ^ (Z) → Q;
+operator: (Q) ^ (Q) → C;
+operator: (Q) ^ (R) → C;
+operator: (Q) ^ (C) → C;
+
+operator: (R) ^ (N) → R;
+operator: (R) ^ (Z) → R;
+operator: (R) ^ (Q) → C;
+operator: (R) ^ (R) → C;
+operator: (R) ^ (C) → C;
+
+operator: (C) ^ (N) → C;
+operator: (C) ^ (Z) → C;
+operator: (C) ^ (Q) → C;
+operator: (C) ^ (R) → C;
+;;        (C) ^ (C) → ?;
+
+
+
+type: real extension:
+{
+    property: round → int;
+    property: floor → int;
+    property: ceil  → int;
+}
+
 operator: (x) += (y) { x ← x + y }
 operator: (x) -= (y) { x ← x - y }
 operator: (x) ×= (y) { x ← x × y }
 operator: (x) /= (y) { x ← x / y }
+
+
+
+
+
+
+
+
+
+
 

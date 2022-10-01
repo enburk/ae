@@ -26,12 +26,12 @@ namespace doc::ae::syntax
                 }
             }
             catch (str const&) { log.error(
-            gray("source: ") + dark(s.source) + "<br" +
-            gray("scheme: ") + blue(s.schema) + "<br" +
-            gray("names: " ) + dark(print(s.names  )) + "<br" +
-            gray("args: "  ) + dark(print(s.args   )) + "<br" +
-            gray("type: "  ) + dark(print(s.typexpr)) + "<br" +
-            gray("kind: "  ) + dark(s.kind)); }
+            gray("source: ") + dark(html::encoded(s.source)) + "<br" +
+            gray("scheme: ") + blue(html::encoded(s.schema)) + "<br" +
+            gray("names: " ) + dark(html::encoded(print(s.names  ))) + "<br" +
+            gray("args: "  ) + dark(html::encoded(print(s.args   ))) + "<br" +
+            gray("type: "  ) + dark(html::encoded(print(s.typexpr))) + "<br" +
+            gray("kind: "  ) + dark(html::encoded(s.kind))); }
             return ss;
         }
 
@@ -245,17 +245,6 @@ namespace doc::ae::syntax
                 schema.replace_all(" symbol ", " x ");
                 s.kind = read("operator")->text;
 
-                if (schema_starts_with("operator x precede")
-                or  schema_starts_with("operator x succeed")
-                or  schema_starts_with("operator = precede")
-                or  schema_starts_with("operator = succeed"))
-                {
-                    s.names += read_name_or_symbol();
-                    s.names.back()->kind = "operator";
-                    s.variety = read()->text;
-                    s.names += read_list_of_names_or_symbols();
-               }
-                else
                 if (schema_starts_with("operator () x () x ()"))
                 {
                     s.variety = "ternary";
@@ -305,6 +294,14 @@ namespace doc::ae::syntax
                 expected("operator name or parameter");
                 s.typexpr = read_optional_type();
                 s.body = read_expression_or_body();
+                return;
+            }
+            if (schema_starts_with("precedence"))
+            {
+                s.kind = read()->text;
+                while (not input.empty() and next() != ";") {
+                s.names += read_name_or_symbol();
+                s.names.back()->kind = "operator"; }
                 return;
             }
 

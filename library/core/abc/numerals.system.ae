@@ -33,12 +33,13 @@ operator: (integer.16) bit.xor (integer.16);
 operator: (integer.16) << (int);
 operator: (integer.16) >> (int);
 
-operator: << precede: bit.and;
-operator: >> precede: bit.and;
-operator: bit.and succeed: ^;
-operator: bit.and precede: ×, /;
-operator: bit.and precede: bit.xor;
-operator: bit.xor precede: bit.or;
-operator: bit.or  precede: +, -;
+precedence:
+    ^,
+    << >>,
+    × /,
+    bit.and,
+    bit.xor,
+    bit.or,
+    + -;
 
 
