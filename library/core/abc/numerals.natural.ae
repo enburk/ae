@@ -1,0 +1,13 @@
+import: ::numerals;
+
+type: natural extends: int
+{
+    invariant: .self ≥ 0;
+
+    operator: + (.same x) = .same(x × c.y + y × c.x, y × c.y);
+    operator: × (.same x) = .same(x × c.x,  y × c.y);
+
+    operator: ^ (int n) = n < 0 ? .same(y^n, x^n) | .same(x^n, y^n);
+}
+
+function: abs (int x) = natural(x ≥ 0 ? x | -x);

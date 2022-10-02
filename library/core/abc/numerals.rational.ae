@@ -42,6 +42,8 @@ type: rational
 
 operator: - (rational x) = rational(-x.a, x.b);
 
+operator: (int a) / (int b) = rational(a, b);
+
 coercion: (rational x) → real = real(x.a) / real(x.b);
 
 coercion: (int x) → rational = rational(x, 1);

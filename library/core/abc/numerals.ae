@@ -1,8 +1,8 @@
 type: complex;
-type: real     narrows: complex;
-type: rational narrows: real;
-type: integer  narrows: rational;
-type: natural  narrows: integer;
+type: real;
+type: rational;
+type: integer;
+type: natural;
 
 let: int = integer;
 
@@ -20,6 +20,55 @@ precedence:
 
 ;; −2^2 = (-2)^2 = 4
 ;; a^b^c = (a^b)^c
+
+operator: (N) + (N) → N;
+operator: (N) × (N) → N;
+
+operator: (N) div (N) → N;
+operator: (N) mod (N) → N;
+
+operator: (Z) + (Z) → Z;
+operator: (Z) - (Z) → Z;
+operator: (Z) × (Z) → Z;
+
+operator: (Z) div (Z) → Z;
+operator: (Z) mod (Z) → Z;
+
+operator: (R) + (R) → R;
+operator: (R) - (R) → R;
+operator: (R) × (R) → R;
+operator: (R) / (R) → R;
+
+coercion: (N) → Z;
+coercion: (Z) → R;
+
+function: abs (Z) → N;
+function: abs (R) → R;
+
+type: real extension:
+{
+    property: round → int;
+    property: floor → int;
+    property: ceil  → int;
+}
+
+operator: +(N) → N;
+operator: +(Z) → Z;
+operator: +(R) → R;
+
+operator: -(N) → Z;
+operator: -(Z) → Z;
+operator: -(R) → R;
+
+operator: (N) = (N) → boolean;
+operator: (Z) = (Z) → boolean;
+operator: (R) = (R) → boolean;
+
+operator: (N) < (N) → boolean;
+operator: (Z) < (Z) → boolean;
+operator: (R) < (R) → boolean;
+
+
 
 operator: +(N) → N;
 operator: +(Z) → Z;
@@ -58,9 +107,6 @@ operator: (C) - (C) → C;
 operator: (C) × (C) → C;
 operator: (C) / (C) → C;
 
-operator: (Z) div (Z) → Z;
-operator: (Z) mod (Z) → Z;
-
 operator: (N) ^ (N) → N;
 operator: (N) ^ (Z) → Q;
 operator: (N) ^ (Q) → R;
@@ -92,13 +138,6 @@ operator: (C) ^ (R) → C;
 ;;        (C) ^ (C) → ?;
 
 
-
-type: real extension:
-{
-    property: round → int;
-    property: floor → int;
-    property: ceil  → int;
-}
 
 operator: (x) += (y) { x ← x + y }
 operator: (x) -= (y) { x ← x - y }
