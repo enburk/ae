@@ -1,5 +1,28 @@
 type: type;
 
+
+import: ::ranges;
+
+let: memory = ::memory;
+
+
+;; meta
+
+function: size.of (type: x) → natural;
+function: type.of (type: x) → type:;
+
+type: value.of(type: x)
+{
+    function: at (address) → x;
+}
+
+operator: (N) + (N) → N;
+operator: (N) × (N) → N;
+
+operator: (N) div (N) → N;
+operator: (N) mod (N) → N;
+
+
 operation: (boolean q) ? {x} | {y};
 
 operator (type x) [] → contiguous.range(x);
@@ -181,7 +204,121 @@ operator x:y = ratio x y
 
 
 
+operator: (real a) = (real b) = abs(a-b) < real::epsilon;
 
+type: real static:
+{
+    real .epsilon; ;; auto thread_static
+    autostackable(.epsilon) epsilon;
+}
+
+type: autostackable (x)
+{
+    let X = type.of(x); .x;
+    constructor: .x;
+    destructor: ;
+}
+
+operator: +(N) → N;
+operator: +(Z) → Z;
+operator: +(Q) → Q;
+operator: +(R) → R;
+operator: +(C) → C;
+
+operator: -(N) → Z;
+operator: -(Z) → Z;
+operator: -(Q) → Q;
+operator: -(R) → R;
+operator: -(C) → C;
+
+operator: (N) + (N) → N;
+operator: (N) - (N) → Z;
+operator: (N) × (N) → N;
+operator: (N) / (N) → Q;
+
+operator: (Z) + (Z) → Z;
+operator: (Z) - (Z) → Z;
+operator: (Z) × (Z) → Z;
+operator: (Z) / (Z) → Q;
+
+operator: (Q) + (Q) → Q;
+operator: (Q) - (Q) → Q;
+operator: (Q) × (Q) → Q;
+operator: (Q) / (Q) → Q;
+
+operator: (R) + (R) → R;
+operator: (R) - (R) → R;
+operator: (R) × (R) → R;
+operator: (R) / (R) → R;
+
+operator: (C) + (C) → C;
+operator: (C) - (C) → C;
+operator: (C) × (C) → C;
+operator: (C) / (C) → C;
+
+operator: (N) ^ (N) → N;
+operator: (N) ^ (Z) → Q;
+operator: (N) ^ (Q) → R;
+operator: (N) ^ (R) → R;
+operator: (N) ^ (C) → C;
+
+operator: (Z) ^ (N) → Z;
+operator: (Z) ^ (Z) → Q;
+operator: (Z) ^ (Q) → C;
+operator: (Z) ^ (R) → C;
+operator: (Z) ^ (C) → C;
+
+operator: (Q) ^ (N) → Q;
+operator: (Q) ^ (Z) → Q;
+operator: (Q) ^ (Q) → C;
+operator: (Q) ^ (R) → C;
+operator: (Q) ^ (C) → C;
+
+operator: (R) ^ (N) → R;
+operator: (R) ^ (Z) → R;
+operator: (R) ^ (Q) → C;
+operator: (R) ^ (R) → C;
+operator: (R) ^ (C) → C;
+
+operator: (C) ^ (N) → C;
+operator: (C) ^ (Z) → C;
+operator: (C) ^ (Q) → C;
+operator: (C) ^ (R) → C;
+;;        (C) ^ (C) → ?;
+
+
+
+operator: (N x) ^ (N y)
+{
+    result := 1;
+    while: true do:
+    {
+        if: (exp & 1)
+            result *= base;
+        exp >>= 1;
+        if (!exp)
+            break;
+        base *= base;
+    }
+
+    return result;
+}
+
+int ipow(int base, int exp)
+{
+    int result = 1;
+    for (;;)
+    {
+        if (exp & 1)
+            result *= base;
+        exp >>= 1;
+        if (!exp)
+            break;
+        base *= base;
+    }
+
+    return result;
+}
 
 
 

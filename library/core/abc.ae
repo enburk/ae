@@ -1,18 +1,8 @@
+import: ::auxiliary;
+import: ::boolean;
 import: ::numerals;
-import: ::ranges;
-
-let: memory = ::memory;
-
-
-;; meta
-
-function: size.of (type: x) → natural;
-function: type.of (type: x) → type:;
-
-type: value.of(type: x)
-{
-    function: at (address) → x;
-}
+import: ::numerals.rational;
+import: ::numerals.complex;
 
 
 

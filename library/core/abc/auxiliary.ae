@@ -29,3 +29,17 @@ type: x extension: ;; meta
     property: .self ← x;
     property: .same → type: x;
 }
+
+;; 'precede' = have higher precedence than
+;; - binary operators 'precede' ternary operators
+;; - unary operators 'precede' binary operators (??)
+;; - postfix operators 'precede' prefix operators
+;; - postfix operators are left associative
+;; - prefix operators are right associative
+;; - infix operators are left associative (by default?)
+;; - infix operators may have precedence
+
+;; −2^2 = (-2)^2 = 4
+;; a^b^c = (a^b)^c
+
+

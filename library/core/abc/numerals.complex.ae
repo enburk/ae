@@ -2,27 +2,6 @@ import: ::numerals;
 
 type: complex
 {
-    real x; let: re = x;
-    real y; let: im = y;
-
-    operator: = (.same c) = x × c.y = y × c.x;
-    operator: < (.same c) =
-        y > 0 and c.y > 0 or
-        y < 0 and c.y < 0 ?
-        x × c.y < y × c.x |
-        x × c.y > y × c.x;
-
-    operator: + (.same c) = .same(x × c.y + y × c.x, y × c.y);
-    operator: - (.same c) = .same(x × c.y - y × c.x, y × c.y);
-    operator: × (.same c) = .same(x × c.x,  y × c.y);
-    operator: / (.same c) = .same(x × c.y,  y × c.x);
-
-    operator: ^ (int n) = n < 0 ? .same(y^n, x^n) | .same(x^n, y^n);
-}
-
-operator: - (rational c) = rational(-c.x, c.y);
-
-type: integer extension:
-{
-    property: rational = rational(self::value, 1);
+    real re;
+    real im;
 }

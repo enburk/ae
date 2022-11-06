@@ -1,8 +1,10 @@
+import: auxiliary;
+
 type: complex;
 type: real;
 type: rational;
 type: integer;
-type: natural;
+type: natural extends: integer { invariant: .self ≥ 0 }
 
 let: int = integer;
 
@@ -18,15 +20,6 @@ precedence:
     + -,
     <>;
 
-;; −2^2 = (-2)^2 = 4
-;; a^b^c = (a^b)^c
-
-operator: (N) + (N) → N;
-operator: (N) × (N) → N;
-
-operator: (N) div (N) → N;
-operator: (N) mod (N) → N;
-
 operator: (Z) + (Z) → Z;
 operator: (Z) - (Z) → Z;
 operator: (Z) × (Z) → Z;
@@ -39,11 +32,7 @@ operator: (R) - (R) → R;
 operator: (R) × (R) → R;
 operator: (R) / (R) → R;
 
-coercion: (N) → Z;
 coercion: (Z) → R;
-
-function: abs (Z) → N;
-function: abs (R) → R;
 
 type: real extension:
 {
@@ -52,98 +41,42 @@ type: real extension:
     property: ceil  → int;
 }
 
-operator: +(N) → N;
-operator: +(Z) → Z;
-operator: +(R) → R;
+operator: +(N x) = x;
+operator: +(Z x) = x;
+operator: +(Q x) = x;
+operator: +(R x) = x;
+operator: +(C x) = x;
 
-operator: -(N) → Z;
 operator: -(Z) → Z;
 operator: -(R) → R;
 
-operator: (N) = (N) → boolean;
 operator: (Z) = (Z) → boolean;
 operator: (R) = (R) → boolean;
 
-operator: (N) < (N) → boolean;
 operator: (Z) < (Z) → boolean;
 operator: (R) < (R) → boolean;
-
-
-
-operator: +(N) → N;
-operator: +(Z) → Z;
-operator: +(Q) → Q;
-operator: +(R) → R;
-operator: +(C) → C;
-
-operator: -(N) → Z;
-operator: -(Z) → Z;
-operator: -(Q) → Q;
-operator: -(R) → R;
-operator: -(C) → C;
-
-operator: (N) + (N) → N;
-operator: (N) - (N) → Z;
-operator: (N) × (N) → N;
-operator: (N) / (N) → Q;
-
-operator: (Z) + (Z) → Z;
-operator: (Z) - (Z) → Z;
-operator: (Z) × (Z) → Z;
-operator: (Z) / (Z) → Q;
-
-operator: (Q) + (Q) → Q;
-operator: (Q) - (Q) → Q;
-operator: (Q) × (Q) → Q;
-operator: (Q) / (Q) → Q;
-
-operator: (R) + (R) → R;
-operator: (R) - (R) → R;
-operator: (R) × (R) → R;
-operator: (R) / (R) → R;
-
-operator: (C) + (C) → C;
-operator: (C) - (C) → C;
-operator: (C) × (C) → C;
-operator: (C) / (C) → C;
-
-operator: (N) ^ (N) → N;
-operator: (N) ^ (Z) → Q;
-operator: (N) ^ (Q) → R;
-operator: (N) ^ (R) → R;
-operator: (N) ^ (C) → C;
-
-operator: (Z) ^ (N) → Z;
-operator: (Z) ^ (Z) → Q;
-operator: (Z) ^ (Q) → C;
-operator: (Z) ^ (R) → C;
-operator: (Z) ^ (C) → C;
-
-operator: (Q) ^ (N) → Q;
-operator: (Q) ^ (Z) → Q;
-operator: (Q) ^ (Q) → C;
-operator: (Q) ^ (R) → C;
-operator: (Q) ^ (C) → C;
-
-operator: (R) ^ (N) → R;
-operator: (R) ^ (Z) → R;
-operator: (R) ^ (Q) → C;
-operator: (R) ^ (R) → C;
-operator: (R) ^ (C) → C;
-
-operator: (C) ^ (N) → C;
-operator: (C) ^ (Z) → C;
-operator: (C) ^ (Q) → C;
-operator: (C) ^ (R) → C;
-;;        (C) ^ (C) → ?;
-
-
 
 operator: (x) += (y) { x ← x + y }
 operator: (x) -= (y) { x ← x - y }
 operator: (x) ×= (y) { x ← x × y }
 operator: (x) /= (y) { x ← x / y }
 
+function: abs (x) = x < 0 ? -x | x;
+
+function: gcd (a, b)
+{
+    while: b ≠ 0 do:
+    a, b ← b, a mod b;
+    return: a;
+}
+function: lcm (a, b) =
+
+    a = 0 or b = 0 ? 0 |
+    abs(a) × (abs(b)
+    div gcd(a,b));
+
+function: gcd (x, xs…) = gcd(x, gcd(xs…));
+function: lcm (x, xs…) = lcm(x, lcm(xs…));
 
 
 
