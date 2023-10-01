@@ -7,7 +7,8 @@
 #include "../../auxs/test.h"
 using namespace std::literals::chrono_literals;
 
-struct IDE : gui::widget<IDE>
+struct IDE:
+widget<IDE>
 {
     gui::canvas canvas;
     gui::canvas toolbar;
@@ -50,6 +51,7 @@ struct IDE : gui::widget<IDE>
         flist_area.show_focus = true;
         test_area.hide();
 
+        flist.root  = std::filesystem::current_path();
         watcher.dir = std::filesystem::current_path();
         watcher.action = [this](std::filesystem::path path, str what)
         {
@@ -81,7 +83,6 @@ struct IDE : gui::widget<IDE>
             if (reload) {
                 reload = false;
                 console.events << "Reload...";
-                flist.reload();
                 editor.flist.reload(); // before repo delete something
                 doc::text::repo::reload(); // triggers recompiling
                 editor.editor.update_text = true;
@@ -264,6 +265,7 @@ struct IDE : gui::widget<IDE>
             "splitter.editor.l.permyriad",
              splitter_editor_l.middle
             *100'00 / coord.now.w);
+            coord.was.size = xy{};
             on_change(&coord);
         }
         if (what == &splitter_editor_r) {
@@ -271,6 +273,7 @@ struct IDE : gui::widget<IDE>
             "splitter.editor.r.permyriad",
              splitter_editor_r.middle
             *100'00 / coord.now.w);
+            coord.was.size = xy{};
             on_change(&coord);
         }
     }

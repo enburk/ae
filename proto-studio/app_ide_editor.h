@@ -6,7 +6,8 @@
 using path = std::filesystem::path;
 using namespace pix;
 
-struct Editor : gui::widget<Editor>
+struct Editor:
+widget<Editor>
 {
     edflist flist;
     gui::text::page lineup;

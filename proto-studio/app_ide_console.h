@@ -2,7 +2,8 @@
 #include "abc.h"
 using namespace pix;
 
-struct Console : gui::widget<Console>
+struct Console:
+widget<Console>
 {
     gui::canvas canvas;
     gui::radio::group buttons;

@@ -4,12 +4,12 @@
 #include "../../auxs/gui_widget.h"
 #include "../../auxs/gui_widget_aux.h"
 #include "../../auxs/gui_widget_image.h"
-#include "../../auxs/gui_widget_player.h"
 #include "../../auxs/gui_widget_button.h"
 #include "../../auxs/gui_widget_scroller.h"
 #include "../../auxs/gui_widget_text_editline.h"
 #include "../../auxs/gui_widget_text_editor.h"
 #include "../../auxs/gui_widget_console.h"
+#include "../../auxs/sfx_contents.h"
 #include "../../auxs/doc_html_lexica.h"
 #include "../../auxs/doc_html_syntax.h"
 #include "../../auxs/doc_html_utils.h"
@@ -26,7 +26,16 @@ using pix::rgba;
 using pix::image;
 using pix::frame;
 using gui::widget;
+using gui::widget;
+using gui::widgetarium;
+using gui::unary_property;
+using gui::binary_property;
+using gui::property;
+using std::filesystem::path;
 using namespace std::literals::chrono_literals;
+
+template <class... xx> using hashmap = std::unordered_map<xx...>;
+template <class... xx> using hashset = std::unordered_set<xx...>;
 
 str bold      (str s) { return "<b>" + s + "</b>"; }
 str italic    (str s) { return "<i>" + s + "</i>"; }

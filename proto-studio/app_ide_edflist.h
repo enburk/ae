@@ -3,7 +3,8 @@
 #include <filesystem>
 using path = std::filesystem::path;
 
-struct edflist : gui::widget<edflist>
+struct edflist:
+widget<edflist>
 {
     gui::canvas canvas;
     gui::radio::group buttons;
