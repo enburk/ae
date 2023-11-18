@@ -49,6 +49,7 @@ widget<IDE>
         console_area.show_focus = true;
         editor_area.show_focus = true;
         flist_area.show_focus = true;
+        flist.name = "flist";
         test_area.hide();
 
         flist.root  = std::filesystem::current_path();

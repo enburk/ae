@@ -23,10 +23,10 @@ widget<Editor>
             lineup.scroll.x.mode = gui::scroll::mode::none;
             lineup.scroll.y.mode = gui::scroll::mode::none;
             lineup.canvas.color = gui::skins[skin].ultralight.first;
-            lineup.padding = xyxy{0,0,gui::metrics::line::width*5,0};
+            lineup.padding = xyxy{0,0,gui::metrics::line::width*15,0};
             lineup.alignment = xy{pix::right, pix::top};
             lineup.font = pix::font{"Consolas"};
-            lineup.color = rgba::teal;
+            lineup.color = rgba::gray;
             lineup.wordwrap = false;
 
             editor.virtual_space = true;
